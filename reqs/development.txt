@@ -2,4 +2,3 @@
 
 # Debug toolbar
 django-debug-toolbar
-sqlparse
