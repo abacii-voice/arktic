@@ -1,3 +1,12 @@
+# apps.tr.models
+
+# django
 from django.db import models
 
-# Create your models here.
+# local
+
+# util
+
+
+### Create your models here.
+class
