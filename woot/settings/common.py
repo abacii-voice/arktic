@@ -13,27 +13,22 @@ import string
 
 # util
 
+##################################################################################################
+########################################## DJANGO CONFIGURATION
+##################################################################################################
+### These are parameters that Django requires to run
+
+
 ########## TEST CONFIGURATION
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 ########## END TEST CONFIGURATION
 
 
-########## AUTH CONFIGURATION
-AUTH_USER_MODEL = 'users.User'
-########## END AUTH CONFIGURATION
-
-
 ########## ALLOWED HOSTS CONFIGURATION
 ALLOWED_HOSTS = (
-  'localhost',
+	'localhost',
 )
 ########## END ALLOWED HOSTS CONFIGURATION
-
-
-########## PASSWORD CONFIGURATION
-ACCESS_ROOT = join(expanduser('~'),'.djaccess')
-DB_ACCESS = 'arktic_db.json'
-########## END PASSWORD CONFIGURATION
 
 
 ########## PATH CONFIGURATION
@@ -54,13 +49,18 @@ SITE_NAME = basename(dirname(DJANGO_ROOT))
 path.append(DJANGO_ROOT)
 
 def get_access():
-  path = os.path.join(CODE_ROOT, '.access/{}.json'.format(SITE_NAME))
-  data = {}
-  with open(path) as access:
-    data = json.load(access)
+	path = os.path.join(CODE_ROOT, '.access/{}.json'.format(SITE_NAME))
+	data = {}
+	with open(path) as access:
+		data = json.load(access)
 
-  return data
+	return data
 ########## END PATH CONFIGURATION
+
+
+########## AUTH CONFIGURATION
+AUTH_USER_MODEL = 'users.User'
+########## END AUTH CONFIGURATION
 
 
 ########## DEBUG CONFIGURATION
@@ -75,7 +75,7 @@ TEMPLATE_DEBUG = DEBUG
 ########## MANAGER CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#admins
 ADMINS = (
-  ('Your name', 'youremail@domain.com'),
+	('Your name', 'youremail@domain.com'),
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#managers
@@ -122,13 +122,13 @@ STATIC_URL = '/static/'
 
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
 STATICFILES_DIRS = (
-  normpath(join(DJANGO_ROOT, 'assets')),
+	normpath(join(DJANGO_ROOT, 'assets')),
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
 STATICFILES_FINDERS = (
-  'django.contrib.staticfiles.finders.FileSystemFinder',
-  'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+	'django.contrib.staticfiles.finders.FileSystemFinder',
+	'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
 ########## END STATIC FILE CONFIGURATION
 
@@ -142,7 +142,7 @@ SECRET_KEY = '#za#m48_9in&i!9rodpp)r6$4_)_94l0sij7+06&mw6t*9f1t9'
 ########## FIXTURE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-FIXTURE_DIRS
 FIXTURE_DIRS = (
-  normpath(join(DJANGO_ROOT, 'fixtures')),
+	normpath(join(DJANGO_ROOT, 'fixtures')),
 )
 ########## END FIXTURE CONFIGURATION
 
@@ -150,45 +150,52 @@ FIXTURE_DIRS = (
 ########## TEMPLATE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-context-processors
 TEMPLATE_CONTEXT_PROCESSORS = (
-  'django.contrib.auth.context_processors.auth',
-  'django.core.context_processors.debug',
-  'django.core.context_processors.i18n',
-  'django.core.context_processors.media',
-  'django.core.context_processors.static',
-  'django.core.context_processors.tz',
-  'django.contrib.messages.context_processors.messages',
-  'django.core.context_processors.request',
+	'django.contrib.auth.context_processors.auth',
+	'django.core.context_processors.debug',
+	'django.core.context_processors.i18n',
+	'django.core.context_processors.media',
+	'django.core.context_processors.static',
+	'django.core.context_processors.tz',
+	'django.contrib.messages.context_processors.messages',
+	'django.core.context_processors.request',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
 TEMPLATE_LOADERS = (
-  'django.template.loaders.filesystem.Loader',
-  'django.template.loaders.app_directories.Loader',
-  'django.template.loaders.eggs.Loader',
+	'django.template.loaders.filesystem.Loader',
+	'django.template.loaders.app_directories.Loader',
+	'django.template.loaders.eggs.Loader',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
 TEMPLATE_DIRS = (
-  normpath(join(DJANGO_ROOT, 'templates')),
+	normpath(join(DJANGO_ROOT, 'templates')),
 )
+
+TEMPLATES = [
+	{
+		'BACKEND': 'django.template.backends.django.DjangoTemplates',
+		'APP_DIRS': True,
+	},
+]
 ########## END TEMPLATE CONFIGURATION
 
 
 ########## MIDDLEWARE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#middleware-classes
 MIDDLEWARE_CLASSES = (
-  # Use GZip compression to reduce bandwidth.
-  'django.middleware.gzip.GZipMiddleware',
+	# Use GZip compression to reduce bandwidth.
+	'django.middleware.gzip.GZipMiddleware',
 
-  # Django debug toolbar
-  'debug_toolbar.middleware.DebugToolbarMiddleware',
+	# Django debug toolbar
+	'debug_toolbar.middleware.DebugToolbarMiddleware',
 
-  # Default Django middleware.
-  'django.middleware.common.CommonMiddleware',
-  'django.contrib.sessions.middleware.SessionMiddleware',
-  'django.middleware.csrf.CsrfViewMiddleware',
-  'django.contrib.auth.middleware.AuthenticationMiddleware',
-  'django.contrib.messages.middleware.MessageMiddleware',
+	# Default Django middleware.
+	'django.middleware.common.CommonMiddleware',
+	'django.contrib.sessions.middleware.SessionMiddleware',
+	'django.middleware.csrf.CsrfViewMiddleware',
+	'django.contrib.auth.middleware.AuthenticationMiddleware',
+	'django.contrib.messages.middleware.MessageMiddleware',
 )
 ########## END MIDDLEWARE CONFIGURATION
 
@@ -199,37 +206,60 @@ ROOT_URLCONF = 'woot.urls'
 ########## END URL CONFIGURATION
 
 
-########## APP CONFIGURATION
+########## WSGI CONFIGURATION
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
+WSGI_APPLICATION = 'wsgi.application'
+########## END WSGI CONFIGURATION
+
+
+########## DJANGO APP CONFIGURATION
 DJANGO_APPS = (
-  # Default Django apps:
-  'django.contrib.auth',
-  'django.contrib.contenttypes',
-  'django.contrib.sessions',
-  'django.contrib.sites',
-  'django.contrib.messages',
-  'django.contrib.staticfiles',
+	# Default Django apps:
+	'django.contrib.auth',
+	'django.contrib.contenttypes',
+	'django.contrib.sessions',
+	'django.contrib.sites',
+	'django.contrib.messages',
+	'django.contrib.staticfiles',
 
-  # Useful template tags:
-  'django.contrib.humanize',
+	# Useful template tags:
+	'django.contrib.humanize',
 
-  # Admin panel and documentation:
-  'django.contrib.admin',
-  'django.contrib.admindocs',
+	# Admin panel and documentation:
+	'django.contrib.admin',
+	'django.contrib.admindocs',
 
-  # flatpages for static pages
-  'django.contrib.flatpages',
+	# flatpages for static pages
+	'django.contrib.flatpages',
 )
+########## END DJANGO APP CONFIGURATION
 
+
+########## FILE UPLOAD CONFIGURATION
+FILE_UPLOAD_HANDLERS = (
+	'django.core.files.uploadhandler.MemoryFileUploadHandler',
+	'django.core.files.uploadhandler.TemporaryFileUploadHandler',
+)
+########## END FILE UPLOAD CONFIGURATION
+
+
+########## DATABASE CONFIGURATION
+DATABASES = {}
+########## END DATABASE CONFIGURATION
+
+##################################################################################################
+########################################## END DJANGO CONFIGURATION
+##################################################################################################
+
+
+########## APP CONFIGURATION
 THIRD_PARTY_APPS = (
-  # Asynchronous task scheduling
-  'djcelery',
-
-  # Static file management:
-  'compressor',
+	# Asynchronous task scheduling
+	'djcelery',
 )
 
 LOCAL_APPS = (
-  'apps.users',
+	'apps.users',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -240,39 +270,33 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 ########## LOGGING CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#logging
 LOGGING = {
-  'version': 1,
-  'disable_existing_loggers': False,
-  'filters': {
-    'require_debug_false': {
-      '()': 'django.utils.log.RequireDebugFalse'
-    }
-  },
-  'handlers': {
-    'mail_admins': {
-      'level': 'ERROR',
-      'filters': ['require_debug_false'],
-      'class': 'django.utils.log.AdminEmailHandler'
-    },
-    'console': {
-      'level': 'DEBUG',
-      'class': 'logging.StreamHandler'
-    }
-  },
-  'loggers': {
-    'django.request': {
-      'handlers': ['mail_admins', 'console'],
-      'level': 'ERROR',
-      'propagate': True,
-    },
-  }
+	'version': 1,
+	'disable_existing_loggers': False,
+	'filters': {
+		'require_debug_false': {
+			'()': 'django.utils.log.RequireDebugFalse'
+		}
+	},
+	'handlers': {
+		'mail_admins': {
+			'level': 'ERROR',
+			'filters': ['require_debug_false'],
+			'class': 'django.utils.log.AdminEmailHandler'
+		},
+		'console': {
+			'level': 'DEBUG',
+			'class': 'logging.StreamHandler'
+		}
+	},
+	'loggers': {
+		'django.request': {
+			'handlers': ['mail_admins', 'console'],
+			'level': 'ERROR',
+			'propagate': True,
+		},
+	}
 }
 ########## END LOGGING CONFIGURATION
-
-
-########## WSGI CONFIGURATION
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
-WSGI_APPLICATION = 'wsgi.application'
-########## END WSGI CONFIGURATION
 
 
 ########## CELERY CONFIGURATION
@@ -298,30 +322,3 @@ setup_loader()
 # rabbitmq: https://www.rabbitmq.com/man/rabbitmqctl.1.man.html
 # celery: https://zapier.com/blog/async-celery-example-why-and-how/
 ########## END CELERY CONFIGURATION
-
-
-########## DATABASE CONFIGURATION
-# load database details from database config file
-if os.path.exists(os.path.join(ACCESS_ROOT, DB_ACCESS)):
-  with open(os.path.join(ACCESS_ROOT, DB_ACCESS), 'r') as db_json:
-    db_data = json.load(db_json)
-
-DATABASES = {
-  'default': {
-    'ENGINE': db_data['backend'],
-    'NAME': db_data['name'],
-    'USER': db_data['user'],
-    'PASSWORD': db_data['pwd'],
-    'HOST': db_data['host'], # Set to empty string for localhost.
-    'PORT': db_data['port'], # Set to empty string for default.
-  }
-}
-########## END DATABASE CONFIGURATION
-
-
-########## FILE UPLOAD CONFIGURATION
-FILE_UPLOAD_HANDLERS = (
-  'django.core.files.uploadhandler.MemoryFileUploadHandler',
-  'django.core.files.uploadhandler.TemporaryFileUploadHandler',
-)
-########## END FILE UPLOAD CONFIGURATION

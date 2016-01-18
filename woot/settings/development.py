@@ -7,6 +7,12 @@ from woot.settings.common import *
 # util
 from os import environ
 
+
+##################################################################################################
+########################################## DJANGO CONFIGURATION CHANGES
+##################################################################################################
+### These changes are made to test in a development environment
+
 ########## DEBUG CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = True
@@ -18,10 +24,10 @@ TEMPLATE_DEBUG = DEBUG
 
 ########## CACHE CONFIGURATION
 CACHES = {
-  'default': {
-    'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-    'LOCATION': '127.0.0.1:11211',
-  }
+	'default': {
+		'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+		'LOCATION': '127.0.0.1:11211',
+	}
 }
 ########## END CACHE CONFIGURATION
 
@@ -38,10 +44,25 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 ########## END EMAIL DEBUG CONFIGURATION
 
 
+########## DATABASE CONFIGURATION
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
+DATABASES = {
+	'default': {
+		'ENGINE': 'django.db.backends.sqlite3',
+		'NAME': 'db/arktic_db.sqlite3',
+	}
+}
+########## END DATABASE CONFIGURATION
+
+##################################################################################################
+########################################## END DJANGO CONFIGURATION CHANGES
+##################################################################################################
+
+
 ########## TOOLBAR CONFIGURATION
 # See: https://github.com/django-debug-toolbar/django-debug-toolbar#installation
 INSTALLED_APPS += (
-  'debug_toolbar',
+	'debug_toolbar',
 )
 
 # See: https://github.com/django-debug-toolbar/django-debug-toolbar#installation
@@ -49,7 +70,7 @@ INTERNAL_IPS = ('127.0.0.1',)
 
 # See: https://github.com/django-debug-toolbar/django-debug-toolbar#installation
 MIDDLEWARE_CLASSES += (
-  'debug_toolbar.middleware.DebugToolbarMiddleware',
+	'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
 DEBUG_TOOLBAR_CONFIG = {
