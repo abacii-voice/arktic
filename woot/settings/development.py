@@ -18,7 +18,7 @@ from os import environ
 DEBUG = True
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
-TEMPLATE_DEBUG = DEBUG
+TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
 ########## END DEBUG CONFIGURATION
 
 
