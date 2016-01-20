@@ -72,8 +72,8 @@ class Transcription(models.Model):
 	'''
 
 	### Connections
-	client = models.ForeignKey(Client, related_name='trs')
-	project = models.ForeignKey(Project, related_name='trs')
+	client = models.ForeignKey(Client, related_name='transcriptions')
+	project = models.ForeignKey(Project, related_name='transcriptions')
 
 	### Properties
 	original_utterance = models.CharField(max_length=255, default='')
@@ -89,9 +89,9 @@ class TranscriptionInstance(models.Model):
 	'''
 
 	### Connections
-	client = models.ForeignKey(Client, related_name='trsi')
-	project = models.ForeignKey(Project, related_name='trsi')
-	sample = models.ForeignKey(Sample, related_name='trsi')
+	client = models.ForeignKey(Client, related_name='transcription_instances')
+	project = models.ForeignKey(Project, related_name='transcription_instances')
+	sample = models.ForeignKey(Sample, related_name='transcription_instances')
 
 	### Properties
 	requests = models.IntegerField(default=0)
@@ -104,11 +104,11 @@ class RecognisedUtterance(models.Model):
 	'''
 
 	### Connections
-	client = models.ForeignKey(Client, related_name='rus')
-	project = models.ForeignKey(Project, related_name='rus')
-	sample = models.ForeignKey(Sample, related_name='rus')
-	tr = models.ForeignKey(Transcription, related_name='rus')
-	tri = models.ForeignKey(Transcription, related_name='rus')
+	client = models.ForeignKey(Client, related_name='recognised_utterances')
+	project = models.ForeignKey(Project, related_name='recognised_utterances')
+	sample = models.ForeignKey(Sample, related_name='recognised_utterances')
+	tr = models.ForeignKey(Transcription, related_name='recognised_utterances')
+	tri = models.ForeignKey(Transcription, related_name='recognised_utterances')
 
 	### Properties
 	recogniser = models.CharField(max_length=255)
@@ -122,11 +122,11 @@ class UserUtterance(models.Model):
 	'''
 
 	### Connections
-	client = models.ForeignKey(Client, related_name='uus')
-	project = models.ForeignKey(Project, related_name='uus')
-	sample = models.ForeignKey(Sample, related_name='uus')
-	tr = models.ForeignKey(Transcription, related_name='uus')
-	tri = models.ForeignKey(Transcription, related_name='uus')
+	client = models.ForeignKey(Client, related_name='user_utterances')
+	project = models.ForeignKey(Project, related_name='user_utterances')
+	sample = models.ForeignKey(Sample, related_name='user_utterances')
+	tr = models.ForeignKey(Transcription, related_name='user_utterances')
+	tri = models.ForeignKey(Transcription, related_name='user_utterances')
 	user = models.ForeignKey(User, related_name='utterances')
 
 	### Properties
@@ -140,43 +140,41 @@ class UserComment(models.Model):
 	'''
 
 	### Connections
-	client = models.ForeignKey(Client, related_name='ucs')
-	project = models.ForeignKey(Project, related_name='ucs')
-	sample = models.ForeignKey(Sample, related_name='ucs')
-	tr = models.ForeignKey(Transcription, related_name='ucs')
-	tri = models.ForeignKey(Transcription, related_name='ucs')
+	client = models.ForeignKey(Client, related_name='comments')
+	project = models.ForeignKey(Project, related_name='comments')
+	sample = models.ForeignKey(Sample, related_name='comments')
+	tr = models.ForeignKey(Transcription, related_name='comments')
+	tri = models.ForeignKey(Transcription, related_name='comments')
 	user = models.ForeignKey(User, related_name='comments')
 
 	### Properties
 	text = models.TextField()
 	date_created = models.DateTimeField(auto_now_add=True)
 
-class ModeratorComment(models.Model):
-	'''
-	A comment made on a transcription by the moderator.
-	'''
-
-	### Connections
-	client = models.ForeignKey(Client, related_name='mcs')
-	project = models.ForeignKey(Project, related_name='mcs')
-	sample = models.ForeignKey(Sample, related_name='mcs')
-	tr = models.ForeignKey(Transcription, related_name='mcs')
-	tri = models.ForeignKey(Transcription, related_name='mcs')
-	moderator = models.ForeignKey(User, related_name='moderator_comments')
-
-	### Properties
-	text = models.TextField()
-	date_created = models.DateTimeField(auto_now_add=True)
-
 class Tag(models.Model):
-	pass
-
-class ClientSpecificTag(models.Model):
-	### Connections
+	'''
+	An add-on to a text utterance.
+	'''
 
 	### Properties
+	name = models.CharField(max_length=255)
+	text = models.CharField(max_length=255)
+	is_client_specific = models.BooleanField(default=False)
+	is_issue = models.BooleanField(default=False)
 
-	pass
+class TagInstance(models.Model):
+	'''
+	A tag connected to a transcription
+	'''
 
-class IssueTag(models.Model):
-	pass
+	### Connections
+	tag = models.ForeignKey(Tag, related_name='instances')
+	client = models.ForeignKey(Client, related_name='tag_instances')
+	project = models.ForeignKey(Project, related_name='tag_instances')
+	sample = models.ForeignKey(Sample, related_name='tag_instances')
+	tr = models.ForeignKey(Transcription, related_name='tag_instances')
+	tri = models.ForeignKey(Transcription, related_name='tag_instances')
+	utt = models.ForeignKey(UserUtterance, related_name='tag_instances')
+
+	### Properties
+	position = models.IntegerField(default=0)

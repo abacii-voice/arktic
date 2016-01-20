@@ -30,6 +30,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 	# type
 	is_approved = models.BooleanField(default=False)
 	is_active = models.BooleanField(default=False)
+	is_superadmin = models.BooleanField(default=False)
 	is_admin = models.BooleanField(default=False)
 	is_moderator = models.BooleanField(default=False)
 	is_worker = models.BooleanField(default=False)
