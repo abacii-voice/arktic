@@ -127,24 +127,46 @@ class UserUtterance(models.Model):
 	sample = models.ForeignKey(Sample, related_name='uus')
 	tr = models.ForeignKey(Transcription, related_name='uus')
 	tri = models.ForeignKey(Transcription, related_name='uus')
+	user = models.ForeignKey(User, related_name='utterances')
 
 	### Properties
-	recogniser = models.CharField(max_length=255)
 	text = models.TextField()
 	metadata = models.TextField()
 	date_created = models.DateTimeField(auto_now_add=True)
 
 class UserComment(models.Model):
-	pass
+	'''
+	A comment made on a transcription by the user.
+	'''
+
+	### Connections
+	client = models.ForeignKey(Client, related_name='ucs')
+	project = models.ForeignKey(Project, related_name='ucs')
+	sample = models.ForeignKey(Sample, related_name='ucs')
+	tr = models.ForeignKey(Transcription, related_name='ucs')
+	tri = models.ForeignKey(Transcription, related_name='ucs')
+	user = models.ForeignKey(User, related_name='comments')
+
+	### Properties
+	text = models.TextField()
+	date_created = models.DateTimeField(auto_now_add=True)
 
 class ModeratorComment(models.Model):
-	pass
+	'''
+	A comment made on a transcription by the moderator.
+	'''
 
-class IssueTag(models.Model):
-	pass
+	### Connections
+	client = models.ForeignKey(Client, related_name='mcs')
+	project = models.ForeignKey(Project, related_name='mcs')
+	sample = models.ForeignKey(Sample, related_name='mcs')
+	tr = models.ForeignKey(Transcription, related_name='mcs')
+	tri = models.ForeignKey(Transcription, related_name='mcs')
+	moderator = models.ForeignKey(User, related_name='moderator_comments')
 
-class Word(models.Model):
-	pass
+	### Properties
+	text = models.TextField()
+	date_created = models.DateTimeField(auto_now_add=True)
 
 class Tag(models.Model):
 	pass
@@ -154,4 +176,7 @@ class ClientSpecificTag(models.Model):
 
 	### Properties
 
+	pass
+
+class IssueTag(models.Model):
 	pass
