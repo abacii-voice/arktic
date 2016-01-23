@@ -2,9 +2,7 @@
 from django.db import models
 
 # local
-from apps.client.models import Client, Project
-from apps.tr.models.sample import Sample
-from apps.tr.models.transcription import Transcription, TranscriptionInstance
+from apps.tr.models.transcription import Transcription
 from apps.users.models import User
 
 ### Utterance classes
@@ -21,11 +19,7 @@ class Utterance(models.Model):
 	'''
 
 	### Connections
-	client = models.ForeignKey(Client, related_name='utterances')
-	project = models.ForeignKey(Project, related_name='utterances')
-	sample = models.ForeignKey(Sample, related_name='utterances')
 	transcription = models.ForeignKey(Transcription, related_name='utterances')
-	transcription_instance = models.ForeignKey(TranscriptionInstance, related_name='utterances')
 	user = models.ForeignKey(User, related_name='utterances', null=True) # does not have to have an associated user.
 
 	### Properties

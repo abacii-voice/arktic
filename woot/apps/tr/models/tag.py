@@ -2,9 +2,7 @@
 from django.db import models
 
 # local
-from apps.client.models import Client, Project
-from apps.tr.models.sample import Sample
-from apps.tr.models.transcription import Transcription, TranscriptionInstance
+from apps.client.models.client import Client
 from apps.tr.models.utterance import Utterance
 from apps.users.models import User
 
@@ -20,6 +18,9 @@ class Tag(models.Model):
 	'''
 	An add-on to a text utterance.
 	'''
+
+	### Connections
+	client = models.ForeignKey(Client, related_name='tags', null=True)
 
 	### Properties
 	name = models.CharField(max_length=255)
@@ -41,11 +42,6 @@ class TagInstance(models.Model):
 
 	### Connections
 	tag = models.ForeignKey(Tag, related_name='instances')
-	client = models.ForeignKey(Client, related_name='tag_instances')
-	project = models.ForeignKey(Project, related_name='tag_instances')
-	sample = models.ForeignKey(Sample, related_name='tag_instances')
-	transcription = models.ForeignKey(Transcription, related_name='tag_instances')
-	transcription_instance = models.ForeignKey(TranscriptionInstance, related_name='tag_instances')
 	utterance = models.ForeignKey(Utterance, related_name='tag_instances')
 
 	### Properties

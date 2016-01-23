@@ -2,8 +2,7 @@
 from django.db import models
 
 # local
-from apps.client.models import Client, Project
-from apps.tr.models.sample import Sample
+from apps.client.models.project import Project
 
 ### Transcription classes
 class Transcription(models.Model):
@@ -13,7 +12,6 @@ class Transcription(models.Model):
 	'''
 
 	### Connections
-	client = models.ForeignKey(Client, related_name='transcriptions')
 	project = models.ForeignKey(Project, related_name='transcriptions')
 
 	### Properties
@@ -23,19 +21,3 @@ class Transcription(models.Model):
 	date_last_requested = models.DateTimeField(auto_now=True)
 
 	### Methods
-
-class TranscriptionInstance(models.Model):
-	'''
-	A transcription as part of a sample.
-	'''
-
-	### Connections
-	client = models.ForeignKey(Client, related_name='transcription_instances')
-	project = models.ForeignKey(Project, related_name='transcription_instances')
-	sample = models.ForeignKey(Sample, related_name='transcription_instances')
-	transcription = models.ForeignKey(Transcription, related_name='instances')
-
-	### Properties
-	requests = models.IntegerField(default=0)
-	date_created = models.DateTimeField(auto_now_add=True)
-	date_last_requested = models.DateTimeField(auto_now=True)
