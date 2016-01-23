@@ -15,9 +15,15 @@ class Transcription(models.Model):
 	project = models.ForeignKey(Project, related_name='transcriptions')
 
 	### Properties
+	# initialisation if it exists
 	original_utterance = models.CharField(max_length=255, default='')
-	requests = models.IntegerField(default=0)
 	date_created = models.DateTimeField(auto_now_add=True)
+
+	# requests and
+	requests = models.PositiveIntegerField(default=0)
+	request_allowance = models.PositiveIntegerField(default=1) # this can be incremented by an "unsure" button
+	request_allowance_threshold = models.PositiveIntegerField(default=3) # reaching this threshold will flag the transcription
+	flagged_for_review = models.BooleanField(default=False)
 	date_last_requested = models.DateTimeField(auto_now=True)
 
 	### Methods
