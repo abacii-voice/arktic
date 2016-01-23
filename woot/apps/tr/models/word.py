@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.client.models.client import Client
+from apps.client.models.client import Project
 from apps.tr.models.utterance import Utterance
 from apps.users.models import User
 
@@ -13,7 +13,7 @@ class Word(models.Model):
 	'''
 
 	### Connections
-	project = models.ForeignKey(Client, related_name='words')
+	project = models.ForeignKey(Project, related_name='words')
 
 	### Properties
 	text = models.CharField(max_length=255)
@@ -28,4 +28,4 @@ class WordInstance(models.Model):
 	utterance = models.ForeignKey(Utterance, related_name='word_instances')
 
 	### Properties
-	position = models.IntegerField(default=0) # location in text
+	position = models.PositiveIntegerField(default=0) # location in text

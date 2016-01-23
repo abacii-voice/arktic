@@ -45,4 +45,4 @@ class TagInstance(models.Model):
 	utterance = models.ForeignKey(Utterance, related_name='tag_instances')
 
 	### Properties
-	position = models.IntegerField(default=0) # location in text
+	position = models.PositiveIntegerField(default=0) # location in text
