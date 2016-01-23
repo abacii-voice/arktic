@@ -3,7 +3,7 @@ from django.db import models
 
 # local
 from apps.client.models import Client, Project
-from apps.tr.models import Sample
+from apps.tr.models.sample import Sample
 
 ### Transcription classes
 class Transcription(models.Model):

@@ -3,7 +3,9 @@ from django.db import models
 
 # local
 from apps.client.models import Client, Project
-from apps.tr.models import Sample, Transcription, TranscriptionInstance
+from apps.tr.models.sample import Sample
+from apps.tr.models.transcription import Transcription, TranscriptionInstance
+from apps.tr.models.utterance import Utterance
 from apps.users.models import User
 
 ### Tag classes
