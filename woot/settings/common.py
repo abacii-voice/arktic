@@ -251,6 +251,7 @@ LOCAL_APPS = (
 	'apps.users',
 	'apps.client',
 	'apps.audio',
+	'apps.action',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
