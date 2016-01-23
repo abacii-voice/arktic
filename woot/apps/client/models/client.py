@@ -3,6 +3,6 @@ from django.db import models
 
 # util
 
-### Grammar model
-class Grammar(models.Model):
+### Client model
+class Client(models.Model):
 	pass
