@@ -14,6 +14,8 @@ class Superadmin(BaseUser):
 	'''
 
 	### Connections: unknown
+	base = models.OneToOneField(BaseUser, parent_link=True, related_name='superadmin') # link back to parent class
+
 	### Properties: unknown
 	### Who or what is this thing?
 
