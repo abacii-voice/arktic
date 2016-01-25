@@ -18,6 +18,7 @@ class User(BaseUser):
 
 	### Connections
 	client = models.ForeignKey(Client, related_name='users')
+	base = models.OneToOneField(BaseUser, parent_link=True, related_name='user') # link back to parent class
 	user_moderator = models.ForeignKey(Moderator, related_name='users')
 
 	# surrogates
