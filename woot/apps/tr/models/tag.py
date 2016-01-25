@@ -4,7 +4,7 @@ from django.db import models
 # local
 from apps.client.models.client import Client
 from apps.tr.models.utterance import Utterance
-from apps.users.models import User
+from apps.users.models.user import User
 
 ### Tag classes
 class TagManager(models.Manager):

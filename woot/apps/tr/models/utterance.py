@@ -3,7 +3,7 @@ from django.db import models
 
 # local
 from apps.tr.models.transcription import Transcription
-from apps.users.models import User
+from apps.users.models.user import User
 
 ### Utterance classes
 class UtteranceManager(models.Manager):
