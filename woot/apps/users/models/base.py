@@ -2,9 +2,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
-# local
-from apps.client.models.client import Client
-
 # util
 import uuid
 
