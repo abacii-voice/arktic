@@ -3,7 +3,7 @@ from django.db import models
 
 # local
 from apps.tr.models.utterance import Utterance
-from apps.users.models import User
+from apps.users.models.user import User
 
 ### Comment classes
 class CommentManager(models.Manager):
