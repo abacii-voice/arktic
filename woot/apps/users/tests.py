@@ -41,5 +41,10 @@ class BasicUserTestCase(TestCase):
 		moderator = Moderator.objects.get(email='moderator@test.com')
 		user = User.objects.get(email='user@test.com')
 
-		# test
-		self.assertEqual(user.client.name, client.name)
+		# test OneToOneField relationship
+		self.assertEqual(superadmin.email, superadmin.base.email) # can access parent class object via OneToOneField
+		self.assertEqual(admin.email, admin.base.email)
+		self.assertEqual(moderator.email, moderator.base.email)
+		self.assertEqual(user.email, user.base.email)
+
+		#
