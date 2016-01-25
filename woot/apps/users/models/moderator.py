@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.users.models.abstract import AbstractUser
+from apps.users.models.base import BaseUser
 from apps.client.models.client import Client
 from apps.users.models.superadmin import Superadmin
 from apps.users.models.admin import Admin
@@ -10,7 +10,7 @@ from apps.users.models.admin import Admin
 # util
 
 ### Moderator classes
-class Moderator(AbstractUser):
+class Moderator(BaseUser):
 	'''
 	This is mid-level management. Moderators are responsible for the quality assurance of transcriptions from a number of users.
 	They report to an admin, who in turn is associated with a client.
