@@ -9,7 +9,7 @@ from apps.client.models.client import Client
 import uuid
 
 ### Abstract classes
-class AbstractUser(AbstractBaseUser, PermissionsMixin):
+class BaseUser(AbstractBaseUser, PermissionsMixin):
 
 	### Properties
 	# identification
@@ -20,9 +20,6 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
 
 	# type
 	is_approved = models.BooleanField(default=False)
-	is_active = models.BooleanField(default=False)
-	has_user_permissions = models.BooleanField(default=True)
-	has_moderator_permissions = models.BooleanField(default=False)
 
 	# preferences
 
@@ -32,7 +29,3 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
 	### Methods
 	def __str__(self):
 		return '{}, ({}, {})'.format(self.email, self.last_name, self.first_name)
-
-	### Meta
-	class Meta():
-		abstract = True
