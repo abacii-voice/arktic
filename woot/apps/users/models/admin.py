@@ -17,6 +17,7 @@ class Admin(BaseUser):
 
 	### Connections
 	client = models.ForeignKey(Client, related_name='admins')
+	base = models.OneToOneField(BaseUser, parent_link=True, related_name='admin') # link back to parent class
 
 	# surrogates
 	surrogate_superadmin = models.OneToOneField(Superadmin, related_name='surrogate_admin', null=True)
