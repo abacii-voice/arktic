@@ -248,11 +248,20 @@ THIRD_PARTY_APPS = (
 
 LOCAL_APPS = (
 	'apps.tr',
+	'apps.users',
+	'apps.client',
+	'apps.audio',
+	'apps.action',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 ########## END APP CONFIGURATION
+
+
+########## AUTH CONFIGURATION
+AUTH_USER_MODEL = 'users.BaseUser'
+########## END AUTH CONFIGURATION
 
 
 ########## LOGGING CONFIGURATION
