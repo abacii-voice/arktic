@@ -1,3 +1,10 @@
+# django
 from django.shortcuts import render
 
-# Create your views here.
+# local
+
+# util
+
+### Audio views
+# Views represented here
+# 1. Upload view
