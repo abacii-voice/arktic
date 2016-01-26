@@ -20,6 +20,13 @@ class Admin(BaseUser):
 	base = models.OneToOneField(BaseUser, parent_link=True, related_name='admin') # link back to parent class
 
 	# surrogates
-	surrogate_superadmin = models.OneToOneField(Superadmin, related_name='surrogate_admin', null=True)
+	surrogate_superadmin = models.ForeignKey(Superadmin, related_name='surrogate_admins')
 
 	### Properties
+
+	### Methods
+	def create_surrogate_moderator(self):
+		_Admin = get_model('users', 'Admin')
+
+	def create_surrogate_user(self):
+		pass
