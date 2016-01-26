@@ -20,6 +20,7 @@ class Moderator(BaseUser):
 
 	### Connections
 	client = models.ForeignKey(Client, related_name='moderators')
+	base = models.OneToOneField(BaseUser, parent_link=True, related_name='moderator') # link back to parent class
 
 	# surrogates
 	surrogate_superadmin = models.OneToOneField(Superadmin, related_name='surrogate_moderator', null=True)
