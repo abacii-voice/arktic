@@ -19,11 +19,11 @@ class User(BaseUser):
 	### Connections
 	client = models.ForeignKey(Client, related_name='users')
 	base = models.OneToOneField(BaseUser, parent_link=True, related_name='user') # link back to parent class
-	user_moderator = models.ForeignKey(Moderator, related_name='users')
+	user_moderator = models.ForeignKey(Moderator, related_name='users', null=True)
 
 	# surrogates
 	# These are pretend connections for admins and moderators to function as users.
-	surrogate_superadmin = models.OneToOneField(Superadmin, related_name='surrogate_user', null=True)
+	surrogate_superadmin = models.ForeignKey(Superadmin, related_name='surrogate_users')
 	surrogate_admin = models.OneToOneField(Admin, related_name='surrogate_user', null=True)
 	surrogate_moderator = models.OneToOneField(Moderator, related_name='surrogate_user', null=True)
 

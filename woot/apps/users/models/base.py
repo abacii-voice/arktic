@@ -17,6 +17,7 @@ class BaseUser(AbstractBaseUser, PermissionsMixin):
 
 	# type
 	is_approved = models.BooleanField(default=False)
+	is_surrogate = models.BooleanField(default=False)
 
 	# preferences
 
@@ -69,3 +70,6 @@ class BaseUser(AbstractBaseUser, PermissionsMixin):
 			is_user = hasattr(self.superadmin, 'surrogate_user')
 
 			return is_superadmin, is_admin, is_moderator, is_user, self.is_approved, self.superadmin
+
+		else:
+			return False, False, False, False, None
