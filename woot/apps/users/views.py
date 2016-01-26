@@ -1,3 +1,12 @@
+# django
 from django.shortcuts import render
 
-# Create your views here.
+# local
+
+# util
+
+### User views
+# Views represented here
+# 1. Login view
+# 2. Logout view
+# 3. Account SPA

@@ -1,3 +1,10 @@
+# django
 from django.shortcuts import render
 
-# Create your views here.
+# local
+
+# util
+
+### Client views
+# Views represented here
+# 1. Admin SPA
