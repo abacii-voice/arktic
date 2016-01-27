@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.tr.models.utterance import Utterance
+from apps.tr.models.utterance import WorkerUtterance
 from apps.tr.models.overwatch import Overwatch
 
 ### Comment classes
@@ -21,7 +21,7 @@ class AbstractComment(models.Model):
 class UtteranceComment(AbstractComment):
 
 	### Connections
-	utterance = models.ForeignKey(Utterance, related_name='utterance_comments')
+	utterance = models.ForeignKey(WorkerUtterance, related_name='utterance_comments')
 
 class OverwatchComment(AbstractComment):
 

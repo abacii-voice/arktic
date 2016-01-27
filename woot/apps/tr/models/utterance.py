@@ -15,7 +15,7 @@ class AbstractUtterance(models.Model):
 	'''
 
 	### Connections
-	transcription = models.ForeignKey(Transcription, related_name='utterances')
+	transcription = models.ForeignKey(Transcription, related_name='%(app_label)s_%(class)s_utterances')
 
 	### Properties
 	text = models.TextField()
