@@ -1,30 +1,28 @@
 # django
 from django.db import models
-
-# local
-from apps.users.models.base import BaseUser
-from apps.client.models.client import Client
-from apps.users.models.superadmin import Superadmin
-from apps.users.models.admin import Admin
-from apps.users.models.moderator import Moderator
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
 # util
+import uuid
 
-### Moderator classes
-class User(BaseUser):
-	'''
-	This is your common-garden worker bee. They do the grunt work that keeps the site going. They report to a specific moderator.
-	'''
-
-	### Connections
-	client = models.ForeignKey(Client, related_name='users')
-	base = models.OneToOneField(BaseUser, parent_link=True, related_name='user') # link back to parent class
-	user_moderator = models.ForeignKey(Moderator, related_name='users', null=True)
-
-	# surrogates
-	# These are pretend connections for admins and moderators to function as users.
-	surrogate_superadmin = models.ForeignKey(Superadmin, related_name='surrogate_users')
-	surrogate_admin = models.OneToOneField(Admin, related_name='surrogate_user', null=True)
-	surrogate_moderator = models.OneToOneField(Moderator, related_name='surrogate_user', null=True)
+### Abstract classes
+class User(AbstractBaseUser, PermissionsMixin):
 
 	### Properties
+	# identification
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	email = models.EmailField(max_length=255, unique=True)
+	first_name = models.CharField(max_length=255)
+	last_name = models.CharField(max_length=255)
+
+	# type
+	is_approved = models.BooleanField(default=False)
+
+	# preferences
+
+	# other
+	USERNAME_FIELD = 'email'
+
+	### Methods
+	def __str__(self):
+		return '{}, ({}, {})'.format(self.email, self.last_name, self.first_name)
