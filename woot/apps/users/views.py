@@ -7,7 +7,7 @@ from django.conf import settings
 
 # local
 from apps.users.forms import LoginForm
-from apps.users.models.base import BaseUser
+from apps.users.models.user import User
 
 # util
 
@@ -68,7 +68,7 @@ class AccountSPAView(View):
 		if user.is_authenticated():
 
 			# get base user object
-			base_user = BaseUser.objects.get(email=user)
+			user = User.objects.get(email=user)
 
 			# METADATA
 			# several things about the user must be known in order to continue.
@@ -76,18 +76,25 @@ class AccountSPAView(View):
 			#   a. if superadmin, which user profile?
 			# 2. Is the user approved for activity?
 			# 3. How many clients does the user work for?
+			# 4. How many roles does the user have with those clients?
+			# need a dictionary like this:
+			# {
+			# 	'client1':{
+			# 		'admin':{
+			# 			'is_approved':True,
+			# 			'is_active':True,
+			# 		},
+			# 		'worker':{
+			# 			'is_approved':True,
+			# 			'is_active':True,
+			# 		},
+			# 	},
+			# }
 
 			# PSYCH! The decision about the user permissions isn't even made here! It's made by the template by
 			# simply adding or omitting components server side. What comes across in the code will
 			# just not have parts of the interface that do not pertain to the user.
-			return render(request, 'users/account.html', {
-				'is_superadmin':is_superadmin,
-				'is_admin':is_admin,
-				'is_moderator':is_moderator,
-				'is_user':is_user,
-				'is_approved':is_approved,
-				'user':user,
-			})
+			return render(request, 'users/account.html', {'user':user, 'roles':user.roles()})
 
 		else:
 			# return to login view

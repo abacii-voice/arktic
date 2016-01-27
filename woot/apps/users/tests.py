@@ -33,6 +33,7 @@ class BasicUserTestCase(TestCase):
 		superadmin_user_superadmin = superadmin_user.create_superadmin()
 		superadmin_user_admin = superadmin_user.create_admin(client)
 		superadmin_user_moderator2 = superadmin_user.create_moderator(client2)
+		print(superadmin_user.roles())
 
 	def test_basic_user_relationships(self):
 		# 1. test creating worker with a moderator from a different client fails
