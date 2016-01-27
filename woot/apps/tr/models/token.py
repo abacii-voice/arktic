@@ -2,8 +2,8 @@
 from django.db import models
 
 # local
-from apps.client.models.client import Project
-from apps.tr.models.utterance import Utterance
+from apps.client.models.project import Project
+from apps.tr.models.utterance import WorkerUtterance
 
 ### Token classes
 class AbstractToken(models.Model):
@@ -30,7 +30,7 @@ class AbstractTokenInstance(models.Model):
 	'''
 
 	### Connections
-	utterance = models.ForeignKey(Utterance, related_name='%(app_label)s_%(class)s_token_instances')
+	utterance = models.ForeignKey(WorkerUtterance, related_name='%(app_label)s_%(class)s_token_instances')
 
 	### Properties
 	position = models.PositiveIntegerField(default=0)
@@ -61,7 +61,7 @@ class Tag(AbstractToken):
 	shortcut = models.CharField(max_length=255)
 	is_issue = models.BooleanField(default=False)
 
-class WordInstance(AbstractTokenInstance):
+class TagInstance(AbstractTokenInstance):
 	'''
 	A word connected to an utterance.
 	'''
