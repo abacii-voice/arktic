@@ -1,4 +1,5 @@
 # django
+from django.db import models
 
 # local
 from apps.client.models.client import Client
