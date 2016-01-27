@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.users.models.moderator import Moderator
+from apps.users.models.roles import Moderator
 from apps.tr.models.utterance import Utterance
 from apps.tr.models.overwatch import Overwatch
 

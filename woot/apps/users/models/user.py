@@ -11,7 +11,7 @@ from apps.users.models.moderator import Moderator
 # util
 
 ### Moderator classes
-class User(BaseUser):
+class BaseUser():
 	'''
 	This is your common-garden worker bee. They do the grunt work that keeps the site going. They report to a specific moderator.
 	'''
