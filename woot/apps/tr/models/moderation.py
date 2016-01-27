@@ -2,8 +2,8 @@
 from django.db import models
 
 # local
-from apps.users.models.moderator import Moderator
-from apps.tr.models.utterance import Utterance
+from apps.users.models.roles import Moderator
+from apps.tr.models.utterance import WorkerUtterance
 from apps.tr.models.overwatch import Overwatch
 
 ### Moderation classes
@@ -20,7 +20,7 @@ class AbstractModeration(models.Model):
 class UtteranceModeration(AbstractModeration):
 
 	### Connections
-	utterance = models.ForeignKey(Utterance, related_name='utterance_moderations')
+	utterance = models.ForeignKey(WorkerUtterance, related_name='utterance_moderations')
 
 class OverwatchModeration(AbstractModeration):
 

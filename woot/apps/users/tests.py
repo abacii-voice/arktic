@@ -19,7 +19,7 @@ class BasicUserTestCase(TestCase):
 		superadmin.set_password('superadmin_password')
 
 		# superadmin surrogate user
-		# superadmin_surrogate_user =
+		# superadmin_surrogate_user = 
 
 		# admin
 		admin = Admin.objects.create(client=client, email='admin@test.com', first_name='admin_first', last_name='admin_last')
@@ -47,4 +47,4 @@ class BasicUserTestCase(TestCase):
 		self.assertEqual(moderator.email, moderator.base.email)
 		self.assertEqual(user.email, user.base.email)
 
-		#
+		# test surrogates
