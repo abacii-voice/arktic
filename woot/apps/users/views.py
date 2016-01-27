@@ -75,7 +75,7 @@ class AccountSPAView(View):
 			# 1. Is the user a {superadmin, admin, moderator, or user}?
 			#   a. if superadmin, which user profile?
 			# 2. Is the user approved for activity?
-			is_superadmin, is_admin, is_moderator, is_user, is_approved, user = base_user.get_child()
+			# 3. How many clients does the user work for?
 
 			# PSYCH! The decision about the user permissions isn't even made here! It's made by the template by
 			# simply adding or omitting components server side. What comes across in the code will
