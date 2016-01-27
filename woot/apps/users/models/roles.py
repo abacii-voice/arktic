@@ -38,6 +38,9 @@ class Moderator(AbstractRole):
 	### Connections
 	client = models.ForeignKey(Client, related_name='moderators')
 
+	### Properties
+	is_approved = models.BooleanField(default=False)
+
 class Worker(AbstractRole):
 	'''
 	The grunt work. Every utterance is connected to one of these. They belong to an organisation and
@@ -47,3 +50,6 @@ class Worker(AbstractRole):
 	### Connections
 	client = models.ForeignKey(Client, related_name='workers')
 	moderator = models.ForeignKey(Moderator, related_name='workers')
+
+	### Properties
+	is_approved = models.BooleanField(default=False)

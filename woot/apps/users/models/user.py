@@ -27,6 +27,45 @@ class User(AbstractBaseUser, PermissionsMixin):
 	def __str__(self):
 		return '{}, ({}, {})'.format(self.email, self.last_name, self.first_name)
 
+	def roles(self):
+		'''
+		Returns a dictionary containing all the information about the roles currently held by the user.
+
+		need a dictionary like this:
+		{
+			'superadmin':True,
+			'client1':{
+				'admin':True,
+				'worker':{
+					'is_approved':True,
+					'is_active':True,
+				},
+			},
+		}
+		'''
+		is_superadmin = bool(self.users_superadmin_roles.count())
+
+		role_dictionary = {
+			'is_active':self.is_active,
+			'is_approved':self.is_approved,
+			'is_superadmin':is_superadmin,
+		}
+
+		accessor_dictionary = {
+			'admin':self.users_admin_roles,
+			'moderator':self.users_moderator_roles,
+			'worker':self.users_worker_roles,
+		}
+
+		for role_name, role_accessor in accessor_dictionary.items():
+			for role in role_accessor.all():
+				if role.client.name not in role_dictionary:
+					role_dictionary.update({role.client.name: {role_name: True}})
+				else:
+					role_dictionary[role.client.name].update({role_name: True})
+
+		return role_dictionary
+
 	def create_superadmin(self):
 		# only one can exist per user
 		superadmin_role, superadmin_role_created = self.users_superadmin_roles.get_or_create()
