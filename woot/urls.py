@@ -1,15 +1,18 @@
-# temp.urls
-
-from django.conf.urls import patterns, include, url
+# django
+from django.conf.urls import include, url
 from django.views.generic import TemplateView, RedirectView
 
-from django.contrib import admin
-admin.autodiscover()
+# local
+from apps.users.views import LoginView, AccountSPAView
 
 urlpatterns = [
 	# i18n / l10n
 	url(r'^i18n/', include('django.conf.urls.i18n')),
 
-	# Example to include app-specific urls
-	# url(r'^myapp/', include('myapp.urls')),
+	### Users
+	# login
+	url(r'^login/', LoginView.as_view()),
+
+	# account
+	url(r'^account/', AccountSPAView.as_view()),
 ]
