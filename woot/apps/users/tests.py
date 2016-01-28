@@ -2,7 +2,7 @@
 from django.test import TestCase
 
 # local
-from apps.client.models.client import Client
+from apps.client.models.client import ProductionClient, ContractClient
 from apps.users.models.user import User
 from apps.users.models.roles import Superadmin, Admin, Moderator, Worker
 
@@ -10,8 +10,8 @@ from apps.users.models.roles import Superadmin, Admin, Moderator, Worker
 class BasicUserTestCase(TestCase):
 	def setUp(self):
 		# client
-		client = Client.objects.create(name='test_client', is_production=True)
-		client2 = Client.objects.create(name='test_client2', is_production=True)
+		client = ProductionClient.objects.create(name='test_client')
+		client2 = ProductionClient.objects.create(name='test_client2')
 
 		# make user with worker + moderator
 		moderator_user = User.objects.create(email='moderator@test.com', first_name='moderator_first', last_name='moderator_last')
@@ -33,7 +33,7 @@ class BasicUserTestCase(TestCase):
 		superadmin_user_superadmin = superadmin_user.create_superadmin()
 		superadmin_user_admin = superadmin_user.create_admin(client)
 		superadmin_user_moderator2 = superadmin_user.create_moderator(client2)
-		print(superadmin_user.roles())
+		superadmin_user_moderator = superadmin_user.create_moderator(client)
 
 	def test_basic_user_relationships(self):
 		# 1. test creating worker with a moderator from a different client fails
