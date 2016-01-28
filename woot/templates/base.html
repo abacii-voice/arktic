@@ -20,15 +20,10 @@
 		<!--[if lt IE 8]>
 			{% block outdated_message %}<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>{% endblock %}
 		<![endif]-->
-		<!-- Fixed navbar -->
-		{% block navbar %}
-		{% endblock %}
+		{% block navbar %}{% endblock %}
+		{% block content %}{% endblock %}
 
-		{% block content %}
-		{% endblock %}
-
-		<!-- Core JavaScript
-		================================================== -->
+		<!-- Core JavaScript ================================================== -->
 		<!-- Placed at the end of the document so the pages load faster -->
 
 		{% block pre_main_script %}{% endblock %}
