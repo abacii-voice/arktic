@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.client.models.client import Client
+from apps.client.models.client import ProductionClient, ContractClient
 from apps.users.models.user import User
 
 ### Role classes
@@ -22,13 +22,21 @@ class Superadmin(AbstractRole):
 	The free spirit of the system. They can access any interface from the point of view of any user.
 	'''
 
-class Admin(AbstractRole):
+class ProductionAdmin(AbstractRole):
 	'''
 	Head of an organisation. Has access to the admin inteface.
 	'''
 
 	### Connections
-	client = models.ForeignKey(Client, related_name='admins')
+	client = models.ForeignKey(ProductionClient, related_name='admins')
+
+class ContractAdmin(AbstractRole):
+	'''
+	Head of an organisation. Has access to the admin inteface.
+	'''
+
+	### Connections
+	client = models.ForeignKey(ContractClient, related_name='admins')
 
 class Moderator(AbstractRole):
 	'''
@@ -36,7 +44,10 @@ class Moderator(AbstractRole):
 	'''
 
 	### Connections
-	client = models.ForeignKey(Client, related_name='moderators')
+	client = models.ForeignKey(ProductionClient, related_name='moderators')
+
+	### Properties
+	is_approved = models.BooleanField(default=False)
 
 class Worker(AbstractRole):
 	'''
@@ -45,5 +56,8 @@ class Worker(AbstractRole):
 	'''
 
 	### Connections
-	client = models.ForeignKey(Client, related_name='workers')
+	client = models.ForeignKey(ProductionClient, related_name='workers')
 	moderator = models.ForeignKey(Moderator, related_name='workers')
+
+	### Properties
+	is_approved = models.BooleanField(default=False)

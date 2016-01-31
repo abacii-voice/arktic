@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.client.models.client import Client
+from apps.client.models.client import ProductionClient, ContractClient
 
 # util
 
@@ -10,7 +10,8 @@ from apps.client.models.client import Client
 class Project(models.Model):
 
 	### Connection
-	client = models.ForeignKey(Client, related_name='projects')
+	production_client = models.ForeignKey(ProductionClient, related_name='projects')
+	contract_client = models.ForeignKey(ContractClient, related_name='projects')
 
 	### Properties
 	name = models.CharField(max_length=255)
