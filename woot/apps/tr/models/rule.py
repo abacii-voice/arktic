@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.client.models.client import Client
+from apps.client.models.client import ContractClient
 
 ### Rule classes
 class Rule(models.Model):
@@ -11,7 +11,7 @@ class Rule(models.Model):
 	'''
 
 	### Connections
-	client = models.ForeignKey(Client, related_name='rules', null=True)
+	client = models.ForeignKey(ContractClient, related_name='rules', null=True)
 
 	### Properties
 	number = models.PositiveIntegerField(default=0)
