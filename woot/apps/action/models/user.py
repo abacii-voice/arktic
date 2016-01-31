@@ -3,8 +3,8 @@ from django.db import models
 
 # local
 from apps.action.models.abstract import AbstractAction
-from apps.users.models.user import User
-from apps.tr.models.utterance import Utterance
+from apps.users.models.roles import Worker
+from apps.tr.models.utterance import WorkerUtterance
 from apps.tr.models.overwatch import Overwatch
 
 ### Action classes
@@ -13,12 +13,12 @@ class UserAbstractAction(AbstractAction):
 		pass
 
 	### Connections
-	user = models.ForeignKey(User, related_name='actions')
+	worker = models.ForeignKey(Worker, related_name='actions')
 
 class UserUtteranceAction(UserAbstractAction):
 
 	### Connections
-	utterance = models.ForeignKey(Utterance, related_name='user_actions')
+	utterance = models.ForeignKey(WorkerUtterance, related_name='user_actions')
 
 class UserOverwatchAction(UserAbstractAction):
 
