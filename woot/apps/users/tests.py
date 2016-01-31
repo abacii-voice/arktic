@@ -2,49 +2,51 @@
 from django.test import TestCase
 
 # local
-from apps.client.models.client import Client
-from apps.users.models.superadmin import Superadmin
-from apps.users.models.admin import Admin
-from apps.users.models.moderator import Moderator
+from apps.client.models.client import ProductionClient, ContractClient
 from apps.users.models.user import User
+from apps.users.models.roles import Superadmin, Admin, Moderator, Worker
 
 # Create your tests here.
 class BasicUserTestCase(TestCase):
 	def setUp(self):
 		# client
-		client = Client.objects.create(name='test_client', is_production=True)
+		client = ProductionClient.objects.create(name='test_client')
+		client2 = ProductionClient.objects.create(name='test_client2')
 
-		# superadmin
-		superadmin = Superadmin.objects.create(email='superadmin@test.com', first_name='superadmin_first', last_name='superadmin_last')
-		superadmin.set_password('superadmin_password')
+		# make user with worker + moderator
+		moderator_user = User.objects.create(email='moderator@test.com', first_name='moderator_first', last_name='moderator_last')
+		moderator_user_moderator = moderator_user.create_moderator(client)
+		moderator_user.create_worker(client, moderator_user_moderator)
 
-		# superadmin surrogate user
-		# superadmin_surrogate_user =
+		# make user with worker token
+		worker_user = User.objects.create(email='worker@test.com', first_name='worker_first', last_name='worker_last')
+		worker_user.create_worker(client, moderator_user_moderator)
 
-		# admin
-		admin = Admin.objects.create(client=client, email='admin@test.com', first_name='admin_first', last_name='admin_last')
-		admin.set_password('admin_password')
+		# make user with worker + moderator + admin
+		admin_user = User.objects.create(email='admin@test.com', first_name='admin_first', last_name='admin_last')
+		admin_user_admin = admin_user.create_admin(client)
+		admin_user_moderator = admin_user.create_moderator(client)
+		admin_user_worker = admin_user.create_worker(client, admin_user_moderator)
 
-		# moderator
-		moderator = Moderator.objects.create(client=client, email='moderator@test.com', first_name='moderator_first', last_name='moderator_last')
-		moderator.set_password('moderator_password')
-
-		# user
-		user = User.objects.create(client=client, user_moderator=moderator, email='user@test.com', first_name='user_first', last_name='user_last')
-		user.set_password('user_password')
+		# make user with superadmin, multiple admins, multiple moderators, multiple workers
+		superadmin_user = User.objects.create(email='superadmin@test.com', first_name='superadmin_first', last_name='superadmin_last')
+		superadmin_user_superadmin = superadmin_user.create_superadmin()
+		superadmin_user_admin = superadmin_user.create_admin(client)
+		superadmin_user_moderator2 = superadmin_user.create_moderator(client2)
+		superadmin_user_moderator = superadmin_user.create_moderator(client)
 
 	def test_basic_user_relationships(self):
-		# get
-		client = Client.objects.get(name='test_client')
-		superadmin = Superadmin.objects.get(email='superadmin@test.com')
-		admin = Admin.objects.get(email='admin@test.com')
-		moderator = Moderator.objects.get(email='moderator@test.com')
-		user = User.objects.get(email='user@test.com')
+		# 1. test creating worker with a moderator from a different client fails
+		superadmin_user = User.objects.get(email='superadmin@test.com')
+		superadmin_user_superadmin = superadmin_user.users_superadmin_roles.get()
+		superadmin_user_admin = superadmin_user.users_admin_roles.get()
+		superadmin_user_moderator2 = superadmin_user.users_moderator_roles.get()
+		self.assertEqual(superadmin_user.create_worker(superadmin_user_admin.client, superadmin_user_moderator2), None)
 
-		# test OneToOneField relationship
-		self.assertEqual(superadmin.email, superadmin.base.email) # can access parent class object via OneToOneField
-		self.assertEqual(admin.email, admin.base.email)
-		self.assertEqual(moderator.email, moderator.base.email)
-		self.assertEqual(user.email, user.base.email)
+		# 2. test only one superadmin created per user
+		self.assertEqual(superadmin_user_superadmin, superadmin_user.create_superadmin())
 
-		#
+		# 3. test only one worker created per user per client
+		worker_user = User.objects.get(email='worker@test.com')
+		worker_user_worker = worker_user.users_worker_roles.get()
+		self.assertEqual(worker_user_worker, worker_user.create_worker(worker_user_worker.client, worker_user_worker.moderator))
