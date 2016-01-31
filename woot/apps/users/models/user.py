@@ -14,6 +14,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 	email = models.EmailField(max_length=255, unique=True)
 	first_name = models.CharField(max_length=255)
 	last_name = models.CharField(max_length=255)
+	activation_key = models.CharField(max_length=20) # use utils to generate unique key
 
 	# type
 	is_approved = models.BooleanField(default=False)
