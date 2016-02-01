@@ -3,7 +3,7 @@ from django.conf.urls import include, url
 from django.views.generic import TemplateView, RedirectView
 
 # local
-from apps.users.views import AdminSignupView, AccountSPAView, LoginView, logout_view
+from apps.users.views import HomeView, AdminSignupView, AccountSPAView, LoginView, logout_view
 
 urlpatterns = [
 	# i18n / l10n
@@ -11,6 +11,16 @@ urlpatterns = [
 ]
 
 ### Users
+'''
+0. Home
+
+This simply contains a link to login and an admin-signup.
+'''
+
+urlpatterns += [
+	url(r'^$', HomeView.as_view()),
+]
+
 '''
 1. Entry point: Admin signup
 
