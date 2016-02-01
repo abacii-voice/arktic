@@ -13,6 +13,11 @@ from apps.users.models.user import User
 
 ### User views
 # Views represented here
+# 0. Home view
+class HomeView(View):
+	def get(self, request):
+		return render(request, 'users/home.html', {})
+
 # 1. Admin signup
 class AdminSignupView(View):
 	'''
@@ -20,10 +25,10 @@ class AdminSignupView(View):
 
 	'''
 
-	def get(request, **kwargs):
+	def get(self, request, **kwargs):
 		# send the account creation form
 		# if the url includes a client key, it will be preset in the form. This is so a link to this interface can be emailed to other admins.
-		
+
 		user = request.user
 		if user.is_authenticated():
 			'''
@@ -34,7 +39,7 @@ class AdminSignupView(View):
 		else:
 			return render(request, 'users/admin_signup.html', {})
 
-	def post(request, **kwargs):
+	def post(self, request, **kwargs):
 		'''
 		The new admin form needs to be verified. New objects can then be created.
 		'''
