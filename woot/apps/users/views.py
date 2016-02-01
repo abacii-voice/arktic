@@ -37,7 +37,10 @@ class AdminSignupView(View):
 
 			return HttpResponseRedirect('/logged-in/')
 		else:
-			return render(request, 'users/admin_signup.html', {})
+			# get form
+			form = NewAdminForm()
+
+			return render(request, 'users/admin_signup.html', {'form':form})
 
 	def post(self, request, **kwargs):
 		'''
@@ -47,6 +50,12 @@ class AdminSignupView(View):
 
 		if form.is_valid():
 			# 1. create new user
+			email = form.cleaned_data['email']
+			email = form.cleaned_data['email']
+			email = form.cleaned_data['email']
+
+			admin_user = User.objects.create()
+
 			# 2. set activation key
 			# 3. get or create new client
 			# 4. add admin role to user
