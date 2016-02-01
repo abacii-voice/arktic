@@ -2,18 +2,7 @@
 
 {% block content %}
 <form action="/signup/" method="post">
-	<label for="first_name">First name: </label>
-	<input id="first_name" type="text" name="first_name"><br/>
-	<label for="last_name">Last name: </label>
-	<input id="last_name" type="text" name="last_name"><br/>
-	<label for="company_name">Company name: </label>
-	<input id="company_name" type="text" name="company_name"><br/>
-
-	<label for="password">Password: </label>
-	<input id="password" type="password" name="password"><br/>
-	<label for="password2">Password (repeat): </label>
-	<input id="password2" type="password" name="password2"><br/>
-
-	<input type="submit" value="Submit">
+	{% csrf_token %}
+	
 </form>
 {% endblock %}
