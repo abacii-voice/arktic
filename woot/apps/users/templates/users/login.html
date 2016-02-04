@@ -1,4 +1,23 @@
 {% extends 'base.html' %}
+{% load staticfiles %}
 
-{% block context_account_dropdown %}
+{# CSS #}
+{% block css %}
+<link rel="stylesheet" href="{% static 'users/css/login.css' %}">
+{% endblock %}
+
+{# NAV #}
+{% block context_nav_left %}{% endblock %}
+{% block context_nav_right %}{% endblock %}
+{% block context_account_dropdown %}{% endblock %}
+
+{# CONTENT #}
+{% block content %}
+<div id='login-wrapper'>
+	<form action='/login/' method='POST'>
+		<h2>Arktic Login</h2>
+		<input type='email' id='login-email' class='form-control' placeholder='Email address' required>
+		<input type='password' id='login-password' class='form-control' name='login-password' placeholder='Password' />
+	</form>
+</div>
 {% endblock %}
