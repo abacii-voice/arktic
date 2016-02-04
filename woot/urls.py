@@ -29,7 +29,7 @@ This is the first thing linked from the main page. When someone wants to "sign u
 An email will be sent to their email address to verify it. A randomly generated key will be used for the link.
 '''
 urlpatterns += [
-	url(r'^signup/', AdminSignupView.as_view()),
+	url(r'^register/', AdminSignupView.as_view()),
 ]
 
 '''
