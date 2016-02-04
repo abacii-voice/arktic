@@ -33,21 +33,21 @@
 			<div class="container-fluid">
 				<!-- Brand and toggle get grouped for better mobile display -->
 				<div class="navbar-header">
-					<a class="navbar-brand" href="#">Arktic</a>
+					<a class="navbar-brand" href="/">Arktic</a>
 				</div>
 
 				<!-- Collect the nav links, forms, and other content for toggling -->
 				<div class="collapse navbar-collapse">
 					<ul class="nav navbar-nav">
 						{% block context_nav_left %}
-						<li><a href="#">Control panel</a></li>
+						<li><a href="#">Products & pricing</a></li>
 						<li><a href="#">User guide</a></li>
 						{% endblock %}
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
 						{% block context_nav_right %}
-							<li><a href="#">Control panel</a></li>
-							<li><a href="#">User guide</a></li>
+							<li><a href="/register/">Register</a></li>
+							<li><a href="/login/">Login</a></li>
 						{% endblock %}
 						{% block context_account_dropdown %}
 						<li class="dropdown">
