@@ -14,10 +14,24 @@ Only need to customise elements on login page
 	transform: translateX(-50%);
 }
 
+#login-header {
+	color: #fff;
+}
+
+.form-control:focus {
+	-webkit-box-shadow: inset 0 0px 0px rgba(0, 0, 0, .075), 0 0 0px rgba(102, 175, 233, .6);
+	box-shadow: inset 0 0px 0px rgba(0, 0, 0, .075), 0 0 0px rgba(102, 175, 233, .6);
+	border-color: #ccc;
+	outline: none;
+	color: #fff;
+}
+
 #login-email {
 	border-bottom-right-radius: 0px;
 	border-bottom-left-radius: 0px;
 	background-color: transparent;
+	border-color: #ccc;
+	color: #fff;
 }
 
 #login-password {
@@ -25,4 +39,19 @@ Only need to customise elements on login page
 	border-top-left-radius: 0px;
 	background-color: transparent;
 	border-top: transparent;
+	border-color: #ccc;
+	color: #fff;
+}
+
+#login-submit {
+	position: relative;
+	top: 10px;
+	background-image: none;
+	background-color: transparent;
+	color: #ccc;
+	text-shadow: none;
+}
+
+#login-submit:hover {
+	background-color: rgba(255, 255, 255, 0.1);;
 }

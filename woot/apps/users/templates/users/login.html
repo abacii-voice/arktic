@@ -15,9 +15,11 @@
 {% block content %}
 <div id='login-wrapper'>
 	<form action='/login/' method='POST'>
-		<h2>Arktic Login</h2>
-		<input type='email' id='login-email' class='form-control' placeholder='Email address' required>
-		<input type='password' id='login-password' class='form-control' name='login-password' placeholder='Password' />
+		{% csrf_token %}
+		<h2 id='login-header'>Arktic Login</h2>
+		<input type='email' id='login-email' class='form-control' name='email' placeholder='Email address' required>
+		<input type='password' id='login-password' class='form-control' name='password' placeholder='Password' required>
+		<input type='submit' id='login-submit' value='Submit' class='btn btn-default'>
 	</form>
 </div>
 {% endblock %}
