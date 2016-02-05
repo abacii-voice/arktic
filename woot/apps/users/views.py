@@ -97,9 +97,6 @@ class AccountSPAView(View):
 		user = request.user
 		if user.is_authenticated():
 
-			# get base user object
-			user = User.objects.get(email=user)
-
 			# METADATA
 			# several things about the user must be known in order to continue.
 			# 1. Is the user a {superadmin, admin, moderator, or user}?
@@ -160,6 +157,7 @@ class LoginView(View):
 			else:
 				return render(request, 'users/login.html', {'invalid_username_or_password':True})
 		else:
+			print('form invalid')
 			return render(request, 'users/login.html', {'bad_formatting':True})
 
 # Logout view
