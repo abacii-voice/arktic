@@ -1,11 +1,19 @@
 # django
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 
 # util
 import uuid
 
 ### Abstract classes
+class UserManager(BaseUserManager):
+	def create_user(self, email, password=None):
+		user = self.model(email=self.normalize_email(email))
+
+		user.set_password(password)
+		user.save()
+		return user
+
 class User(AbstractBaseUser, PermissionsMixin):
 
 	### Properties
@@ -22,6 +30,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 	# preferences
 
 	# other
+	objects = UserManager()
 	USERNAME_FIELD = 'email'
 
 	### Methods
@@ -53,17 +62,18 @@ class User(AbstractBaseUser, PermissionsMixin):
 		}
 
 		accessor_dictionary = {
-			'admin':self.users_admin_roles,
-			'moderator':self.users_moderator_roles,
-			'worker':self.users_worker_roles,
+			'admin':self.users_admin_roles if hasattr(self, 'users_admin_roles') else None,
+			'moderator':self.users_moderator_roles if hasattr(self, 'users_moderator_roles') else None,
+			'worker':self.users_worker_roles if hasattr(self, 'users_worker_roles') else None,
 		}
 
 		for role_name, role_accessor in accessor_dictionary.items():
-			for role in role_accessor.all():
-				if role.client.name not in role_dictionary:
-					role_dictionary.update({role.client.name: {role_name: True}})
-				else:
-					role_dictionary[role.client.name].update({role_name: True})
+			if role_accessor is not None:
+				for role in role_accessor.all():
+					if role.client.name not in role_dictionary:
+						role_dictionary.update({role.client.name: {role_name: True}})
+					else:
+						role_dictionary[role.client.name].update({role_name: True})
 
 		return role_dictionary
 
