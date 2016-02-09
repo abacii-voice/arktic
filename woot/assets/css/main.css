@@ -68,6 +68,18 @@ html {
 	color: #555;
 	background-color: #D5D5D5;
 }
+.navbar-default .navbar-text {
+	color: #bbb;
+}
+.navbar-default .navbar-link {
+	color: #fff;
+}
+
+.navbar-default .navbar-link:hover {
+	color: #aaa;
+	text-decoration: none;
+}
+
 /* caret */
 .navbar-default .navbar-nav > .dropdown > a .caret {
 	border-top-color: #777;

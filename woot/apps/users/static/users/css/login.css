@@ -8,7 +8,7 @@ Only need to customise elements on login page
 /* 1. Login wrapper */
 #login-wrapper {
 	position: relative;
-	top: 200px;
+	top: 160px;
 	width: 200px;
 	left: 50%;
 	transform: translateX(-50%);
