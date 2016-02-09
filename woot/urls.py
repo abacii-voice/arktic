@@ -1,6 +1,8 @@
 # django
 from django.conf.urls import include, url
 from django.views.generic import TemplateView, RedirectView
+from django.views.static import serve as serve_static
+from django.conf import settings
 
 # local
 from apps.users.views import HomeView, AdminSignupView, AccountSPAView, LoginView, logout_view
@@ -8,6 +10,9 @@ from apps.users.views import HomeView, AdminSignupView, AccountSPAView, LoginVie
 urlpatterns = [
 	# i18n / l10n
 	url(r'^i18n/', include('django.conf.urls.i18n')),
+
+	# static
+	url(r'^static/(?P<path>.*)$', serve_static, {'document_root': settings.STATIC_ROOT, 'show_indexes': True }),
 ]
 
 ### Users
@@ -77,7 +82,6 @@ Workers and moderators will also get keys in their emails, but they do not sign 
 urlpatterns += [
 	# login
 	url(r'^login/', LoginView.as_view()),
-	url(r'^login/(?P<key>[A-Z0-9]{10})/$', LoginView.as_view()),
 	url(r'^logout/', logout_view),
 ]
 
