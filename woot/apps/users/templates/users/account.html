@@ -3,35 +3,38 @@
 
 {# LOAD JS #}
 {% block head-js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react-dom.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.6.15/browser.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked.min.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react-dom.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.6.15/browser.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked.min.js'></script>
 {% endblock %}
 
 {# CSS #}
 {% block css %}
-<link rel="stylesheet" href="{% static 'users/css/account.css' %}">
+<link rel='stylesheet' href='{% static 'users/css/account.css' %}'>
 {% endblock %}
 
 {# NAV #}
 {% block context_brand %}
-<a class="navbar-brand" href="/account/">Arktic</a>
+<a class='navbar-brand' href='/account/'>Arktic</a>
 {% endblock %}
 {% block context_nav_left %}{% endblock %}
 {% block context_nav_right %}{% endblock %}
 {% block context_account_logout %}
-<p class="navbar-text navbar-right">Signed in as {{ user.email }}, <a href="/logout/" class="navbar-link">logout</a></p>
+<p class='navbar-text navbar-right'>Signed in as {{ user.email }}, <a href='/logout/' class='navbar-link'>logout</a></p>
 {% endblock %}
 
 {# CONTENT #}
 {# role matrix with notifications and work summary #}
 {% block content %}
-<div id='content'></div>
+
+{# REACT hook #}
+<div id='root'></div>
 {% endblock %}
 
 {# REACT #}
 {% block post_main_script %}
-<script src="{% static 'users/js/account.js' %}" type="text/babel"></script>
+<script src='{% static 'users/js/account-structure.js' %}' type='text/javascript'></script>
+<script src='{% static 'users/js/account-ui.js' %}' type='text/babel'></script>
 {% endblock %}
