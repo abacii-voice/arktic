@@ -27,6 +27,10 @@ Sidebars
 	transform: translateY(-50%);
 }
 
+.sidebar.mini {
+	width: 50px;
+}
+
 /*
 
 Panels
