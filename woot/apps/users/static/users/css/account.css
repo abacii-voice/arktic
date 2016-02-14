@@ -10,6 +10,29 @@ html {
 
 /*
 
+Sidebars
+
+*/
+
+.sidebar {
+	position: absolute;
+	top: 50%;
+	left: 0px;
+	background-color: transparent;
+	display: block;
+	overflow-y: auto;
+	width: 200px;
+	height: 70%;
+	border-right: 1px solid #aaa;
+	transform: translateY(-50%);
+}
+
+/*
+
 Panels
 
 */
+
+.panel {
+	border: 0px solid #fff;
+}
