@@ -60,10 +60,7 @@ def get_access():
 
 ########## DEBUG CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = False
-
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
-TEMPLATE_DEBUG = DEBUG
+DEBUG = True
 ########## END DEBUG CONFIGURATION
 
 
@@ -131,7 +128,6 @@ STATICFILES_FINDERS = (
 STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
 
 # Fix memcached with: pip install --upgrade -e git+https://github.com/linsomniac/python-memcached.git#egg=python-memcached
-#
 ########## END STATIC FILE CONFIGURATION
 
 
@@ -347,7 +343,7 @@ PIPELINE = {
 				'js/tr/app.browserify.js',
 			),
 			'output_filename': 'js/transcription.js',
-		}
+		},
 		'account': {
 			'source_filenames': (
 				'js/jquery/2.2.0/jquery.min.js',
@@ -356,7 +352,7 @@ PIPELINE = {
 				'js/react/babel-core/5.6.15/browser.js',
 				'js/users/app.browserify.js',
 			),
-			'output_filename': 'js/transcription.js',
+			'output_filename': 'js/account.js',
 		}
 	},
 
