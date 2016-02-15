@@ -12,9 +12,18 @@ var UI = {
 		this.style = args.style;
 
 		// states
-		this.states = args.states.map(function (state) {
+		this.states = args.states.map(function (statePrototype) {
+			return UI.createState(statePrototype.name, this, statePrototype.args);
+		}, this);
 
-		});
+		// switches
+		this.switches = args.switches.map(function (switchPrototype) {
+			return UI.createSwitch(switchPrototype.id, this, switchPrototype.name, );
+		}, this);
+
+		// components
+
+		// render
 	},
 
 	// stores a list of components and their attributes
@@ -33,9 +42,7 @@ var UI = {
 		// identify the state by its name and the component it belongs to.
 		this.name = name;
 		this.component = component;
-
-		// finally, add it to the list of states for the component
-		this.component.states[this.name] = this;
+		this.args = args;
 	},
 
 	// list of states
@@ -45,7 +52,7 @@ var UI = {
 	createState: function (name, component, args) {
 		if (this.globalStates.indexOf(name) != -1) {
 			var state = new this.state(name, component, args);
-			this.states.push({name: name, component: component});
+			this.states.push(state);
 			return state;
 		} else {
 			throw 'State name, {name}, must be in the global list of states: {states}'.format({name:name, states:this.globalStates});
