@@ -5,6 +5,7 @@ UI.createGlobalState('content-state');
 
 // Contains a definition of the components in the Account app
 UI.createComponent('back-sidebar', {
+	root: 'hook',
 	args: {
 		template: UI.templates.sidebar,
 		classes: ['sidebar'],
@@ -14,11 +15,11 @@ UI.createComponent('back-sidebar', {
 			{name: 'role-state', args: {}},
 			{name: 'content-state', args: {}},
 		],
-		switches: {
+		switches: [
 
-		},
-	}
-	components: {
+		],
+	},
+	components: [
 		UI.createComponent('bs-back-button', {
 			args: {
 				template: UI.templates.button,
@@ -27,11 +28,11 @@ UI.createComponent('back-sidebar', {
 				states: [
 
 				],
-				switches: {
+				switches: [
 
-				},
+				],
 			},
-			components: {},
+			components: [],
 		}),
 		UI.createComponent('bs-test-button', {
 			args: {
@@ -41,11 +42,11 @@ UI.createComponent('back-sidebar', {
 				states: [
 
 				],
-				switches: {
+				switches: [
 
-				},
+				],
 			},
-			components: {},
+			components: [],
 		}),
-	},
+	],
 });

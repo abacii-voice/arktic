@@ -2,28 +2,35 @@ var UI = {
 
 	///////// COMPONENTS
 	// This is the main component function
-	component: function (id, args) {
+	component: function (id, properties) {
 		// assign id that identifies both in the DOM and in UI.
 		this.id = id;
 
+		// root for rendering
+		this.root = properties.root;
+
 		// template
-		this.template = args.template;
-		this.class = args.class; // html classes
-		this.style = args.style;
+		this.template = properties.args.template;
+		this.class = properties.args.class; // html classes
+		this.style = properties.args.style;
 
 		// states
-		this.states = args.states.map(function (statePrototype) {
+		this.states = properties.args.states.map(function (statePrototype) {
 			return UI.createState(statePrototype.name, this, statePrototype.args);
 		}, this);
 
 		// switches
-		this.switches = args.switches.map(function (switchPrototype) {
-			return UI.createSwitch(switchPrototype.id, this, switchPrototype.name, );
+		this.switches = properties.args.switches.map(function (switchPrototype) {
+			return UI.createSwitch(switchPrototype.id, this, switchPrototype.name);
 		}, this);
 
 		// components
+		this.components = properties.components;
 
 		// render
+		this.render = function () {
+
+		}
 	},
 
 	// stores a list of components and their attributes
