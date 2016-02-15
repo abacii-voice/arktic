@@ -61,4 +61,4 @@ target/
 # Other
 *.sqlite3
 node_modules/
-static/
+woot/static/
