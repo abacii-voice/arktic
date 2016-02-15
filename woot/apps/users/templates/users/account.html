@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load pipeline %}
 
 {# LOAD JS #}
 {% block head-js %}
@@ -8,7 +7,7 @@
 
 {# CSS #}
 {% block css %}
-<link rel='stylesheet' href='{% stylesheet 'users/css/account.css' %}'>
+<link rel='stylesheet' href='{% static 'users/css/account.css' %}'>
 {% endblock %}
 
 {# NAV #}
@@ -31,4 +30,5 @@
 
 {# REACT #}
 {% block post_main_script %}
+<script src="{% static 'users/js/account.js' %}"></script>
 {% endblock %}
