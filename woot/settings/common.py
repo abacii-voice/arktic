@@ -332,7 +332,7 @@ setup_loader()
 
 # Settings
 PIPELINE = {
-	'PIPELINE_ENABLED': True,
+	'PIPELINE_ENABLED': False,
 	'JAVASCRIPT': {
 		'transcription': {
 			'source_filenames': (
@@ -359,5 +359,8 @@ PIPELINE = {
 	# Compilers
 	'COMPILERS': ('pipeline_browserify.compiler.BrowserifyCompiler', ),
 }
+
+if DEBUG:
+	PIPELINE_BROWSERIFY_ARGUMENTS = '-t babelify'
 
 ########## END PIPELINE CONFIGURATION
