@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
+{% load pipeline %}
 
 {# LOAD JS #}
 {% block head-js %}
+{% javascript 'account' %}
 {% endblock %}
 
 {# CSS #}
@@ -30,5 +32,4 @@
 
 {# REACT #}
 {% block post_main_script %}
-<script src='{% static 'users/js/account-ui.js' %}' type='text/babel'></script>
 {% endblock %}
