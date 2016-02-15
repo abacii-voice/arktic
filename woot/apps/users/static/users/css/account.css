@@ -37,6 +37,25 @@ Panels
 
 */
 
-.panel {
-	border: 0px solid #fff;
+.content-panel {
+	position: absolute;
+	top: 50%;
+	left: 250px;
+	background-color: transparent;
+	display: block;
+	overflow-y: auto;
+	width: 774px;
+	height: 70%;
+	transform: translateY(-50%);
+}
+
+/*
+
+Buttons
+
+*/
+
+.button {
+	width: 100%;
+	height: 50px;
 }
