@@ -348,6 +348,16 @@ PIPELINE = {
 			),
 			'output_filename': 'js/transcription.js',
 		}
+		'account': {
+			'source_filenames': (
+				'js/jquery/2.2.0/jquery.min.js',
+				'js/react/0.14.0/react.js',
+				'js/react/0.14.0/react-dom.js',
+				'js/react/babel-core/5.6.15/browser.js',
+				'js/users/app.browserify.js',
+			),
+			'output_filename': 'js/transcription.js',
+		}
 	},
 
 	# Compilers
