@@ -124,7 +124,14 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
 	'django.contrib.staticfiles.finders.FileSystemFinder',
 	'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+	'pipeline.finders.PipelineFinder',
 )
+
+# See: https://django-pipeline.readthedocs.org/en/latest/installation.html
+STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
+
+# Fix memcached with: pip install --upgrade -e git+https://github.com/linsomniac/python-memcached.git#egg=python-memcached
+# 
 ########## END STATIC FILE CONFIGURATION
 
 
@@ -244,6 +251,9 @@ DATABASES = {}
 THIRD_PARTY_APPS = (
 	# Asynchronous task scheduling
 	'djcelery',
+
+	# Pipeline compression
+	'pipeline',
 )
 
 LOCAL_APPS = (
@@ -319,3 +329,34 @@ setup_loader()
 # rabbitmq: https://www.rabbitmq.com/man/rabbitmqctl.1.man.html
 # celery: https://zapier.com/blog/async-celery-example-why-and-how/
 ########## END CELERY CONFIGURATION
+
+
+########## PIPELINE CONFIGURATION
+# See: https://django-pipeline.readthedocs.org/en/latest/configuration.html
+
+# Settings
+PIPELINE = {
+	'PIPELINE_ENABLED': True,
+	'JAVASCRIPT': {
+		'react': {
+			'source_filenames': (
+				'js/jquery/2.2.0/jquery.min.js',
+				'js/react/0.14.0/react.js',
+				'js/react/0.14.0/react-dom.js',
+				'js/react/babel-core/5.6.15/browser.js',
+			),
+			'output_filename': 'js/react.js',
+		},
+		'browserify': {
+			'source_filenames': (
+				'js/browserify-entry-point.browserify.js',
+			),
+			'output_filename': 'js/browserify-entry-point.js',
+		}
+	},
+
+	# Compilers
+	'COMPILERS': ('pipeline_browserify.compiler.BrowserifyCompiler', ),
+}
+
+########## END PIPELINE CONFIGURATION
