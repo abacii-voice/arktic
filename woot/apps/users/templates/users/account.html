@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load staticfiles %}
+{% load static %}
 {% load pipeline %}
 
 {# LOAD JS #}
@@ -9,7 +9,7 @@
 
 {# CSS #}
 {% block css %}
-<link rel='stylesheet' href='{% static 'users/css/account.css' %}'>
+<link rel='stylesheet' href='{% stylesheet 'users/css/account.css' %}'>
 {% endblock %}
 
 {# NAV #}
