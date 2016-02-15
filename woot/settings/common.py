@@ -131,7 +131,7 @@ STATICFILES_FINDERS = (
 STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
 
 # Fix memcached with: pip install --upgrade -e git+https://github.com/linsomniac/python-memcached.git#egg=python-memcached
-# 
+#
 ########## END STATIC FILE CONFIGURATION
 
 
@@ -338,20 +338,15 @@ setup_loader()
 PIPELINE = {
 	'PIPELINE_ENABLED': True,
 	'JAVASCRIPT': {
-		'react': {
+		'transcription': {
 			'source_filenames': (
 				'js/jquery/2.2.0/jquery.min.js',
 				'js/react/0.14.0/react.js',
 				'js/react/0.14.0/react-dom.js',
 				'js/react/babel-core/5.6.15/browser.js',
+				'js/tr/app.browserify.js',
 			),
-			'output_filename': 'js/react.js',
-		},
-		'browserify': {
-			'source_filenames': (
-				'js/browserify-entry-point.browserify.js',
-			),
-			'output_filename': 'js/browserify-entry-point.js',
+			'output_filename': 'js/transcription.js',
 		}
 	},
 
