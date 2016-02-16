@@ -11,25 +11,52 @@ var UI = {
 
 		// template
 		this.template = properties.args.template;
-		this.class = properties.args.class; // html classes
+		this.classes = properties.args.classes; // html classes
 		this.style = properties.args.style;
+		this.html = properties.args.html;
 
 		// states
 		this.states = properties.args.states.map(function (statePrototype) {
 			return UI.createState(statePrototype.name, this, statePrototype.args);
 		}, this);
+		this.state = this.states[0]; // always start with the first state in the array
 
-		// switches
-		this.switches = properties.args.switches.map(function (switchPrototype) {
-			return UI.createSwitch(switchPrototype.id, this, switchPrototype.name);
+		// svitches
+		this.svitches = properties.args.svitches.map(function (svitchPrototype) {
+			return UI.createSwitch(this.states[svitchPrototype.name], this, svitchPrototype.trigger, svitchPrototype.args);
 		}, this);
 
 		// components
-		this.components = properties.components;
+		this.children = properties.children;
 
 		// render
-		this.render = function () {
+		this.model = function () {
+			return $('#{id}'.format({id: this.id}));
+		}
 
+		this.render = function () {
+			var root = $('#{id}'.format({id: this.root}));
+
+			// 0. template
+			var template = this.template.format({
+				id: this.id,
+				classes: this.classes,
+				style: this.style,
+				html: this.html,
+			})
+
+			// 1. add element to the DOM
+			if (root.children().length > 0) {
+				root.children().last().after(template); // place as last child
+			} else {
+				root.html(template); // simply place inside
+			}
+
+			// 2. render children
+			this.children.map(function (child) {
+				child.root = this.id;
+				child.render();
+			}, this);
 		}
 	},
 
@@ -52,6 +79,10 @@ var UI = {
 		this.args = args;
 	},
 
+	getComponent: function (id) {
+		return this.components[id];
+	},
+
 	// list of states
 	states:[],
 
@@ -64,6 +95,19 @@ var UI = {
 		} else {
 			throw 'State name, {name}, must be in the global list of states: {states}'.format({name:name, states:this.globalStates});
 		}
+	},
+
+	///////// SVITCHES
+	svitch: function (state, component, triggerID, args) {
+		this.state = state;
+		this.component = component;
+		this.triggerID = triggerID;
+		this.args = args;
+	},
+
+	createSwitch: function (state, component, triggerID, args) {
+		var svitch = new this.svitch(state, component, triggerID, args);
+		return svitch;
 	},
 
 	///////// GLOBAL STATES
@@ -80,18 +124,28 @@ var UI = {
 		}
 	},
 
+	createGlobalStates: function (states) {
+		states.map(function (name) {
+			this.createGlobalState(name);
+		}, this);
+	},
+
 	///////// TEMPLATES
 	// These are html templates that can be called
 	templates: {
 		sidebar: `
-			<div id='{id}' class='sidebar'>
-			<div>
+			<div id='{id}' class='sidebar {classes}'></div>
 		`,
 		panel:`
 
 		`,
 		button:`
-
+			<div id={id} class='btn btn-default'>
+				{html}
+			</div>
 		`,
 	},
+
+	///////// STATE CHANGES
+
 }
