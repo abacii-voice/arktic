@@ -8,6 +8,11 @@ html {
 	background-image: url('../img/main-background-small-no-moon-blur.jpg');
 }
 
+div {
+	-webkit-transition: left .5s ease-in-out; /* Safari */
+	transition: left .5s ease-in-out;
+}
+
 /*
 
 Sidebars
