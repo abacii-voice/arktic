@@ -127,7 +127,7 @@ var UI = {
 			// style
 			var style = this.state.hasOwnProperty('style') ? this.state.style : this.style;
 			if (style !== undefined) {
-				model.css(style);
+				model.animate(style);
 			}
 
 			// html
