@@ -52,10 +52,12 @@ var UI = {
 		this.click = properties.args.click;
 
 		// states
-		this.states = properties.args.states.map(function (statePrototype) {
-			return UI.createState(statePrototype.name, this, statePrototype.args);
-		}, this);
-		this.state = this.states[0]; // always start with the first state in the array
+		if (properties.args.states !== undefined) {
+			this.states = properties.args.states.map(function (statePrototype) {
+				return UI.createState(statePrototype.name, this, statePrototype.args);
+			}, this);
+			this.state = this.states[0]; // always start with the first state in the array
+		}
 
 		// svitches
 		this.svitch = properties.args.svitch;
@@ -74,8 +76,8 @@ var UI = {
 			// 0. template
 			var template = this.template.format({
 				id: this.id,
-				classes: this.classes,
-				style: this.style,
+				classes: UI.formatClasses(this.classes),
+				style: UI.formatStyle(this.style),
 				html: this.html,
 			})
 
@@ -101,7 +103,9 @@ var UI = {
 			}
 
 			// 3. render children
-			this.children.map(this.renderChild, this);
+			if (this.children !== undefined) {
+				this.children.map(this.renderChild, this);
+			}
 		};
 
 		this.renderChild = function (child) {
@@ -185,16 +189,87 @@ var UI = {
 	// These are html templates that can be called
 	templates: {
 		sidebar: `
-			<div id='{id}' class='sidebar {classes}'></div>
+			<div id='{id}' class='sidebar {classes}' style='{style}'></div>
 		`,
-		panel:`
+		panel: `
 
 		`,
-		button:`
-			<div id={id} class='btn btn-default'>
+		button: `
+			<div id={id} class='btn btn-default {classes}'>
 				{html}
 			</div>
 		`,
+		div: `
+			<div id={id}></div>
+		`
 	},
 
+	///////// FORMATTING
+	formatStyle: function (style) {
+		if (style !== undefined) {
+			var strings = Object.keys(style).map(function (value) {
+				return '{key}: {value}; '.format({key: value, value: style[value]})
+			});
+			return strings.join('');
+		} else {
+			return '';
+		}
+	},
+
+	formatClasses: function (classes) {
+		if (classes !== undefined) {
+			return classes.join(' ');
+		} else {
+			return '';
+		}
+	}
+
 }
+
+// CREATE COMPONENT REFERENCE
+// UI.createComponent('back-sidebar', {
+// 	args: {
+// 		template: UI.templates.sidebar,
+// 		classes: 'mini',
+// 		style: {},
+// 		states: [
+// 			{name: 'client-state', args: {
+// 				style: {
+// 					'-webkit-transition': 'width 2s', // Safari
+// 					'transition': 'width 0.5s',
+// 					'width': '200px',
+// 				},
+// 			}},
+// 			{name: 'role-state', args: {
+// 				style: {
+// 					'-webkit-transition': 'width 2s', // Safari
+// 					'transition': 'width 0.5s',
+// 					'width': '250px',
+// 				},
+// 			}},
+// 			{name: 'content-state', args: {}},
+// 		],
+// 	},
+// 	children: [
+// 		UI.createComponent('bs-back-button', {
+// 			args: {
+// 				template: UI.templates.button,
+// 				classes: 'button',
+// 				style: {},
+// 				html: 'Back button',
+// 				click: function (model) {
+//
+// 				},
+// 				states: [
+// 					{name: 'client-state', args: {}},
+// 					{name: 'content-state', args: {}},
+// 				],
+// 				svitch: {
+// 					'client-state':'role-state',
+// 					'role-state':'client-state',
+// 				},
+// 			},
+// 			children: [],
+// 		}),
+// 	],
+// }),
