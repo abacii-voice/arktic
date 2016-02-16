@@ -61,6 +61,89 @@ Buttons
 */
 
 .button {
+	color: #ccc;
+	padding-top: 1.0em;
 	width: 100%;
 	height: 50px;
+	background-image: none;
+	background-color: transparent;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+	text-shadow: none;
+}
+
+.button:hover {
+	color: #ddd;
+	background-color: transparent;
+}
+
+.button:active {
+	color: #eee;
+	background-color: transparent;
+}
+
+.button:focus {
+	color: #aaa;
+	background-color: transparent;
+}
+
+.button:active:focus {
+	color: #eee;
+	background-color: transparent;
+}
+
+.button:active:hover {
+	color: #eee;
+	background-color: transparent;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+
+.btn {
+	position: relative;
+	border-radius: 0px;
+	border-top: 0px;
+	border-right: 0px solid #CCC;
+	border-left: 0px solid #CCC;
+	border-bottom: 0px solid #CCC;
+}
+
+.btn:focus {
+	outline:0px !important;
+}
+
+button:focus {
+	outline:0px !important;
+}
+
+.sidebar.mini .btn {
+	left: 0px;
+	width: 50px;
+	border-right: 1px solid #CCC;
+	border-left: 0px;
+}
+
+.btn.notouch {
+	cursor: default;
+	border-bottom: 1px solid #CCC;
+	background-color: white;
+	box-shadow: none;
+}
+
+.btn.progress-inset {
+	padding: 0px;
+}
+
+div.progress-inset {
+	position: relative;
+	top: 0px;
+	left: 0px;
+	height: 100%;
+	width: 0%;
+	background-color: #00BA8A;
+}
+
+.btn.progress-inset input {
+	border: 0px;
+	outline: none;
 }

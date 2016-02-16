@@ -11,65 +11,6 @@ UI.createComponent('app', {
 		template: UI.templates.div,
 	},
 	children: [
-		UI.createComponent('back-sidebar', {
-			args: {
-				template: UI.templates.sidebar,
-				classes: ['mini'],
-				style: {
-					'left': '-100px',
-				},
-				states: [
-					{name: 'client-state', args: {
-						style: {
-							'left': '-100px',
-						},
-					}},
-					{name: 'role-state', args: {
-						style: {
-							'left': '0px',
-						},
-					}},
-				],
-			},
-			children: [
-				UI.createComponent('bs-back-button', {
-					args: {
-						template: UI.templates.button,
-						classes: ['button'],
-						style: {},
-						html: 'Back button',
-						click: function (model) {
-
-						},
-						states: [
-							{name: 'client-state', args: {}},
-							{name: 'content-state', args: {}},
-						],
-						svitch: {
-							'client-state':'role-state',
-							'role-state':'client-state',
-						},
-					},
-					children: [],
-				}),
-				UI.createComponent('bs-test-button', {
-					args: {
-						template: UI.templates.button,
-						classes: ['button'],
-						style: {},
-						html: 'Test button',
-						states: [
-							{name: 'client-state', args: {}},
-							{name: 'content-state', args: {}},
-						],
-						svitch: {
-
-						},
-					},
-					children: [],
-				}),
-			],
-		}),
 		UI.createComponent('client-sidebar', {
 			args: {
 				template: UI.templates.sidebar,
@@ -94,7 +35,7 @@ UI.createComponent('app', {
 						template: UI.templates.button,
 						classes: ['button'],
 						style: {},
-						html: 'Test button',
+						html: 'Test client',
 						click: function (model) {
 
 						},
@@ -134,19 +75,89 @@ UI.createComponent('app', {
 						template: UI.templates.button,
 						classes: ['button'],
 						style: {},
-						html: 'Test button',
+						html: 'Test role',
 						click: function (model) {
 
 						},
 						states: [],
 						svitch: {
-							'client-state':'role-state',
-							'role-state':'client-state',
+							'role-state':'content-state',
 						},
 					},
 					children: [],
 				}),
 			],
+		}),
+		UI.createComponent('back-sidebar', {
+			args: {
+				template: UI.templates.sidebar,
+				classes: ['mini'],
+				style: {
+					'left': '-100px',
+				},
+				states: [
+					{name: 'client-state', args: {
+						style: {
+							'left': '-100px',
+						},
+					}},
+					{name: 'role-state', args: {
+						style: {
+							'left': '0px',
+						},
+					}},
+				],
+			},
+			children: [
+				UI.createComponent('bs-back-button', {
+					args: {
+						template: UI.templates.button,
+						classes: ['button'],
+						style: {},
+						html: '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>',
+						click: function (model) {
+
+						},
+						states: [
+							{name: 'client-state', args: {}},
+							{name: 'content-state', args: {}},
+						],
+						svitch: {
+							'role-state':'client-state',
+							'content-state':'role-state',
+						},
+					},
+					children: [],
+				}),
+			],
+		}),
+		UI.createComponent('content-panel', {
+			args: {
+				template: UI.templates.contentPanel,
+				classes: [],
+				style: {
+					'opacity': '0.0',
+				},
+				html:'<h1>Hello</h1>',
+				states: [
+					{name: 'client-state', args: {
+						style: {
+							'opacity': '0.0',
+						}
+					}},
+					{name: 'role-state', args: {
+						style: {
+							'opacity': '0.0',
+						}
+					}},
+					{name: 'content-state', args: {
+						style: {
+							'opacity': '1.0',
+						}
+					}},
+				],
+			},
+			children: [],
 		}),
 	],
 })
