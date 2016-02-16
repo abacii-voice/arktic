@@ -1,6 +1,5 @@
 // Define global states
-UI.createGlobalStates([
-	'client-state',
+UI.createGlobalStates('client-state', [
 	'role-state',
 	'content-state'
 ]);
@@ -10,50 +9,60 @@ UI.createComponent('back-sidebar', {
 	root: 'hook',
 	args: {
 		template: UI.templates.sidebar,
-		classes: ['mini'],
+		classes: 'mini',
 		style: {},
 		html: '',
 		states: [
-			{name: 'client-state', args: {}},
-			{name: 'role-state', args: {}},
+			{name: 'client-state', args: {
+				style: {
+					width: '200px',
+				},
+			}},
+			{name: 'role-state', args: {
+				style: {
+					width: '250px',
+				},
+			}},
 			{name: 'content-state', args: {}},
 		],
-		svitches: [
+		svitch: {
 
-		],
+		},
 	},
 	children: [
 		UI.createComponent('bs-back-button', {
 			args: {
 				template: UI.templates.button,
-				classes: ['button'],
+				classes: 'button',
 				style: {},
 				html: 'Back button',
+				click: function (model) {
+
+				},
 				states: [
 					{name: 'client-state', args: {}},
-					{name: 'role-state', args: {}},
 					{name: 'content-state', args: {}},
 				],
-				svitches: [
-
-				],
+				svitch: {
+					'client-state':'role-state',
+					'role-state':'client-state',
+				},
 			},
 			children: [],
 		}),
 		UI.createComponent('bs-test-button', {
 			args: {
 				template: UI.templates.button,
-				classes: ['button'],
+				classes: 'button',
 				style: {},
 				html: 'Test button',
 				states: [
 					{name: 'client-state', args: {}},
-					{name: 'role-state', args: {}},
 					{name: 'content-state', args: {}},
 				],
-				svitches: [
+				svitch: {
 
-				],
+				},
 			},
 			children: [],
 		}),

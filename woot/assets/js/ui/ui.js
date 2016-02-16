@@ -1,5 +1,40 @@
 var UI = {
 
+	///////// GLOBAL STATES
+	// these states define the state structure of the app.
+	// Components cannot have states that are not found in the global state list
+
+	// global state list
+	gState: '',
+	globalStates: [],
+
+	// really simple method
+	createGlobalState: function (name) {
+		if (this.globalStates.indexOf(name) == -1) {
+			this.globalStates.push(name);
+		}
+	},
+
+	createGlobalStates: function (initialState, states) {
+		// set initial state
+		this.gState = initialState;
+		this.createGlobalState(initialState);
+
+		states.map(function (name) {
+			this.createGlobalState(name);
+		}, this);
+	},
+
+	///////// STATE CHANGES
+	changeState: function (name) {
+		UI.gState = name;
+		this.states.filter(function (state) { // filter the list of states by "name"
+			return state.name === name;
+		}).map(function (state) { // map to components
+			state.component.changeState(state);
+		});
+	},
+
 	///////// COMPONENTS
 	// This is the main component function
 	component: function (id, properties) {
@@ -14,6 +49,7 @@ var UI = {
 		this.classes = properties.args.classes; // html classes
 		this.style = properties.args.style;
 		this.html = properties.args.html;
+		this.click = properties.args.click;
 
 		// states
 		this.states = properties.args.states.map(function (statePrototype) {
@@ -22,9 +58,7 @@ var UI = {
 		this.state = this.states[0]; // always start with the first state in the array
 
 		// svitches
-		this.svitches = properties.args.svitches.map(function (svitchPrototype) {
-			return UI.createSwitch(this.states[svitchPrototype.name], this, svitchPrototype.trigger, svitchPrototype.args);
-		}, this);
+		this.svitch = properties.args.svitch;
 
 		// components
 		this.children = properties.children;
@@ -32,7 +66,7 @@ var UI = {
 		// render
 		this.model = function () {
 			return $('#{id}'.format({id: this.id}));
-		}
+		};
 
 		this.render = function () {
 			var root = $('#{id}'.format({id: this.root}));
@@ -52,12 +86,57 @@ var UI = {
 				root.html(template); // simply place inside
 			}
 
-			// 2. render children
-			this.children.map(function (child) {
-				child.root = this.id;
-				child.render();
-			}, this);
-		}
+			// 2. Bindings
+			if (this.click !== undefined) {
+				var component = this;
+				var model = this.model();
+
+				model.on('click', function (e) {
+					// change state if necessary
+					UI.changeState(component.svitch[UI.gState]);
+
+					// perform click function
+					component.click(model);
+				});
+			}
+
+			// 3. render children
+			this.children.map(this.renderChild, this);
+		};
+
+		this.renderChild = function (child) {
+			child.root = this.id;
+			child.render();
+		};
+
+		this.changeState = function (state) {
+			// set state
+			this.state = state;
+
+			// apply changes to model
+			var model = this.model();
+
+			// classes
+			var classes = this.state.hasOwnProperty('classes') ? this.state.classes : this.classes;
+			model.addClass(classes);
+
+			// style
+			var style = this.state.hasOwnProperty('style') ? this.state.style : this.style;
+			if (style !== undefined) {
+				model.css(style);
+			}
+
+			// html
+			var html = this.state.hasOwnProperty('html') ? this.state.html : this.html;
+			if (html !== undefined) {
+				model.html(html);
+			}
+
+			// fn
+			if (this.state.fn !== undefined) {
+				this.state.fn(model);
+			}
+		};
 	},
 
 	// stores a list of components and their attributes
@@ -70,17 +149,22 @@ var UI = {
 		return component;
 	},
 
+	getComponent: function (id) {
+		return this.components[id];
+	},
+
 	///////// STATES
 	// basic state object
 	state: function (name, component, args) {
 		// identify the state by its name and the component it belongs to.
 		this.name = name;
 		this.component = component;
-		this.args = args;
-	},
 
-	getComponent: function (id) {
-		return this.components[id];
+		// args
+		this.classes = args.classes;
+		this.style = args.style;
+		this.html = args.html;
+		this.fn = args.fn;
 	},
 
 	// list of states
@@ -95,39 +179,6 @@ var UI = {
 		} else {
 			throw 'State name, {name}, must be in the global list of states: {states}'.format({name:name, states:this.globalStates});
 		}
-	},
-
-	///////// SVITCHES
-	svitch: function (state, component, triggerID, args) {
-		this.state = state;
-		this.component = component;
-		this.triggerID = triggerID;
-		this.args = args;
-	},
-
-	createSwitch: function (state, component, triggerID, args) {
-		var svitch = new this.svitch(state, component, triggerID, args);
-		return svitch;
-	},
-
-	///////// GLOBAL STATES
-	// these states define the state structure of the app.
-	// Components cannot have states that are not found in the global state list
-
-	// global state list
-	globalStates: [],
-
-	// really simple method
-	createGlobalState: function (name) {
-		if (this.globalStates.indexOf(name) == -1) {
-			this.globalStates.push(name);
-		}
-	},
-
-	createGlobalStates: function (states) {
-		states.map(function (name) {
-			this.createGlobalState(name);
-		}, this);
 	},
 
 	///////// TEMPLATES
@@ -145,7 +196,5 @@ var UI = {
 			</div>
 		`,
 	},
-
-	///////// STATE CHANGES
 
 }
