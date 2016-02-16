@@ -18,7 +18,7 @@ UI.createComponent('app', {
 				style: {},
 				fn: function (component) {
 					// make ajax call to get client data
-					ajax('user_roles', {}, function (data) {
+					return ajax('user_roles', {}, function (data) {
 						var clients = data['clients'];
 						Object.keys(clients).map(function (client) {
 							component.children.push(UI.createComponent('cs-{name}-button'.format({name: client}), {
@@ -53,23 +53,6 @@ UI.createComponent('app', {
 				]
 			},
 			children: [
-				UI.createComponent('cs-test-client-button', {
-					args: {
-						template: UI.templates.button,
-						classes: ['button'],
-						style: {},
-						html: 'Test client',
-						click: function (model) {
-
-						},
-						states: [],
-						svitch: {
-							'client-state':'role-state',
-							'role-state':'client-state',
-						},
-					},
-					children: [],
-				}),
 			],
 		}),
 		UI.createComponent('role-sidebar', {
