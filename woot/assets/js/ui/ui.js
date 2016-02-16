@@ -95,7 +95,9 @@ var UI = {
 
 				model.on('click', function (e) {
 					// change state if necessary
-					UI.changeState(component.svitch[UI.gState]);
+					if (component.svitch[UI.gState] !== undefined) {
+						UI.changeState(component.svitch[UI.gState]);
+					}
 
 					// perform click function
 					component.click(model);
@@ -191,11 +193,13 @@ var UI = {
 		sidebar: `
 			<div id='{id}' class='sidebar {classes}' style='{style}'></div>
 		`,
-		panel: `
-
+		contentPanel: `
+			<div id='{id}' class='content-panel {classes}' style='{style}'>
+				{html}
+			</div>
 		`,
 		button: `
-			<div id={id} class='btn btn-default {classes}'>
+			<div id={id} class='btn btn-default {classes}' style='{style}'>
 				{html}
 			</div>
 		`,
@@ -225,51 +229,3 @@ var UI = {
 	}
 
 }
-
-// CREATE COMPONENT REFERENCE
-// UI.createComponent('back-sidebar', {
-// 	args: {
-// 		template: UI.templates.sidebar,
-// 		classes: 'mini',
-// 		style: {},
-// 		states: [
-// 			{name: 'client-state', args: {
-// 				style: {
-// 					'-webkit-transition': 'width 2s', // Safari
-// 					'transition': 'width 0.5s',
-// 					'width': '200px',
-// 				},
-// 			}},
-// 			{name: 'role-state', args: {
-// 				style: {
-// 					'-webkit-transition': 'width 2s', // Safari
-// 					'transition': 'width 0.5s',
-// 					'width': '250px',
-// 				},
-// 			}},
-// 			{name: 'content-state', args: {}},
-// 		],
-// 	},
-// 	children: [
-// 		UI.createComponent('bs-back-button', {
-// 			args: {
-// 				template: UI.templates.button,
-// 				classes: 'button',
-// 				style: {},
-// 				html: 'Back button',
-// 				click: function (model) {
-//
-// 				},
-// 				states: [
-// 					{name: 'client-state', args: {}},
-// 					{name: 'content-state', args: {}},
-// 				],
-// 				svitch: {
-// 					'client-state':'role-state',
-// 					'role-state':'client-state',
-// 				},
-// 			},
-// 			children: [],
-// 		}),
-// 	],
-// }),
