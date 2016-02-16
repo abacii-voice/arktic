@@ -37,7 +37,7 @@ UI.createComponent('back-sidebar', {
 				style: {},
 				html: 'Back button',
 				click: function (model) {
-
+					
 				},
 				states: [
 					{name: 'client-state', args: {}},
