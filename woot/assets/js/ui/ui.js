@@ -66,11 +66,6 @@ var UI = {
 		// components
 		this.children = properties.children;
 
-		// fetch data
-		if (this.fn !== undefined) {
-			this.fn(this);
-		}
-
 		// render
 		this.model = function () {
 			return $('#{id}'.format({id: this.id}));
@@ -101,18 +96,28 @@ var UI = {
 
 				model.on('click', function (e) {
 					// change state if necessary
-					if (component.svitch[UI.gState] !== undefined) {
-						UI.changeState(component.svitch[UI.gState]);
-					}
-
-					// perform click function
-					component.click(model);
+					$.when(new Promise (function () {
+						// perform click function
+						component.click(model);
+					})).done(function () {
+						if (component.svitch[UI.gState] !== undefined) {
+							UI.changeState(component.svitch[UI.gState]);
+						}
+					});
 				});
 			}
 
-			// 4. render children
-			if (this.children !== undefined) {
-				this.children.map(this.renderChild, this);
+			var _this = this;
+			if (_this.fn !== undefined) {
+				$.when(_this.fn(_this)).done(function () {
+					if (_this.children !== undefined) {
+						_this.children.map(_this.renderChild, _this);
+					}
+				});
+			} else {
+				if (_this.children !== undefined) {
+					_this.children.map(_this.renderChild, _this);
+				}
 			}
 		};
 
