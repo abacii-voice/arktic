@@ -50,6 +50,7 @@ var UI = {
 		this.style = properties.args.style;
 		this.html = properties.args.html;
 		this.click = properties.args.click;
+		this.fn = properties.args.fn;
 
 		// states
 		if (properties.args.states !== undefined) {
@@ -104,7 +105,12 @@ var UI = {
 				});
 			}
 
-			// 3. render children
+			// 3. fetch data
+			if (this.fn !== undefined) {
+				this.fn(this);
+			}
+
+			// 4. render children
 			if (this.children !== undefined) {
 				this.children.map(this.renderChild, this);
 			}

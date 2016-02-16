@@ -16,6 +16,18 @@ UI.createComponent('app', {
 				template: UI.templates.sidebar,
 				classes: [''],
 				style: {},
+				fn: function (component) {
+					// make ajax call to get client data
+					ajax('user_clients', {}, function (data) {
+						data.map(function (userClient) {
+							component.children.push(UI.createComponent('cs-{name}-button'.format({name: userClient.name}), {
+								args: {
+									
+								}
+							}));
+						});
+					});
+				},
 				states: [
 					{name: 'client-state', args: {
 						style: {
@@ -65,6 +77,11 @@ UI.createComponent('app', {
 					{name: 'role-state', args: {
 						style: {
 							'left': '50px',
+						},
+					}},
+					{name: 'content-state', args: {
+						style: {
+							'left': '-300px',
 						},
 					}},
 				]
