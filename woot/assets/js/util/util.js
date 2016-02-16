@@ -4,7 +4,7 @@ function ajax (url, data, callback) {
 	var ajax_params = {
 		type: 'post',
 		data: data,
-		url:'http://localhost:{0}/expt/commands/{1}/'.format(settings['port'], url),
+		url:'/commands/{url}/'.format({url: url}),
 		success: function (data, textStatus, XMLHttpRequest) {
 			callback(data);
 		},
@@ -34,9 +34,4 @@ function ajaxloop (url, data, repeatCallback, completionCondition, completionCal
 	}
 
 	loopFunction();
-}
-
-// state transition functions
-function postRenderFadeIn (model) {
-
 }
