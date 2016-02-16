@@ -4,7 +4,7 @@ function ajax (url, data, callback) {
 	var ajax_params = {
 		type: 'post',
 		data: data,
-		url:'/commands/{url}/'.format({url: url}),
+		url:'/commands/{url}'.format({url: url}),
 		success: function (data, textStatus, XMLHttpRequest) {
 			callback(data);
 		},

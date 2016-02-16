@@ -22,7 +22,18 @@ UI.createComponent('app', {
 						data.map(function (userClient) {
 							component.children.push(UI.createComponent('cs-{name}-button'.format({name: userClient.name}), {
 								args: {
-									
+									template: UI.templates.button,
+									classes: ['button'],
+									style: {},
+									html: 'Client: {name}'.format({name: userClient.name}),
+									click: function (model) {
+
+									},
+									states: [],
+									svitch: {
+										'client-state':'role-state',
+										'role-state':'client-state',
+									},
 								}
 							}));
 						});
