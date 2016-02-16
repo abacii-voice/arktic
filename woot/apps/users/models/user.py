@@ -59,10 +59,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 			'is_active':self.is_active,
 			'is_approved':self.is_approved,
 			'is_superadmin':is_superadmin,
+			'clients':{},
 		}
 
 		accessor_dictionary = {
-			'admin':self.users_admin_roles if hasattr(self, 'users_admin_roles') else None,
+			'productionadmin':self.users_productionadmin_roles if hasattr(self, 'users_productionadmin_roles') else None,
+			'contractadmin':self.users_contractadmin_roles if hasattr(self, 'users_contractadmin_roles') else None,
 			'moderator':self.users_moderator_roles if hasattr(self, 'users_moderator_roles') else None,
 			'worker':self.users_worker_roles if hasattr(self, 'users_worker_roles') else None,
 		}
@@ -70,10 +72,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 		for role_name, role_accessor in accessor_dictionary.items():
 			if role_accessor is not None:
 				for role in role_accessor.all():
-					if role.client.name not in role_dictionary:
-						role_dictionary.update({role.client.name: {role_name: True}})
+					if role.client.name not in role_dictionary['clients']:
+						role_dictionary['clients'][role.client.name] = [role_name]
 					else:
-						role_dictionary[role.client.name].update({role_name: True})
+						role_dictionary['clients'][role.client.name].append(role_name)
 
 		return role_dictionary
 
@@ -82,10 +84,15 @@ class User(AbstractBaseUser, PermissionsMixin):
 		superadmin_role, superadmin_role_created = self.users_superadmin_roles.get_or_create()
 		return superadmin_role
 
-	def create_admin(self, client):
+	def create_productionadmin(self, production_client):
 		# only one per client
-		admin_role, admin_role_created = self.users_admin_roles.get_or_create(client=client)
-		return admin_role
+		productionadmin_role, productionadmin_created = self.users_productionadmin_roles.get_or_create(client=production_client)
+		return productionadmin
+
+	def create_contractadmin(self, contract_client):
+		# only one per client
+		contractadmin_role, contractadmin_created = self.users_contractadmin_roles.get_or_create(client=contract_client)
+		return contractadmin
 
 	def create_moderator(self, client):
 		# only one per client

@@ -18,21 +18,21 @@ UI.createComponent('app', {
 				style: {},
 				fn: function (component) {
 					// make ajax call to get client data
-					ajax('user_clients', {}, function (data) {
-						data.map(function (userClient) {
-							component.children.push(UI.createComponent('cs-{name}-button'.format({name: userClient.name}), {
+					ajax('user_roles', {}, function (data) {
+						var clients = data['clients'];
+						Object.keys(clients).map(function (client) {
+							component.children.push(UI.createComponent('cs-{name}-button'.format({name: client}), {
 								args: {
 									template: UI.templates.button,
 									classes: ['button'],
 									style: {},
-									html: 'Client: {name}'.format({name: userClient.name}),
+									html: 'Client: {name}'.format({name: client}),
 									click: function (model) {
 
 									},
 									states: [],
 									svitch: {
 										'client-state':'role-state',
-										'role-state':'client-state',
 									},
 								}
 							}));
@@ -188,7 +188,7 @@ UI.createComponent('app', {
 			children: [],
 		}),
 	],
-})
+});
 
 // Render to start
 UI.getComponent('app').render();
