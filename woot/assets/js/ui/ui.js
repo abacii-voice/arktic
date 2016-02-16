@@ -66,6 +66,11 @@ var UI = {
 		// components
 		this.children = properties.children;
 
+		// fetch data
+		if (this.fn !== undefined) {
+			this.fn(this);
+		}
+
 		// render
 		this.model = function () {
 			return $('#{id}'.format({id: this.id}));
@@ -103,11 +108,6 @@ var UI = {
 					// perform click function
 					component.click(model);
 				});
-			}
-
-			// 3. fetch data
-			if (this.fn !== undefined) {
-				this.fn(this);
 			}
 
 			// 4. render children
