@@ -151,7 +151,7 @@ var UI = {
 
 			// fn
 			if (this.state.fn !== undefined) {
-				this.state.fn(model);
+				this.state.fn(this);
 			}
 		};
 	},
