@@ -28,7 +28,7 @@ UI.createComponent('app', {
 									style: {},
 									html: 'Client: {name}'.format({name: client}),
 									click: function (model) {
-
+										UI.getComponent('role-sidebar').model().attr('client', client);
 									},
 									states: [],
 									svitch: {
@@ -72,6 +72,10 @@ UI.createComponent('app', {
 						style: {
 							'left': '50px',
 						},
+						fn: function (component) {
+							var client = component.model().attr('client');
+							
+						}
 					}},
 					{name: 'content-state', args: {
 						style: {
