@@ -18,6 +18,7 @@ function ajax (url, data, callback) {
 	return $.ajax(ajax_params);
 };
 
+// This is just polling.
 function ajaxloop (url, data, repeatCallback, completionCondition, completionCallback) {
 	function loopFunction () {
 		setTimeout(function () {
@@ -34,4 +35,24 @@ function ajaxloop (url, data, repeatCallback, completionCondition, completionCal
 	}
 
 	loopFunction();
+}
+
+// String formatting
+function formatStyle (style) {
+	if (style !== undefined) {
+		var strings = Object.keys(style).map(function (value) {
+			return '{key}: {value}; '.format({key: value, value: style[value]})
+		});
+		return strings.join('');
+	} else {
+		return '';
+	}
+}
+
+function formatClasses (classes) {
+	if (classes !== undefined) {
+		return classes.join(' ');
+	} else {
+		return '';
+	}
 }
