@@ -32,38 +32,96 @@ UI.createApp('hook', [
 	UI.createComponent('client-sidebar', {
 		properties: {
 			template: UI.templates.sidebar,
-
-			// default appearance
-			// style: {hidden},
-
-			// responds to client-state, otherwise hidden
-			states: [],
+			states: [
+				{name: 'client-state', args: {
+					style: {
+						'left': '0px',
+					},
+				}},
+				{name: 'role-state', args: {
+					style: {
+						'left': '-300px',
+					}
+				}},
+				{name: 'content-state', args: {
+					style: {
+						'left': '-300px',
+					},
+				}},
+			],
 			svtiches: [],
 		},
+		children: [
+			UI.createComponent('cs-test-button', {
+				properties: {
+					template: UI.templates.button,
+					html: 'Test button',
+					stateMap: {
+						'client-state': 'role-state',
+					},
+				},
+				click: function (_this) {
+					UI.changeState(_this.stateMap[UI.globalState]);
+				}
+			}),
+		],
 	}),
 	UI.createComponent('role-sidebar', {
 		properties: {
 			template: UI.templates.sidebar,
-			
+			states: [
+				{name: 'client-state', args: {
+					style: {
+						'left': '-300px',
+					},
+				}},
+				{name: 'role-state', args: {
+					style: {
+						'left': '50px',
+					},
+				}},
+				{name: 'content-state', args: {
+					style: {
+						'left': '-300px',
+					},
+				}},
+			],
 		},
 	}),
 	UI.createComponent('back-sidebar', {
 		properties: {
 			template: UI.templates.sidebar,
 			classes: ['mini'],
-
-			// default appearance
-			// style: {hidden},
-
-			// responds to client-state, otherwise hidden
-			states: [],
+			states: [
+				{name: 'client-state', args: {
+					style: {
+						'left': '-50px',
+					},
+				}},
+				{name: 'role-state', args: {
+					style: {
+						'left': '0px',
+					},
+				}},
+				{name: 'content-state', args: {
+					style: {
+						'left': '0px',
+					},
+				}},
+			],
 		},
 		children: [
 			UI.createComponent('bs-back-button', {
 				properties: {
 					template: UI.templates.button,
 					html: '<span class="glyphicon glyphicon-chevron-left"></span>',
-					classes: ['button'],
+					stateMap: {
+						'role-state': 'client-state',
+						'content-state': 'role-state',
+					}
+				},
+				click: function (_this) {
+					UI.changeState(_this.stateMap[UI.globalState]);
 				}
 			}),
 		],
