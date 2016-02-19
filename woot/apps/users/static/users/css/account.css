@@ -36,6 +36,10 @@ Sidebars
 	width: 50px;
 }
 
+.sidebar.hidden {
+	translate: translateY(-50%);
+}
+
 /*
 
 Panels

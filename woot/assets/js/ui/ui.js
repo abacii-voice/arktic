@@ -23,7 +23,7 @@ var UI = {
 	// create multiple global states with an array
 	createGlobalStates: function (homeState, stateNames) {
 		this.globalState = homeState;
-		stateNames.shift(homeState);
+		stateNames.unshift(homeState);
 		stateNames.map(this.createGlobalState, this);
 	},
 
@@ -106,10 +106,23 @@ var UI = {
 		this.style = args.properties.style;
 
 		// states
+		this.getState = function (stateName) {
+			return this.states.filter(function (state) {
+				return state.name === stateName;
+			})[0];
+		}
+
 		if (args.properties.states !== undefined) {
 			this.states = args.properties.states.map(function (state) {
 				return UI.createState(this, state.name, state.args);
 			}, this);
+
+			this.state = this.getState(UI.globalState);
+
+			if (this.state !== undefined && this.state.classes !== undefined) {
+				this.stateClasses = this.state.classes;
+			}
+
 		}
 
 		if (args.properties.svitches !== undefined) {
@@ -118,7 +131,9 @@ var UI = {
 			});
 		}
 
-		this.stateMap = args.properties.stateMap;
+		if (args.properties.stateMap !== undefined) {
+			this.stateMap = args.properties.stateMap;
+		}
 
 		// children
 		this.children = args.children !== undefined ? args.children : [];
@@ -153,16 +168,27 @@ var UI = {
 				root.html(renderedTemplate);
 			}
 
-			// 4. add bindings
+			// 4. Add classes and style of initial state
+			var model = this.model();
+			if (this.state !== undefined) {
+				this.stateClasses.map(function (stateClass) {
+					model.addClass(stateClass);
+				});
+				if (this.state.style !== undefined) {
+					model.css(this.state.style);
+				}
+			}
+
+			// 5. add bindings
 			if (this.click !== undefined) {
 				var _this = this;
 
-				_this.model().on('click', function () {
+				model.on('click', function () {
 					_this.click(_this);
 				});
 			}
 
-			// 5. render children
+			// 6. render children
 			if (this.children !== undefined) {
 				this.children.map(this.renderChild, this);
 			}
@@ -177,9 +203,9 @@ var UI = {
 		///////////////
 		// STATE CHANGES
 		// change state
-		this.changeState = function (stateName) {
+		this.changeState = function (state) {
 			// 1. set new state
-			this.state = this.getState(stateName);
+			this.state = state;
 
 			// 2. get model
 			var model = this.model();
@@ -193,40 +219,35 @@ var UI = {
 			});
 
 			var addNewClassesFunction = function () {
-				_this.stateClasses = _this.state.classes !== undefined ? _this.state.classes : _this.classes;
-				_this.stateClasses.map(function (className) {
-					model.addClass(className);
-				});
+				if (this.state !== undefined) {
+					_this.stateClasses = _this.state.classes !== undefined ? _this.state.classes : _this.classes;
+					_this.stateClasses.map(function (className) {
+						model.addClass(className);
+					});
+				}
 			}
 
 			$.when(removeCurrentClassesPromise).done(addNewClassesFunction);
 
-			// 4. add style
-			var style = this.state.style !== undefined ? this.state.style : this.style;
-			model.animate(style);
+			if (this.state !== undefined) {
+				// 4. add style
+				var style = this.state.style !== undefined ? this.state.style : this.style;
+				model.animate(style);
 
-			// 5. add html
-			if (this.state.html !== undefined) {
-				model.html(this.state.html);
-			}
+				// 5. add html
+				if (this.state.html !== undefined) {
+					model.html(this.state.html);
+				}
 
-			// 6. perform action
-			if (this.state.fn !== undefined) {
-				this.state.fn(this);
+				// 6. perform action
+				if (this.state.fn !== undefined) {
+					this.state.fn(this);
+				}
 			}
 		}
 
 		this.mapState = function (stateName) {
 			return this.stateMap[stateName] !== undefined ? this.stateMap[stateName] : '';
-		}
-
-		///////////////
-		// UTILITY
-		// get state
-		this.getState = function (stateName) {
-			return this.states.filter(function (state) {
-				return state.name === stateName;
-			})[0];
 		}
 
 	},
@@ -313,7 +334,7 @@ var UI = {
 			</div>
 		`,
 		button: `
-			<div id={id} class='btn btn-default {classes}' style='{style}'>
+			<div id={id} class='btn btn-default button {classes}' style='{style}'>
 				{html}
 			</div>
 		`,
