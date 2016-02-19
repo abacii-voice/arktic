@@ -101,7 +101,8 @@ var UI = {
 		// rendered with template
 		this.template = args.properties.template;
 		this.html = args.properties.html;
-		this.classes = args.properties.classes;
+		this.classes = args.properties.classes; // Default state classes
+		this.stateClasses = []; // Can be added by states
 		this.style = args.properties.style;
 
 		// states
@@ -184,8 +185,21 @@ var UI = {
 			var model = this.model();
 
 			// 3. add classes
-			var classes = this.state.classes !== undefined ? this.state.classes : this.classes;
-			model.addClass(formatClasses(classes));
+			var _this = this;
+			var removeCurrentClassesPromise = new Promise(function () {
+				_this.stateClasses.map(function (className) {
+					model.removeClass(className);
+				});
+			});
+
+			var addNewClassesFunction = function () {
+				_this.stateClasses = _this.state.classes !== undefined ? _this.state.classes : _this.classes;
+				_this.stateClasses.map(function (className) {
+					model.addClass(className);
+				});
+			}
+
+			$.when(removeCurrentClassesPromise).done(addNewClassesFunction);
 
 			// 4. add style
 			var style = this.state.style !== undefined ? this.state.style : this.style;
