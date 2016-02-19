@@ -24,7 +24,7 @@ var UI = {
 	createGlobalStates: function (homeState, stateNames) {
 		this.globalState = homeState;
 		stateNames.shift(homeState);
-		stateNames.map(createGlobalState, this);
+		stateNames.map(this.createGlobalState, this);
 	},
 
 	// A change of global state that is broadcast to the components that need to respond.
@@ -57,7 +57,7 @@ var UI = {
 	// only the first N-1 are used. Where N is the number of states.
 	chainStates: function (stateNames, delays) {
 
-	}
+	},
 
 	////////////
 	// COMPONENT
@@ -65,7 +65,7 @@ var UI = {
 	components: {},
 	getComponent: function (componentId) {
 		return this.components[componentId];
-	}
+	},
 
 	// Basic component definition
 	component: function (id, args) {
@@ -111,7 +111,7 @@ var UI = {
 			}, this);
 		}
 
-		if (args.properties.svtiches !== undefined) {
+		if (args.properties.svitches !== undefined) {
 			this.svitches = args.properties.svitches.map(function (svitch) {
 				return UI.createSvitch(this, svitch.stateName, svitch.fn);
 			});
@@ -120,7 +120,7 @@ var UI = {
 		this.stateMap = args.properties.stateMap;
 
 		// children
-		this.children = args.children;
+		this.children = args.children !== undefined ? args.children : [];
 
 		// bindings
 		this.click = args.click;
@@ -220,9 +220,27 @@ var UI = {
 	// component factory
 	createComponent: function (id, args) {
 		var component = new this.component(id, args);
-		components[id] = component;
+		this.components[id] = component;
 		return component;
-	}
+	},
+
+	createApp: function (root, children) {
+		var id = 'app';
+		var args = {
+			root: root,
+			properties: {
+				template: UI.templates.div,
+			},
+			children: children,
+		};
+
+		this.createComponent(id, args);
+	},
+
+	renderApp: function () {
+		var app = this.getComponent('app');
+		app.render();
+	},
 
 	////////////
 	// COMPONENT STATE
@@ -239,14 +257,14 @@ var UI = {
 		this.style = args.style;
 		this.html = args.html;
 		this.fn = args.fn;
-	}
+	},
 
 	// state factory
 	createState: function (component, name, args) {
 		var state = new this.state(component, name, args);
 		this.states[name].push(state);
 		return state;
-	}
+	},
 
 	////////////
 	// COMPONENT SVITCH
@@ -288,7 +306,7 @@ var UI = {
 		div: `
 			<div id={id}></div>
 		`,
-	}
+	},
 
 }
 
@@ -305,10 +323,10 @@ var Context = {
 		// based on a string of parameters, access a value or other sub-structure from store.
 		sub = this.store;
 		var i;
-		for (i=0; i<args.length, i++) {
-			sub = sub[args[i]]
+		for (i=0; i<args.length; i++) {
+			sub = sub[args[i]];
 		}
-	}
+	},
 
 	// define update function for context along with triggers and anything else.
 	fn: undefined,
