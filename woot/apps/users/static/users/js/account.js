@@ -1,6 +1,10 @@
 // 1. Load Context
 Context.setFn(function () {
 	// ajax
+	ajax('user_context', {}, function (data) {
+		Context.store = data;
+		console.log(Context.store);
+	});
 });
 
 Context.update(); // load data
@@ -51,20 +55,6 @@ UI.createApp('hook', [
 			],
 			svtiches: [],
 		},
-		children: [
-			UI.createComponent('cs-test-button', {
-				properties: {
-					template: UI.templates.button,
-					html: 'Test client',
-					stateMap: {
-						'client-state': 'role-state',
-					},
-				},
-				click: function (_this) {
-					UI.changeState(_this.stateMap[UI.globalState]);
-				}
-			}),
-		],
 	}),
 	UI.createComponent('role-sidebar', {
 		properties: {
@@ -147,10 +137,6 @@ UI.createApp('hook', [
 		],
 	}),
 ]);
-
-// Need more complex behaviour for classes:
-// 1. Adding a class from a state should remove the classes of other states
-// 2. Maybe have a stateClass variable that can be changed.
 
 // 4. Render app
 UI.renderApp();

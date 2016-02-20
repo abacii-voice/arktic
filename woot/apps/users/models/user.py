@@ -37,6 +37,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 	def __str__(self):
 		return '{}, ({}, {})'.format(self.email, self.last_name, self.first_name)
 
+	def clients(self):
+		return list(self.roles()['clients'].keys())
+
 	def roles(self):
 		'''
 		Returns a dictionary containing all the information about the roles currently held by the user.
@@ -73,9 +76,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 			if role_accessor is not None:
 				for role in role_accessor.all():
 					if role.client.name not in role_dictionary['clients']:
-						role_dictionary['clients'][role.client.name] = [role_name]
-					else:
-						role_dictionary['clients'][role.client.name].append(role_name)
+						role_dictionary['clients'][role.client.name] = {'roles':[]}
+					role_dictionary['clients'][role.client.name]['roles'].append(role_name)
 
 		return role_dictionary
 
