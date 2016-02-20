@@ -94,6 +94,7 @@ var UI = {
 
 		// root
 		this.root = args.root;
+		this.parent = undefined;
 
 		// static properties
 		this.props = args.properties.props;
@@ -197,6 +198,7 @@ var UI = {
 		// render child
 		this.renderChild = function (child) {
 			child.root = this.id;
+			child.parent = this;
 			child.render();
 		}
 
@@ -275,6 +277,7 @@ var UI = {
 	renderApp: function () {
 		var app = this.getComponent('app');
 		app.render();
+		this.changeState(this.globalState);
 	},
 
 	////////////
@@ -355,12 +358,16 @@ var Context = {
 	// UI script for each page.
 	store: {},
 	get: function (args) {
+		if (!Array.isArray(args)) {
+			args = [args];
+		}
 		// based on a string of parameters, access a value or other sub-structure from store.
 		sub = this.store;
 		var i;
 		for (i=0; i<args.length; i++) {
 			sub = sub[args[i]];
 		}
+		return sub;
 	},
 
 	// define update function for context along with triggers and anything else.

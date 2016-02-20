@@ -15,8 +15,18 @@ from django.template import Template
 import json
 
 ### Commands
-def user_roles(request):
+def user_context(request):
 	if request.method=='POST':
 		user = request.user
 		if user.is_authenticated():
-			return JsonResponse(user.roles())
+
+			# make context
+			context = {
+				'clients': user.clients(),
+				'roles': user.roles(),
+				'stats': '',
+				'current_client': '',
+				'current_role': '',
+			}
+
+			return JsonResponse(context)

@@ -8,5 +8,5 @@ from apps.users.command import *
 
 ### Command entry points
 urlpatterns = [
-	url(r'^user_roles/', user_roles),
+	url(r'^user_context/', user_context),
 ]
