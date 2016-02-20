@@ -15,7 +15,7 @@ function ajax (url, data, callback) {
 		}
 	};
 
-	return $.ajax(ajax_params);
+	return $.ajax(ajax_params); // this is a promise
 };
 
 // This is just polling.
