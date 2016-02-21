@@ -18,19 +18,123 @@ UI.createGlobalStates('client-state', [
 // 3. Define component tree
 // (id, { // <- args variable
 // 	root: '',
-// 	properties: {
-// 		props: {},
-// 		template: UI.templates.*,
+// 	template: UI.templates.*,
+// 	appearance: {
 // 		html: '',
 // 		classes: [],
 // 		style: {},
-// 		states: [],
-// 		svitches: [],
-// 		stateMap: {},
-// 		click: function () {},
 // 	},
+// 	state: {
+// 		states: [],
+// 		svtiches: [],
+// 		stateMap: {},
+// 	},
+// 	registry: {
+// 		path: [],
+// 		fn: function () {},
+// 	},
+// 	properties: {},
+// 	bindings: [
+// 		{
+// 			name: 'click',
+// 			fn: function () {},
+// 		}
+// 	],
 // 	children: [],
 // })
+
+UI.createApp('hook', [
+	UI.createComponent('client-sidebar', {
+		template: UI.templates.sidebar,
+		appearance: {
+			html: '',
+			classes: [],
+			style: {},
+		},
+		state: {
+			states: [
+				{name: 'client-state', args: {
+					style: {
+						'left': '0px',
+					},
+				}},
+				{name: 'role-state', args: {
+					style: {
+						'left': '-300px',
+					}
+				}},
+				{name: 'content-state', args: {
+					style: {
+						'left': '-300px',
+					},
+				}},
+			],
+		},
+		registry: {
+			path: ['clients'],
+			fn: function (_this, data) {
+				// create buttons from Context and remove loading icon
+			}
+		}
+		children: [
+			UI.createComponent('cs-loading-icon', {
+				template: UI.templates.loadingIcon,
+			}),
+		],
+	}),
+	UI.createComponent('role-sidebar', {
+		root: '',
+		template: UI.templates.*,
+		appearance: {
+			html: '',
+			classes: [],
+			style: {},
+		},
+		state: {
+			states: [],
+			svtiches: [],
+			stateMap: {},
+		},
+		registry: {
+			path: [],
+			fn: function () {},
+		}
+		children: [],
+		properties: {},
+		bindings: [
+			{
+				name: 'click',
+				fn: function () {},
+			}
+		],
+	}),
+	UI.createComponent('back-sidebar', {
+		root: '',
+		template: UI.templates.*,
+		appearance: {
+			html: '',
+			classes: [],
+			style: {},
+		},
+		state: {
+			states: [],
+			svtiches: [],
+			stateMap: {},
+		},
+		registry: {
+			path: [],
+			fn: function () {},
+		}
+		children: [],
+		properties: {},
+		bindings: [
+			{
+				name: 'click',
+				fn: function () {},
+			}
+		],
+	}),
+]);
 
 UI.createApp('hook', [
 	UI.createComponent('client-sidebar', {
