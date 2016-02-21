@@ -40,6 +40,115 @@ UI.createGlobalStates('client-state', [
 // })
 
 UI.createApp('hook', [
+	UI.createComponent('content-panel', {
+		template: UI.templates.contentPanel,
+		children: [
+			// MAIN INTERFACE ELEMENTS
+
+			// Action widget
+			// Contains a start button for the task at hand (transcription / moderation / upload)
+			// ####
+			UI.createComponent('action-widget', {
+				template: UI.templates.subPanel,
+				appearance: {
+					style: {
+						'height': '200px',
+					},
+				},
+				state: {
+					states: [
+						{name: 'client-state', args: {
+							style: {
+								'left': '10px',
+								'opacity': '0.0',
+							},
+						}},
+						{name: 'role-state', args: {
+							style: {
+								'left': '10px',
+								'opacity': '0.0',
+							},
+						}},
+						{name: 'content-state', args: {
+							style: {
+								'left': '0px',
+								'opacity': '1.0',
+							},
+						}},
+					],
+				},
+				children: [
+					// Start button - link to app (transcription / moderation / upload)
+					UI.createComponent('start-button', {
+						template: UI.templates.button,
+						appearance: {
+							style: {
+
+							}
+						}
+					}),
+
+					// Activity - see active projects and users
+					UI.createComponent('activity-monitor', {
+						template: UI.templates.div,
+					}),
+
+					// Billing - see the current billing cycle its billable activity
+					UI.createComponent('billing-monitor', {
+						template: UI.templates.div,
+					}),
+				],
+			}),
+			// ####
+
+			// Message widget
+			// Contains a list of recent messages and a link to the messenger app.
+			// ####
+			// UI.createComponent('messages-widget', {
+			// 	children: [
+			// 		// Contains links for new messages and filters
+			// 		UI.createComponent('message-header', {
+			// 			children: [
+			// 				UI.createComponent('message-header-new-message-button', {
+			//
+			// 				}),
+			// 				UI.createComponent('new-message-button', {
+			//
+			// 				}),
+			// 				UI.createComponent('search-input-field', {
+			//
+			// 				}),
+			// 			],
+			// 		}),
+			//
+			// 		// Message list
+			// 		UI.createComponent('message-list', {
+			// 			children: [
+			// 				// message objects displayed here
+			// 			]
+			// 		});
+			// 	],
+			// }),
+			// ####
+
+			// Stats widget
+			// A summary of relevant stats
+			// ####
+			// UI.createComponent('stats-widget', {
+			// 	children: [
+			// 		// Contains a table showing all-time and billing-cycle numbers
+			// 		UI.createComponent('totals-table', {}),
+			//
+			// 		// XY graph of activity vs. time.
+			// 		UI.createComponent('billing-cycle-performance-graph', {}),
+			//
+			// 		// Pixel map of activity in this billing cycle and the last.
+			// 		UI.createComponent('billing-cycle-map', {}),
+			// 	],
+			// }),
+			// ####
+		],
+	}),
 	UI.createComponent('client-sidebar', {
 		template: UI.templates.sidebar,
 		state: {
@@ -229,125 +338,7 @@ UI.createApp('hook', [
 			}),
 		],
 	}),
-	UI.createComponent('content-panel', {
-		template: UI.templates.contentPanel,
-		children: [
-			// MAIN INTERFACE ELEMENTS
 
-			// Action widget
-			// Contains a start button for the task at hand (transcription / moderation / upload)
-			// ####
-			UI.createComponent('action-widget', {
-				template: UI.templates.subPanel,
-				appearance: {
-					style: {
-						'height': '200px',
-					},
-				},
-				state: {
-					states: [
-						{name: 'client-state', args: {
-							style: {
-								'left': '-50px',
-								'opacity': '0.0',
-							},
-						}},
-					],
-				},
-				// state: {
-				// 	states: [
-				// 		{name: 'client-state', args: {
-				// 			style: {
-				// 				'left': '-50px',
-				// 				'opacity': '0.0',
-				// 			},
-				// 		}},
-				// 		{name: 'role-state', args: {
-				// 			style: {
-				// 				'left': '-50px',
-				// 				'opacity': '0.0',
-				// 			},
-				// 		}},
-				// 		{name: 'content-state', args: {
-				// 			style: {
-				// 				'left': '0px',
-				// 				'opacity': '1.0',
-				// 			},
-				// 		}},
-				// 	],
-				// },
-				children: [
-					// Start button - link to app (transcription / moderation / upload)
-					UI.createComponent('start-button', {
-						template: UI.templates.button,
-						appearance: {
-							style: {
-
-							}
-						}
-					}),
-
-					// Activity - see active projects and users
-					UI.createComponent('activity-monitor', {
-						template: UI.templates.div,
-					}),
-
-					// Billing - see the current billing cycle its billable activity
-					UI.createComponent('billing-monitor', {
-						template: UI.templates.div,
-					}),
-				],
-			}),
-			// ####
-
-			// Message widget
-			// Contains a list of recent messages and a link to the messenger app.
-			// ####
-			// UI.createComponent('messages-widget', {
-			// 	children: [
-			// 		// Contains links for new messages and filters
-			// 		UI.createComponent('message-header', {
-			// 			children: [
-			// 				UI.createComponent('message-header-new-message-button', {
-			//
-			// 				}),
-			// 				UI.createComponent('new-message-button', {
-			//
-			// 				}),
-			// 				UI.createComponent('search-input-field', {
-			//
-			// 				}),
-			// 			],
-			// 		}),
-			//
-			// 		// Message list
-			// 		UI.createComponent('message-list', {
-			// 			children: [
-			// 				// message objects displayed here
-			// 			]
-			// 		});
-			// 	],
-			// }),
-			// ####
-
-			// Stats widget
-			// A summary of relevant stats
-			// ####
-			// UI.createComponent('stats-widget', {
-			// 	children: [
-			// 		// Contains a table showing all-time and billing-cycle numbers
-			// 		UI.createComponent('totals-table', {}),
-			//
-			// 		// XY graph of activity vs. time.
-			// 		UI.createComponent('billing-cycle-performance-graph', {}),
-			//
-			// 		// Pixel map of activity in this billing cycle and the last.
-			// 		UI.createComponent('billing-cycle-map', {}),
-			// 	],
-			// }),
-			// ####
-		],
-	}),
 ]);
 
 // 4. Render app
