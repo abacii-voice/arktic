@@ -42,15 +42,17 @@ Sidebars
 
 .sidebar .loading-icon {
 	width: 100%;
-	height: 50px;
+	height: 100%;
+	position: absolute;
 }
 
 .sidebar .loading-icon img {
 	position: relative;
-	height: 80%;
-	top: 10%;
+	height: 30px;
+	top: 50%;
 	left: 50%;
 	transform: translateX(-50%);
+	transform: translateY(-50%);
 }
 
 /*
