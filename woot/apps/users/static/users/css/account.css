@@ -13,6 +13,10 @@ div {
 	/*transition: left .5s ease-in-out;*/
 }
 
+body {
+	overflow: hidden;
+}
+
 /*
 
 Sidebars
@@ -64,13 +68,20 @@ Panels
 .content-panel {
 	position: absolute;
 	top: 50%;
-	left: 250px;
-	background-color: transparent;
+	left: 100px;
 	display: block;
 	overflow-y: auto;
-	width: 774px;
+	width: 824px;
 	height: 70%;
 	transform: translateY(-50%);
+}
+
+.sub-panel {
+	background-color: white;
+}
+
+.panel-spacer {
+	height: 50px;
 }
 
 /*
