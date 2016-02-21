@@ -46,11 +46,6 @@ UI.createGlobalStates('client-state', [
 UI.createApp('hook', [
 	UI.createComponent('client-sidebar', {
 		template: UI.templates.sidebar,
-		appearance: {
-			html: '',
-			classes: [],
-			style: {},
-		},
 		state: {
 			states: [
 				{name: 'client-state', args: {
@@ -77,7 +72,7 @@ UI.createApp('hook', [
 			fn: function (_this, data) {
 				// create buttons from Context and remove loading icon
 			}
-		}
+		},
 		children: [
 			UI.createComponent('cs-loading-icon', {
 				template: UI.templates.loadingIcon,
@@ -116,7 +111,7 @@ UI.createApp('hook', [
 		children: [
 			UI.createComponent('rs-loading-icon', {
 				template: UI.templates.loadingIcon,
-			});
+			}),
 		],
 	}),
 	UI.createComponent('back-sidebar', {
@@ -155,7 +150,7 @@ UI.createApp('hook', [
 				appearance: {
 					html: '<span class="glyphicon glyphicon-chevron-left"></span>'
 				},
-				states: {
+				state: {
 					stateMap: {
 						'role-state': 'client-state',
 						'content-state': 'role-state',
@@ -165,11 +160,11 @@ UI.createApp('hook', [
 					{
 						name: 'click',
 						fn: function (_this) {
-							UI.changeState(_this.stateMap[UI.globalState]);
+							UI.changeState(_this.mapState(UI.globalState));
 						},
 					}
 				],
-			});
+			}),
 		],
 	}),
 ]);
