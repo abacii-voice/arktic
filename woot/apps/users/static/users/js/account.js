@@ -1,11 +1,7 @@
 // 1. Load Context
-Context.setFn(function () {
-	// ajax
-	ajax('user_context', {}, function (data) {
-		Context.store = data;
-		console.log(Context.store);
-	});
-});
+Context.setFn(ajax('user_context', {}, function (data) {
+	Context.store = data;
+}));
 
 Context.update(); // load data
 
@@ -71,6 +67,46 @@ UI.createApp('hook', [
 			},
 			fn: function (_this, data) {
 				// create buttons from Context and remove loading icon
+				// 'data' is a list of client names
+
+				// remove loading button
+				var loadingIcon = UI.getComponent('cs-loading-icon');
+				loadingIcon.model().fadeOut();
+
+				// map data to new buttons
+				data.map(function (clientName) {
+					var child = UI.createComponent('cs-{name}-button'.format({name: clientName}), {
+						root: _this.id,
+						template: UI.templates.button,
+						appearance: {
+							style: {
+								'opacity': '0.0',
+							},
+							html: '{name}'.format({name: clientName}),
+						},
+						state: {
+							svitches: [
+								{stateName: 'role-state', fn: function (_this) {
+									Context.store['current_client'] = clientName;
+								}}
+							],
+							stateMap: {
+								'client-state': 'role-state',
+							},
+						},
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								UI.changeState(_this.mapState(UI.globalState));
+							}}
+						],
+					});
+
+					_this.children.push(child);
+					child.render();
+
+					// make buttons visible
+					child.model().animate({'opacity': '1.0'});
+				});
 			}
 		},
 		children: [
@@ -92,6 +128,48 @@ UI.createApp('hook', [
 					style: {
 						'left': '50px',
 					},
+					fn: function (_this) {
+						// 1. remove current children
+						_this.children.map(function (child) {
+							UI.removeComponent(child.id);
+						});
+
+						// 2. map data from context to new children and render
+						var data = Context.get(['roles', 'clients', Context.get('current_client'), 'roles']);
+						data.map(function (roleName) {
+							var child = UI.createComponent('rs-{name}-button'.format({name: roleName}), {
+								root: _this.id,
+								template: UI.templates.button,
+								appearance: {
+									style: {
+										'opacity': '0.0',
+									},
+									html: roleName,
+								},
+								state: {
+									svitches: [
+										{stateName: 'content-state', fn: function (_this) {
+											Context.store['current_role'] = roleName;
+										}}
+									],
+									stateMap: {
+										'role-state': 'content-state',
+									}
+								},
+								bindings: [
+									{name: 'click', fn: function (_this) {
+										UI.changeState(_this.mapState(UI.globalState));
+									}}
+								],
+							});
+
+							_this.children.push(child);
+							child.render();
+
+							// make buttons visible
+							child.model().animate({'opacity': '1.0'});
+						});
+					}
 				}},
 				{name: 'content-state', args: {
 					style: {
@@ -100,19 +178,6 @@ UI.createApp('hook', [
 				}},
 			],
 		},
-		registry: {
-			path: function () {
-				return [Context.get('current-client'), 'roles']
-			},
-			fn: function (_this, data) {
-				// create role buttons and remove loading icon
-			},
-		},
-		children: [
-			UI.createComponent('rs-loading-icon', {
-				template: UI.templates.loadingIcon,
-			}),
-		],
 	}),
 	UI.createComponent('back-sidebar', {
 		template: UI.templates.sidebar,
@@ -157,12 +222,9 @@ UI.createApp('hook', [
 					}
 				},
 				bindings: [
-					{
-						name: 'click',
-						fn: function (_this) {
-							UI.changeState(_this.mapState(UI.globalState));
-						},
-					}
+					{name: 'click', fn: function (_this) {
+						UI.changeState(_this.mapState(UI.globalState));
+					}},
 				],
 			}),
 		],
