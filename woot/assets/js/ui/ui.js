@@ -70,80 +70,107 @@ var UI = {
 	// Basic component definition
 	component: function (id, args) {
 		// the variable 'this' refers to an instance of this function when called with 'new component()'
+		// args
+		// The structure of this is not too important, but it should stay like this:
+		//
+		// (id, { // <- args variable
+		// 	root: '',
+		// 	template: UI.templates.*,
+		// 	appearance: {
+		// 		html: '',
+		// 		classes: [],
+		// 		style: {},
+		// 	},
+		// 	state: {
+		// 		states: [],
+		// 		svtiches: [],
+		// 		stateMap: {},
+		// 	},
+		// 	registry: {
+		// 		path: [],
+		// 		fn: function () {},
+		// 	}
+		// 	children: [],
+		// 	properties: {},
+		// 	bindings: [
+		// 		{
+		// 			name: 'click',
+		// 			fn: function () {},
+		// 		}
+		// 	],
+		// })
 
 		// id
 		this.id = id;
 
-		// args
-		// The structure of this is not too important, but it should stay like this:
-		// (id, { // <- args variable
-		// 	root: '',
-		// 	properties: {
-		// 		props: {},
-		// 		template: UI.templates.*,
-		// 		html: '',
-		// 		classes: [],
-		// 		style: {},
-		// 		states: [],
-		// 		svtiches: [],
-		// 		stateMap: {},
-		// 		click: function () {},
-		// 	},
-		// 	children: [],
-		// })
-
 		// root
 		this.root = args.root;
-		this.parent = undefined;
 
-		// static properties
-		this.props = args.properties.props;
+		// template
+		this.template = args.template;
 
-		// rendered with template
-		this.template = args.properties.template;
-		this.html = args.properties.html;
-		this.classes = args.properties.classes; // Default state classes
+		// appearance
+		this.html = args.appearance.html;
+		this.classes = args.appearance.classes; // Default state classes
 		this.stateClasses = []; // Can be added by states
-		this.style = args.properties.style;
+		this.style = args.appearance.style;
+		this.stateStyle = {};
 
-		// states
-		this.getState = function (stateName) {
-			return this.states.filter(function (state) {
-				return state.name === stateName;
-			})[0];
-		}
-
-		if (args.properties.states !== undefined) {
-			this.states = args.properties.states.map(function (state) {
-				return UI.createState(this, state.name, state.args);
-			}, this);
-
-			this.state = this.getState(UI.globalState);
-
-			if (this.state !== undefined && this.state.classes !== undefined) {
-				this.stateClasses = this.state.classes;
+		// state
+		// if states have been defined for the component
+		if (args.state !== undefined) {
+			// get state
+			this.getState = function (stateName) {
+				return this.states.filter(function (state) {
+					return state.name === stateName;
+				})[0];
 			}
 
+			// states
+			if (args.state.states !== undefined) {
+				this.states = args.state.states.map(function (state) {
+					return UI.createState(this, state.name, state.args);
+				}, this);
+
+				this.state = this.getState(UI.globalState);
+				this.stateClasses = this.state.classes !== undefined ? this.state.classes : [];
+				this.stateStyle = this.state.style !== undefined ? this.state.style : {};
+			}
+
+			// svitches
+			if (args.state.svtiches !== undefined) {
+				this.svitches = args.properties.svitches.map(function (svitch) {
+					return UI.createSvitch(this, svitch.stateName, svitch.fn);
+				});
+			}
+
+			// state map
+			if (args.state.stateMap !== undefined) {
+				this.stateMap = args.state.stateMap;
+			}
 		}
 
-		if (args.properties.svitches !== undefined) {
-			this.svitches = args.properties.svitches.map(function (svitch) {
-				return UI.createSvitch(this, svitch.stateName, svitch.fn);
-			});
-		}
+		// registry
+		if (args.registry !== undefined) {
+			// vars
+			this.registryPath = args.registry.path; // an array of args
+			this.registryResponse = args.registry.fn;
 
-		if (args.properties.stateMap !== undefined) {
-			this.stateMap = args.properties.stateMap;
+			// register
+			Context.register(this.id, this.registryPath);
 		}
 
 		// children
 		this.children = args.children !== undefined ? args.children : [];
 
+		// properties
+		this.properties = args.properties;
+
 		// bindings
-		this.click = args.click;
+		this.bindings = args.bindings !== undefined ? args.bindings : [];
 
 		///////////////
-		// PRE-PROCESSING
+		// METHODS
 		// model
 		this.model = function () {
 			return $('#{id}'.format({id: this.id}));
@@ -171,35 +198,32 @@ var UI = {
 
 			// 4. Add classes and style of initial state
 			var model = this.model();
-			if (this.state !== undefined) {
-				this.stateClasses.map(function (stateClass) {
-					model.addClass(stateClass);
-				});
-				if (this.state.style !== undefined) {
-					model.css(this.state.style);
-				}
-			}
+			this.stateClasses.map(function (stateClass) {
+				model.addClass(stateClass);
+			});
+			model.css(this.state.style);
 
-			// 5. add bindings
-			if (this.click !== undefined) {
+			// 5. render children
+			this.children.map(this.renderChild, this);
+
+			// 6. add bindings
+			this.bindings.map(function (binding) {
 				var _this = this;
-
-				model.on('click', function () {
-					_this.click(_this);
+				model.on(binding.name, function () {
+					binding.fn(_this);
 				});
-			}
-
-			// 6. render children
-			if (this.children !== undefined) {
-				this.children.map(this.renderChild, this);
-			}
+			}, this);
 		}
 
 		// render child
 		this.renderChild = function (child) {
 			child.root = this.id;
-			child.parent = this;
 			child.render();
+		}
+
+		// parent
+		this.parent = function () {
+			return UI.getComponent(this.root);
 		}
 
 		///////////////
@@ -213,38 +237,35 @@ var UI = {
 			var model = this.model();
 
 			// 3. add classes
-			var _this = this;
-			var removeCurrentClassesPromise = new Promise(function () {
-				_this.stateClasses.map(function (className) {
-					model.removeClass(className);
-				});
+			this.stateClasses.map(function (className) {
+				model.removeClass(className);
 			});
 
-			var addNewClassesFunction = function () {
-				if (this.state !== undefined) {
-					_this.stateClasses = _this.state.classes !== undefined ? _this.state.classes : _this.classes;
-					_this.stateClasses.map(function (className) {
-						model.addClass(className);
-					});
+			this.stateClasses = this.state.classes !== undefined ? this.state.classes : [];
+			this.stateClasses.map(function (className) {
+				model.addClass(className);
+			});
+
+			// 4. add style
+			Object.keys(this.stateStyle).map(function (key) {
+				if (this.style[key] !== undefined) {
+					model.css(key, this.style[key]); // set it to it's default value
+				} else {
+					model.css(key, '');
 				}
+			});
+
+			this.stateStyle = this.state.style !== undefined ? this.state.style : {};
+			model.animate(this.stateStyle);
+
+			// 5. add html
+			if (this.state.html !== undefined) {
+				model.html(this.state.html);
 			}
 
-			$.when(removeCurrentClassesPromise).done(addNewClassesFunction);
-
-			if (this.state !== undefined) {
-				// 4. add style
-				var style = this.state.style !== undefined ? this.state.style : this.style;
-				model.animate(style);
-
-				// 5. add html
-				if (this.state.html !== undefined) {
-					model.html(this.state.html);
-				}
-
-				// 6. perform action
-				if (this.state.fn !== undefined) {
-					this.state.fn(this);
-				}
+			// 6. perform action
+			if (this.state.fn !== undefined) {
+				this.state.fn(this);
 			}
 		}
 
@@ -265,9 +286,7 @@ var UI = {
 		var id = 'app';
 		var args = {
 			root: root,
-			properties: {
-				template: UI.templates.div,
-			},
+			template: UI.templates.div,
 			children: children,
 		};
 
@@ -370,14 +389,29 @@ var Context = {
 		return sub;
 	},
 
+	// REGISTRY
+	// register elements that are requesting data and notify them of its arrival in the context variable.
+	registry: {},
+	// e.g.
+	// registry: {
+	// 	'element-id-1':['args','that','lead','to','data'],
+	// }
+
+	register: function (componentId, componentPath) {
+		registry[componentId] = componentPath;
+	},
+
 	// define update function for context along with triggers and anything else.
-	fn: undefined,
+	fn: undefined, // this must be a valid promise
 	setFn: function (fn) {
 		this.fn = fn;
 	},
 
 	// A custom function can be defined to update the store and even trigger a state based on the result.
-	update: function (args) {
-		this.fn(args); // args is not intended to be new data. This functionality should be encoded in this.fn.
+	update: function () {
+		$.when(this.fn).done(function () {
+			// call back to every component that has registered
+			console.log(Context.store);
+		});
 	},
 }
