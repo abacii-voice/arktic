@@ -89,8 +89,7 @@ var UI = {
 		// 	registry: {
 		// 		path: [],
 		// 		fn: function () {},
-		// 	}
-		// 	children: [],
+		// 	},
 		// 	properties: {},
 		// 	bindings: [
 		// 		{
@@ -98,6 +97,7 @@ var UI = {
 		// 			fn: function () {},
 		// 		}
 		// 	],
+		// 	children: [],
 		// })
 
 		// id
@@ -110,10 +110,12 @@ var UI = {
 		this.template = args.template;
 
 		// appearance
-		this.html = args.appearance.html;
-		this.classes = args.appearance.classes; // Default state classes
+		if (args.appearance !== undefined) {
+			this.html = args.appearance.html;
+			this.classes = args.appearance.classes; // Default state classes
+			this.style = args.appearance.style;
+		}
 		this.stateClasses = []; // Can be added by states
-		this.style = args.appearance.style;
 		this.stateStyle = {};
 
 		// state
@@ -160,14 +162,14 @@ var UI = {
 			Context.register(this.id, this.registryPath);
 		}
 
-		// children
-		this.children = args.children !== undefined ? args.children : [];
-
 		// properties
 		this.properties = args.properties;
 
 		// bindings
 		this.bindings = args.bindings !== undefined ? args.bindings : [];
+
+		// children
+		this.children = args.children !== undefined ? args.children : [];
 
 		///////////////
 		// METHODS
@@ -182,11 +184,14 @@ var UI = {
 			var root = $('#{id}'.format({id: this.root}));
 
 			// 2. render template
+			var classes = this.classes !== undefined ? this.classes : [];
+			var style = this.style !== undefined ? this.style : {};
+			var html = this.html !== undefined ? this.html : '';
 			var renderedTemplate = this.template.format({
 				id: this.id,
-				classes: formatClasses(this.classes),
-				style: formatStyle(this.style),
-				html: this.html,
+				classes: formatClasses(classes),
+				style: formatStyle(style),
+				html: html,
 			});
 
 			// 3. Add element to the DOM under root.
@@ -201,7 +206,7 @@ var UI = {
 			this.stateClasses.map(function (stateClass) {
 				model.addClass(stateClass);
 			});
-			model.css(this.state.style);
+			model.css(this.stateStyle);
 
 			// 5. render children
 			this.children.map(this.renderChild, this);
@@ -280,6 +285,14 @@ var UI = {
 		var component = new this.component(id, args);
 		this.components[id] = component;
 		return component;
+	},
+
+	removeComponent: function (id) {
+		var component = this.getComponent(id);
+		// remove from Context registry
+		// remove all bindings
+		// remove model from DOM
+		// remove from components object
 	},
 
 	createApp: function (root, children) {
@@ -361,7 +374,10 @@ var UI = {
 			</div>
 		`,
 		div: `
-			<div id={id}></div>
+			<div id='{id}'></div>
+		`,
+		loadingIcon: `
+			<div id='{id}' class='loading-icon'><img src='loading-icon.gif' /></div>
 		`,
 	},
 
