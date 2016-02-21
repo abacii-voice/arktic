@@ -34,7 +34,7 @@ var UI = {
 			this.globalState = stateName;
 
 			// execute all svitches with a promise
-			var svitchPromise = new Promise(function () {
+			var svitchPromise = new Promise(function (resolve, reject) {
 				UI.svitches[stateName].map(function (svitch) {
 					svitch.fn(svitch.component);
 				});
@@ -83,7 +83,7 @@ var UI = {
 		// 	},
 		// 	state: {
 		// 		states: [],
-		// 		svtiches: [],
+		// 		svitches: [],
 		// 		stateMap: {},
 		// 	},
 		// 	registry: {
@@ -140,8 +140,8 @@ var UI = {
 			}
 
 			// svitches
-			if (args.state.svtiches !== undefined) {
-				this.svitches = args.properties.svitches.map(function (svitch) {
+			if (args.state.svitches !== undefined) {
+				this.svitches = args.state.svitches.map(function (svitch) {
 					return UI.createSvitch(this, svitch.stateName, svitch.fn);
 				});
 			}
@@ -294,9 +294,16 @@ var UI = {
 	removeComponent: function (id) {
 		var component = this.getComponent(id);
 		// remove from Context registry
+		Context.remove(component.id);
+
 		// remove all bindings
+		component.bindings.map(function (binding) {
+			var _this = this;
+			component.model().off(binding.name);
+		}, component);
+
 		// remove model from DOM
-		// remove from components object
+		component.model().remove();
 	},
 
 	createApp: function (root, children) {
@@ -354,7 +361,7 @@ var UI = {
 	},
 
 	// svitch factory
-	createSvitch: function (component, state, fn) {
+	createSvitch: function (component, stateName, fn) {
 		var svitch = new this.svitch(component, stateName, fn);
 		this.svitches[stateName].push(svitch);
 		return svitch;
@@ -413,7 +420,7 @@ var Context = {
 
 	// REGISTRY
 	// register elements that are requesting data and notify them of its arrival in the context variable.
-	registry: {},
+	registry: [],
 	// e.g.
 	// registry: {
 	// 	'element-id-1':['args','that','lead','to','data'],
@@ -421,6 +428,10 @@ var Context = {
 
 	register: function (componentId, componentPath) {
 		this.registry[componentId] = componentPath;
+	},
+
+	remove: function (componentId) {
+		delete this.registry[componentId];
 	},
 
 	// define update function for context along with triggers and anything else.
@@ -433,7 +444,11 @@ var Context = {
 	update: function () {
 		$.when(this.fn).done(function () {
 			// call back to every component that has registered
-			// console.log(Context.store);
+			Object.keys(Context.registry).map(function (registryId) {
+				var component = UI.getComponent(registryId);
+				var path = Context.registry[registryId];
+				component.registryResponse(component, Context.get(path()));
+			});
 		});
 	},
 }
