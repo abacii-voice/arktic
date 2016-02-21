@@ -71,7 +71,9 @@ UI.createApp('hook', [
 			],
 		},
 		registry: {
-			path: ['clients'],
+			path: function () {
+				return ['clients']
+			},
 			fn: function (_this, data) {
 				// create buttons from Context and remove loading icon
 			}
@@ -83,86 +85,8 @@ UI.createApp('hook', [
 		],
 	}),
 	UI.createComponent('role-sidebar', {
-		root: '',
-		template: UI.templates.*,
-		appearance: {
-			html: '',
-			classes: [],
-			style: {},
-		},
+		template: UI.templates.sidebar,
 		state: {
-			states: [],
-			svtiches: [],
-			stateMap: {},
-		},
-		registry: {
-			path: [],
-			fn: function () {},
-		}
-		children: [],
-		properties: {},
-		bindings: [
-			{
-				name: 'click',
-				fn: function () {},
-			}
-		],
-	}),
-	UI.createComponent('back-sidebar', {
-		root: '',
-		template: UI.templates.*,
-		appearance: {
-			html: '',
-			classes: [],
-			style: {},
-		},
-		state: {
-			states: [],
-			svtiches: [],
-			stateMap: {},
-		},
-		registry: {
-			path: [],
-			fn: function () {},
-		}
-		children: [],
-		properties: {},
-		bindings: [
-			{
-				name: 'click',
-				fn: function () {},
-			}
-		],
-	}),
-]);
-
-UI.createApp('hook', [
-	UI.createComponent('client-sidebar', {
-		properties: {
-			template: UI.templates.sidebar,
-			states: [
-				{name: 'client-state', args: {
-					style: {
-						'left': '0px',
-					},
-				}},
-				{name: 'role-state', args: {
-					style: {
-						'left': '-300px',
-					}
-				}},
-				{name: 'content-state', args: {
-					style: {
-						'left': '-300px',
-					},
-				}},
-			],
-			svtiches: [],
-		},
-	}),
-	UI.createComponent('role-sidebar', {
-		properties: {
-			template: UI.templates.sidebar,
 			states: [
 				{name: 'client-state', args: {
 					style: {
@@ -181,25 +105,26 @@ UI.createApp('hook', [
 				}},
 			],
 		},
+		registry: {
+			path: function () {
+				return [Context.get('current-client'), 'roles']
+			},
+			fn: function (_this, data) {
+				// create role buttons and remove loading icon
+			},
+		},
 		children: [
-			UI.createComponent('rs-test-button', {
-				properties: {
-					template: UI.templates.button,
-					html: 'Test role',
-					stateMap: {
-						'role-state': 'content-state',
-					},
-				},
-				click: function (_this) {
-					UI.changeState(_this.stateMap[UI.globalState]);
-				}
-			}),
+			UI.createComponent('rs-loading-icon', {
+				template: UI.templates.loadingIcon,
+			});
 		],
 	}),
 	UI.createComponent('back-sidebar', {
-		properties: {
-			template: UI.templates.sidebar,
+		template: UI.templates.sidebar,
+		appearance: {
 			classes: ['mini'],
+		},
+		state: {
 			states: [
 				{name: 'client-state', args: {
 					style: {
@@ -226,18 +151,25 @@ UI.createApp('hook', [
 		},
 		children: [
 			UI.createComponent('bs-back-button', {
-				properties: {
-					template: UI.templates.button,
-					html: '<span class="glyphicon glyphicon-chevron-left"></span>',
+				template: UI.templates.button,
+				appearance: {
+					html: '<span class="glyphicon glyphicon-chevron-left"></span>'
+				},
+				states: {
 					stateMap: {
 						'role-state': 'client-state',
 						'content-state': 'role-state',
 					}
 				},
-				click: function (_this) {
-					UI.changeState(_this.stateMap[UI.globalState]);
-				}
-			}),
+				bindings: [
+					{
+						name: 'click',
+						fn: function (_this) {
+							UI.changeState(_this.stateMap[UI.globalState]);
+						},
+					}
+				],
+			});
 		],
 	}),
 ]);

@@ -155,7 +155,7 @@ var UI = {
 		// registry
 		if (args.registry !== undefined) {
 			// vars
-			this.registryPath = args.registry.path; // an array of args
+			this.registryPath = args.registry.path; // a function that generates an array of args
 			this.registryResponse = args.registry.fn;
 
 			// register
