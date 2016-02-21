@@ -252,13 +252,17 @@ var UI = {
 			});
 
 			// 4. add style
-			Object.keys(this.stateStyle).map(function (key) {
-				if (this.style[key] !== undefined) {
-					model.css(key, this.style[key]); // set it to it's default value
-				} else {
-					model.css(key, '');
-				}
-			});
+			// Need to find a better way of doing this:
+			// Maybe compile a style object based on conditions from default, previous, and next
+			// Then animate that compiled list of values.
+			//
+			// Object.keys(this.stateStyle).map(function (key) {
+			// 	if (this.style !== undefined && this.style[key] !== undefined) {
+			// 		model.css(key, this.style[key]); // set it to it's default value
+			// 	} else {
+			// 		model.css(key, '');
+			// 	}
+			// });
 
 			this.stateStyle = this.state.style !== undefined ? this.state.style : {};
 			model.animate(this.stateStyle);
@@ -377,7 +381,9 @@ var UI = {
 			<div id='{id}'></div>
 		`,
 		loadingIcon: `
-			<div id='{id}' class='loading-icon'><img src='loading-icon.gif' /></div>
+			<div id='{id}' class='loading-icon'>
+				<img src='/static/loading-icon.gif' />
+			</div>
 		`,
 	},
 
@@ -414,7 +420,7 @@ var Context = {
 	// }
 
 	register: function (componentId, componentPath) {
-		registry[componentId] = componentPath;
+		this.registry[componentId] = componentPath;
 	},
 
 	// define update function for context along with triggers and anything else.
@@ -427,7 +433,7 @@ var Context = {
 	update: function () {
 		$.when(this.fn).done(function () {
 			// call back to every component that has registered
-			console.log(Context.store);
+			// console.log(Context.store);
 		});
 	},
 }
