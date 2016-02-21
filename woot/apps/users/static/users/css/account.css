@@ -71,12 +71,15 @@ Panels
 	left: 100px;
 	display: block;
 	overflow-y: auto;
+	overflow-x: visible;
 	width: 824px;
 	height: 70%;
 	transform: translateY(-50%);
 }
 
 .sub-panel {
+	width: 80%;
+	position: relative;
 	background-color: white;
 }
 
