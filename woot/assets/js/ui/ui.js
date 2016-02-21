@@ -375,9 +375,13 @@ var UI = {
 			<div id='{id}' class='sidebar {classes}' style='{style}'></div>
 		`,
 		contentPanel: `
-			<div id='{id}' class='content-panel {classes}' style='{style}'>
-				{html}
-			</div>
+			<div id='{id}' class='content-panel {classes}' style='{style}'></div>
+		`,
+		panelSpacer: `
+			<div id='{id}' class='panel-spacer {classes}' style='{style}'></div>
+		`,
+		subPanel: `
+			<div id='{id}' class='sub-panel {classes}' style='{style}'></div>
 		`,
 		button: `
 			<div id={id} class='btn btn-default button {classes}' style='{style}'>

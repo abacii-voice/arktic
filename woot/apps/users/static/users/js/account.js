@@ -205,7 +205,7 @@ UI.createApp('hook', [
 					},
 					fn: function (_this) {
 						_this.model().animate({'left': '0px'}, 200);
-					}
+					},
 				}},
 			],
 		},
@@ -230,22 +230,75 @@ UI.createApp('hook', [
 		],
 	}),
 	UI.createComponent('content-panel', {
+		template: UI.templates.contentPanel,
 		children: [
 			// MAIN INTERFACE ELEMENTS
+
 			// Action widget
 			// Contains a start button for the task at hand (transcription / moderation / upload)
+			// ####
 			UI.createComponent('action-widget', {
+				template: UI.templates.subPanel,
+				appearance: {
+					style: {
+						'height': '200px',
+					},
+				},
+				state: {
+					states: [
+						{name: 'client-state', args: {
+							style: {
+								'left': '-50px',
+								'opacity': '0.0',
+							},
+						}},
+					],
+				},
+				// state: {
+				// 	states: [
+				// 		{name: 'client-state', args: {
+				// 			style: {
+				// 				'left': '-50px',
+				// 				'opacity': '0.0',
+				// 			},
+				// 		}},
+				// 		{name: 'role-state', args: {
+				// 			style: {
+				// 				'left': '-50px',
+				// 				'opacity': '0.0',
+				// 			},
+				// 		}},
+				// 		{name: 'content-state', args: {
+				// 			style: {
+				// 				'left': '0px',
+				// 				'opacity': '1.0',
+				// 			},
+				// 		}},
+				// 	],
+				// },
 				children: [
 					// Start button - link to app (transcription / moderation / upload)
-					UI.createComponent('start-button', {}),
+					UI.createComponent('start-button', {
+						template: UI.templates.button,
+						appearance: {
+							style: {
+
+							}
+						}
+					}),
 
 					// Activity - see active projects and users
-					UI.createComponent('activity-monitor', {}),
+					UI.createComponent('activity-monitor', {
+						template: UI.templates.div,
+					}),
 
 					// Billing - see the current billing cycle its billable activity
-					UI.createComponent('billing-monitor', {}),
+					UI.createComponent('billing-monitor', {
+						template: UI.templates.div,
+					}),
 				],
 			}),
+			// ####
 
 			// Message widget
 			// Contains a list of recent messages and a link to the messenger app.
@@ -294,7 +347,7 @@ UI.createApp('hook', [
 			// }),
 			// ####
 		],
-	});
+	}),
 ]);
 
 // 4. Render app
