@@ -382,7 +382,7 @@ var UI = {
 		`,
 		loadingIcon: `
 			<div id='{id}' class='loading-icon'>
-				<img src='/static/loading-icon.gif' />
+				<img src='/static/img/loading-icon.gif' />
 			</div>
 		`,
 	},
