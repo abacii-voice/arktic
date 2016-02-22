@@ -89,12 +89,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 	def create_productionadmin(self, production_client):
 		# only one per client
 		productionadmin_role, productionadmin_created = self.users_productionadmin_roles.get_or_create(client=production_client)
-		return productionadmin
+		return productionadmin_role
 
 	def create_contractadmin(self, contract_client):
 		# only one per client
 		contractadmin_role, contractadmin_created = self.users_contractadmin_roles.get_or_create(client=contract_client)
-		return contractadmin
+		return contractadmin_role
 
 	def create_moderator(self, client):
 		# only one per client

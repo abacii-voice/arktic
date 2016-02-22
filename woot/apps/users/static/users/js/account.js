@@ -268,7 +268,7 @@ UI.createApp('hook', [
 						},
 						bindings: [
 							{name: 'click', fn: function (_this) {
-								UI.changeState(_this.mapState(UI.globalState));
+								UI.changeState(_this.mapState(UI.globalState), _this);
 							}}
 						],
 					});
@@ -306,6 +306,9 @@ UI.createApp('hook', [
 							UI.removeComponent(child.id);
 						});
 
+						_this.children = [];
+						// console.log(_this.children, Context.get('current_client'));
+
 						// 2. map data from context to new children and render
 						var data = Context.get(['roles', 'clients', Context.get('current_client'), 'roles']);
 						data.map(function (roleName) {
@@ -330,7 +333,7 @@ UI.createApp('hook', [
 								},
 								bindings: [
 									{name: 'click', fn: function (_this) {
-										UI.changeState(_this.mapState(UI.globalState));
+										UI.changeState(_this.mapState(UI.globalState), _this);
 									}}
 								],
 							});
@@ -395,7 +398,7 @@ UI.createApp('hook', [
 				},
 				bindings: [
 					{name: 'click', fn: function (_this) {
-						UI.changeState(_this.mapState(UI.globalState));
+						UI.changeState(_this.mapState(UI.globalState), _this);
 					}},
 				],
 			}),
