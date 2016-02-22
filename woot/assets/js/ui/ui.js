@@ -308,7 +308,9 @@ var UI = {
 		component.model().remove();
 
 		// remove children recursively
-		// err, do this later.
+		component.children.map(function (child) {
+			UI.removeComponent(child.id);
+		});
 
 		// remove component from components
 		delete this.components[id];
