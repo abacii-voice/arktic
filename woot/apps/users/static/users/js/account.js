@@ -409,4 +409,3 @@ UI.createApp('hook', [
 
 // 4. Render app
 UI.renderApp();
-// UI.changeState('content-state');
