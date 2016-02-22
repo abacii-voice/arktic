@@ -96,6 +96,11 @@ USE_TZ = True
 ########## END GENERAL CONFIGURATION
 
 
+########## SESSION CONFIGURATION
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+########## END SESSION CONFIGURATION
+
+
 ########## MEDIA CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
 MEDIA_ROOT = normpath(join(DJANGO_ROOT, 'media'))

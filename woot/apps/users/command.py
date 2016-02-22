@@ -20,13 +20,27 @@ def user_context(request):
 		user = request.user
 		if user.is_authenticated():
 
+			# get data
+			client_list = user.clients()
+			role_data = user.roles()
+
+			# single client test
+			one_client = len(client_list)==1
+			one_client_name = client_list[0] if one_client else ''
+
+			# single role test
+			one_role = len(role_data['clients'][one_client_name]['roles'])==1 if one_client else False
+			one_role_name = role_data['clients'][one_client_name]['roles'][0] if one_role else ''
+
 			# make context
 			context = {
-				'clients': user.clients(),
+				'clients': client_list,
 				'roles': user.roles(),
 				'stats': '',
-				'current_client': '',
-				'current_role': '',
+				'one_client': one_client,
+				'one_role': one_role,
+				'current_client': one_client_name,
+				'current_role': one_role_name,
 			}
 
 			return JsonResponse(context)
