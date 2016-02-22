@@ -59,13 +59,13 @@ UI.createApp('hook', [
 					states: [
 						{name: 'client-state', args: {
 							style: {
-								'left': '10px',
+								'left': '5px',
 								'opacity': '0.0',
 							},
 						}},
 						{name: 'role-state', args: {
 							style: {
-								'left': '10px',
+								'left': '5px',
 								'opacity': '0.0',
 							},
 						}},
@@ -82,29 +82,92 @@ UI.createApp('hook', [
 					UI.createComponent('start-button', {
 						template: UI.templates.button,
 						appearance: {
+							html: 'Start',
+							classes: ['round'],
 							style: {
-
+								'position': 'absolute',
+								'top': '40px',
+								'left': '40px',
+								'height': '120px',
+								'width': '120px',
+								'border': '2px solid #aaa',
+								'padding-top': '44px',
+								'font-size': '1.5em',
 							}
-						}
+						},
 					}),
 
 					// Activity - see active projects and users
 					UI.createComponent('activity-monitor', {
 						template: UI.templates.div,
+						appearance: {
+							html: `
+								<h3>Activity</h3>
+							`,
+							style: {
+								'position': 'absolute',
+								'top': '0px',
+								'left': '240px',
+								'height': '200px',
+								'width': '200px',
+							}
+						}
 					}),
 
 					// Billing - see the current billing cycle its billable activity
 					UI.createComponent('billing-monitor', {
 						template: UI.templates.div,
+						appearance: {
+							html: `
+								<h3>Billing cycle</h3>
+							`,
+							style: {
+								'position': 'absolute',
+								'top': '0px',
+								'left': '440px',
+								'height': '200px',
+								'width': '200px',
+							}
+						}
 					}),
 				],
 			}),
 			// ####
 
+			UI.createComponent('cp-spacer-1', {template: UI.templates.spacer}),
+
 			// Message widget
 			// Contains a list of recent messages and a link to the messenger app.
 			// ####
 			// UI.createComponent('messages-widget', {
+			// 	template: UI.templates.subPanel,
+			// 	appearance: {
+			// 		style: {
+			// 			'height': '500px',
+			// 		},
+			// 	},
+			// 	state: {
+			// 		states: [
+			// 			{name: 'client-state', args: {
+			// 				style: {
+			// 					'left': '5px',
+			// 					'opacity': '0.0',
+			// 				},
+			// 			}},
+			// 			{name: 'role-state', args: {
+			// 				style: {
+			// 					'left': '5px',
+			// 					'opacity': '0.0',
+			// 				},
+			// 			}},
+			// 			{name: 'content-state', args: {
+			// 				style: {
+			// 					'left': '0px',
+			// 					'opacity': '1.0',
+			// 				},
+			// 			}},
+			// 		],
+			// 	},
 			// 	children: [
 			// 		// Contains links for new messages and filters
 			// 		UI.createComponent('message-header', {
@@ -343,3 +406,4 @@ UI.createApp('hook', [
 
 // 4. Render app
 UI.renderApp();
+// UI.changeState('content-state');

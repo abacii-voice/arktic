@@ -377,8 +377,8 @@ var UI = {
 		contentPanel: `
 			<div id='{id}' class='content-panel {classes}' style='{style}'></div>
 		`,
-		panelSpacer: `
-			<div id='{id}' class='panel-spacer {classes}' style='{style}'></div>
+		spacer: `
+			<div id='{id}' class='spacer'></div>
 		`,
 		subPanel: `
 			<div id='{id}' class='sub-panel {classes}' style='{style}'></div>
@@ -389,7 +389,9 @@ var UI = {
 			</div>
 		`,
 		div: `
-			<div id='{id}'></div>
+			<div id='{id}' class='{classes}' style='{style}'>
+				{html}
+			</div>
 		`,
 		loadingIcon: `
 			<div id='{id}' class='loading-icon'>
