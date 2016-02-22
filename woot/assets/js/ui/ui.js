@@ -28,14 +28,16 @@ var UI = {
 	},
 
 	// A change of global state that is broadcast to the components that need to respond.
-	changeState: function (stateName) {
+	changeState: function (stateName, trigger) {
 		if (this.globalStates.indexOf(stateName) !== -1) {
 			// update global state
 			this.globalState = stateName;
 
 			// execute all svitches with a promise
 			var svitchPromise = new Promise(function (resolve, reject) {
-				UI.svitches[stateName].map(function (svitch) {
+				UI.svitches[stateName].filter(function (svitch) {
+					return svitch.component === trigger;
+				}).map(function (svitch) {
 					svitch.fn(svitch.component);
 				});
 			});
@@ -143,7 +145,7 @@ var UI = {
 			if (args.state.svitches !== undefined) {
 				this.svitches = args.state.svitches.map(function (svitch) {
 					return UI.createSvitch(this, svitch.stateName, svitch.fn);
-				});
+				}, this);
 			}
 
 			// state map
@@ -304,6 +306,12 @@ var UI = {
 
 		// remove model from DOM
 		component.model().remove();
+
+		// remove children recursively
+		// err, do this later.
+
+		// remove component from components
+		delete this.components[id];
 	},
 
 	createApp: function (root, children) {
