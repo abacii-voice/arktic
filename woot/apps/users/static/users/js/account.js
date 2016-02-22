@@ -86,11 +86,11 @@ UI.createApp('hook', [
 							classes: ['round'],
 							style: {
 								'position': 'absolute',
+								'background': '#aaa',
 								'top': '40px',
 								'left': '40px',
 								'height': '120px',
 								'width': '120px',
-								'border': '2px solid #aaa',
 								'padding-top': '44px',
 								'font-size': '1.5em',
 							}
