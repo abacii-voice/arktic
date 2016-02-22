@@ -1,6 +1,14 @@
 // 1. Load Context
 Context.setFn(ajax('user_context', {}, function (data) {
 	Context.store = data;
+
+	if (Context.get('one_client')) {
+		if (Context.get('one_role')) {
+			UI.changeState('summary-state');
+		} else {
+			UI.changeState('role-state');
+		}
+	}
 }));
 
 Context.update(); // load data
@@ -8,7 +16,12 @@ Context.update(); // load data
 // 2. Define global states
 UI.createGlobalStates('client-state', [
 	'role-state',
-	'content-state'
+	'summary-state',
+	'interface-state-transcription',
+	'interface-state-moderation',
+	'upload-state',
+	'message-state',
+	'billing-state',
 ]);
 
 // 3. Define component tree
@@ -69,7 +82,7 @@ UI.createApp('hook', [
 								'opacity': '0.0',
 							},
 						}},
-						{name: 'content-state', args: {
+						{name: 'summary-state', args: {
 							style: {
 								'left': '0px',
 								'opacity': '1.0',
@@ -160,7 +173,7 @@ UI.createApp('hook', [
 			// 					'opacity': '0.0',
 			// 				},
 			// 			}},
-			// 			{name: 'content-state', args: {
+			// 			{name: 'summary-state', args: {
 			// 				style: {
 			// 					'left': '0px',
 			// 					'opacity': '1.0',
@@ -226,7 +239,7 @@ UI.createApp('hook', [
 						'left': '-300px',
 					}
 				}},
-				{name: 'content-state', args: {
+				{name: 'summary-state', args: {
 					style: {
 						'left': '-300px',
 					},
@@ -260,7 +273,7 @@ UI.createApp('hook', [
 							svitches: [
 								{stateName: 'role-state', fn: function (_this) {
 									Context.store['current_client'] = clientName;
-								}}
+								}},
 							],
 							stateMap: {
 								'client-state': 'role-state',
@@ -323,12 +336,12 @@ UI.createApp('hook', [
 								},
 								state: {
 									svitches: [
-										{stateName: 'content-state', fn: function (_this) {
+										{stateName: 'summary-state', fn: function (_this) {
 											Context.store['current_role'] = roleName;
 										}}
 									],
 									stateMap: {
-										'role-state': 'content-state',
+										'role-state': 'summary-state',
 									}
 								},
 								bindings: [
@@ -346,7 +359,7 @@ UI.createApp('hook', [
 						});
 					}
 				}},
-				{name: 'content-state', args: {
+				{name: 'summary-state', args: {
 					style: {
 						'left': '-300px',
 					},
@@ -374,7 +387,7 @@ UI.createApp('hook', [
 						_this.model().animate({'left': '0px'}, 200);
 					}
 				}},
-				{name: 'content-state', args: {
+				{name: 'summary-state', args: {
 					style: {
 						'left': '-50px',
 					},
@@ -393,7 +406,7 @@ UI.createApp('hook', [
 				state: {
 					stateMap: {
 						'role-state': 'client-state',
-						'content-state': 'role-state',
+						'summary-state': 'role-state',
 					}
 				},
 				bindings: [
