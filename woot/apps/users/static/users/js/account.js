@@ -1,3 +1,7 @@
+// 0. Open websocket connection
+// really use only for transcription / moderation / settings change, but not file upload.
+// don't have to use for loading context either. Ajax is fine for that.
+
 // 1. Load Context
 Context.setFn(ajax('user_context', {}, function (data) {
 	Context.store = data;
@@ -53,7 +57,7 @@ UI.createGlobalStates('client-state', [
 // })
 
 UI.createApp('hook', [
-	UI.createComponent('content-panel', {
+	UI.createComponent('summary-panel', {
 		template: UI.templates.contentPanel,
 		children: [
 			// MAIN INTERFACE ELEMENTS
@@ -107,6 +111,9 @@ UI.createApp('hook', [
 								'padding-top': '44px',
 								'font-size': '1.5em',
 							}
+						},
+						state: {
+							stateMap: {},
 						},
 					}),
 
@@ -225,6 +232,18 @@ UI.createApp('hook', [
 			// ####
 		],
 	}),
+	// UI.createComponent('work-interface', {
+	//
+	// }),
+	// UI.createComponent('upload-interface', {
+	//
+	// }),
+	// UI.createComponent('message-interface', {
+	//
+	// }),
+	// UI.createComponent('billing-interface', {
+	//
+	// }),
 	UI.createComponent('client-sidebar', {
 		template: UI.templates.sidebar,
 		state: {
@@ -332,12 +351,17 @@ UI.createApp('hook', [
 									style: {
 										'opacity': '0.0',
 									},
-									html: roleName,
+									html: Context.get(['role_display', roleName]),
 								},
 								state: {
 									svitches: [
 										{stateName: 'summary-state', fn: function (_this) {
 											Context.store['current_role'] = roleName;
+
+											// set function and html of start button
+											var startButton = UI.getComponent('start-button');
+											startButton.model().html(Context.get(['role_start_display', roleName]));
+											startButton.stateMap['summary-state'] = Context.get(['role_states', roleName]);
 										}}
 									],
 									stateMap: {
