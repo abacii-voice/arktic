@@ -41,6 +41,24 @@ def user_context(request):
 				'one_role': one_role,
 				'current_client': one_client_name,
 				'current_role': one_role_name,
+				'role_display': {
+					'worker': 'Transcriber',
+					'moderator': 'Moderator',
+					'productionadmin': 'Admin',
+					'contractadmin': 'Admin',
+				},
+				'role_states': {
+					'worker': 'interface-state-transcription',
+					'moderator': 'interface-state-moderation',
+					'productionadmin': 'upload-state',
+					'contractadmin': 'upload-state',
+				},
+				'role_start_display': {
+					'worker': 'Start transcription',
+					'moderator': 'Start moderation',
+					'productionadmin': 'Upload',
+					'contractadmin': 'Upload',
+				}
 			}
 
 			return JsonResponse(context)
