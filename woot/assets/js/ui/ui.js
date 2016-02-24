@@ -453,22 +453,19 @@ var Context = {
 	// The variable extracted from the server API call. All parsing of its meaning is done by the specific
 	// UI script for each page.
 	store: {},
-	get: function (args) {
-		if (!Array.isArray(args)) {
-			args = [args];
-		}
+	get: function () {
 		// based on a string of parameters, access a value or other sub-structure from store.
 		sub = this.store;
 		var i;
-		for (i=0; i<args.length; i++) {
-			sub = sub[args[i]];
+		for (i=0; i<arguments.length; i++) {
+			sub = sub[arguments[i]];
 		}
 		return sub;
 	},
 
 	// REGISTRY
 	// register elements that are requesting data and notify them of its arrival in the context variable.
-	registry: [],
+	registry: {},
 	// e.g.
 	// registry: {
 	// 	'element-id-1':['args','that','lead','to','data'],
@@ -495,7 +492,7 @@ var Context = {
 			Object.keys(Context.registry).map(function (registryId) {
 				var component = UI.getComponent(registryId);
 				var path = Context.registry[registryId];
-				component.registryResponse(component, Context.get(path()));
+				component.registryResponse(component, Context.get.apply(Context, path()));
 			});
 		});
 	},
