@@ -357,11 +357,6 @@ UI.createApp('hook', [
 									svitches: [
 										{stateName: 'summary-state', fn: function (_this) {
 											Context.store['current_role'] = roleName;
-
-											// set function and html of start button
-											var startButton = UI.getComponent('start-button');
-											startButton.model().html(Context.get(['role_start_display', roleName]));
-											startButton.stateMap['summary-state'] = Context.get(['role_states', roleName]);
 										}}
 									],
 									stateMap: {
