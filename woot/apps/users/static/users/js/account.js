@@ -8,7 +8,7 @@ Context.setFn(ajax('user_context', {}, function (data) {
 
 	if (Context.get('one_client')) {
 		if (Context.get('one_role')) {
-			UI.changeState('summary-state');
+			UI.changeState('control-state');
 		} else {
 			UI.changeState('role-state');
 		}
@@ -20,7 +20,7 @@ Context.update(); // load data
 // 2. Define global states
 UI.createGlobalStates('client-state', [
 	'role-state',
-	'summary-state',
+	'control-state',
 	'interface-state-transcription',
 	'interface-state-moderation',
 	'upload-state',
@@ -57,179 +57,13 @@ UI.createGlobalStates('client-state', [
 // })
 
 UI.createApp('hook', [
-	UI.createComponent('summary-panel', {
+	UI.createComponent('control-panel', {
 		template: UI.templates.contentPanel,
 		children: [
-			// MAIN INTERFACE ELEMENTS
-
-			// Action widget
-			// Contains a start button for the task at hand (transcription / moderation / upload)
-			// ####
-			UI.createComponent('action-widget', {
-				template: UI.templates.subPanel,
-				appearance: {
-					style: {
-						'height': '200px',
-					},
-				},
-				state: {
-					states: [
-						{name: 'client-state', args: {
-							style: {
-								'left': '5px',
-								'opacity': '0.0',
-							},
-						}},
-						{name: 'role-state', args: {
-							style: {
-								'left': '5px',
-								'opacity': '0.0',
-							},
-						}},
-						{name: 'summary-state', args: {
-							style: {
-								'left': '0px',
-								'opacity': '1.0',
-							},
-						}},
-					],
-				},
-				children: [
-					// Start button - link to app (transcription / moderation / upload)
-					UI.createComponent('start-button', {
-						template: UI.templates.button,
-						appearance: {
-							html: 'Start',
-							classes: ['round'],
-							style: {
-								'position': 'absolute',
-								'background': '#aaa',
-								'top': '40px',
-								'left': '40px',
-								'height': '120px',
-								'width': '120px',
-								'padding-top': '44px',
-								'font-size': '1.5em',
-							}
-						},
-						state: {
-							stateMap: {},
-						},
-					}),
-
-					// Activity - see active projects and users
-					UI.createComponent('activity-monitor', {
-						template: UI.templates.div,
-						appearance: {
-							html: `
-								<h3>Activity</h3>
-							`,
-							style: {
-								'position': 'absolute',
-								'top': '0px',
-								'left': '240px',
-								'height': '200px',
-								'width': '200px',
-							}
-						}
-					}),
-
-					// Billing - see the current billing cycle its billable activity
-					UI.createComponent('billing-monitor', {
-						template: UI.templates.div,
-						appearance: {
-							html: `
-								<h3>Billing cycle</h3>
-							`,
-							style: {
-								'position': 'absolute',
-								'top': '0px',
-								'left': '440px',
-								'height': '200px',
-								'width': '200px',
-							}
-						}
-					}),
-				],
-			}),
-			// ####
-
-			UI.createComponent('cp-spacer-1', {template: UI.templates.spacer}),
-
-			// Message widget
-			// Contains a list of recent messages and a link to the messenger app.
-			// ####
-			// UI.createComponent('messages-widget', {
-			// 	template: UI.templates.subPanel,
-			// 	appearance: {
-			// 		style: {
-			// 			'height': '500px',
-			// 		},
-			// 	},
-			// 	state: {
-			// 		states: [
-			// 			{name: 'client-state', args: {
-			// 				style: {
-			// 					'left': '5px',
-			// 					'opacity': '0.0',
-			// 				},
-			// 			}},
-			// 			{name: 'role-state', args: {
-			// 				style: {
-			// 					'left': '5px',
-			// 					'opacity': '0.0',
-			// 				},
-			// 			}},
-			// 			{name: 'summary-state', args: {
-			// 				style: {
-			// 					'left': '0px',
-			// 					'opacity': '1.0',
-			// 				},
-			// 			}},
-			// 		],
-			// 	},
-			// 	children: [
-			// 		// Contains links for new messages and filters
-			// 		UI.createComponent('message-header', {
-			// 			children: [
-			// 				UI.createComponent('message-header-new-message-button', {
-			//
-			// 				}),
-			// 				UI.createComponent('new-message-button', {
-			//
-			// 				}),
-			// 				UI.createComponent('search-input-field', {
-			//
-			// 				}),
-			// 			],
-			// 		}),
-			//
-			// 		// Message list
-			// 		UI.createComponent('message-list', {
-			// 			children: [
-			// 				// message objects displayed here
-			// 			]
-			// 		});
-			// 	],
-			// }),
-			// ####
-
-			// Stats widget
-			// A summary of relevant stats
-			// ####
-			// UI.createComponent('stats-widget', {
-			// 	children: [
-			// 		// Contains a table showing all-time and billing-cycle numbers
-			// 		UI.createComponent('totals-table', {}),
-			//
-			// 		// XY graph of activity vs. time.
-			// 		UI.createComponent('billing-cycle-performance-graph', {}),
-			//
-			// 		// Pixel map of activity in this billing cycle and the last.
-			// 		UI.createComponent('billing-cycle-map', {}),
-			// 	],
-			// }),
-			// ####
+			// UI.createComponent(),
+			// UI.createComponent(),
+			// UI.createComponent(),
+			// UI.createComponent(),
 		],
 	}),
 	// UI.createComponent('work-interface', {
@@ -258,7 +92,7 @@ UI.createApp('hook', [
 						'left': '-300px',
 					}
 				}},
-				{name: 'summary-state', args: {
+				{name: 'control-state', args: {
 					style: {
 						'left': '-300px',
 					},
@@ -339,10 +173,9 @@ UI.createApp('hook', [
 						});
 
 						_this.children = [];
-						// console.log(_this.children, Context.get('current_client'));
 
 						// 2. map data from context to new children and render
-						var data = Context.get(['roles', 'clients', Context.get('current_client'), 'roles']);
+						var data = Context.get('roles', 'clients', Context.get('current_client'), 'roles');
 						data.map(function (roleName) {
 							var child = UI.createComponent('rs-{name}-button'.format({name: roleName}), {
 								root: _this.id,
@@ -351,16 +184,16 @@ UI.createApp('hook', [
 									style: {
 										'opacity': '0.0',
 									},
-									html: Context.get(['role_display', roleName]),
+									html: Context.get('role_display', roleName),
 								},
 								state: {
 									svitches: [
-										{stateName: 'summary-state', fn: function (_this) {
+										{stateName: 'control-state', fn: function (_this) {
 											Context.store['current_role'] = roleName;
 										}}
 									],
 									stateMap: {
-										'role-state': 'summary-state',
+										'role-state': 'control-state',
 									}
 								},
 								bindings: [
@@ -378,7 +211,7 @@ UI.createApp('hook', [
 						});
 					}
 				}},
-				{name: 'summary-state', args: {
+				{name: 'control-state', args: {
 					style: {
 						'left': '-300px',
 					},
@@ -406,7 +239,7 @@ UI.createApp('hook', [
 						_this.model().animate({'left': '0px'}, 200);
 					}
 				}},
-				{name: 'summary-state', args: {
+				{name: 'control-state', args: {
 					style: {
 						'left': '-50px',
 					},
@@ -425,7 +258,7 @@ UI.createApp('hook', [
 				state: {
 					stateMap: {
 						'role-state': 'client-state',
-						'summary-state': 'role-state',
+						'control-state': 'role-state',
 					}
 				},
 				bindings: [
