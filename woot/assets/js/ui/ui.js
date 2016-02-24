@@ -31,10 +31,19 @@ var UI = {
 	changeState: function (stateName, trigger) {
 		if (this.globalStates.indexOf(stateName) !== -1) {
 			// update global state
-			this.globalState = stateName;
+			var stateChangePromise = new Promise(function (resolve, reject) {
+				UI.globalState = stateName;
+			});
 
-			// execute all svitches with a promise
-			var svitchPromise = new Promise(function (resolve, reject) {
+			// global svitches promise
+			var globalSvitchPromise = new Promise(function (resolve, reject) {
+				UI.globalSvitches[stateName].map(function (globalSvitch) {
+					globalSvitch.fn(stateName);
+				});
+			});
+
+			// execute all component svitches with a promise
+			var componentSvitchPromise = new Promise(function (resolve, reject) {
 				UI.svitches[stateName].filter(function (svitch) {
 					return svitch.component === trigger;
 				}).map(function (svitch) {
@@ -43,14 +52,20 @@ var UI = {
 			});
 
 			// when svitches are complete, change the state of every component with the state name
-			var stateFunction = function () {
+			var statePromise = new Promise(function (resolve, reject) {
 				UI.states[stateName].map(function (state) {
 					state.component.changeState(state);
 				});
-			}
+			});
 
 			// execute
-			$.when(svitchPromise).done(stateFunction);
+			stateChangePromise.then(function () {
+				return globalSvitchPromise;
+			}).then(function () {
+				return svitchPromise;
+			}).then(function () {
+				return statePromise;
+			});
 		}
 	},
 
@@ -375,6 +390,23 @@ var UI = {
 		var svitch = new this.svitch(component, stateName, fn);
 		this.svitches[stateName].push(svitch);
 		return svitch;
+	},
+
+	////////////
+	// GLOBAL SVITCH
+	// Global svitches are called before component svitches and are not specifically
+	// connected with a component
+	globalSvitches: {},
+
+	globalSvitch: function (stateName, fn) {
+		this.stateName = stateName;
+		this.fn = fn;
+	},
+
+	createGlobalSvitches: function (stateName, fn) {
+		var globalSvitch = new this.globalSvitch(stateName, fn);
+		this.globalSvitches[stateName].push(globalSvitch);
+		return globalSvitch;
 	},
 
 	////////////
