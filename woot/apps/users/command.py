@@ -47,17 +47,8 @@ def user_context(request):
 					'productionadmin': 'Admin',
 					'contractadmin': 'Admin',
 				},
-				'role_states': {
-					'worker': 'interface-state-transcription',
-					'moderator': 'interface-state-moderation',
-					'productionadmin': 'upload-state',
-					'contractadmin': 'upload-state',
-				},
-				'role_start_display': {
-					'worker': 'Start transcription',
-					'moderator': 'Start moderation',
-					'productionadmin': 'Upload',
-					'contractadmin': 'Upload',
+				'role-state': {
+					'worker': 'worker'
 				}
 			}
 
