@@ -86,6 +86,7 @@ var UI = {
 
 	// Basic component definition
 	component: function (id, args) {
+		var args = args !== undefined ? args : {};
 		// the variable 'this' refers to an instance of this function when called with 'new component()'
 		// args
 		// The structure of this is not too important, but it should stay like this:
@@ -124,7 +125,7 @@ var UI = {
 		this.root = args.root;
 
 		// template
-		this.template = args.template;
+		this.template = args.template !== undefined ? args.template : UI.templates.div;
 
 		// appearance
 		if (args.appearance !== undefined) {
@@ -461,6 +462,10 @@ var Context = {
 			sub = sub[arguments[i]];
 		}
 		return sub;
+	},
+
+	set: function (key, value) {
+		Context.store[key] = value;
 	},
 
 	// REGISTRY
