@@ -22,14 +22,10 @@ UI.createGlobalStates('client-state', [
 	'role-state',
 
 	// control panel
-	'contractadmin-control-state',
-	'productionadmin-control-state',
-	'moderator-control-state',
-	'worker-control-state',
+	'control-state',
 
 	// work interface states
-	'transcription-interface-state',
-	'moderation-interface-state',
+	'interface-state',
 	'upload-state',
 
 	// interfaces
@@ -71,6 +67,11 @@ UI.createGlobalStates('client-state', [
 UI.createApp('hook', [
 	UI.createComponent('control-sidebar', {
 		template: UI.templates.sidebar,
+		appearance: {
+			style: {
+				'width': '150px',
+			},
+		},
 		state: {
 			states: [
 				{name: 'client-state', args: {
@@ -83,22 +84,7 @@ UI.createApp('hook', [
 						'left': '-300px',
 					}
 				}},
-				{name: 'contractadmin-control-state', args: {
-					style: {
-						'left': '50px',
-					},
-				}},
-				{name: 'productionadmin-control-state', args: {
-					style: {
-						'left': '50px',
-					},
-				}},
-				{name: 'moderator-control-state', args: {
-					style: {
-						'left': '50px',
-					},
-				}},
-				{name: 'worker-control-state', args: {
+				{name: 'control-state', args: {
 					style: {
 						'left': '50px',
 					},
@@ -127,22 +113,7 @@ UI.createApp('hook', [
 						'left': '-300px',
 					}
 				}},
-				{name: 'contractadmin-control-state', args: {
-					style: {
-						'left': '-300px',
-					},
-				}},
-				{name: 'productionadmin-control-state', args: {
-					style: {
-						'left': '-300px',
-					},
-				}},
-				{name: 'moderator-control-state', args: {
-					style: {
-						'left': '-300px',
-					},
-				}},
-				{name: 'worker-control-state', args: {
+				{name: 'control-state', args: {
 					style: {
 						'left': '-300px',
 					},
@@ -261,22 +232,7 @@ UI.createApp('hook', [
 						});
 					}
 				}},
-				{name: 'contractadmin-control-state', args: {
-					style: {
-						'left': '-300px',
-					},
-				}},
-				{name: 'productionadmin-control-state', args: {
-					style: {
-						'left': '-300px',
-					},
-				}},
-				{name: 'moderator-control-state', args: {
-					style: {
-						'left': '-300px',
-					},
-				}},
-				{name: 'worker-control-state', args: {
+				{name: 'control-state', args: {
 					style: {
 						'left': '-300px',
 					},
@@ -304,31 +260,7 @@ UI.createApp('hook', [
 						_this.model().animate({'left': '0px'}, 200);
 					}
 				}},
-				{name: 'contractadmin-control-state', args: {
-					style: {
-						'left': '-50px',
-					},
-					fn: function (_this) {
-						_this.model().animate({'left': '0px'}, 200);
-					},
-				}},
-				{name: 'productionadmin-control-state', args: {
-					style: {
-						'left': '-50px',
-					},
-					fn: function (_this) {
-						_this.model().animate({'left': '0px'}, 200);
-					},
-				}},
-				{name: 'moderator-control-state', args: {
-					style: {
-						'left': '-50px',
-					},
-					fn: function (_this) {
-						_this.model().animate({'left': '0px'}, 200);
-					},
-				}},
-				{name: 'worker-control-state', args: {
+				{name: 'control-state', args: {
 					style: {
 						'left': '-50px',
 					},
@@ -347,10 +279,7 @@ UI.createApp('hook', [
 				state: {
 					stateMap: {
 						'role-state': 'client-state',
-						'contractadmin-control-state': 'role-state',
-						'productionadmin-control-state': 'role-state',
-						'moderator-control-state': 'role-state',
-						'worker-control-state': 'role-state',
+						'control-state': 'role-state',
 					}
 				},
 				bindings: [
