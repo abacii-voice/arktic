@@ -5,7 +5,7 @@
 */
 
 html {
-	background-image: url('../img/main-background-small-no-moon-blur.jpg');
+	background-image: url(../img/main-background-small-no-moon-blur.jpg);
 }
 
 div {
@@ -183,8 +183,18 @@ div.progress-inset {
 	outline: none;
 }
 
-.round {
-	-moz-border-radius: 50%;
-	-webkit-border-radius: 50%;
-	border-radius: 50%;
+.menu-button {
+	width: 150px;
+	height: 50px;
+	border: 2px solid #ccc;
+	left: 10px;
+	border-radius: 3px;
+	margin-bottom: 10px;
+	display: none;
+}
+
+.start-button {
+	height: 100px;
+	padding-top: 33px;
+	font-size: 20px;
 }

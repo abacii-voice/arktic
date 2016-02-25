@@ -153,8 +153,10 @@ var UI = {
 				}, this);
 
 				this.state = this.getState(UI.globalState);
-				this.stateClasses = this.state.classes !== undefined ? this.state.classes : [];
-				this.stateStyle = this.state.style !== undefined ? this.state.style : {};
+				if (this.state !== undefined) {
+					this.stateClasses = this.state.classes !== undefined ? this.state.classes : [];
+					this.stateStyle = this.state.style !== undefined ? this.state.style : {};
+				}
 			}
 
 			// svitches
