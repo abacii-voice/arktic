@@ -8,7 +8,7 @@ Context.setFn(ajax('user_context', {}, function (data) {
 
 	if (Context.get('one_client')) {
 		if (Context.get('one_role')) {
-			UI.changeState('{role}-control-state'.format({role: Context.get('current_role')}));
+			UI.changeState('control-state');
 		} else {
 			UI.changeState('role-state');
 		}
