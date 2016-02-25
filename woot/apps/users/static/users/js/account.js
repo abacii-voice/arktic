@@ -418,15 +418,15 @@ UI.createApp('hook', [
 						'left': '0px',
 					},
 					fn: function (_this) {
-						_this.model().animate({'left': '0px'}, 200);
+						// _this.model().animate({'left': '0px'}, 200);
 					}
 				}},
 				{name: 'control-state', args: {
 					style: {
-						'left': '-50px',
+						'left': '-0px',
 					},
 					fn: function (_this) {
-						_this.model().animate({'left': '0px'}, 200);
+						// _this.model().animate({'left': '0px'}, 200);
 					},
 				}},
 			],
