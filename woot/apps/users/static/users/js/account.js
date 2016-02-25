@@ -110,6 +110,8 @@ UI.createApp('hook', [
 								var role = Context.get('current_role');
 								if (role === 'worker' || role === 'moderator') {
 									_this.model().css('display', 'block');
+								} else {
+									_this.model().css('display', 'none');
 								}
 							},
 						}},
@@ -132,6 +134,8 @@ UI.createApp('hook', [
 								var role = Context.get('current_role');
 								if (role === 'contractadmin') {
 									_this.model().css('display', 'block');
+								} else {
+									_this.model().css('display', 'none');
 								}
 							},
 						}},
@@ -169,6 +173,8 @@ UI.createApp('hook', [
 								var role = Context.get('current_role');
 								if (role === 'worker' || role === 'moderator') {
 									_this.model().css('display', 'block');
+								} else {
+									_this.model().css('display', 'none');
 								}
 							},
 						}},
@@ -191,6 +197,8 @@ UI.createApp('hook', [
 								var role = Context.get('current_role');
 								if (role === 'moderator' || role === 'productionadmin' || role === 'contractadmin') {
 									_this.model().css('display', 'block');
+								} else {
+									_this.model().css('display', 'none');
 								}
 							},
 						}},
@@ -213,6 +221,8 @@ UI.createApp('hook', [
 								var role = Context.get('current_role');
 								if (role === 'productionadmin') {
 									_this.model().css('display', 'block');
+								} else {
+									_this.model().css('display', 'none');
 								}
 							},
 						}},
