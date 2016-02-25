@@ -209,12 +209,12 @@ UI.createApp('hook', [
 								},
 								state: {
 									svitches: [
-										{stateName: '{role}-control-state'.format({role: roleName}), fn: function (_this) {
+										{stateName: 'control-state', fn: function (_this) {
 											Context.set('current_role', roleName);
 										}}
 									],
 									stateMap: {
-										'role-state': '{role}-control-state'.format({role: roleName}),
+										'role-state': 'control-state'.format({role: roleName}),
 									}
 								},
 								bindings: [
