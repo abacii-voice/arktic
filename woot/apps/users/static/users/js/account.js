@@ -8,7 +8,7 @@ Context.setFn(ajax('user_context', {}, function (data) {
 
 	if (Context.get('one_client')) {
 		if (Context.get('one_role')) {
-			UI.changeState('control-state');
+			UI.changeState('{role}-control-state'.format({role: Context.get('current_role')}));
 		} else {
 			UI.changeState('role-state');
 		}
@@ -20,12 +20,24 @@ Context.update(); // load data
 // 2. Define global states
 UI.createGlobalStates('client-state', [
 	'role-state',
-	'control-state',
-	'interface-state-transcription',
-	'interface-state-moderation',
+
+	// control panel
+	'contractadmin-control-state',
+	'productionadmin-control-state',
+	'moderator-control-state',
+	'worker-control-state',
+
+	// work interface states
+	'transcription-interface-state',
+	'moderation-interface-state',
 	'upload-state',
+
+	// interfaces
 	'message-state',
 	'billing-state',
+	'stats-state',
+	'search-state',
+	'user-management-state',
 ]);
 
 // 3. Define component tree
@@ -57,27 +69,50 @@ UI.createGlobalStates('client-state', [
 // })
 
 UI.createApp('hook', [
-	UI.createComponent('control-panel', {
-		template: UI.templates.contentPanel,
+	UI.createComponent('control-sidebar', {
+		template: UI.templates.sidebar,
+		state: {
+			states: [
+				{name: 'client-state', args: {
+					style: {
+						'left': '-300px',
+					},
+				}},
+				{name: 'role-state', args: {
+					style: {
+						'left': '-300px',
+					}
+				}},
+				{name: 'contractadmin-control-state', args: {
+					style: {
+						'left': '50px',
+					},
+				}},
+				{name: 'productionadmin-control-state', args: {
+					style: {
+						'left': '50px',
+					},
+				}},
+				{name: 'moderator-control-state', args: {
+					style: {
+						'left': '50px',
+					},
+				}},
+				{name: 'worker-control-state', args: {
+					style: {
+						'left': '50px',
+					},
+				}},
+			],
+		},
 		children: [
-			// UI.createComponent(),
-			// UI.createComponent(),
-			// UI.createComponent(),
-			// UI.createComponent(),
+			UI.createComponent('cns-header'),
+			UI.createComponent('cns-worker-start-button'),
+			UI.createComponent('cns-moderator-start-button'),
+			UI.createComponent('cns-upload-start-button'),
+
 		],
 	}),
-	// UI.createComponent('work-interface', {
-	//
-	// }),
-	// UI.createComponent('upload-interface', {
-	//
-	// }),
-	// UI.createComponent('message-interface', {
-	//
-	// }),
-	// UI.createComponent('billing-interface', {
-	//
-	// }),
 	UI.createComponent('client-sidebar', {
 		template: UI.templates.sidebar,
 		state: {
@@ -92,7 +127,22 @@ UI.createApp('hook', [
 						'left': '-300px',
 					}
 				}},
-				{name: 'control-state', args: {
+				{name: 'contractadmin-control-state', args: {
+					style: {
+						'left': '-300px',
+					},
+				}},
+				{name: 'productionadmin-control-state', args: {
+					style: {
+						'left': '-300px',
+					},
+				}},
+				{name: 'moderator-control-state', args: {
+					style: {
+						'left': '-300px',
+					},
+				}},
+				{name: 'worker-control-state', args: {
 					style: {
 						'left': '-300px',
 					},
@@ -188,12 +238,12 @@ UI.createApp('hook', [
 								},
 								state: {
 									svitches: [
-										{stateName: 'control-state', fn: function (_this) {
-											Context.store['current_role'] = roleName;
+										{stateName: '{role}-control-state'.format({role: roleName}), fn: function (_this) {
+											Context.set('current_role', roleName);
 										}}
 									],
 									stateMap: {
-										'role-state': 'control-state',
+										'role-state': '{role}-control-state'.format({role: roleName}),
 									}
 								},
 								bindings: [
@@ -211,7 +261,22 @@ UI.createApp('hook', [
 						});
 					}
 				}},
-				{name: 'control-state', args: {
+				{name: 'contractadmin-control-state', args: {
+					style: {
+						'left': '-300px',
+					},
+				}},
+				{name: 'productionadmin-control-state', args: {
+					style: {
+						'left': '-300px',
+					},
+				}},
+				{name: 'moderator-control-state', args: {
+					style: {
+						'left': '-300px',
+					},
+				}},
+				{name: 'worker-control-state', args: {
 					style: {
 						'left': '-300px',
 					},
@@ -239,7 +304,31 @@ UI.createApp('hook', [
 						_this.model().animate({'left': '0px'}, 200);
 					}
 				}},
-				{name: 'control-state', args: {
+				{name: 'contractadmin-control-state', args: {
+					style: {
+						'left': '-50px',
+					},
+					fn: function (_this) {
+						_this.model().animate({'left': '0px'}, 200);
+					},
+				}},
+				{name: 'productionadmin-control-state', args: {
+					style: {
+						'left': '-50px',
+					},
+					fn: function (_this) {
+						_this.model().animate({'left': '0px'}, 200);
+					},
+				}},
+				{name: 'moderator-control-state', args: {
+					style: {
+						'left': '-50px',
+					},
+					fn: function (_this) {
+						_this.model().animate({'left': '0px'}, 200);
+					},
+				}},
+				{name: 'worker-control-state', args: {
 					style: {
 						'left': '-50px',
 					},
@@ -258,7 +347,10 @@ UI.createApp('hook', [
 				state: {
 					stateMap: {
 						'role-state': 'client-state',
-						'control-state': 'role-state',
+						'contractadmin-control-state': 'role-state',
+						'productionadmin-control-state': 'role-state',
+						'moderator-control-state': 'role-state',
+						'worker-control-state': 'role-state',
 					}
 				},
 				bindings: [
@@ -269,7 +361,6 @@ UI.createApp('hook', [
 			}),
 		],
 	}),
-
 ]);
 
 // 4. Render app
