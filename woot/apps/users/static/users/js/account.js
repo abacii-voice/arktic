@@ -32,6 +32,7 @@ UI.createGlobalStates('client-state', [
 	'message-state',
 	'billing-state',
 	'stats-state',
+	'user-stats-state',
 	'search-state',
 	'user-management-state',
 ]);
@@ -69,34 +70,184 @@ UI.createApp('hook', [
 		template: UI.templates.sidebar,
 		appearance: {
 			style: {
-				'width': '150px',
+				'width': '160px',
+				'border-right': '0px solid #fff',
 			},
 		},
 		state: {
 			states: [
 				{name: 'client-state', args: {
 					style: {
-						'left': '-300px',
+						'left': '60px',
+						'opacity': '0.0',
 					},
 				}},
 				{name: 'role-state', args: {
 					style: {
-						'left': '-300px',
+						'left': '60px',
+						'opacity': '0.0',
 					}
 				}},
 				{name: 'control-state', args: {
 					style: {
 						'left': '50px',
+						'opacity': '1.0',
 					},
 				}},
 			],
 		},
 		children: [
-			UI.createComponent('cns-header'),
-			UI.createComponent('cns-worker-start-button'),
-			UI.createComponent('cns-moderator-start-button'),
-			UI.createComponent('cns-upload-start-button'),
-
+			UI.createComponent('cns-start-button', {
+				template: UI.templates.button,
+				appearance: {
+					html: 'Start',
+					classes: ['menu-button', 'start-button'],
+				},
+				state: {
+					states: [
+						{name: 'control-state', args: {
+							fn: function (_this) {
+								var role = Context.get('current_role');
+								if (role === 'worker' || role === 'moderator') {
+									_this.model().css('display', 'block');
+								}
+							},
+						}},
+					],
+					stateMap: {
+						'control-state': 'interface-state',
+					},
+				},
+			}),
+			UI.createComponent('cns-upload-button', {
+				template: UI.templates.button,
+				appearance: {
+					html: 'Upload',
+					classes: ['menu-button', 'start-button'],
+				},
+				state: {
+					states: [
+						{name: 'control-state', args: {
+							fn: function (_this) {
+								var role = Context.get('current_role');
+								if (role === 'contractadmin') {
+									_this.model().css('display', 'block');
+								}
+							},
+						}},
+					],
+					stateMap: {
+						'control-state': 'upload-state',
+					},
+				},
+			}),
+			UI.createComponent('cns-messages-button', {
+				template: UI.templates.button,
+				appearance: {
+					html: 'Messages',
+					classes: ['menu-button'],
+					style: {
+						'display': 'block',
+					}
+				},
+				state: {
+					stateMap: {
+						'control-state': 'message-state',
+					},
+				},
+			}),
+			UI.createComponent('cns-stats-button', {
+				template: UI.templates.button,
+				appearance: {
+					html: 'Personal stats',
+					classes: ['menu-button'],
+				},
+				state: {
+					states: [
+						{name: 'control-state', args: {
+							fn: function (_this) {
+								var role = Context.get('current_role');
+								if (role === 'worker' || role === 'moderator') {
+									_this.model().css('display', 'block');
+								}
+							},
+						}},
+					],
+					stateMap: {
+						'control-state': 'stats-state',
+					},
+				},
+			}),
+			UI.createComponent('cns-user-stats-button', {
+				template: UI.templates.button,
+				appearance: {
+					html: 'User stats',
+					classes: ['menu-button'],
+				},
+				state: {
+					states: [
+						{name: 'control-state', args: {
+							fn: function (_this) {
+								var role = Context.get('current_role');
+								if (role === 'moderator' || role === 'productionadmin' || role === 'contractadmin') {
+									_this.model().css('display', 'block');
+								}
+							},
+						}},
+					],
+					stateMap: {
+						'control-state': 'user-stats-state',
+					},
+				},
+			}),
+			UI.createComponent('cns-user-management-button', {
+				template: UI.templates.button,
+				appearance: {
+					html: 'User management',
+					classes: ['menu-button'],
+				},
+				state: {
+					states: [
+						{name: 'control-state', args: {
+							fn: function (_this) {
+								var role = Context.get('current_role');
+								if (role === 'productionadmin') {
+									_this.model().css('display', 'block');
+								}
+							},
+						}},
+					],
+				},
+			}),
+			UI.createComponent('cns-rules-button', {
+				template: UI.templates.button,
+				appearance: {
+					html: 'Rules',
+					classes: ['menu-button'],
+				},
+				state: {
+					states: [
+						{name: 'control-state', args: {
+							fn: function (_this) {
+								var role = Context.get('current_role');
+								if (role === 'worker' || role === 'moderator' || role === 'productionadmin') {
+									_this.model().css('display', 'block');
+								}
+							},
+						}},
+					],
+				},
+			}),
+			UI.createComponent('cns-search-button', {
+				template: UI.templates.button,
+				appearance: {
+					html: '<span class="glyphicon glyphicon-search"></span> Search',
+					classes: ['menu-button'],
+					style: {
+						'display': 'block',
+					},
+				},
+			}),
 		],
 	}),
 	UI.createComponent('client-sidebar', {
