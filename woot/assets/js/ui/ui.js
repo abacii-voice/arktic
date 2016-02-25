@@ -285,7 +285,7 @@ var UI = {
 			// });
 
 			this.stateStyle = this.state.style !== undefined ? this.state.style : {};
-			model.animate(this.stateStyle);
+			model.css(this.stateStyle);
 
 			// 5. add html
 			if (this.state.html !== undefined) {
