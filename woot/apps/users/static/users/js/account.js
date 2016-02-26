@@ -32,6 +32,7 @@ UI.createGlobalStates('client-state', [
 	'message-state',
 	'billing-state',
 	'stats-state',
+	'rules-state',
 	'user-stats-state',
 	'search-state',
 	'user-management-state',
@@ -66,43 +67,294 @@ UI.createGlobalStates('client-state', [
 // })
 
 UI.createApp('hook', [
+	// breadcrumbs
+	UI.createComponent('breadcrumbs', {
+		template: UI.templates.div,
+		appearance: {
+			style: {
+				'position': 'absolute',
+				'top': '40px',
+				'left': '16px',
+			},
+		},
+		state: {
+			
+		}
+	}),
+
 	// panels
 	UI.createComponent('message-panel', {
 		template: UI.templates.contentPanel,
 		state: {
+			defaultState: {
+				style: {
+					'left': '220px',
+					'opacity': '0.0',
+				},
+			},
 			states: [
-				{name: 'role-state', args: {
-					style: {
-						'left': '230px',
-					},
-				}},
+				{name: 'client-state', args: 'default'},
+				{name: 'role-state', args: 'default'},
+				{name: 'control-state', args: 'default'},
+				{name: 'interface-state', args: 'default'},
+				{name: 'upload-state', args: 'default'},
 				{name: 'message-state', args: {
 					style: {
 						'left': '220px',
+						'opacity': '1.0',
 					},
 				}},
-				{name: 'message-state', args: {
+				{name: 'billing-state', args: 'default'},
+				{name: 'stats-state', args: 'default'},
+				{name: 'rules-state', args: 'default'},
+				{name: 'user-stats-state', args: 'default'},
+				{name: 'search-state', args: 'default'},
+				{name: 'user-management-state', args: 'default'},
+			],
+		},
+		children: [
+			UI.createComponent('mp-title', {
+				template: UI.templates.div,
+				appearance: {
+					classes: ['panel-title'],
+					html: 'Messages',
+				}
+			}),
+		],
+	}),
+	UI.createComponent('billing-panel', {
+		template: UI.templates.contentPanel,
+		state: {
+			defaultState: {
+				style: {
+					'left': '220px',
+					'opacity': '0.0',
+				},
+			},
+			states: [
+				{name: 'client-state', args: 'default'},
+				{name: 'role-state', args: 'default'},
+				{name: 'control-state', args: 'default'},
+				{name: 'interface-state', args: 'default'},
+				{name: 'upload-state', args: 'default'},
+				{name: 'message-state', args: 'default'},
+				{name: 'billing-state', args: {
 					style: {
 						'left': '220px',
+						'opacity': '1.0',
+					},
+				}},
+				{name: 'stats-state', args: 'default'},
+				{name: 'rules-state', args: 'default'},
+				{name: 'user-stats-state', args: 'default'},
+				{name: 'search-state', args: 'default'},
+				{name: 'user-management-state', args: 'default'},
+			],
+		},
+		children: [
+			UI.createComponent('bp-title', {
+				template: UI.templates.div,
+				appearance: {
+					classes: ['panel-title'],
+					html: 'Billing',
+				}
+			}),
+		],
+	}),
+	UI.createComponent('stats-panel', {
+		template: UI.templates.contentPanel,
+		state: {
+			defaultState: {
+				style: {
+					'left': '220px',
+					'opacity': '0.0',
+				},
+			},
+			states: [
+				{name: 'client-state', args: 'default'},
+				{name: 'role-state', args: 'default'},
+				{name: 'control-state', args: 'default'},
+				{name: 'interface-state', args: 'default'},
+				{name: 'upload-state', args: 'default'},
+				{name: 'message-state', args: 'default'},
+				{name: 'billing-state', args: 'default'},
+				{name: 'stats-state', args: {
+					style: {
+						'left': '220px',
+						'opacity': '1.0',
+					},
+				}},
+				{name: 'rules-state', args: 'default'},
+				{name: 'user-stats-state', args: 'default'},
+				{name: 'search-state', args: 'default'},
+				{name: 'user-management-state', args: 'default'},
+			],
+		},
+		children: [
+			UI.createComponent('sp-title', {
+				template: UI.templates.div,
+				appearance: {
+					classes: ['panel-title'],
+					html: 'Stats',
+				}
+			}),
+		],
+	}),
+	UI.createComponent('user-stats-panel', {
+		template: UI.templates.contentPanel,
+		state: {
+			defaultState: {
+				style: {
+					'left': '220px',
+					'opacity': '0.0',
+				},
+			},
+			states: [
+				{name: 'client-state', args: 'default'},
+				{name: 'role-state', args: 'default'},
+				{name: 'control-state', args: 'default'},
+				{name: 'interface-state', args: 'default'},
+				{name: 'upload-state', args: 'default'},
+				{name: 'message-state', args: 'default'},
+				{name: 'billing-state', args: 'default'},
+				{name: 'stats-state', args: 'default'},
+				{name: 'rules-state', args: 'default'},
+				{name: 'user-stats-state', args: {
+					style: {
+						'left': '220px',
+						'opacity': '1.0',
+					},
+				}},
+				{name: 'search-state', args: 'default'},
+				{name: 'user-management-state', args: 'default'},
+			],
+		},
+		children: [
+			UI.createComponent('usp-title', {
+				template: UI.templates.div,
+				appearance: {
+					classes: ['panel-title'],
+					html: 'User stats',
+				}
+			}),
+		],
+	}),
+	UI.createComponent('user-management-panel', {
+		template: UI.templates.contentPanel,
+		state: {
+			defaultState: {
+				style: {
+					'left': '220px',
+					'opacity': '0.0',
+				},
+			},
+			states: [
+				{name: 'client-state', args: 'default'},
+				{name: 'role-state', args: 'default'},
+				{name: 'control-state', args: 'default'},
+				{name: 'interface-state', args: 'default'},
+				{name: 'upload-state', args: 'default'},
+				{name: 'message-state', args: 'default'},
+				{name: 'billing-state', args: 'default'},
+				{name: 'stats-state', args: 'default'},
+				{name: 'rules-state', args: 'default'},
+				{name: 'user-stats-state', args: 'default'},
+				{name: 'search-state', args: 'default'},
+				{name: 'user-management-state', args: {
+					style: {
+						'left': '220px',
+						'opacity': '1.0',
 					},
 				}},
 			],
 		},
-	}),
-	UI.createComponent('stats-panel', {
-		template: UI.templates.contentPanel,
-	}),
-	UI.createComponent('user-stats-panel', {
-		template: UI.templates.contentPanel,
-	}),
-	UI.createComponent('user-management-panel', {
-		template: UI.templates.contentPanel,
+		children: [
+			UI.createComponent('ump-title', {
+				template: UI.templates.div,
+				appearance: {
+					classes: ['panel-title'],
+					html: 'User management',
+				}
+			}),
+		],
 	}),
 	UI.createComponent('rules-panel', {
 		template: UI.templates.contentPanel,
+		state: {
+			defaultState: {
+				style: {
+					'left': '220px',
+					'opacity': '0.0',
+				},
+			},
+			states: [
+				{name: 'client-state', args: 'default'},
+				{name: 'role-state', args: 'default'},
+				{name: 'control-state', args: 'default'},
+				{name: 'interface-state', args: 'default'},
+				{name: 'upload-state', args: 'default'},
+				{name: 'message-state', args: 'default'},
+				{name: 'billing-state', args: 'default'},
+				{name: 'stats-state', args: 'default'},
+				{name: 'rules-state', args: {
+					style: {
+						'left': '220px',
+						'opacity': '1.0',
+					},
+				}},
+				{name: 'user-stats-state', args: 'default'},
+				{name: 'search-state', args: 'default'},
+				{name: 'user-management-state', args: 'default'},
+			],
+		},
+		children: [
+			UI.createComponent('rp-title', {
+				template: UI.templates.div,
+				appearance: {
+					classes: ['panel-title'],
+					html: 'Rules',
+				}
+			}),
+		],
 	}),
 	UI.createComponent('search-panel', {
 		template: UI.templates.contentPanel,
+		state: {
+			defaultState: {
+				style: {
+					'left': '220px',
+					'opacity': '0.0',
+				},
+			},
+			states: [
+				{name: 'client-state', args: 'default'},
+				{name: 'role-state', args: 'default'},
+				{name: 'control-state', args: 'default'},
+				{name: 'interface-state', args: 'default'},
+				{name: 'upload-state', args: 'default'},
+				{name: 'message-state', args: 'default'},
+				{name: 'billing-state', args: 'default'},
+				{name: 'stats-state', args: 'default'},
+				{name: 'rules-state', args: 'default'},
+				{name: 'user-stats-state', args: 'default'},
+				{name: 'search-state', args: {
+					style: {
+						'left': '220px',
+						'opacity': '1.0',
+					},
+				}},
+				{name: 'user-management-state', args: 'default'},
+			],
+		},
+		children: [
+			UI.createComponent('sep-title', {
+				template: UI.templates.div,
+				appearance: {
+					classes: ['panel-title'],
+					html: 'Search',
+				}
+			}),
+		],
 	}),
 
 	// sidebars
@@ -160,6 +412,11 @@ UI.createApp('hook', [
 						'control-state': 'interface-state',
 					},
 				},
+				bindings: [
+					{name: 'click', fn: function (_this) {
+						UI.changeState(_this.mapState(UI.globalState), _this);
+					}},
+				],
 			}),
 			UI.createComponent('cns-upload-button', {
 				template: UI.templates.button,
@@ -184,6 +441,11 @@ UI.createApp('hook', [
 						'control-state': 'upload-state',
 					},
 				},
+				bindings: [
+					{name: 'click', fn: function (_this) {
+						UI.changeState(_this.mapState(UI.globalState), _this);
+					}},
+				],
 			}),
 			UI.createComponent('cns-messages-button', {
 				template: UI.templates.button,
@@ -195,10 +457,13 @@ UI.createApp('hook', [
 					}
 				},
 				state: {
-					stateMap: {
-						'control-state': 'message-state',
-					},
+					stateMap: 'message-state',
 				},
+				bindings: [
+					{name: 'click', fn: function (_this) {
+						UI.changeState(_this.mapState(UI.globalState), _this);
+					}},
+				],
 			}),
 			UI.createComponent('cns-stats-button', {
 				template: UI.templates.button,
@@ -219,10 +484,13 @@ UI.createApp('hook', [
 							},
 						}},
 					],
-					stateMap: {
-						'control-state': 'stats-state',
-					},
+					stateMap: 'stats-state',
 				},
+				bindings: [
+					{name: 'click', fn: function (_this) {
+						UI.changeState(_this.mapState(UI.globalState), _this);
+					}},
+				],
 			}),
 			UI.createComponent('cns-user-stats-button', {
 				template: UI.templates.button,
@@ -243,10 +511,13 @@ UI.createApp('hook', [
 							},
 						}},
 					],
-					stateMap: {
-						'control-state': 'user-stats-state',
-					},
+					stateMap: 'user-stats-state',
 				},
+				bindings: [
+					{name: 'click', fn: function (_this) {
+						UI.changeState(_this.mapState(UI.globalState), _this);
+					}},
+				],
 			}),
 			UI.createComponent('cns-user-management-button', {
 				template: UI.templates.button,
@@ -267,7 +538,13 @@ UI.createApp('hook', [
 							},
 						}},
 					],
+					stateMap: 'user-management-state',
 				},
+				bindings: [
+					{name: 'click', fn: function (_this) {
+						UI.changeState(_this.mapState(UI.globalState), _this);
+					}},
+				],
 			}),
 			UI.createComponent('cns-rules-button', {
 				template: UI.templates.button,
@@ -286,7 +563,31 @@ UI.createApp('hook', [
 							},
 						}},
 					],
+					stateMap: 'rules-state',
 				},
+				bindings: [
+					{name: 'click', fn: function (_this) {
+						UI.changeState(_this.mapState(UI.globalState), _this);
+					}},
+				],
+			}),
+			UI.createComponent('cns-billing-button', {
+				template: UI.templates.button,
+				appearance: {
+					html: 'Billing',
+					classes: ['menu-button'],
+					style: {
+						'display': 'block',
+					}
+				},
+				state: {
+					stateMap: 'billing-state',
+				},
+				bindings: [
+					{name: 'click', fn: function (_this) {
+						UI.changeState(_this.mapState(UI.globalState), _this);
+					}},
+				],
 			}),
 			UI.createComponent('cns-search-button', {
 				template: UI.templates.button,
@@ -297,6 +598,14 @@ UI.createApp('hook', [
 						'display': 'block',
 					},
 				},
+				state: {
+					stateMap: 'search-state',
+				},
+				bindings: [
+					{name: 'click', fn: function (_this) {
+						UI.changeState(_this.mapState(UI.globalState), _this);
+					}},
+				],
 			}),
 		],
 	}),
@@ -481,6 +790,15 @@ UI.createApp('hook', [
 					stateMap: {
 						'role-state': 'client-state',
 						'control-state': 'role-state',
+						'interface-state': 'control-state',
+						'upload-state': 'control-state',
+						'message-state': 'role-state',
+						'billing-state': 'role-state',
+						'stats-state': 'role-state',
+						'rules-state': 'role-state',
+						'user-stats-state': 'role-state',
+						'search-state': 'role-state',
+						'user-management-state': 'role-state',
 					}
 				},
 				bindings: [
