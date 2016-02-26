@@ -104,6 +104,9 @@ UI.createApp('hook', [
 							root: _this.id,
 							template: UI.templates.a,
 							appearance: {
+								style: {
+									'opacity': '0.0',
+								},
 								html: Context.get('current_client'),
 							},
 							state: {
@@ -118,6 +121,7 @@ UI.createApp('hook', [
 
 						_this.children.push(clientNameBreadcrumb);
 						clientNameBreadcrumb.render();
+						clientNameBreadcrumb.model().animate({'opacity': '1.0'});
 					}
 				}},
 				{name: 'control-state', args: {
@@ -134,6 +138,9 @@ UI.createApp('hook', [
 							root: _this.id,
 							template: UI.templates.a,
 							appearance: {
+								style: {
+									'opacity': '0.0',
+								},
 								html: Context.get('current_client'),
 							},
 							state: {
@@ -148,24 +155,32 @@ UI.createApp('hook', [
 
 						_this.children.push(clientNameBreadcrumb);
 						clientNameBreadcrumb.render();
+						clientNameBreadcrumb.model().animate({'opacity': '1.0'});
 
 						// 3. add carrot
 						var carrot = UI.createComponent('bc-carrot', {
 							root: _this.id,
 							template: UI.templates.span,
 							appearance: {
+								style: {
+									'opacity': '0.0',
+								},
 								html: ' > '
 							},
 						});
 
 						_this.children.push(carrot);
 						carrot.render();
+						carrot.model().animate({'opacity': '1.0'});
 
 						// 4. add role name child
 						var roleNameBreadcrumb = UI.createComponent('bc-role', {
 							root: _this.id,
 							template: UI.templates.a,
 							appearance: {
+								style: {
+									'opacity': '0.0',
+								},
 								html: Context.get('role_display', Context.get('current_role')),
 							},
 							state: {
@@ -180,6 +195,7 @@ UI.createApp('hook', [
 
 						_this.children.push(roleNameBreadcrumb);
 						roleNameBreadcrumb.render();
+						roleNameBreadcrumb.model().animate({'opacity': '1.0'});
 					}
 				}},
 			],
@@ -974,6 +990,7 @@ UI.createApp('hook', [
 						'billing-state': 'role-state',
 						'stats-state': 'role-state',
 						'rules-state': 'role-state',
+						'project-state': 'role-state',
 						'user-stats-state': 'role-state',
 						'search-state': 'role-state',
 						'user-management-state': 'role-state',
