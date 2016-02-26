@@ -146,6 +146,9 @@ var UI = {
 				})[0];
 			}
 
+			// default state
+			this.defaultState = args.state.defaultState !== undefined ? args.state.defaultState : {}; // args
+
 			// states
 			if (args.state.states !== undefined) {
 				this.states = args.state.states.map(function (state) {
@@ -168,7 +171,14 @@ var UI = {
 
 			// state map
 			if (args.state.stateMap !== undefined) {
-				this.stateMap = args.state.stateMap;
+				if (typeof args.state.stateMap === 'string') {
+					this.stateMap = {};
+					UI.globalStates.map(function (globalState) {
+						this.stateMap[globalState] = args.state.stateMap;
+					}, this);
+				} else {
+					this.stateMap = args.state.stateMap;
+				}
 			}
 		}
 
@@ -285,7 +295,7 @@ var UI = {
 			// });
 
 			this.stateStyle = this.state.style !== undefined ? this.state.style : {};
-			model.css(this.stateStyle);
+			model.animate(this.stateStyle);
 
 			// 5. add html
 			if (this.state.html !== undefined) {
@@ -370,7 +380,12 @@ var UI = {
 
 	// state factory
 	createState: function (component, name, args) {
-		var state = new this.state(component, name, args);
+		var state;
+		if (args === 'default') {
+			state = new this.state(component, name, component.defaultState);
+		} else {
+			state = new this.state(component, name, args);
+		}
 		this.states[name].push(state);
 		return state;
 	},
