@@ -36,6 +36,7 @@ UI.createGlobalStates('client-state', [
 	'user-stats-state',
 	'search-state',
 	'user-management-state',
+	'project-state',
 ]);
 
 // 3. Define component tree
@@ -78,8 +79,111 @@ UI.createApp('hook', [
 			},
 		},
 		state: {
-			
-		}
+			states: [
+				{name: 'client-state', args: {
+					fn: function (_this) {
+						// 1. remove current children
+						_this.children.map(function (child) {
+							UI.removeComponent(child.id);
+						});
+
+						_this.children = [];
+					}
+				}},
+				{name: 'role-state', args: {
+					fn: function (_this) {
+						// 1. remove current children
+						_this.children.map(function (child) {
+							UI.removeComponent(child.id);
+						});
+
+						_this.children = [];
+
+						// 2. Add client name child
+						var clientNameBreadcrumb = UI.createComponent('bc-client', {
+							root: _this.id,
+							template: UI.templates.a,
+							appearance: {
+								html: Context.get('current_client'),
+							},
+							state: {
+								stateMap: 'role-state',
+							},
+							bindings: [
+								{name: 'click', fn: function (_this) {
+									_this.triggerState();
+								}},
+							],
+						});
+
+						_this.children.push(clientNameBreadcrumb);
+						clientNameBreadcrumb.render();
+					}
+				}},
+				{name: 'control-state', args: {
+					fn: function (_this) {
+						// 1. remove current children
+						_this.children.map(function (child) {
+							UI.removeComponent(child.id);
+						});
+
+						_this.children = [];
+
+						// 2. Add client name child
+						var clientNameBreadcrumb = UI.createComponent('bc-client', {
+							root: _this.id,
+							template: UI.templates.a,
+							appearance: {
+								html: Context.get('current_client'),
+							},
+							state: {
+								stateMap: 'role-state',
+							},
+							bindings: [
+								{name: 'click', fn: function (_this) {
+									_this.triggerState();
+								}},
+							],
+						});
+
+						_this.children.push(clientNameBreadcrumb);
+						clientNameBreadcrumb.render();
+
+						// 3. add carrot
+						var carrot = UI.createComponent('bc-carrot', {
+							root: _this.id,
+							template: UI.templates.span,
+							appearance: {
+								html: ' > '
+							},
+						});
+
+						_this.children.push(carrot);
+						carrot.render();
+
+						// 4. add role name child
+						var roleNameBreadcrumb = UI.createComponent('bc-role', {
+							root: _this.id,
+							template: UI.templates.a,
+							appearance: {
+								html: Context.get('role_display', Context.get('current_role')),
+							},
+							state: {
+								stateMap: 'control-state',
+							},
+							bindings: [
+								{name: 'click', fn: function (_this) {
+									_this.triggerState();
+								}},
+							],
+						});
+
+						_this.children.push(roleNameBreadcrumb);
+						roleNameBreadcrumb.render();
+					}
+				}},
+			],
+		},
 	}),
 
 	// panels
@@ -109,6 +213,7 @@ UI.createApp('hook', [
 				{name: 'rules-state', args: 'default'},
 				{name: 'user-stats-state', args: 'default'},
 				{name: 'search-state', args: 'default'},
+				{name: 'project-state', args: 'default'},
 				{name: 'user-management-state', args: 'default'},
 			],
 		},
@@ -148,6 +253,7 @@ UI.createApp('hook', [
 				{name: 'rules-state', args: 'default'},
 				{name: 'user-stats-state', args: 'default'},
 				{name: 'search-state', args: 'default'},
+				{name: 'project-state', args: 'default'},
 				{name: 'user-management-state', args: 'default'},
 			],
 		},
@@ -187,6 +293,7 @@ UI.createApp('hook', [
 				{name: 'rules-state', args: 'default'},
 				{name: 'user-stats-state', args: 'default'},
 				{name: 'search-state', args: 'default'},
+				{name: 'project-state', args: 'default'},
 				{name: 'user-management-state', args: 'default'},
 			],
 		},
@@ -226,6 +333,7 @@ UI.createApp('hook', [
 					},
 				}},
 				{name: 'search-state', args: 'default'},
+				{name: 'project-state', args: 'default'},
 				{name: 'user-management-state', args: 'default'},
 			],
 		},
@@ -260,6 +368,7 @@ UI.createApp('hook', [
 				{name: 'rules-state', args: 'default'},
 				{name: 'user-stats-state', args: 'default'},
 				{name: 'search-state', args: 'default'},
+				{name: 'project-state', args: 'default'},
 				{name: 'user-management-state', args: {
 					style: {
 						'left': '220px',
@@ -274,6 +383,46 @@ UI.createApp('hook', [
 				appearance: {
 					classes: ['panel-title'],
 					html: 'User management',
+				}
+			}),
+		],
+	}),
+	UI.createComponent('project-panel', {
+		template: UI.templates.contentPanel,
+		state: {
+			defaultState: {
+				style: {
+					'left': '220px',
+					'opacity': '0.0',
+				},
+			},
+			states: [
+				{name: 'client-state', args: 'default'},
+				{name: 'role-state', args: 'default'},
+				{name: 'control-state', args: 'default'},
+				{name: 'interface-state', args: 'default'},
+				{name: 'upload-state', args: 'default'},
+				{name: 'message-state', args: 'default'},
+				{name: 'billing-state', args: 'default'},
+				{name: 'stats-state', args: 'default'},
+				{name: 'rules-state', args: 'default'},
+				{name: 'user-stats-state', args: 'default'},
+				{name: 'search-state', args: 'default'},
+				{name: 'project-state', args: {
+					style: {
+						'left': '220px',
+						'opacity': '1.0',
+					},
+				}},
+				{name: 'user-management-state', args: 'default'},
+			],
+		},
+		children: [
+			UI.createComponent('pp-title', {
+				template: UI.templates.div,
+				appearance: {
+					classes: ['panel-title'],
+					html: 'Projects',
 				}
 			}),
 		],
@@ -304,6 +453,7 @@ UI.createApp('hook', [
 				}},
 				{name: 'user-stats-state', args: 'default'},
 				{name: 'search-state', args: 'default'},
+				{name: 'project-state', args: 'default'},
 				{name: 'user-management-state', args: 'default'},
 			],
 		},
@@ -343,6 +493,7 @@ UI.createApp('hook', [
 						'opacity': '1.0',
 					},
 				}},
+				{name: 'project-state', args: 'default'},
 				{name: 'user-management-state', args: 'default'},
 			],
 		},
@@ -414,7 +565,7 @@ UI.createApp('hook', [
 				},
 				bindings: [
 					{name: 'click', fn: function (_this) {
-						UI.changeState(_this.mapState(UI.globalState), _this);
+						_this.triggerState();
 					}},
 				],
 			}),
@@ -443,7 +594,7 @@ UI.createApp('hook', [
 				},
 				bindings: [
 					{name: 'click', fn: function (_this) {
-						UI.changeState(_this.mapState(UI.globalState), _this);
+						_this.triggerState();
 					}},
 				],
 			}),
@@ -461,7 +612,7 @@ UI.createApp('hook', [
 				},
 				bindings: [
 					{name: 'click', fn: function (_this) {
-						UI.changeState(_this.mapState(UI.globalState), _this);
+						_this.triggerState();
 					}},
 				],
 			}),
@@ -488,7 +639,34 @@ UI.createApp('hook', [
 				},
 				bindings: [
 					{name: 'click', fn: function (_this) {
-						UI.changeState(_this.mapState(UI.globalState), _this);
+						_this.triggerState();
+					}},
+				],
+			}),
+			UI.createComponent('cns-project-button', {
+				template: UI.templates.button,
+				appearance: {
+					html: 'Projects',
+					classes: ['menu-button'],
+				},
+				state: {
+					states: [
+						{name: 'control-state', args: {
+							fn: function (_this) {
+								var role = Context.get('current_role');
+								if (role === 'contractadmin' || role === 'productionadmin') {
+									_this.model().css('display', 'block');
+								} else {
+									_this.model().css('display', 'none');
+								}
+							},
+						}},
+					],
+					stateMap: 'project-state',
+				},
+				bindings: [
+					{name: 'click', fn: function (_this) {
+						_this.triggerState();
 					}},
 				],
 			}),
@@ -515,7 +693,7 @@ UI.createApp('hook', [
 				},
 				bindings: [
 					{name: 'click', fn: function (_this) {
-						UI.changeState(_this.mapState(UI.globalState), _this);
+						_this.triggerState();
 					}},
 				],
 			}),
@@ -542,7 +720,7 @@ UI.createApp('hook', [
 				},
 				bindings: [
 					{name: 'click', fn: function (_this) {
-						UI.changeState(_this.mapState(UI.globalState), _this);
+						_this.triggerState();
 					}},
 				],
 			}),
@@ -567,7 +745,7 @@ UI.createApp('hook', [
 				},
 				bindings: [
 					{name: 'click', fn: function (_this) {
-						UI.changeState(_this.mapState(UI.globalState), _this);
+						_this.triggerState();
 					}},
 				],
 			}),
@@ -585,7 +763,7 @@ UI.createApp('hook', [
 				},
 				bindings: [
 					{name: 'click', fn: function (_this) {
-						UI.changeState(_this.mapState(UI.globalState), _this);
+						_this.triggerState();
 					}},
 				],
 			}),
@@ -603,7 +781,7 @@ UI.createApp('hook', [
 				},
 				bindings: [
 					{name: 'click', fn: function (_this) {
-						UI.changeState(_this.mapState(UI.globalState), _this);
+						_this.triggerState();
 					}},
 				],
 			}),
@@ -665,7 +843,7 @@ UI.createApp('hook', [
 						},
 						bindings: [
 							{name: 'click', fn: function (_this) {
-								UI.changeState(_this.mapState(UI.globalState), _this);
+								_this.triggerState();
 							}}
 						],
 					});
@@ -729,7 +907,7 @@ UI.createApp('hook', [
 								},
 								bindings: [
 									{name: 'click', fn: function (_this) {
-										UI.changeState(_this.mapState(UI.globalState), _this);
+										_this.triggerState();
 									}}
 								],
 							});
@@ -803,7 +981,7 @@ UI.createApp('hook', [
 				},
 				bindings: [
 					{name: 'click', fn: function (_this) {
-						UI.changeState(_this.mapState(UI.globalState), _this);
+						_this.triggerState();
 					}},
 				],
 			}),

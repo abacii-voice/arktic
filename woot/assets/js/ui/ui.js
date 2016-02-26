@@ -312,6 +312,10 @@ var UI = {
 			return this.stateMap[stateName] !== undefined ? this.stateMap[stateName] : '';
 		}
 
+		this.triggerState = function () {
+			UI.changeState(this.mapState(UI.globalState), this);
+		}
+
 	},
 
 	// component factory
@@ -452,6 +456,16 @@ var UI = {
 			<div id='{id}' class='{classes}' style='{style}'>
 				{html}
 			</div>
+		`,
+		a: `
+			<a id='{id}' class='{classes}' style='{style}'>
+				{html}
+			</a>
+		`,
+		span: `
+			<span id='{id}' class='{classes}' style='{style}'>
+				{html}
+			</span>
 		`,
 		loadingIcon: `
 			<div id='{id}' class='loading-icon'>
