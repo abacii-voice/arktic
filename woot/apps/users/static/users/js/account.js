@@ -66,6 +66,46 @@ UI.createGlobalStates('client-state', [
 // })
 
 UI.createApp('hook', [
+	// panels
+	UI.createComponent('message-panel', {
+		template: UI.templates.contentPanel,
+		state: {
+			states: [
+				{name: 'role-state', args: {
+					style: {
+						'left': '230px',
+					},
+				}},
+				{name: 'message-state', args: {
+					style: {
+						'left': '220px',
+					},
+				}},
+				{name: 'message-state', args: {
+					style: {
+						'left': '220px',
+					},
+				}},
+			],
+		},
+	}),
+	UI.createComponent('stats-panel', {
+		template: UI.templates.contentPanel,
+	}),
+	UI.createComponent('user-stats-panel', {
+		template: UI.templates.contentPanel,
+	}),
+	UI.createComponent('user-management-panel', {
+		template: UI.templates.contentPanel,
+	}),
+	UI.createComponent('rules-panel', {
+		template: UI.templates.contentPanel,
+	}),
+	UI.createComponent('search-panel', {
+		template: UI.templates.contentPanel,
+	}),
+
+	// sidebars
 	UI.createComponent('control-sidebar', {
 		template: UI.templates.sidebar,
 		appearance: {
