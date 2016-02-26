@@ -68,20 +68,15 @@ Panels
 .content-panel {
 	position: absolute;
 	top: 50%;
-	left: 100px;
+	left: 220px;
 	display: block;
 	overflow-y: auto;
-	overflow-x: visible;
+	overflow-x: hidden;
 	width: 824px;
 	height: 70%;
 	transform: translateY(-50%);
-}
-
-.sub-panel {
-	width: 80%;
-	position: relative;
 	border: 2px solid #aaa;
-	border-radius: 5px;
+	border-radius: 3px;
 }
 
 .spacer {
