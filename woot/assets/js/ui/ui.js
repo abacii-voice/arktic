@@ -37,9 +37,11 @@ var UI = {
 
 			// global svitches promise
 			var globalSvitchPromise = new Promise(function (resolve, reject) {
-				UI.globalSvitches[stateName].map(function (globalSvitch) {
-					globalSvitch.fn(stateName);
-				});
+				if (UI.globalSvitches[stateName] !== undefined) {
+					UI.globalSvitches[stateName].map(function (globalSvitch) {
+						globalSvitch.fn(stateName);
+					});
+				}
 			});
 
 			// execute all component svitches with a promise
@@ -269,43 +271,40 @@ var UI = {
 			this.state = state;
 
 			// 2. get model
-			var model = this.model();
+			var _this = this;
+			var model = _this.model();
 
-			// 3. add classes
-			this.stateClasses.map(function (className) {
-				model.removeClass(className);
+			// pre-fn promise
+			var preFnPromise = new Promise(function (resolve, reject) {
+				if (_this.state.preFn !== undefined) {
+					_this.state.preFn(_this);
+				}
 			});
 
-			this.stateClasses = this.state.classes !== undefined ? this.state.classes : [];
-			this.stateClasses.map(function (className) {
-				model.addClass(className);
+			// execute
+			$.when(preFnPromise).done(function () {
+				// 3. add classes
+				_this.stateClasses.map(function (className) {
+					model.removeClass(className);
+				});
+
+				_this.stateClasses = _this.state.classes !== undefined ? _this.state.classes : [];
+				_this.stateClasses.map(function (className) {
+					model.addClass(className);
+				});
+
+				_this.stateStyle = _this.state.style !== undefined ? _this.state.style : {};
+				model.animate(_this.stateStyle, function () {
+					if (_this.state.fn !== undefined) {
+						_this.state.fn(_this);
+					}
+				});
+
+				// 5. add html
+				if (_this.state.html !== undefined) {
+					model.html(_this.state.html);
+				}
 			});
-
-			// 4. add style
-			// Need to find a better way of doing this:
-			// Maybe compile a style object based on conditions from default, previous, and next
-			// Then animate that compiled list of values.
-			//
-			// Object.keys(this.stateStyle).map(function (key) {
-			// 	if (this.style !== undefined && this.style[key] !== undefined) {
-			// 		model.css(key, this.style[key]); // set it to it's default value
-			// 	} else {
-			// 		model.css(key, '');
-			// 	}
-			// });
-
-			this.stateStyle = this.state.style !== undefined ? this.state.style : {};
-			model.animate(this.stateStyle);
-
-			// 5. add html
-			if (this.state.html !== undefined) {
-				model.html(this.state.html);
-			}
-
-			// 6. perform action
-			if (this.state.fn !== undefined) {
-				this.state.fn(this);
-			}
 		}
 
 		this.mapState = function (stateName) {
@@ -376,6 +375,7 @@ var UI = {
 		this.name = name;
 
 		// args
+		this.preFn = args.preFn;
 		this.classes = args.classes;
 		this.style = args.style;
 		this.html = args.html;
@@ -418,7 +418,7 @@ var UI = {
 	// GLOBAL SVITCH
 	// Global svitches are called before component svitches and are not specifically
 	// connected with a component
-	globalSvitches: {},
+	globalSvitches: [],
 
 	globalSvitch: function (stateName, fn) {
 		this.stateName = stateName;
