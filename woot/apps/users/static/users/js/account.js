@@ -104,9 +104,6 @@ UI.createApp('hook', [
 							root: _this.id,
 							template: UI.templates.a,
 							appearance: {
-								style: {
-									'opacity': '0.0',
-								},
 								html: Context.get('current_client'),
 							},
 							state: {
@@ -121,7 +118,6 @@ UI.createApp('hook', [
 
 						_this.children.push(clientNameBreadcrumb);
 						clientNameBreadcrumb.render();
-						clientNameBreadcrumb.model().animate({'opacity': '1.0'});
 					}
 				}},
 				{name: 'control-state', args: {
@@ -138,9 +134,6 @@ UI.createApp('hook', [
 							root: _this.id,
 							template: UI.templates.a,
 							appearance: {
-								style: {
-									'opacity': '0.0',
-								},
 								html: Context.get('current_client'),
 							},
 							state: {
@@ -155,32 +148,24 @@ UI.createApp('hook', [
 
 						_this.children.push(clientNameBreadcrumb);
 						clientNameBreadcrumb.render();
-						clientNameBreadcrumb.model().animate({'opacity': '1.0'});
 
 						// 3. add carrot
 						var carrot = UI.createComponent('bc-carrot', {
 							root: _this.id,
 							template: UI.templates.span,
 							appearance: {
-								style: {
-									'opacity': '0.0',
-								},
 								html: ' > '
 							},
 						});
 
 						_this.children.push(carrot);
 						carrot.render();
-						carrot.model().animate({'opacity': '1.0'});
 
 						// 4. add role name child
 						var roleNameBreadcrumb = UI.createComponent('bc-role', {
 							root: _this.id,
 							template: UI.templates.a,
 							appearance: {
-								style: {
-									'opacity': '0.0',
-								},
 								html: Context.get('role_display', Context.get('current_role')),
 							},
 							state: {
@@ -195,11 +180,138 @@ UI.createApp('hook', [
 
 						_this.children.push(roleNameBreadcrumb);
 						roleNameBreadcrumb.render();
-						roleNameBreadcrumb.model().animate({'opacity': '1.0'});
 					}
 				}},
 			],
 		},
+	}),
+
+	// interfaces
+	UI.createComponent('upload-panel', {
+		template: UI.templates.contentPanel,
+		appearance: {
+			classes: ['panel-large'],
+		},
+		state: {
+			defaultState: {
+				style: {
+					'opacity': '0.0',
+				},
+				fn: function (_this) {
+					_this.model().css({'display': 'none'});
+				},
+			},
+			states: [
+				{name: 'client-state', args: 'default'},
+				{name: 'role-state', args: 'default'},
+				{name: 'control-state', args: 'default'},
+				{name: 'interface-state', args: 'default'},
+				{name: 'upload-state', args: {
+					preFn: function (_this) {
+						_this.model().css({'display': 'block'});
+					},
+					style: {
+						'opacity': '1.0',
+					},
+				}},
+				{name: 'message-state', args: 'default'},
+				{name: 'billing-state', args: 'default'},
+				{name: 'stats-state', args: 'default'},
+				{name: 'rules-state', args: 'default'},
+				{name: 'user-stats-state', args: 'default'},
+				{name: 'search-state', args: 'default'},
+				{name: 'project-state', args: 'default'},
+				{name: 'user-management-state', args: 'default'},
+			],
+		},
+		children: [
+			UI.createComponent('project-creation-dialog', {
+				children: [
+					UI.createComponent('pcd-project-name', {
+						template: `
+							<div class='input-group {classes}' style='{style}'>
+								<span class='input-group-addon'>Project name</span>
+								<input type='text' class='form-control' placeholder='name'>
+							</div>
+						`,
+						appearance: {
+							classes: ['custom-input-group'],
+							style: {
+								'top': '10px',
+							},
+						},
+					}),
+					UI.createComponent('pcd-description', {
+						template: `
+							<textarea class='{classes}' placeholder='Project description' rows='5' style='{style}' />
+						`,
+						appearance: {
+							classes: ['custom-text-area'],
+							style: {
+								'top': '54px',
+							},
+						}
+					}),
+					UI.createComponent('pcd-deadline', {
+
+					}),
+				],
+			}),
+			UI.createComponent('audio-file-panel', {
+				children: [
+					UI.createComponent('audio-file-dropzone', {
+
+					}),
+					UI.createComponent('audio-file-filelist', {
+
+					}),
+					UI.createComponent('audio-file-confirm-button', {
+
+					}),
+				],
+			}),
+			UI.createComponent('rel-file-dropzone', {
+
+			}),
+		],
+	}),
+	UI.createComponent('interface-panel', {
+		template: UI.templates.contentPanel,
+		appearance: {
+			classes: ['panel-large'],
+		},
+		state: {
+			defaultState: {
+				style: {
+					'opacity': '0.0',
+				},
+				fn: function (_this) {
+					_this.model().css({'display': 'none'});
+				},
+			},
+			states: [
+				{name: 'client-state', args: 'default'},
+				{name: 'role-state', args: 'default'},
+				{name: 'control-state', args: 'default'},
+				{name: 'interface-state', args: {
+					preFn: function (_this) {
+						_this.model().css({'display': 'block'});
+					},
+					style: {
+						'opacity': '1.0',
+					},
+				}},
+				{name: 'upload-state', args: 'default'},
+				{name: 'message-state', args: 'default'},
+				{name: 'billing-state', args: 'default'},
+				{name: 'stats-state', args: 'default'},
+				{name: 'rules-state', args: 'default'},
+				{name: 'user-stats-state', args: 'default'},
+				{name: 'search-state', args: 'default'},
+				{name: 'project-state', args: 'default'},
+				{name: 'user-management-state', args: 'default'},
+			],
+		}
 	}),
 
 	// panels
@@ -208,8 +320,10 @@ UI.createApp('hook', [
 		state: {
 			defaultState: {
 				style: {
-					'left': '220px',
 					'opacity': '0.0',
+				},
+				fn: function (_this) {
+					_this.model().css({'display': 'none'});
 				},
 			},
 			states: [
@@ -219,8 +333,10 @@ UI.createApp('hook', [
 				{name: 'interface-state', args: 'default'},
 				{name: 'upload-state', args: 'default'},
 				{name: 'message-state', args: {
+					preFn: function (_this) {
+						_this.model().css({'display': 'block'});
+					},
 					style: {
-						'left': '220px',
 						'opacity': '1.0',
 					},
 				}},
@@ -251,6 +367,9 @@ UI.createApp('hook', [
 					'left': '220px',
 					'opacity': '0.0',
 				},
+				fn: function (_this) {
+					_this.model().css({'display': 'none'});
+				},
 			},
 			states: [
 				{name: 'client-state', args: 'default'},
@@ -260,8 +379,10 @@ UI.createApp('hook', [
 				{name: 'upload-state', args: 'default'},
 				{name: 'message-state', args: 'default'},
 				{name: 'billing-state', args: {
+					preFn: function (_this) {
+						_this.model().css({'display': 'block'});
+					},
 					style: {
-						'left': '220px',
 						'opacity': '1.0',
 					},
 				}},
@@ -288,8 +409,10 @@ UI.createApp('hook', [
 		state: {
 			defaultState: {
 				style: {
-					'left': '220px',
 					'opacity': '0.0',
+				},
+				fn: function (_this) {
+					_this.model().css({'display': 'none'});
 				},
 			},
 			states: [
@@ -301,8 +424,10 @@ UI.createApp('hook', [
 				{name: 'message-state', args: 'default'},
 				{name: 'billing-state', args: 'default'},
 				{name: 'stats-state', args: {
+					preFn: function (_this) {
+						_this.model().css({'display': 'block'});
+					},
 					style: {
-						'left': '220px',
 						'opacity': '1.0',
 					},
 				}},
@@ -328,8 +453,10 @@ UI.createApp('hook', [
 		state: {
 			defaultState: {
 				style: {
-					'left': '220px',
 					'opacity': '0.0',
+				},
+				fn: function (_this) {
+					_this.model().css({'display': 'none'});
 				},
 			},
 			states: [
@@ -343,8 +470,10 @@ UI.createApp('hook', [
 				{name: 'stats-state', args: 'default'},
 				{name: 'rules-state', args: 'default'},
 				{name: 'user-stats-state', args: {
+					preFn: function (_this) {
+						_this.model().css({'display': 'block'});
+					},
 					style: {
-						'left': '220px',
 						'opacity': '1.0',
 					},
 				}},
@@ -368,8 +497,10 @@ UI.createApp('hook', [
 		state: {
 			defaultState: {
 				style: {
-					'left': '220px',
 					'opacity': '0.0',
+				},
+				fn: function (_this) {
+					_this.model().css({'display': 'none'});
 				},
 			},
 			states: [
@@ -386,8 +517,10 @@ UI.createApp('hook', [
 				{name: 'search-state', args: 'default'},
 				{name: 'project-state', args: 'default'},
 				{name: 'user-management-state', args: {
+					preFn: function (_this) {
+						_this.model().css({'display': 'block'});
+					},
 					style: {
-						'left': '220px',
 						'opacity': '1.0',
 					},
 				}},
@@ -408,8 +541,10 @@ UI.createApp('hook', [
 		state: {
 			defaultState: {
 				style: {
-					'left': '220px',
 					'opacity': '0.0',
+				},
+				fn: function (_this) {
+					_this.model().css({'display': 'none'});
 				},
 			},
 			states: [
@@ -425,8 +560,10 @@ UI.createApp('hook', [
 				{name: 'user-stats-state', args: 'default'},
 				{name: 'search-state', args: 'default'},
 				{name: 'project-state', args: {
+					preFn: function (_this) {
+						_this.model().css({'display': 'block'});
+					},
 					style: {
-						'left': '220px',
 						'opacity': '1.0',
 					},
 				}},
@@ -448,8 +585,10 @@ UI.createApp('hook', [
 		state: {
 			defaultState: {
 				style: {
-					'left': '220px',
 					'opacity': '0.0',
+				},
+				fn: function (_this) {
+					_this.model().css({'display': 'none'});
 				},
 			},
 			states: [
@@ -462,8 +601,10 @@ UI.createApp('hook', [
 				{name: 'billing-state', args: 'default'},
 				{name: 'stats-state', args: 'default'},
 				{name: 'rules-state', args: {
+					preFn: function (_this) {
+						_this.model().css({'display': 'block'});
+					},
 					style: {
-						'left': '220px',
 						'opacity': '1.0',
 					},
 				}},
@@ -488,8 +629,10 @@ UI.createApp('hook', [
 		state: {
 			defaultState: {
 				style: {
-					'left': '220px',
 					'opacity': '0.0',
+				},
+				fn: function (_this) {
+					_this.model().css({'display': 'none'});
 				},
 			},
 			states: [
@@ -504,8 +647,10 @@ UI.createApp('hook', [
 				{name: 'rules-state', args: 'default'},
 				{name: 'user-stats-state', args: 'default'},
 				{name: 'search-state', args: {
+					preFn: function (_this) {
+						_this.model().css({'display': 'block'});
+					},
 					style: {
-						'left': '220px',
 						'opacity': '1.0',
 					},
 				}},
@@ -534,23 +679,40 @@ UI.createApp('hook', [
 			},
 		},
 		state: {
+			defaultState: {
+				style: {
+					'left': '60px',
+					'opacity': '0.0',
+				}
+			},
 			states: [
-				{name: 'client-state', args: {
-					style: {
-						'left': '60px',
-						'opacity': '0.0',
-					},
-				}},
-				{name: 'role-state', args: {
-					style: {
-						'left': '60px',
-						'opacity': '0.0',
-					}
-				}},
+				{name: 'client-state', args: 'default'},
+				{name: 'role-state', args: 'default'},
 				{name: 'control-state', args: {
+					preFn: function (_this) {
+						_this.model().css({'display': 'block'});
+					},
 					style: {
 						'left': '50px',
 						'opacity': '1.0',
+					},
+				}},
+				{name: 'interface-state', args: {
+					style: {
+						'left': '50px',
+						'opacity': '0.0',
+					},
+					fn: function (_this) {
+						_this.model().css({'display': 'none'});
+					},
+				}},
+				{name: 'upload-state', args: {
+					style: {
+						'left': '50px',
+						'opacity': '0.0',
+					},
+					fn: function (_this) {
+						_this.model().css({'display': 'none'});
 					},
 				}},
 			],
@@ -575,9 +737,7 @@ UI.createApp('hook', [
 							},
 						}},
 					],
-					stateMap: {
-						'control-state': 'interface-state',
-					},
+					stateMap: 'interface-state',
 				},
 				bindings: [
 					{name: 'click', fn: function (_this) {
@@ -604,9 +764,7 @@ UI.createApp('hook', [
 							},
 						}},
 					],
-					stateMap: {
-						'control-state': 'upload-state',
-					},
+					stateMap: 'upload-state',
 				},
 				bindings: [
 					{name: 'click', fn: function (_this) {
@@ -786,7 +944,7 @@ UI.createApp('hook', [
 			UI.createComponent('cns-search-button', {
 				template: UI.templates.button,
 				appearance: {
-					html: '<span class="glyphicon glyphicon-search"></span> Search',
+					html: `<span class='glyphicon glyphicon-search'></span> Search`,
 					classes: ['menu-button'],
 					style: {
 						'display': 'block',
@@ -888,10 +1046,7 @@ UI.createApp('hook', [
 					},
 				}},
 				{name: 'role-state', args: {
-					style: {
-						'left': '50px',
-					},
-					fn: function (_this) {
+					preFn: function (_this) {
 						// 1. remove current children
 						_this.children.map(function (child) {
 							UI.removeComponent(child.id);
@@ -932,9 +1087,12 @@ UI.createApp('hook', [
 							child.render();
 
 							// make buttons visible
-							child.model().animate({'opacity': '1.0'});
+							child.model().css({'opacity': '1.0'});
 						});
-					}
+					},
+					style: {
+						'left': '50px',
+					},
 				}},
 				{name: 'control-state', args: {
 					style: {
@@ -978,7 +1136,7 @@ UI.createApp('hook', [
 			UI.createComponent('bs-back-button', {
 				template: UI.templates.button,
 				appearance: {
-					html: '<span class="glyphicon glyphicon-chevron-left"></span>'
+					html: `<span class='glyphicon glyphicon-chevron-left'></span>`
 				},
 				state: {
 					stateMap: {
