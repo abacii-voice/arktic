@@ -21,7 +21,7 @@ def user_context(request):
 		if user.is_authenticated():
 
 			# get data
-			client_list = user.clients()
+			client_list = sorted(user.clients())
 			role_data = user.roles()
 
 			# single client test
@@ -37,6 +37,7 @@ def user_context(request):
 				'clients': client_list,
 				'roles': user.roles(),
 				'stats': '',
+				'current_relfile_lines':[],
 				'one_client': one_client,
 				'one_role': one_role,
 				'current_client': one_client_name,
