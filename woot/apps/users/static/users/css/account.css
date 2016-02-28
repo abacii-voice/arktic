@@ -265,7 +265,7 @@ Dropzone
 	width: 400px;
 	top: 235px;
 	text-align: center;
-	border: 2px solid #ccc;
+	border: 2px dotted #ccc;
 	border-radius: 4px;
 }
 
@@ -279,6 +279,16 @@ Dropzone
 
 .dz-error-mark {
 	display: none;
+}
+
+.dz-error-message {
+	position: absolute;
+	top: 250px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 100%;
+	color: #FD4F00;
+	pointer-events: none;
 }
 
 .dz-filename {
@@ -325,6 +335,7 @@ Tables
 	text-align: center;
 	font-size: 15px;
 	color: #ccc;
+	pointer-events: none;
 }
 
 .dropzone-demo-table {
@@ -332,6 +343,7 @@ Tables
 	left: 15%;
 	width: 70%;
 	top: 100px;
+	pointer-events: none;
 }
 
 .dropzone-demo-table tr {

@@ -329,6 +329,15 @@ UI.createApp('hook', [
 													// 2. parse contents of file and display in rel-file-filelist
 													var lines = contents.split('\n');
 													var headerLine = lines.shift();
+
+													// add lines to Context
+													var relfileLineObjects = lines.map(function (line) {
+														var keys = line.split(',');
+														return {filename: keys[0], utterance: keys[1]}
+													});
+													Context.set('current_relfile_lines', relfileLineObjects);
+
+													// truncate lines
 													var trunc = 6;
 													var numberOfLines = lines.length - trunc;
 													lines = lines.slice(0, trunc);
@@ -430,9 +439,69 @@ UI.createApp('hook', [
 			}),
 			UI.createComponent('audio-file-panel', {
 				children: [
-					UI.createComponent('audio-file-title'),
+					UI.createComponent('audio-file-title', {
+						template: `<h2 style='{style}'>Project Audio Archive</h2>`,
+						appearance: {
+							style: {
+								'position': 'absolute',
+								'top': '-24px',
+								'left': '410px',
+								'color': '#ccc',
+								'font-size': '20px',
+							},
+						},
+					}),
 					UI.createComponent('audio-file-dropzone', {
+						template: `<div class='dz-wrapper' style='{style}' id='{id}'>{html}</div>`,
+						appearance: {
+							html: `
+								<p style='top: 40px;' class='dropzone-demo-title'>Drag and drop or click to upload</p>
+								<p style='top: 58px;' class='dropzone-demo-title'>.zip file of the form:</p>
+								<img style='width: 120px; height: 160px; position:absolute; top: 100px; left: 20%; pointer-events: none;' src='/static/img/folder-icon-comp.png' %} />
+								<p style='color: #ccc; position: absolute; top: 160px; left: 140px; pointer-events: none;'>demo-file_1.wav</p>
+								<p style='color: #ccc; position: absolute; top: 192px; left: 140px; pointer-events: none;'>demo-file_2.wav</p>
+							`,
+							style: {
+								'top': '28px',
+								'left': '410px',
+								'height': '507px',
+							},
+						},
+						state: {
+							states: [
+								{name: 'upload-state', args: {
+									preFn: function (_this) {
+										// make visible
+										_this.model().css({'display': 'block'});
 
+										// create dropzone
+										_this.model().dropzone({
+											url: '/upload-audio',
+											maxFiles: 1,
+											acceptedFiles: '.zip',
+											paramName: 'audio-input',
+											createImageThumbnails: false,
+											accept: function (file, done) {
+												// try reading file
+												
+											},
+										});
+									},
+									style: {
+										'opacity': '1.0',
+									},
+								}},
+								{name: 'upload-relfile-drop-state', args: {
+									style: {
+										'opacity': '0.0',
+									},
+									fn: function (_this) {
+										_this.model().css({'display': 'block'});
+									}
+								}},
+							],
+							stateMap: 'upload-relfile-drop-state',
+						},
 					}),
 					UI.createComponent('audio-file-filelist', {
 
