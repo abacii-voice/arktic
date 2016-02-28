@@ -27,6 +27,9 @@ UI.createGlobalStates('client-state', [
 	// work interface states
 	'interface-state',
 	'upload-state',
+	'upload-date-state',
+	'upload-relfile-drop-state',
+	'upload-audio-drop-state',
 
 	// interfaces
 	'message-state',
@@ -225,21 +228,32 @@ UI.createApp('hook', [
 			],
 		},
 		children: [
+			UI.createComponent('upload-title', {
+				template: `<h2 style='{style}'>New Project</h2>`,
+				appearance: {
+					style: {
+						'position': 'absolute',
+						'top': '-24px',
+						'color': '#ccc',
+						'font-size': '20px',
+					},
+				},
+			}),
 			UI.createComponent('project-creation-dialog', {
 				children: [
 					UI.createComponent('pcd-project-name', {
 						template: `
-							<div class='input-group {classes}' style='{style}'>
-								<span class='input-group-addon'>Project name</span>
-								<input type='text' class='form-control' placeholder='name'>
-							</div>
+							<input type='text' class='{classes}' style='{style}' placeholder='Project name'>
 						`,
 						appearance: {
-							classes: ['custom-input-group'],
+							classes: ['custom-input'],
 							style: {
-								'top': '10px',
+								'top': '27px',
 							},
 						},
+					}),
+					UI.createComponent('pcd-deadline', {
+
 					}),
 					UI.createComponent('pcd-description', {
 						template: `
@@ -248,17 +262,39 @@ UI.createApp('hook', [
 						appearance: {
 							classes: ['custom-text-area'],
 							style: {
-								'top': '54px',
+								'top': '78px',
 							},
 						}
 					}),
-					UI.createComponent('pcd-deadline', {
+				],
+			}),
+			UI.createComponent('rel-file-panel', {
+				children: [
+					UI.createComponent('rel-file-title', {
+						template: `<h2 class='{classes}' style='{style}'>Project RelFile</h2>`,
+						appearance: {
+							style: {
+								'position': 'absolute',
+								'top': '185px',
+								'color': '#ccc',
+								'font-size': '20px',
+							},
+						},
+					}),
+					UI.createComponent('rel-file-dropzone', {
+						template: ``,
+					}),
+					UI.createComponent('rel-file-filelist', {
+
+					}),
+					UI.createComponent('rel-file-confirm-button', {
 
 					}),
 				],
 			}),
 			UI.createComponent('audio-file-panel', {
 				children: [
+					UI.createComponent('audio-file-title'),
 					UI.createComponent('audio-file-dropzone', {
 
 					}),
@@ -269,9 +305,6 @@ UI.createApp('hook', [
 
 					}),
 				],
-			}),
-			UI.createComponent('rel-file-dropzone', {
-
 			}),
 		],
 	}),
