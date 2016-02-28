@@ -282,13 +282,149 @@ UI.createApp('hook', [
 						},
 					}),
 					UI.createComponent('rel-file-dropzone', {
-						template: ``,
+						template: `<div class='dz-wrapper' id='{id}'>{html}</div>`,
+						appearance: {
+							html: `
+								<p style='top: 40px;' class='dropzone-demo-title'>Drag and drop or click to upload</p>
+								<p style='top: 58px;' class='dropzone-demo-title'>.csv file of the form:</p>
+								<table class='dropzone-demo-table'>
+									<tr>
+										<th>filename</th>
+										<th>utterance</th>
+									</tr>
+									<tr>
+										<td>demo-file_1.wav</td>
+										<td>i'd like to speak...</td>
+									</tr>
+									<tr>
+										<td>demo-file_2.wav</td>
+										<td>advisor</td>
+									</tr>
+								</table>
+							`,
+						},
+						state: {
+							states: [
+								{name: 'upload-state', args: {
+									preFn: function (_this) {
+										// make visible
+										_this.model().css({'display': 'block'});
+
+										// create dropzone
+										_this.model().dropzone({
+											url: '/upload-relfile',
+											maxFiles: 1,
+											acceptedFiles: '.csv',
+											paramName: 'relfile-input',
+											createImageThumbnails: false,
+											accept: function (file, done) {
+												// try reading file
+												var reader = new FileReader();
+												reader.onload = function(e) {
+													var contents = e.target.result;
+													// contents is a string. I can do what I want.
+													// 1. trigger rel-file-drop-state
+													_this.triggerState();
+
+													// 2. parse contents of file and display in rel-file-filelist
+													var lines = contents.split('\n');
+													var headerLine = lines.shift();
+													var trunc = 6;
+													var numberOfLines = lines.length - trunc;
+													lines = lines.slice(0, trunc);
+
+													// get filelist object
+													var filelist = UI.getComponent('rel-file-filelist');
+
+													// header
+													var headerKeys = headerLine.split(',');
+													var headerRow = UI.createComponent('relfile-header-row', {
+														root: filelist.id,
+														template: `<tr style='{style}' class='{classes}'>{html}</tr>`,
+														appearance: {
+															style: {
+
+															},
+															html: headerKeys.map(function (key) {
+																return '<th>{key}</th>'.format({key: key});
+															}).join(''),
+														},
+													});
+													filelist.children.push(headerRow);
+													headerRow.render();
+
+													// rest of lines
+													lines.map(function (line, index) { // map to table rows
+														if (line !== '') {
+															var values = line.split(',');
+															var row = UI.createComponent('relfile-header-row-{index}'.format({index: index}), {
+																root: filelist.id,
+																template: `<tr style='{style}' class='{classes}'>{html}</tr>`,
+																appearance: {
+																	html: values.map(function (value) {
+																		return `<td title='{title}'>{value}</td>`.format({value: value.trunc(20), title: value});
+																	}).join(''),
+																},
+															});
+															filelist.children.push(row);
+															row.render();
+														}
+													});
+
+													// footer
+													var footer = UI.createComponent('relfile-footer-row', {
+														root: filelist.id,
+														template: `<tr style='{style}' class='{classes}'>{html}</tr>`,
+														appearance: {
+															html: '<td>{total} total, {number} more files...</td><td></td>'.format({number: numberOfLines, total: numberOfLines + trunc}),
+														}
+													});
+													filelist.children.push(footer);
+													footer.render();
+
+												};
+ 												reader.readAsText(file);
+											},
+										});
+									},
+									style: {
+										'opacity': '1.0',
+									},
+								}},
+								{name: 'upload-relfile-drop-state', args: {
+									style: {
+										'opacity': '0.0',
+									},
+									fn: function (_this) {
+										_this.model().css({'display': 'block'});
+									}
+								}},
+							],
+							stateMap: 'upload-relfile-drop-state',
+						},
 					}),
 					UI.createComponent('rel-file-filelist', {
-
-					}),
-					UI.createComponent('rel-file-confirm-button', {
-
+						template: `<table id='{id}' style='{style}' class='{classes}'></table>`,
+						state: {
+							states: [
+								{name: 'upload-state', args: {
+									style: {
+										'opacity': '0.0',
+									},
+									fn: function (_this) {
+										_this.model().css({'display': 'none'});
+									},
+								}},
+								{name: 'upload-relfile-drop-state', args: {
+									preFn: function (_this) {
+										_this.model().css({'display': 'block'});
+									},
+									style: {
+										'opacity': '1.0',
+									}
+								}},
+							],
+						}
 					}),
 				],
 			}),
