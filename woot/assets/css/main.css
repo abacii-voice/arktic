@@ -16,10 +16,11 @@ html, body {
 }
 
 html {
-	background-image: url('../img/main-background-small-no-moon.jpg');
-	background-position: left top;
-	background-attachment: fixed;
-	background-size: cover;
+	/*background-image: url('../img/main-background-small-no-moon.jpg');*/
+	/*background-position: left top;*/
+	/*background-attachment: fixed;*/
+	/*background-size: cover;*/
+	background-color: #00869B;
 }
 
 /*

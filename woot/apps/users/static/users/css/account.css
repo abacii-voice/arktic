@@ -5,7 +5,7 @@
 */
 
 html {
-	background-image: url(../img/main-background-small-no-moon-blur.jpg);
+	/*background-image: url(../img/main-background-small-no-moon-blur.jpg);*/
 }
 
 div {
@@ -253,7 +253,121 @@ Input groups
 	color: #ccc;
 }
 
-/*<div class='input-group {classes}' style='{style}'>
-	<span class='input-group-addon'>Project name</span>
-	<input type='text' class='form-control' placeholder=''>
-</div>*/
+/*
+
+Dropzone
+
+*/
+
+.dz-wrapper {
+	position: absolute;
+	height: 300px;
+	width: 400px;
+	top: 235px;
+	text-align: center;
+	border: 2px solid #ccc;
+	border-radius: 4px;
+}
+
+.dz-size {
+	display: none;
+}
+
+.dz-success-mark {
+	display: none;
+}
+
+.dz-error-mark {
+	display: none;
+}
+
+.dz-filename {
+	display: none;
+}
+
+/*
+
+Tables
+
+*/
+
+#rel-file-filelist {
+	position: absolute;
+	height: 300px;
+	width: 400px;
+	top: 235px;
+}
+
+#rel-file-filelist tr {
+	width: 400px;
+	box-sizing: border-box;
+	border-bottom: 1px solid #ccc;
+}
+
+#rel-file-filelist th {
+	width: 200px;
+	box-sizing: border-box;
+	padding: 8px;
+	color: #ccc;
+}
+
+#rel-file-filelist td {
+	width: 200px;
+	box-sizing: border-box;
+	padding: 8px;
+	color: #ccc;
+}
+
+.dropzone-demo-title {
+	position: absolute;
+	top: 10px;
+	width: 100%;
+	text-align: center;
+	font-size: 15px;
+	color: #ccc;
+}
+
+.dropzone-demo-table {
+	position: absolute;
+	left: 15%;
+	width: 70%;
+	top: 100px;
+}
+
+.dropzone-demo-table tr {
+	width: 100%;
+	border-bottom: 1px solid #ccc;
+}
+
+.dropzone-demo-table th {
+	width: 50%;
+	color: #ccc;
+	padding: 8px;
+}
+
+.dropzone-demo-table td {
+	text-align: left;
+	width: 50%;
+	color: #ccc;
+	padding: 8px;
+}
+
+/*
+
+Breadcrumbs
+
+*/
+
+#breadcrumbs span {
+	color: #ccc;
+}
+
+#breadcrumbs a {
+	color: #ccc;
+}
+
+#breadcrumbs a:hover {
+	color: #ccc;
+	text-decoration: none;
+	cursor: pointer;
+}
