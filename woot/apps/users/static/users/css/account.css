@@ -383,3 +383,29 @@ Breadcrumbs
 	text-decoration: none;
 	cursor: pointer;
 }
+
+/*
+
+Other
+
+*/
+
+#audio-file-confirm-panel {
+	position: absolute;
+	height: 447px;
+	width: 400px;
+	border: 2px solid #ccc;
+	border-radius: 4px;
+	top: 28px;
+	left: 410px;
+}
+
+#audio-file-confirm-button {
+	position: absolute;
+	left: 410px;
+	top: 485px;
+	height: 50px;
+	width: 400px;
+	border: 2px solid #ccc;
+	border-radius: 4px;
+}

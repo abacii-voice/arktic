@@ -27,6 +27,7 @@ UI.createGlobalStates('client-state', [
 	// work interface states
 	'interface-state',
 	'upload-state',
+	'upload-state-audio',
 	'upload-date-state',
 	'upload-relfile-drop-state',
 	'upload-audio-drop-state',
@@ -333,9 +334,11 @@ UI.createApp('hook', [
 													// add lines to Context
 													var relfileLineObjects = lines.map(function (line) {
 														var keys = line.split(',');
-														return {filename: keys[0], utterance: keys[1]}
+														return {filename: basename(keys[0]), utterance: keys[1]}
 													});
-													Context.set('current_relfile_lines', relfileLineObjects);
+													Context.set('current_relfile_lines', relfileLineObjects.filter(function (relfileLineObject) {
+														return relfileLineObject.filename !== '';
+													}));
 
 													// truncate lines
 													var trunc = 6;
@@ -371,7 +374,7 @@ UI.createApp('hook', [
 																template: `<tr style='{style}' class='{classes}'>{html}</tr>`,
 																appearance: {
 																	html: values.map(function (value) {
-																		return `<td title='{title}'>{value}</td>`.format({value: value.trunc(20), title: value});
+																		return `<td title='{title}'>{value}</td>`.format({value: basename(value).trunc(20), title: value});
 																	}).join(''),
 																},
 															});
@@ -385,7 +388,7 @@ UI.createApp('hook', [
 														root: filelist.id,
 														template: `<tr style='{style}' class='{classes}'>{html}</tr>`,
 														appearance: {
-															html: '<td>{total} total, {number} more files...</td><td></td>'.format({number: numberOfLines, total: numberOfLines + trunc}),
+															html: '<td>{total} total, {number} more files...</td><td></td>'.format({number: numberOfLines - 1, total: numberOfLines + trunc - 1}),
 														}
 													});
 													filelist.children.push(footer);
@@ -430,7 +433,7 @@ UI.createApp('hook', [
 									},
 									style: {
 										'opacity': '1.0',
-									}
+									},
 								}},
 							],
 						}
@@ -483,7 +486,35 @@ UI.createApp('hook', [
 											createImageThumbnails: false,
 											accept: function (file, done) {
 												// try reading file
-												
+												var reader = new FileReader();
+												var zip = new JSZip();
+												reader.onload = function(e) {
+													var contents = e.target.result;
+													zip.load(contents);
+
+													// extract list of files and cut off directory name
+													var filenames = [];
+													Object.keys(zip.files).map(function (key) {
+														if (!zip.files[key].dir) {
+															filenames.push(basename(key));
+														}
+													});
+
+													// check list of filenames against relfile in storage
+													var filenamesMatch = true;
+													Context.get('current_relfile_lines').map(function (relfilePrototypeLine) {
+														filenamesMatch = filenamesMatch & filenames.indexOf(relfilePrototypeLine.filename)!=-1;
+													});
+
+													if (filenamesMatch) {
+														// ready to upload
+														Context.set('current_zip_file', file);
+														_this.triggerState();
+													}
+
+												}
+
+												reader.readAsBinaryString(file);
 											},
 										});
 									},
@@ -491,23 +522,100 @@ UI.createApp('hook', [
 										'opacity': '1.0',
 									},
 								}},
-								{name: 'upload-relfile-drop-state', args: {
+								{name: 'upload-audio-drop-state', args: {
 									style: {
 										'opacity': '0.0',
 									},
 									fn: function (_this) {
-										_this.model().css({'display': 'block'});
+										_this.model().css({'display': 'none'});
 									}
 								}},
 							],
-							stateMap: 'upload-relfile-drop-state',
+							stateMap: 'upload-audio-drop-state',
 						},
 					}),
-					UI.createComponent('audio-file-filelist', {
-
+					UI.createComponent('audio-file-confirm-panel', {
+						template: UI.templates.div,
+						appearance: {
+							html: ``,
+						},
+						state: {
+							states: [
+								{name: 'upload-state', args: {
+									style: {
+										'opacity': '0.0',
+									},
+									fn: function (_this) {
+										_this.model().css({'display': 'none'});
+									}
+								}},
+								{name: 'upload-audio-drop-state', args: {
+									preFn: function (_this) {
+										_this.model().css('display', 'block');
+									},
+									style: {
+										'opacity': '1.0',
+									},
+								}},
+							],
+						},
 					}),
 					UI.createComponent('audio-file-confirm-button', {
+						template: UI.templates.button,
+						appearance: {
+							html: `Confirm and upload`,
+						},
+						state: {
+							states: [
+								{name: 'upload-state', args: {
+									style: {
+										'opacity': '0.0',
+									},
+									fn: function (_this) {
+										_this.model().css({'display': 'none'});
+									}
+								}},
+								{name: 'upload-audio-drop-state', args: {
+									preFn: function (_this) {
+										_this.model().css('display', 'block');
+									},
+									style: {
+										'opacity': '1.0',
+									},
+								}},
+							],
+						},
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								// upload audio zip file along with metadata
+								var data = new FormData();
 
+								// 1. get project name and description metadata
+								var projectName = UI.getComponent('pcd-project-name').model().val();
+								var projectDescription = UI.getComponent('pcd-project-description').model().val();
+								data.append('project_name', projectName);
+								data.append('project_description', projectDescription);
+
+								// 2. get relfile
+								var relfile = Context.get('current_relfile_lines');
+								data.append('relfile', relfile);
+
+								// 3. get audio archive
+								var archive = Context.get('current_zip_file');
+								data.append('archive', archive);
+
+								$.ajax({
+									url: '/commands/audio_upload/',
+									type: 'post',
+									data: data,
+									dataType: 'json',
+									processData: false,
+									success: function (data, textStatus, jqXHR) {
+										console.log(data);
+									}
+								});
+							}}
+						],
 					}),
 				],
 			}),
