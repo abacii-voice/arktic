@@ -75,3 +75,9 @@ String.prototype.trunc = function(n, useWordBoundary) {
 	var s_ = (useWordBoundary && isTooLong) ? s_.substr(0,s_.lastIndexOf(' ')) : s_;
 	return  isTooLong ? s_ + '&hellip;' : s_;
 };
+
+// gives filename without directories
+function basename(str) {
+	var base = new String(str).substring(str.lastIndexOf('/') + 1);
+	return base;
+}
