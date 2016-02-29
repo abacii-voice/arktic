@@ -1,6 +1,16 @@
 The time has come again to refactor the code now that I am sure of what I want. Things seem to be working well, even on worse computers than mine.
 
-UI.js:
+ui.js:
 1. Clarify special capabilities of defaultState, stateMap
 2. Update template system.
-3. 
+3. Standard functions for commonly used structures.
+
+main.css:
+1. Need to get a handle on commonly styled boxes and buttons.
+2. Global text colors and styles.
+
+account.css:
+1. Move specific component styling to static file
+
+account.js:
+1. Clean up components and layout.
