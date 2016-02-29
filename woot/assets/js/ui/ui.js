@@ -15,8 +15,6 @@ var UI = {
 	createGlobalState: function (stateName) {
 		if (this.globalStates.indexOf(stateName) === -1) {
 			this.globalStates.push(stateName);
-			this.states[stateName] = []; // initialise arrays
-			this.svitches[stateName] = [];
 		}
 	},
 
@@ -28,7 +26,7 @@ var UI = {
 	},
 
 	// A change of global state that is broadcast to the components that need to respond.
-	changeState: function (stateName, trigger) {
+	changeState: function (stateName) {
 		if (this.globalStates.indexOf(stateName) !== -1) {
 			// update global state
 			var stateChangePromise = new Promise(function (resolve, reject) {
