@@ -1,0 +1,6 @@
+The time has come again to refactor the code now that I am sure of what I want. Things seem to be working well, even on worse computers than mine.
+
+UI.js:
+1. Clarify special capabilities of defaultState, stateMap
+2. Update template system.
+3. 
