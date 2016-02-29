@@ -54,3 +54,9 @@ def user_context(request):
 			}
 
 			return JsonResponse(context)
+
+def audio_upload(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			

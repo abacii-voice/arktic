@@ -9,4 +9,5 @@ from apps.users.command import *
 ### Command entry points
 urlpatterns = [
 	url(r'^user_context/', user_context),
+	url(r'^audio_upload/', audio_upload),
 ]
