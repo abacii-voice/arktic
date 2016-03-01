@@ -1,0 +1,206 @@
+/*
+
+This file should contain all styling related to interface elements, but no specific #elements.
+#elements that are common to every page should be specified in elements.css.
+
+*/
+
+/*
+
+1. Navbar
+
+*/
+
+/* navbar */
+.navbar-default {
+	background-color: transparent;
+	background-image: none;
+	border-color: transparent;
+	box-shadow: none;
+	-webkit-box-shadow: none;
+}
+
+/* title */
+.navbar-default .navbar-brand {
+	color: #fff;
+}
+.navbar-default .navbar-brand:hover,
+.navbar-default .navbar-brand:focus {
+	color: #AAA;
+}
+
+/* link */
+.navbar-default .navbar-nav > li > a {
+	color: #fff;
+}
+.navbar-brand, .navbar-nav > li > a {
+	color: #777;
+	text-shadow: none;
+}
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+	color: #AAA;
+}
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:hover,
+.navbar-default .navbar-nav > .active > a:focus {
+	color: #555;
+	background-color: #E7E7E7;
+}
+.navbar-default .navbar-nav > .open > a,
+.navbar-default .navbar-nav > .open > a:hover,
+.navbar-default .navbar-nav > .open > a:focus {
+	color: #555;
+	background-color: #D5D5D5;
+}
+.navbar-default .navbar-text {
+	color: #bbb;
+}
+.navbar-default .navbar-link {
+	color: #fff;
+}
+.navbar-default .navbar-link:hover {
+	color: #aaa;
+	text-decoration: none;
+}
+
+/* caret */
+.navbar-default .navbar-nav > .dropdown > a .caret {
+	border-top-color: #777;
+	border-bottom-color: #777;
+}
+.navbar-default .navbar-nav > .dropdown > a:hover .caret,
+.navbar-default .navbar-nav > .dropdown > a:focus .caret {
+	border-top-color: #333;
+	border-bottom-color: #333;
+}
+.navbar-default .navbar-nav > .open > a .caret,
+.navbar-default .navbar-nav > .open > a:hover .caret,
+.navbar-default .navbar-nav > .open > a:focus .caret {
+	border-top-color: #555;
+	border-bottom-color: #555;
+}
+/* mobile version */
+.navbar-default .navbar-toggle {
+	border-color: #DDD;
+}
+.navbar-default .navbar-toggle:hover,
+.navbar-default .navbar-toggle:focus {
+	background-color: #DDD;
+}
+.navbar-default .navbar-toggle .icon-bar {
+	background-color: #CCC;
+}
+@media (max-width: 767px) {
+	.navbar-default .navbar-nav .open .dropdown-menu > li > a {
+		color: #777;
+	}
+	.navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
+	.navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
+		color: #333;
+	}
+}
+
+/*
+
+Common interface elements
+
+ */
+ /* interface element */
+.ie {
+	position: absolute;
+	background-color: transparent;
+	display: none; /* no display by default, must be activated by UI code. */
+	overflow-x: hidden; /* all content must fit inside the box. No expansion left-right will be allowed. */
+
+}
+
+/* centred vertically */
+.ie.cv {
+	top: 50%;
+	transform: translateX(-50%);
+}
+
+/* centred horizontally */
+.ie.ch {
+	left: 50%;
+	transform: translateX(-50%);
+}
+
+/* borders */
+.ie.bt {
+	border-top: 2px solid #ccc;
+}
+
+.ie.br {
+	border-right: 2px solid #ccc;
+}
+
+.ie.bb {
+	border-bottom: 2px solid #ccc;
+}
+
+/*
+
+2. Sidebars
+
+*/
+/* Sidebar */
+.ie.sb {
+	width: 200px;
+	height: 70%;
+	left: -20%; /* Initially hidden until activated */
+}
+
+/* Mini sidebar */
+.ie.sb.mini {
+	width: 50px;
+	left: -50px; /* Initially hidden until activated */
+}
+
+.ie.sb .loading-icon {
+	height: 25px;
+	width: 25px;
+}
+
+/*
+
+3. Panels
+
+*/
+/* Full panel */
+.ie.pn {
+	height: 70%;
+	width: 954px;
+}
+
+/* Context panel */
+.ie.pn.context {
+	width: 804px;
+}
+
+/*
+
+4. Buttons
+
+*/
+.ie.bn {
+
+}
+
+
+/*
+
+5. Inputs
+
+*/
+
+
+/*
+
+6. Breadcrumbs
+
+*/
+.bc {
+
+}
