@@ -472,6 +472,10 @@ var UI = {
 		`,
 	},
 
+	template: function (type, initialClass) {
+		return `<{type} id='{id}' class='{initialClass} {classes}' style='{style}' {properties}>{html}</{type}>`.format({type: type, initialClass: initialClass});
+	},
+
 }
 
 // CONTEXT: This is the context definition. It is a local storage of the relevant variables from
