@@ -6,7 +6,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.conf import settings
 
 # local
-from apps.users.views import HomeView, AdminSignupView, AccountSPAView, LoginView, logout_view
+from apps.users.views import HomeView, AdminSignupView, AccountSPAView, LoginView, logout_view, verify, new_admin_logged_in_redirect
 
 urlpatterns = [
 	# i18n / l10n
@@ -36,6 +36,7 @@ An email will be sent to their email address to verify it. A randomly generated 
 '''
 urlpatterns += [
 	url(r'^register/', AdminSignupView.as_view()),
+	url(r'^admin-logged-in/', new_admin_logged_in_redirect),
 ]
 
 '''
@@ -83,6 +84,7 @@ Workers and moderators will also get keys in their emails, but they do not sign 
 urlpatterns += [
 	# login
 	url(r'^login/', LoginView.as_view()),
+	url(r'^verify/(?P<user>)/(?P<key>)/$', verify),
 	url(r'^logout/', logout_view),
 ]
 
