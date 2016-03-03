@@ -49,7 +49,13 @@ class User(AbstractBaseUser, PermissionsMixin):
 		self.activation_key = get_random_string()
 
 		# 2. send email with key
-		send_mail()
+		send_mail(
+			'Arktic account verification for {}'.format(self.email), # subject
+			'Follow the link below to verify your email:', # text message
+			'', # from email: not sure yet
+			[self.email], # recipient list
+			'html-message' # html message: needs rendering and stuff
+		)
 
 		# 3. toggle activation_email_sent
 		pass
