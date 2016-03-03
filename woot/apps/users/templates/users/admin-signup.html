@@ -7,27 +7,24 @@
 
 {# CSS #}
 {% block css %}
-<link rel='stylesheet' href='{% static 'users/css/admin-signup-main.css' %}'>
-<link rel='stylesheet' href='{% static 'users/css/admin-signup-ui.css' %}'>
-<link rel='stylesheet' href='{% static 'users/css/admin-signup-elements.css' %}'>
+<link rel='stylesheet' href='{% static 'users/css/as.css' %}'>
 {% endblock %}
 
 {# NAV #}
 {% block context_brand %}
-<a class='navbar-brand' href='/account/'>Arktic</a>
+<a class='navbar-brand' href='/'>Arktic</a>
 {% endblock %}
 {% block context_nav_left %}{% endblock %}
 {% block context_nav_right %}{% endblock %}
 
 {# CONTENT #}
-{# role matrix with notifications and work summary #}
 {% block content %}
 
-{# REACT hook #}
+{# UI hook #}
 <div id='hook'></div>
 {% endblock %}
 
 {# REACT #}
 {% block post_main_script %}
-<script src="{% static 'users/js/admin-signup.js' %}"></script>
+<script src="{% static 'users/js/as.js' %}"></script>
 {% endblock %}
