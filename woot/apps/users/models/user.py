@@ -1,6 +1,8 @@
 # django
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
+from django.utils.crypto import get_random_string
+from django.core.mail import send_mail
 
 # util
 import uuid
@@ -22,10 +24,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 	email = models.EmailField(max_length=255, unique=True)
 	first_name = models.CharField(max_length=255)
 	last_name = models.CharField(max_length=255)
+
+	# activation
+	is_activated = models.BooleanField(default=False)
+	activation_email_sent = models.BooleanField(default=False)
 	activation_key = models.CharField(max_length=20) # use utils to generate unique key
 
 	# type
-	is_approved = models.BooleanField(default=False)
+	is_approved = models.BooleanField(default=False) # admin approval
 
 	# preferences
 
@@ -36,6 +42,26 @@ class User(AbstractBaseUser, PermissionsMixin):
 	### Methods
 	def __str__(self):
 		return '{}, ({}, {})'.format(self.email, self.last_name, self.first_name)
+
+	# verify
+	def send_verification_email(self):
+		# 1. generate activation key
+		self.activation_key = get_random_string()
+
+		# 2. send email with key
+		send_mail()
+
+		# 3. toggle activation_email_sent
+		pass
+
+	def verify_email(self, activation_key):
+		if self.activation_key == activation_key:
+			self.is_activated = True
+			self.activation_key = ''
+			self.save()
+			return True
+		else:
+			return False
 
 	def clients(self):
 		return list(self.roles()['clients'].keys())

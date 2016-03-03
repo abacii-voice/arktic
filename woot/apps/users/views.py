@@ -35,7 +35,7 @@ class AdminSignupView(View):
 			If the user is logged in already, they will need to log out before creating a new admin user. If they want to add an admin for the same client, they can do so from the admin account interface.
 			'''
 
-			return HttpResponseRedirect('/logged-in/')
+			return HttpResponseRedirect('/admin-logged-in/')
 		else:
 			return render(request, 'users/admin-signup.html', {})
 
@@ -46,10 +46,10 @@ def new_admin_logged_in_redirect(request):
 	if request.method == 'GET':
 		user = request.user
 		if user.is_authenticated():
-			return render(request, 'users/logged-in-redirect.html', {})
+			return render(request, 'users/liar.html', {})
 		else:
 			# return to login view
-			return HttpResponseRedirect('/login/')
+			return HttpResponseRedirect('/register/')
 
 # 2. Account SPA
 class AccountSPAView(View):
@@ -92,7 +92,7 @@ class AccountSPAView(View):
 			# PSYCH! The decision about the user permissions isn't even made here! It's made by the template by
 			# simply adding or omitting components server side. What comes across in the code will
 			# just not have parts of the interface that do not pertain to the user.
-			return render(request, 'users/account.html', {'user':user, 'roles':user.roles()})
+			return render(request, 'users/account.html', {'user': user})
 
 		else:
 			# return to login view
@@ -107,11 +107,7 @@ class LoginView(View):
 	is a decision left for the Account SPA.
 	'''
 
-	def get(self, request, **kwargs):
-		# process kwargs
-		if 'key' in kwargs:
-			activation_key = kwargs['key']
-
+	def get(self, request):
 		if request.user.is_authenticated():
 			return HttpResponseRedirect('/account/')
 		else:
@@ -130,6 +126,17 @@ class LoginView(View):
 		else:
 			print('form invalid')
 			return render(request, 'users/login.html', {'bad_formatting':True})
+
+# Verify
+def verify(request, **kwargs):
+	if request.method == 'GET':
+		user_key = kwargs['user']
+		activation_key = kwargs['key']
+
+		# user
+		user = User.objects.get(id=user_key)
+		verified = user.verify_email(activation_key)
+		return render(request, 'users/verified.html', {'verified': verified})
 
 # Logout view
 def logout_view(request):
