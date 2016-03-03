@@ -37,34 +37,7 @@ class AdminSignupView(View):
 
 			return HttpResponseRedirect('/logged-in/')
 		else:
-			# get form
-			form = NewAdminForm()
-
-			return render(request, 'users/admin_signup.html', {'form':form})
-
-	def post(self, request, **kwargs):
-		'''
-		The new admin form needs to be verified. New objects can then be created.
-		'''
-		form = NewAdminForm(request.POST)
-
-		if form.is_valid():
-			# 1. create new user
-			email = form.cleaned_data['email']
-			email = form.cleaned_data['email']
-			email = form.cleaned_data['email']
-
-			admin_user = User.objects.create()
-
-			# 2. set activation key
-			# 3. get or create new client
-			# 4. add admin role to user
-			# 5. send email with activation key
-			# 6. add token to superuser register
-			pass
-
-		else:
-			pass
+			return render(request, 'users/admin-signup.html', {})
 
 def new_admin_logged_in_redirect(request):
 	'''
@@ -73,9 +46,7 @@ def new_admin_logged_in_redirect(request):
 	if request.method == 'GET':
 		user = request.user
 		if user.is_authenticated():
-
-
-			return render(request, 'users/logged_in_redirect.html', {})
+			return render(request, 'users/logged-in-redirect.html', {})
 		else:
 			# return to login view
 			return HttpResponseRedirect('/login/')
