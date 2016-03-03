@@ -15,6 +15,18 @@ from django.template import Template
 import json
 
 ### Commands
+
+# admin signup
+def check_client(request):
+	pass
+
+def register_client(request):
+	pass
+
+# user signup
+
+
+# account
 def user_context(request):
 	if request.method=='POST':
 		user = request.user
