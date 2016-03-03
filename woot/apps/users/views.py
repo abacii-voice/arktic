@@ -51,7 +51,11 @@ def new_admin_logged_in_redirect(request):
 			# return to login view
 			return HttpResponseRedirect('/register/')
 
-# 2. Account SPA
+# 2. User signup
+class UserSignupView(View):
+	pass
+
+# 3. Account SPA
 class AccountSPAView(View):
 	'''
 	The Account SPA view serves a skeleton template containing a small amount of data,
@@ -98,7 +102,7 @@ class AccountSPAView(View):
 			# return to login view
 			return HttpResponseRedirect('/login/')
 
-# 3. Login view
+# 4. Login view
 class LoginView(View):
 	'''
 	It is the responsability of the Login view to determine
