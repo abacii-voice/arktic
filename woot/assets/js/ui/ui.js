@@ -129,6 +129,7 @@ var UI = {
 
 		// appearance
 		if (args.appearance !== undefined) {
+			this.properties = args.appearance.properties; // e.g. default value for input
 			this.html = args.appearance.html;
 			this.classes = args.appearance.classes; // Default state classes
 			this.style = args.appearance.style;
@@ -192,9 +193,6 @@ var UI = {
 			Context.register(this.id, this.registryPath);
 		}
 
-		// properties
-		this.properties = args.properties;
-
 		// bindings
 		this.bindings = args.bindings !== undefined ? args.bindings : [];
 
@@ -216,11 +214,13 @@ var UI = {
 			// 2. render template
 			var classes = this.classes !== undefined ? this.classes : [];
 			var style = this.style !== undefined ? this.style : {};
+			var properties = this.properties != undefined ? this.properties : {};
 			var html = this.html !== undefined ? this.html : '';
 			var renderedTemplate = this.template.format({
 				id: this.id,
 				classes: formatClasses(classes),
 				style: formatStyle(style),
+				properties: formatProperties(properties),
 				html: html,
 			});
 
@@ -473,7 +473,15 @@ var UI = {
 	},
 
 	template: function (type, initialClass) {
-		return `<{type} id='{id}' class='{initialClass} {classes}' style='{style}' {properties}>{html}</{type}>`.format({type: type, initialClass: initialClass});
+		return `<{type} id='{id}' class='{initialClass} {classes}' style='{style}' {properties}>{html}</{type}>`.format({
+			type: type,
+			id: '{id}',
+			initialClass: initialClass,
+			classes: '{classes}',
+			style: '{style}',
+			properties: '{properties}',
+			html: '{html}',
+		});
 	},
 
 }

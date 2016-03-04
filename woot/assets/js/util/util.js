@@ -57,6 +57,17 @@ function formatClasses (classes) {
 	}
 }
 
+function formatProperties (properties) {
+	if (properties !== undefined) {
+		var strings = Object.keys(properties).map(function (property) {
+			return '{property}="{value}" '.format({property: property, value: properties[property]})
+		});
+		return strings.join('');
+	} else {
+		return '';
+	}
+}
+
 // generate random string
 function makeid() {
 	var text = "";
