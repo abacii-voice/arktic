@@ -6,7 +6,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.conf import settings
 
 # local
-from apps.users.views import HomeView, AdminSignupView, AccountSPAView, LoginView, logout_view, verify, new_admin_logged_in_redirect
+from apps.users.views import HomeView, AdminSignupView, AccountSPAView, LoginView, logout_view, verify
 
 urlpatterns = [
 	# i18n / l10n
@@ -36,7 +36,6 @@ An email will be sent to their email address to verify it. A randomly generated 
 '''
 urlpatterns += [
 	url(r'^register/', AdminSignupView.as_view()),
-	url(r'^admin-logged-in/', new_admin_logged_in_redirect),
 ]
 
 '''
