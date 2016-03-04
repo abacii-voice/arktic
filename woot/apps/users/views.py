@@ -39,18 +39,6 @@ class AdminSignupView(View):
 		else:
 			return render(request, 'users/admin-signup.html', {})
 
-def new_admin_logged_in_redirect(request):
-	'''
-	This is a message that redirects to the account page after a few seconds of notifying the user that they are required to log out before attempting to signup for a new admin account.
-	'''
-	if request.method == 'GET':
-		user = request.user
-		if user.is_authenticated():
-			return render(request, 'users/liar.html', {})
-		else:
-			# return to login view
-			return HttpResponseRedirect('/register/')
-
 # 2. User signup
 class UserSignupView(View):
 	pass
