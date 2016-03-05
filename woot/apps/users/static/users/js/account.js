@@ -243,58 +243,125 @@ UI.createApp('hook', [
 			states: [
 				{name: 'client-state', args: 'default'},
 				{name: 'role-state', args: {
-					preFn: function (_this) {
-						// 1. remove current children
-						_this.children.map(function (child) {
-							UI.removeComponent(child.id);
-						});
-
-						_this.children = [];
-
-						// 2. map data from context to new children and render
-						var data = Context.get('roles', 'clients', Context.get('current_client'), 'roles');
-						data.map(function (roleName) {
-							var child = UI.createComponent('rs-{name}-button'.format({name: roleName}), {
-								root: _this.id,
-								template: UI.templates.button,
-								appearance: {
-									style: {
-										'opacity': '0.0',
-									},
-									html: Context.get('role_display', roleName),
-								},
-								state: {
-									svitches: [
-										{stateName: 'control-state', fn: function (_this) {
-											Context.set('current_role', roleName);
-										}}
-									],
-									stateMap: {
-										'role-state': 'control-state'.format({role: roleName}),
-									}
-								},
-								bindings: [
-									{name: 'click', fn: function (_this) {
-										_this.triggerState();
-									}}
-								],
-							});
-
-							_this.children.push(child);
-							child.render();
-
-							// make buttons visible
-							child.model().css({'opacity': '1.0'});
-						});
-					},
 					style: {
 						'left': '50px',
 					},
 				}},
+				{name: 'control-state', args: 'default'},
 			],
 		},
+		children: [
+			UI.createComponent('rs-title', {
+				template: UI.template('h4', 'ie sidebar-title centred-horizontally'),
+				appearance: {
+					html: 'Roles',
+					style: {
+						'height': '10%',
+					},
+				},
+			}),
+			UI.createComponent('rs-role-list-wrapper', {
+				template: UI.template('div', 'ie scroll-wrapper'),
+				appearance: {
+					style: {
+						'position': 'relative',
+						'top': '10%',
+						'height': '90%',
+					},
+				},
+				children: [
+					UI.createComponent('rs-role-list', {
+						template: UI.template('div', 'ie scroll'),
+						state: {
+							states: [
+								{name: 'role-state', args: {
+									preFn: function (_this) {
+										// 1. remove current children
+										_this.children.map(function (child) {
+											UI.removeComponent(child.id);
+										});
+
+										_this.children = [];
+
+										// 2. map data from context to new children and render
+										var data = Context.get('roles', 'clients', Context.get('current_client'), 'roles');
+										data.map(function (roleName) {
+											var child = UI.createComponent('rs-{name}-button'.format({name: roleName}), {
+												root: _this.id,
+												template: UI.templates.button,
+												appearance: {
+													style: {
+														'opacity': '0.0',
+													},
+													html: Context.get('role_display', roleName),
+												},
+												state: {
+													svitches: [
+														{stateName: 'control-state', fn: function (_this) {
+															Context.set('current_role', roleName);
+														}}
+													],
+													stateMap: 'control-state',
+												},
+												bindings: [
+													{name: 'click', fn: function (_this) {
+														_this.triggerState();
+													}}
+												],
+											});
+
+											_this.children.push(child);
+											child.render();
+
+											// make buttons visible
+											child.model().css({'opacity': '1.0'});
+										});
+									},
+								}},
+							],
+						},
+					}),
+				],
+			}),
+		],
 	}),
-	UI.createComponent('role-back-sidebar'),
+	UI.createComponent('role-back-sidebar', {
+		template: UI.template('div', 'ie sidebar mini border-right centred-vertically'),
+		state: {
+			defaultState: {
+				style: {
+					'left': '-300px',
+				}
+			},
+			states: [
+				{name: 'client-state', args: 'default'},
+				{name: 'role-state', args: 'default'},
+				{name: 'control-state', args: {
+					style: {
+						'left': '0px',
+					},
+				}},
+			],
+		},
+		children: [
+			UI.createComponent('rbs-back-button', {
+				template: UI.templates.button,
+				state: {
+					stateMap: 'role-state',
+				},
+				children: [
+					UI.createComponent('rbs-bb-span', {
+						template: UI.template('span', 'glyphicon glyphicon-chevron-left'),
+					}),
+				],
+				bindings: [
+					{name: 'click', fn: function (_this) {
+						_this.triggerState();
+					}}
+				],
+			}),
+		],
+	}),
 	UI.createComponent('client-sidebar', {
 		template: UI.template('div', 'ie sidebar border-right centred-vertically'),
 		state: {
@@ -313,7 +380,7 @@ UI.createApp('hook', [
 			],
 		},
 		children: [
-			UI.createComponent('cs-title-h4', {
+			UI.createComponent('cs-title', {
 				template: UI.template('h4', 'ie sidebar-title centred-horizontally'),
 				appearance: {
 					html: 'Clients',
@@ -408,6 +475,7 @@ UI.createApp('hook', [
 						'left': '0px',
 					},
 				}},
+				{name: 'control-state', args: 'default'},
 			],
 		},
 		children: [
