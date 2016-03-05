@@ -229,36 +229,94 @@ UI.createApp('hook', [
 	}),
 
 	// sidebars
-	UI.createComponent('control-sidebar-wrapper', {
+	UI.createComponent('interface-back-sidebar'),
+	UI.createComponent('control-sidebar'),
+	UI.createComponent('control-back-sidebar'),
+	UI.createComponent('role-sidebar'),
+	UI.createComponent('role-back-sidebar'),
+	UI.createComponent('client-sidebar', {
+		template: UI.template('div', 'ie sidebar border-right'),
 		children: [
-			UI.createComponent('control-sidebar'),
-			UI.createComponent('control-back-sidebar'),
-		],
-	}),
-	UI.createComponent('client-sidebar-wrapper', {
-		children: [
-			UI.createComponent('client-sidebar', {
+			UI.createComponent('cs-title-h4', {
+				template: UI.template('h4', 'ie sidebar-title centred-horizontally'),
+				appearance: {
+					html: 'Clients',
+					style: {
+						'height': '10%',
+					},
+				},
+			}),
+			UI.createComponent('cs-client-list-wrapper', {
+				template: UI.template('div', 'ie scroll-wrapper'),
+				appearance: {
+					style: {
+						'position': 'relative',
+						'top': '10%',
+						'height': '90%',
+					},
+				},
 				children: [
-					UI.createComponent('cs-title', {
+					UI.createComponent('cs-client-list', {
+						template: UI.template('div', 'ie scroll'),
+						registry: {
+							path: function () {
+								return ['clients'];
+							},
+							fn: function (_this, data) {
+								// create buttons from Context and remove loading icon
+								// 'data' is a list of client names
+
+								// remove loading button
+								var loadingIcon = UI.getComponent('cs-loading-icon');
+								loadingIcon.model().fadeOut();
+
+								// map data to new buttons
+								data.map(function (clientName) {
+									var child = UI.createComponent('cs-{name}-button'.format({name: clientName}), {
+										root: _this.id,
+										template: UI.templates.button,
+										appearance: {
+											style: {
+												'opacity': '0.0',
+											},
+											html: '{name}'.format({name: clientName}),
+										},
+										state: {
+											svitches: [
+												{stateName: 'role-state', fn: function (_this) {
+													Context.set('current_client', clientName);
+												}},
+											],
+											stateMap: {
+												'client-state': 'role-state',
+											},
+										},
+										bindings: [
+											{name: 'click', fn: function (_this) {
+												_this.triggerState();
+											}}
+										],
+									});
+
+									_this.children.push(child);
+									child.render();
+
+									// make buttons visible
+									child.model().animate({'opacity': '1.0'});
+								});
+							}
+						},
 						children: [
-							UI.createComponent('cs-title-h3'),
-							UI.createComponent('cs-title-lower-divider'),
+							UI.createComponent('cs-loading-icon', {
+								template: UI.templates.loadingIcon,
+							}),
 						],
 					}),
 				],
 			}),
-			UI.createComponent('client-back-sidebar'),
 		],
 	}),
-	UI.createComponent('role-sidebar-wrapper', {
-		children: [
-			UI.createComponent('role-sidebar'),
-			UI.createComponent('role-back-sidebar'),
-		],
-	}),
-	UI.createComponent('interface-back-sidebar', {
-
-	}),
+	UI.createComponent('client-back-sidebar'),
 
 ]);
 
