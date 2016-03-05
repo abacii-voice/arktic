@@ -306,11 +306,12 @@ UI.createApp('hook', [
 								});
 							}
 						},
-						children: [
-							UI.createComponent('cs-loading-icon', {
-								template: UI.templates.loadingIcon,
-							}),
-						],
+					}),
+					UI.createComponent('cs-loading-icon', {
+						template: UI.templates.loadingIcon,
+						appearance: {
+							classes: ['ie centred'],
+						},
 					}),
 				],
 			}),
