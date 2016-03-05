@@ -24,23 +24,6 @@ Sidebars
 
 */
 
-.sidebar {
-	position: absolute;
-	top: 50%;
-	left: 0px;
-	background-color: transparent;
-	display: block;
-	width: 200px;
-	height: 70%;
-	border-right: 2px solid #aaa;
-	transform: translateY(-50%);
-	overflow-x: hidden;
-}
-
-.sidebar.mini {
-	width: 50px;
-}
-
 .sidebar.hidden {
 	translate: translateY(-50%);
 }
