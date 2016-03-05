@@ -239,7 +239,7 @@ Common interface elements
 4. Buttons
 
 */
-.ie.btn {
+.ie.button {
 	background-image: none;
 	background-color: transparent;
 	-webkit-box-shadow: none;
@@ -248,11 +248,11 @@ Common interface elements
 	color: #ccc;
 }
 
-.ie.btn:hover {
+.ie.button:hover {
 	border-color: #fff;
 }
 
-.ie.btn:active {
+.ie.button:active {
 	border-color: #fff;
 }
 
