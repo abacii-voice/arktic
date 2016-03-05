@@ -110,7 +110,7 @@ Common interface elements
 .ie {
 	position: absolute;
 	background-color: transparent;
-	display: none; /* no display by default, must be activated by UI code. */
+	/*display: none; /* no display by default, must be activated by UI code. */*/
 	overflow-x: hidden; /* all content must fit inside the box. No expansion left-right will be allowed. */
 }
 
@@ -120,6 +120,19 @@ Common interface elements
 
 .ie.relative {
 	position: relative;
+}
+
+/* Scroll */
+.ie.scroll-wrapper {
+	width: 100%;
+	overflow: hidden;
+}
+
+.ie.scroll-wrapper .scroll {
+	height: 100%;
+	width: calc(100% + 20px);
+	overflow-y: scroll;
+	padding-right: 20px;
 }
 
 /* centred vertically */
@@ -148,7 +161,6 @@ Common interface elements
 
 .ie.border-right {
 	border-right: 2px solid #ccc;
-	border-radius: 4px;
 }
 
 .ie.border-bottom {
@@ -157,7 +169,6 @@ Common interface elements
 
 .ie.border-left {
 	border-left: 2px solid #ccc;
-	border-radius: 4px;
 }
 
 .ie.border {
@@ -166,6 +177,10 @@ Common interface elements
 	border-right: 2px solid #ccc;
 	border-top: 2px solid #ccc;
 	border-bottom: 2px solid #ccc;
+}
+
+.ie.border-radius {
+	border-radius: 4px;
 }
 
 /*
@@ -177,18 +192,25 @@ Common interface elements
 .ie.sidebar {
 	width: 200px;
 	height: 70%;
-	left: -20%; /* Initially hidden until activated */
+	/*left: -200px; /* Initially hidden until activated */*/
 }
 
 /* Mini sidebar */
 .ie.sidebar.mini {
 	width: 50px;
-	left: -50px; /* Initially hidden until activated */
+	/*left: -50px; /* Initially hidden until activated */*/
 }
 
 .ie.sidebar .loading-icon {
 	height: 25px;
 	width: 25px;
+}
+
+.ie.sidebar .sidebar-title {
+	font-size: 16px;
+	color: #bbb;
+	width: 80%;
+	text-align: center;
 }
 
 /*

@@ -15,6 +15,8 @@ var UI = {
 	createGlobalState: function (stateName) {
 		if (this.globalStates.indexOf(stateName) === -1) {
 			this.globalStates.push(stateName);
+			this.states[stateName] = [];
+			this.svitches[stateName] = [];
 		}
 	},
 
@@ -26,7 +28,7 @@ var UI = {
 	},
 
 	// A change of global state that is broadcast to the components that need to respond.
-	changeState: function (stateName) {
+	changeState: function (stateName, trigger) {
 		if (this.globalStates.indexOf(stateName) !== -1) {
 			// update global state
 			var stateChangePromise = new Promise(function (resolve, reject) {
@@ -45,7 +47,7 @@ var UI = {
 			// execute all component svitches with a promise
 			var componentSvitchPromise = new Promise(function (resolve, reject) {
 				UI.svitches[stateName].filter(function (svitch) {
-					return svitch.component === trigger;
+					return svitch.component.id === trigger;
 				}).map(function (svitch) {
 					svitch.fn(svitch.component);
 				});
@@ -310,7 +312,7 @@ var UI = {
 		}
 
 		this.triggerState = function () {
-			UI.changeState(this.mapState(UI.globalState), this);
+			UI.changeState(this.mapState(UI.globalState), this.id);
 		}
 
 	},
