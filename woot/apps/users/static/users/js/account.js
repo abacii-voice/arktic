@@ -232,10 +232,86 @@ UI.createApp('hook', [
 	UI.createComponent('interface-back-sidebar'),
 	UI.createComponent('control-sidebar'),
 	UI.createComponent('control-back-sidebar'),
-	UI.createComponent('role-sidebar'),
+	UI.createComponent('role-sidebar', {
+		template: UI.template('div', 'ie sidebar border-right centred-vertically'),
+		state: {
+			defaultState: {
+				style: {
+					'left': '-300px',
+				},
+			},
+			states: [
+				{name: 'client-state', args: 'default'},
+				{name: 'role-state', args: {
+					preFn: function (_this) {
+						// 1. remove current children
+						_this.children.map(function (child) {
+							UI.removeComponent(child.id);
+						});
+
+						_this.children = [];
+
+						// 2. map data from context to new children and render
+						var data = Context.get('roles', 'clients', Context.get('current_client'), 'roles');
+						data.map(function (roleName) {
+							var child = UI.createComponent('rs-{name}-button'.format({name: roleName}), {
+								root: _this.id,
+								template: UI.templates.button,
+								appearance: {
+									style: {
+										'opacity': '0.0',
+									},
+									html: Context.get('role_display', roleName),
+								},
+								state: {
+									svitches: [
+										{stateName: 'control-state', fn: function (_this) {
+											Context.set('current_role', roleName);
+										}}
+									],
+									stateMap: {
+										'role-state': 'control-state'.format({role: roleName}),
+									}
+								},
+								bindings: [
+									{name: 'click', fn: function (_this) {
+										_this.triggerState();
+									}}
+								],
+							});
+
+							_this.children.push(child);
+							child.render();
+
+							// make buttons visible
+							child.model().css({'opacity': '1.0'});
+						});
+					},
+					style: {
+						'left': '50px',
+					},
+				}},
+			],
+		},
+	}),
 	UI.createComponent('role-back-sidebar'),
 	UI.createComponent('client-sidebar', {
-		template: UI.template('div', 'ie sidebar border-right'),
+		template: UI.template('div', 'ie sidebar border-right centred-vertically'),
+		state: {
+			defaultState: {
+				style: {
+					'left': '-300px',
+				},
+			},
+			states: [
+				{name: 'client-state', args: {
+					style: {
+						'left': '0px',
+					},
+				}},
+				{name: 'role-state', args: 'default'},
+			],
+		},
 		children: [
 			UI.createComponent('cs-title-h4', {
 				template: UI.template('h4', 'ie sidebar-title centred-horizontally'),
@@ -317,8 +393,42 @@ UI.createApp('hook', [
 			}),
 		],
 	}),
-	UI.createComponent('client-back-sidebar'),
-
+	UI.createComponent('client-back-sidebar', {
+		template: UI.template('div', 'ie sidebar mini border-right centred-vertically'),
+		state: {
+			defaultState: {
+				style: {
+					'left': '-300px',
+				}
+			},
+			states: [
+				{name: 'client-state', args: 'default'},
+				{name: 'role-state', args: {
+					style: {
+						'left': '0px',
+					},
+				}},
+			],
+		},
+		children: [
+			UI.createComponent('cbs-back-button', {
+				template: UI.templates.button,
+				state: {
+					stateMap: 'client-state',
+				},
+				children: [
+					UI.createComponent('cbs-bb-span', {
+						template: UI.template('span', 'glyphicon glyphicon-chevron-left'),
+					}),
+				],
+				bindings: [
+					{name: 'click', fn: function (_this) {
+						_this.triggerState();
+					}}
+				],
+			}),
+		],
+	}),
 ]);
 
 // 4. Render app
