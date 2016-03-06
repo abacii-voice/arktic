@@ -229,8 +229,258 @@ UI.createApp('hook', [
 	}),
 
 	// sidebars
-	UI.createComponent('interface-back-sidebar'),
-	UI.createComponent('control-sidebar'),
+	UI.createComponent('control-sidebar', {
+		template: UI.template('div', 'ie sidebar centred-vertically'),
+		state: {
+			defaultState: {
+				style: {
+					'left': '-300px',
+				},
+			},
+			states: [
+				{name: 'client-state', args: 'default'},
+				{name: 'role-state', args: 'default'},
+				{name: 'control-state', args: {
+					style: {
+						'left': '50px',
+					},
+				}},
+			],
+		},
+		children: [
+			UI.createComponent('cns-scroll-wrapper', {
+				template: UI.template('div', 'ie scroll-wrapper'),
+				appearance: {
+					style: {
+						'height': '100%',
+					},
+				},
+				children: [
+					UI.createComponent('cns-scroll', {
+						template: UI.template('div', 'ie scroll'),
+						children: [
+							UI.createComponent('cns-start-button', {
+								template: UI.templates.button,
+								appearance: {
+									html: 'Start',
+									classes: ['border start-button'],
+								},
+								state: {
+									states: [
+										{name: 'control-state', args: {
+											preFn: function (_this) {
+												var visibleCondition = true;
+												if (visibleCondition) {
+													_this.model().css('display', 'block');
+												} else {
+													_this.model().css('display', 'none');
+												}
+											},
+										}},
+									],
+									stateMap: 'interface-state',
+								},
+								bindings: [
+									{name: 'click', fn: function (_this) {
+										_this.triggerState();
+									}},
+								],
+							}),
+							UI.createComponent('cns-upload-button', {
+								template: UI.templates.button,
+								appearance: {
+									html: 'Upload',
+									classes: ['border start-button'],
+								},
+								state: {
+									states: [
+										{name: 'control-state', args: {
+											preFn: function (_this) {
+												var visibleCondition = false;
+												if (visibleCondition) {
+													_this.model().css('display', 'block');
+												} else {
+													_this.model().css('display', 'none');
+												}
+											},
+										}},
+									],
+									stateMap: 'interface-state',
+								},
+								bindings: [
+									{name: 'click', fn: function (_this) {
+										_this.triggerState();
+									}},
+								],
+							}),
+							UI.createComponent('cns-projects-button', {
+								template: UI.templates.button,
+								appearance: {
+									html: 'Projects',
+									classes: ['border'],
+								},
+								state: {
+									states: [
+										{name: 'control-state', args: {
+											preFn: function (_this) {
+												var visibleCondition = true;
+												if (visibleCondition) {
+													_this.model().css('display', 'block');
+												} else {
+													_this.model().css('display', 'none');
+												}
+											},
+										}},
+									],
+									stateMap: 'interface-state',
+								},
+								bindings: [
+									{name: 'click', fn: function (_this) {
+										_this.triggerState();
+									}},
+								],
+							}),
+							UI.createComponent('cns-user-management-button', {
+								template: UI.templates.button,
+								appearance: {
+									html: 'User management',
+									classes: ['border'],
+								},
+								state: {
+									states: [
+										{name: 'control-state', args: {
+											preFn: function (_this) {
+												var visibleCondition = true;
+												if (visibleCondition) {
+													_this.model().css('display', 'block');
+												} else {
+													_this.model().css('display', 'none');
+												}
+											},
+										}},
+									],
+									stateMap: 'interface-state',
+								},
+								bindings: [
+									{name: 'click', fn: function (_this) {
+										_this.triggerState();
+									}},
+								],
+							}),
+							UI.createComponent('cns-rules-button', {
+								template: UI.templates.button,
+								appearance: {
+									html: 'Rules',
+									classes: ['border'],
+								},
+								state: {
+									states: [
+										{name: 'control-state', args: {
+											preFn: function (_this) {
+												var visibleCondition = true;
+												if (visibleCondition) {
+													_this.model().css('display', 'block');
+												} else {
+													_this.model().css('display', 'none');
+												}
+											},
+										}},
+									],
+									stateMap: 'rules-state',
+								},
+								bindings: [
+									{name: 'click', fn: function (_this) {
+										_this.triggerState();
+									}},
+								],
+							}),
+							UI.createComponent('cns-billing-button', {
+								template: UI.templates.button,
+								appearance: {
+									html: 'Billing',
+									classes: ['border'],
+								},
+								state: {
+									states: [
+										{name: 'control-state', args: {
+											preFn: function (_this) {
+												var visibleCondition = true;
+												if (visibleCondition) {
+													_this.model().css('display', 'block');
+												} else {
+													_this.model().css('display', 'none');
+												}
+											},
+										}},
+									],
+									stateMap: 'billing-state',
+								},
+								bindings: [
+									{name: 'click', fn: function (_this) {
+										_this.triggerState();
+									}},
+								],
+							}),
+							UI.createComponent('cns-stats-button', {
+								template: UI.templates.button,
+								appearance: {
+									html: 'Stats',
+									classes: ['border'],
+								},
+								state: {
+									states: [
+										{name: 'control-state', args: {
+											preFn: function (_this) {
+												var visibleCondition = true;
+												if (visibleCondition) {
+													_this.model().css('display', 'block');
+												} else {
+													_this.model().css('display', 'none');
+												}
+											},
+										}},
+									],
+									stateMap: 'stats-state',
+								},
+								bindings: [
+									{name: 'click', fn: function (_this) {
+										_this.triggerState();
+									}},
+								],
+							}),
+							UI.createComponent('cns-search-button', {
+								template: UI.templates.button,
+								appearance: {
+									html: 'Search',
+									classes: ['border'],
+								},
+								state: {
+									states: [
+										{name: 'control-state', args: {
+											preFn: function (_this) {
+												var visibleCondition = true;
+												if (visibleCondition) {
+													_this.model().css('display', 'block');
+												} else {
+													_this.model().css('display', 'none');
+												}
+											},
+										}},
+									],
+									stateMap: 'search-state',
+								},
+								bindings: [
+									{name: 'click', fn: function (_this) {
+										_this.triggerState();
+									}},
+								],
+							}),
+						],
+					}),
+				],
+			}),
+		],
+	}),
 	UI.createComponent('control-back-sidebar'),
 	UI.createComponent('role-sidebar', {
 		template: UI.template('div', 'ie sidebar border-right centred-vertically'),
@@ -256,7 +506,7 @@ UI.createApp('hook', [
 				appearance: {
 					html: 'Roles',
 					style: {
-						'height': '10%',
+						'height': '40px',
 					},
 				},
 			}),
@@ -265,8 +515,8 @@ UI.createApp('hook', [
 				appearance: {
 					style: {
 						'position': 'relative',
-						'top': '10%',
-						'height': '90%',
+						'top': '40px',
+						'height': 'calc(100% - 40px)',
 					},
 				},
 				children: [
@@ -385,7 +635,7 @@ UI.createApp('hook', [
 				appearance: {
 					html: 'Clients',
 					style: {
-						'height': '10%',
+						'height': '40px',
 					},
 				},
 			}),
@@ -394,8 +644,8 @@ UI.createApp('hook', [
 				appearance: {
 					style: {
 						'position': 'relative',
-						'top': '10%',
-						'height': '90%',
+						'top': '50px',
+						'height': 'calc(100% - 40px)',
 					},
 				},
 				children: [
