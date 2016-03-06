@@ -269,7 +269,8 @@ UI.createApp('hook', [
 									states: [
 										{name: 'control-state', args: {
 											preFn: function (_this) {
-												var visibleCondition = true;
+												var role = Context.get('current_role');
+												var visibleCondition = (role === 'worker' || role === 'moderator');
 												if (visibleCondition) {
 													_this.model().css('display', 'block');
 												} else {
@@ -296,7 +297,8 @@ UI.createApp('hook', [
 									states: [
 										{name: 'control-state', args: {
 											preFn: function (_this) {
-												var visibleCondition = false;
+												var role = Context.get('current_role');
+												var visibleCondition = (role === 'contractadmin');
 												if (visibleCondition) {
 													_this.model().css('display', 'block');
 												} else {
@@ -323,7 +325,8 @@ UI.createApp('hook', [
 									states: [
 										{name: 'control-state', args: {
 											preFn: function (_this) {
-												var visibleCondition = true;
+												var role = Context.get('current_role');
+												var visibleCondition = (role === 'contractadmin' || role === 'productionadmin');
 												if (visibleCondition) {
 													_this.model().css('display', 'block');
 												} else {
@@ -350,7 +353,8 @@ UI.createApp('hook', [
 									states: [
 										{name: 'control-state', args: {
 											preFn: function (_this) {
-												var visibleCondition = true;
+												var role = Context.get('current_role');
+												var visibleCondition = (role === 'productionadmin' || role === 'moderator');
 												if (visibleCondition) {
 													_this.model().css('display', 'block');
 												} else {
@@ -377,6 +381,7 @@ UI.createApp('hook', [
 									states: [
 										{name: 'control-state', args: {
 											preFn: function (_this) {
+												var role = Context.get('current_role');
 												var visibleCondition = true;
 												if (visibleCondition) {
 													_this.model().css('display', 'block');
@@ -451,7 +456,7 @@ UI.createApp('hook', [
 							UI.createComponent('cns-search-button', {
 								template: UI.templates.button,
 								appearance: {
-									html: 'Search',
+									html: `<span class='glyphicon glyphicon-search'></span> Search`,
 									classes: ['border'],
 								},
 								state: {
