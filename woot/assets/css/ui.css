@@ -231,7 +231,9 @@ Common interface elements
 
 /* Sub panel */
 .ie.panel.sub-panel {
-	width: 90%;
+	top: 10px;
+	left: 10px;
+	width: calc(100% - 20px);
 }
 
 /*
@@ -254,6 +256,18 @@ Common interface elements
 
 .ie.button:active {
 	border-color: #fff;
+}
+
+.ie.sidebar .ie.button.border {
+	left: 10px;
+	width: 180px;
+	margin-bottom: 10px;
+}
+
+.ie.sidebar .ie.button.start-button {
+	height: 100px;
+	padding-top: 33px;
+	font-size: 20px;
 }
 
 /*
