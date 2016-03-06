@@ -245,6 +245,7 @@ UI.createApp('hook', [
 						'left': '50px',
 					},
 				}},
+				{name: 'interface-state', args: 'default'},
 			],
 		},
 		children: [
@@ -486,7 +487,44 @@ UI.createApp('hook', [
 			}),
 		],
 	}),
-	UI.createComponent('control-back-sidebar'),
+	UI.createComponent('control-back-sidebar', {
+		template: UI.template('div', 'ie sidebar mini border-right centred-vertically'),
+		state: {
+			defaultState: {
+				style: {
+					'left': '-50px',
+				}
+			},
+			states: [
+				{name: 'client-state', args: 'default'},
+				{name: 'role-state', args: 'default'},
+				{name: 'control-state', args: 'default'},
+				{name: 'interface-state', args: {
+					style: {
+						'left': '0px',
+					},
+				}},
+			],
+		},
+		children: [
+			UI.createComponent('cnbs-back-button', {
+				template: UI.templates.button,
+				state: {
+					stateMap: 'control-state',
+				},
+				children: [
+					UI.createComponent('cnbs-bb-span', {
+						template: UI.template('span', 'glyphicon glyphicon-chevron-left'),
+					}),
+				],
+				bindings: [
+					{name: 'click', fn: function (_this) {
+						_this.triggerState();
+					}}
+				],
+			}),
+		],
+	}),
 	UI.createComponent('role-sidebar', {
 		template: UI.template('div', 'ie sidebar border-right centred-vertically'),
 		state: {
@@ -585,7 +623,7 @@ UI.createApp('hook', [
 		state: {
 			defaultState: {
 				style: {
-					'left': '-300px',
+					'left': '-50px',
 				}
 			},
 			states: [
@@ -596,6 +634,7 @@ UI.createApp('hook', [
 						'left': '0px',
 					},
 				}},
+				{name: 'interface-state', args: 'default'},
 			],
 		},
 		children: [
@@ -720,7 +759,7 @@ UI.createApp('hook', [
 		state: {
 			defaultState: {
 				style: {
-					'left': '-300px',
+					'left': '-50px',
 				}
 			},
 			states: [
