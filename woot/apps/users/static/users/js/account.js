@@ -13,6 +13,14 @@ Context.setFn(ajax('user_context', {}, function (data) {
 			UI.changeState('role-state');
 		}
 	}
+
+	// debug and construction
+	// $.when(new Promise (function (resolve, reject) {
+	// 	Context.set('current_client', 'TestProductionClient');
+	// 	Context.set('current_role', 'productionadmin')
+	// })).done(function () {
+	// 	UI.changeState('user-management-state');
+	// });
 }));
 
 // 2. Define global states
@@ -132,14 +140,68 @@ UI.createApp('hook', [
 		],
 	}),
 	UI.createComponent('user-management-interface', {
+		template: UI.template('div', 'ie panel context centred-vertically'),
 		children: [
 			UI.createComponent('user-management-interface-left-panel', {
+				template: UI.template('div', 'ie panel sub-panel border'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '200px',
+					},
+				},
 				children: [
-					UI.createComponent('user-role-filter'),
+					UI.createComponent('user-title', {
+						template: UI.template('h4', 'ie panel-title'),
+						appearance: {
+							html: 'Users',
+							style: {
+								'text-align': 'left',
+								'padding-left': '12px',
+							},
+						},
+					}),
+					UI.createComponent('user-role-filter-button', {
+						template: UI.templates.button,
+						appearance: {
+							style: {
+								'top': '30px',
+								'text-align': 'left',
+							},
+						},
+						children: [
+							UI.createComponent('user-role-filter-title', {
+								template: UI.template('span'),
+								appearance: {
+									html: 'Filter by role',
+								},
+							}),
+							UI.createComponent('user-role-filter-role', {
+								template: UI.template('span'),
+								appearance: {
+									html: '',
+								},
+							}),
+						],
+						bindings: [
+							{name: 'click', fn: function (_this) {
+
+							}}
+						],
+					}),
+					UI.createComponent('user-role-filter-list'),
 					UI.createComponent('user-list'),
 				],
 			}),
 			UI.createComponent('user-management-interface-right-panel', {
+				template: UI.template('div', 'ie panel sub-panel border'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '300px',
+						'left': '210px',
+					},
+				},
 				children: [
 					UI.createComponent('user-card-wrapper', {
 						children: [
@@ -246,6 +308,7 @@ UI.createApp('hook', [
 					},
 				}},
 				{name: 'interface-state', args: 'default'},
+				{name: 'upload-state', args: 'default'},
 			],
 		},
 		children: [
@@ -504,6 +567,11 @@ UI.createApp('hook', [
 						'left': '0px',
 					},
 				}},
+				{name: 'upload-state', args: {
+					style: {
+						'left': '0px',
+					},
+				}},
 			],
 		},
 		children: [
@@ -635,6 +703,7 @@ UI.createApp('hook', [
 					},
 				}},
 				{name: 'interface-state', args: 'default'},
+				{name: 'upload-state', args: 'default'},
 			],
 		},
 		children: [
