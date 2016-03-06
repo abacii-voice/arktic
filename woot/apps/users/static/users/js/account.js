@@ -307,7 +307,7 @@ UI.createApp('hook', [
 											},
 										}},
 									],
-									stateMap: 'interface-state',
+									stateMap: 'upload-state',
 								},
 								bindings: [
 									{name: 'click', fn: function (_this) {
@@ -335,7 +335,7 @@ UI.createApp('hook', [
 											},
 										}},
 									],
-									stateMap: 'interface-state',
+									stateMap: 'project-state',
 								},
 								bindings: [
 									{name: 'click', fn: function (_this) {
@@ -363,7 +363,7 @@ UI.createApp('hook', [
 											},
 										}},
 									],
-									stateMap: 'interface-state',
+									stateMap: 'user-management-state',
 								},
 								bindings: [
 									{name: 'click', fn: function (_this) {
