@@ -435,40 +435,18 @@ var UI = {
 	// COMPONENT TEMPLATES
 	//
 	templates: {
-		sidebar: `
-			<div id='{id}' class='sidebar {classes}' style='{style}'></div>
-		`,
-		contentPanel: `
-			<div id='{id}' class='content-panel {classes}' style='{style}'></div>
-		`,
-		spacer: `
-			<div id='{id}' class='spacer'></div>
-		`,
-		subPanel: `
-			<div id='{id}' class='sub-panel {classes}' style='{style}'></div>
-		`,
 		button: `
-			<div id={id} class='btn btn-default button {classes}' style='{style}'>
+			<div id={id} class='ie button btn btn-default {classes}' style='{style}' {properties}>
 				{html}
 			</div>
 		`,
 		div: `
-			<div id='{id}' class='{classes}' style='{style}'>
+			<div id='{id}' class='{classes}' style='{style}' {properties}>
 				{html}
 			</div>
 		`,
-		a: `
-			<a id='{id}' class='{classes}' style='{style}'>
-				{html}
-			</a>
-		`,
-		span: `
-			<span id='{id}' class='{classes}' style='{style}'>
-				{html}
-			</span>
-		`,
 		loadingIcon: `
-			<div id='{id}' class='loading-icon {classes}'>
+			<div id='{id}' class='ie loading-icon {classes}'>
 				<img src='/static/img/loading-icon.gif' />
 			</div>
 		`,
