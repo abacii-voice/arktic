@@ -226,14 +226,23 @@ Common interface elements
 
 /* Context panel */
 .ie.panel.context {
-	width: 804px;
+	left: 270px;
+	width: 744px;
 }
 
 /* Sub panel */
 .ie.panel.sub-panel {
-	top: 10px;
-	left: 10px;
-	width: calc(100% - 20px);
+	margin-right: 10px;
+	margin-bottom: 10px;
+}
+
+.ie.panel .ie.panel-title {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	font-size: 16px;
+	color: #ccc;
+	width: 100%;
+	text-align: center;
 }
 
 /*

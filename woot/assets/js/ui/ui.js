@@ -456,7 +456,7 @@ var UI = {
 		return `<{type} id='{id}' class='{initialClass} {classes}' style='{style}' {properties}>{html}</{type}>`.format({
 			type: type,
 			id: '{id}',
-			initialClass: initialClass,
+			initialClass: initialClass !== undefined ? initialClass : '',
 			classes: '{classes}',
 			style: '{style}',
 			properties: '{properties}',
