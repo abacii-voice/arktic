@@ -201,7 +201,7 @@ Common interface elements
 	/*left: -50px; /* Initially hidden until activated */*/
 }
 
-.ie.sidebar .loading-icon img {
+.ie.loading-icon img {
 	height: 25px;
 	width: 25px;
 }
@@ -222,6 +222,8 @@ Common interface elements
 .ie.panel {
 	height: 70%;
 	width: 954px;
+	-webkit-box-shadow: 0 0px 0px rgba(0, 0, 0, .05);
+	box-shadow: 0 0px 0px rgba(0, 0, 0, .05);
 }
 
 /* Context panel */
