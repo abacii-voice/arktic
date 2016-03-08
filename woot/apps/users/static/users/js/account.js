@@ -3,7 +3,7 @@
 // don't have to use for loading context either. Ajax is fine for that.
 
 // 1. Load Context
-Context.setFn(ajax('user_context', {}, function (data) {
+Context.setFn(command('user_context', {}, function (data) {
 	Context.store = data;
 
 	if (Context.get('one_client')) {
@@ -15,12 +15,12 @@ Context.setFn(ajax('user_context', {}, function (data) {
 	}
 
 	// debug and construction
-	// $.when(new Promise (function (resolve, reject) {
-	// 	Context.set('current_client', 'TestProductionClient');
-	// 	Context.set('current_role', 'productionadmin')
-	// })).done(function () {
-	// 	UI.changeState('user-management-state');
-	// });
+	$.when(new Promise (function (resolve, reject) {
+		Context.set('current_client', 'TestProductionClient');
+		Context.set('current_role', 'productionadmin')
+	})).done(function () {
+		UI.changeState('user-management-state');
+	});
 }));
 
 // 2. Define global states
@@ -143,7 +143,7 @@ UI.createApp('hook', [
 		template: UI.template('div', 'ie panel context centred-vertically'),
 		children: [
 			UI.createComponent('user-management-interface-left-panel', {
-				template: UI.template('div', 'ie panel sub-panel border'),
+				template: UI.template('div', 'ie panel sub-panel'),
 				appearance: {
 					style: {
 						'height': '100%',
@@ -157,40 +157,55 @@ UI.createApp('hook', [
 							html: 'Users',
 							style: {
 								'text-align': 'left',
-								'padding-left': '12px',
+								'padding-left': '0px',
 							},
 						},
 					}),
-					UI.createComponent('user-role-filter-button', {
-						template: UI.templates.button,
+					UI.createComponent('user-list-search-input', {
+						template: UI.template('input', 'ie input'),
 						appearance: {
 							style: {
-								'top': '30px',
-								'text-align': 'left',
+								'top': '35px',
+								'width': '190px',
+							},
+						},
+					}),
+					UI.createComponent('user-list-wrapper', {
+						template: UI.template('div', 'ie scroll-wrapper relative'),
+						appearance: {
+							style: {
+								'top': '80px',
+								'height': 'calc(100% - 80px)',
 							},
 						},
 						children: [
-							UI.createComponent('user-role-filter-title', {
-								template: UI.template('span'),
-								appearance: {
-									html: 'Filter by role',
+							UI.createComponent('user-list', {
+								template: UI.template('div', 'ie scroll'),
+								state: {
+									states: [
+										{name: 'user-management-state', args: {
+											preFn: function (_this) {
+												// load and display user buttons
+												command('user_list', {'current_client': Context.get('current_client'), 'current_role': Context.get('current_role')}, function (data) {
+													// data is a list of user objects with relevant details
+													var users = data.users;
+													users.map(function (userPrototype) {
+														console.log(userPrototype);
+													});
+												})
+											}
+										}},
+									],
 								},
 							}),
-							UI.createComponent('user-role-filter-role', {
-								template: UI.template('span'),
+							UI.createComponent('ul-loading-icon', {
+								template: UI.templates.loadingIcon,
 								appearance: {
-									html: '',
-								},
+									classes: ['ie centred'],
+								}
 							}),
-						],
-						bindings: [
-							{name: 'click', fn: function (_this) {
-
-							}}
 						],
 					}),
-					UI.createComponent('user-role-filter-list'),
-					UI.createComponent('user-list'),
 				],
 			}),
 			UI.createComponent('user-management-interface-right-panel', {
