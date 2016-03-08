@@ -9,7 +9,8 @@ from django.conf import settings
 from django.template import Template
 
 # local
-
+from apps.client.models.client import ProductionClient, ContractClient
+from apps.users.models.user import User
 
 # util
 import json
@@ -66,6 +67,39 @@ def user_context(request):
 			}
 
 			return JsonResponse(context)
+
+def user_list(request):
+	if request.method=='POST':
+		user = request.user
+		if user.is_authenticated():
+			# input data
+			current_client = request.POST['current_client']
+			current_role = request.POST['current_role']
+
+			# determine the list of users needed
+			client = ProductionClient.objects.get(name=current_client)
+
+			role = None
+			user_dict = None
+			if current_role == 'moderator':
+				role = user.users_moderator_roles.get(client__name=current_client)
+
+				if role is not None:
+					worker_users = [worker.user for worker in role.workers.all()]
+
+					user_dict = {'users': [user.details(client, current_role) for user in worker_users]}
+
+			elif current_role == 'productionadmin':
+				role = user.users_productionadmin_roles.get(client__name=current_client)
+
+				if role is not None:
+					users = User.objects.filter(production_clients__in=[client])
+
+					user_dict = {'users': [user.details(client, current_role) for user in users]}
+					print(users[0].details(client, current_role))
+
+			if user_dict is not None:
+				return JsonResponse(user_dict)
 
 def audio_upload(request):
 	if request.method == 'POST':

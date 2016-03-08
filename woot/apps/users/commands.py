@@ -17,5 +17,6 @@ urlpatterns = [
 
 	# account
 	url(r'^user_context/', user_context),
+	url(r'^user_list/', user_list),
 	url(r'^audio_upload/', audio_upload),
 ]
