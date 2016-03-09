@@ -96,7 +96,6 @@ def user_list(request):
 					users = User.objects.filter(production_clients__in=[client])
 
 					user_dict = {'users': [user.details(client, current_role) for user in users]}
-					print(users[0].details(client, current_role))
 
 			if user_dict is not None:
 				return JsonResponse(user_dict)
