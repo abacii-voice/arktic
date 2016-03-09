@@ -46,6 +46,9 @@ UI.createGlobalStates('client-state', [
 	'user-stats-state',
 	'search-state',
 	'user-management-state',
+	'user-management-user-state',
+	'user-management-new-user-state',
+	'user-management-confirm-user-state',
 	'project-state',
 ]);
 
@@ -168,6 +171,9 @@ UI.createApp('hook', [
 								'top': '35px',
 								'width': '190px',
 							},
+							properties: {
+								placeholder: 'Search or filter...'
+							},
 						},
 					}),
 					UI.createComponent('user-list-wrapper', {
@@ -185,13 +191,59 @@ UI.createApp('hook', [
 									states: [
 										{name: 'user-management-state', args: {
 											preFn: function (_this) {
+												// 1. remove current children
+												_this.children.map(function (child) {
+													UI.removeComponent(child.id);
+												});
+
+												_this.children = [];
+
 												// load and display user buttons
 												command('user_list', {'current_client': Context.get('current_client'), 'current_role': Context.get('current_role')}, function (data) {
 													// data is a list of user objects with relevant details
 													var users = data.users;
 													users.map(function (userPrototype) {
-														console.log(userPrototype);
+														var userId = makeid();
+														var userButton = UI.createComponent('user-button-{id}'.format({id: userId}), {
+															root: _this.id,
+															template: UI.templates.button,
+															appearance: {
+																html: '{last_name}, {first_name}'.format({first_name: userPrototype.first_name, last_name: userPrototype.last_name}),
+																classes: ['border-bottom'],
+																style: {
+																	'width': '190px',
+																},
+															},
+															bindings: [
+																{name: 'click', fn: function (_this) {
+																	_this.triggerState();
+																}},
+															],
+															state: {
+																stateMap: 'user-management-user-state',
+																svitches: [
+																	{stateName: 'user-management-user-state', fn: function (_this) {
+																		// get user card objects
+																		var nameField = UI.getComponent('uc-name');
+																		var emailField = UI.getComponent('uc-email');
+																		// var rolesPanel = UI.getComponent('uc-roles-panel');
+																		// var statsPanel = UI.getComponent('uc-stats-panel');
+
+																		// update values
+																		nameField.model().html('{first_name} {last_name}'.format({first_name: userPrototype.first_name, last_name: userPrototype.last_name}));
+																		emailField.model().html(userPrototype.email);
+																	}}
+																],
+															},
+														});
+
+														// render
+														_this.children.push(userButton);
+														userButton.render();
 													});
+
+													// fade loading icon
+													UI.getComponent('ul-loading-icon').model().fadeOut();
 												})
 											}
 										}},
@@ -220,9 +272,55 @@ UI.createApp('hook', [
 				children: [
 					UI.createComponent('user-card-wrapper', {
 						children: [
-							UI.createComponent('user-card'),
+							UI.createComponent('user-card', {
+								state: {
+									states: [
+										{name: 'user-management-state', args: {
+											style: {
+												'opacity': '0.0',
+											},
+											fn: function (_this) {
+												_this.model().css({'display': 'none'});
+											},
+										}},
+										{name: 'user-management-user-state', args: {
+											preFn: function (_this) {
+												_this.model().css({'display': 'block'});
+											},
+											style: {
+												'opacity': '1.0',
+											},
+										}},
+									],
+								},
+								children: [
+									UI.createComponent('uc-name', {
+										template: UI.template('span', 'ie'),
+										appearance: {
+											style: {
+												'font-size': '18px',
+												'top': '10px',
+												'left': '10px',
+												'color': '#ccc',
+											},
+										},
+									}),
+									UI.createComponent('uc-email', {
+										template: UI.template('span', 'ie'),
+										appearance: {
+											style: {
+												'color': '#ccc',
+												'top': '35px',
+												'left': '10px',
+											},
+										},
+									}),
+								],
+							}),
 							UI.createComponent('new-user-button'),
 							UI.createComponent('new-user-card'),
+							UI.createComponent('new-user-confirmation-card'),
+							UI.createComponent('user-title-card'),
 						],
 					}),
 				],
