@@ -112,6 +112,7 @@ Common interface elements
 	background-color: transparent;
 	/*display: none; /* no display by default, must be activated by UI code. */*/
 	overflow-x: hidden; /* all content must fit inside the box. No expansion left-right will be allowed. */
+	box-sizing: border-box;
 }
 
 .ie.show {
