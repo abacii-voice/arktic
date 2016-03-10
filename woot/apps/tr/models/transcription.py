@@ -16,14 +16,12 @@ class Transcription(models.Model):
 
 	### Properties
 	# initialisation if it exists
-	original_utterance = models.CharField(max_length=255, default='')
+	original_caption = models.CharField(max_length=255, default='')
 	date_created = models.DateTimeField(auto_now_add=True)
 
 	# requests and flags
 	requests = models.PositiveIntegerField(default=0)
-	request_allowance = models.PositiveIntegerField(default=1) # this can be incremented by an "unsure" button
-	request_allowance_threshold = models.PositiveIntegerField(default=3) # reaching this threshold will flag the transcription
-	flagged_for_review = models.BooleanField(default=False)
+	request_allowance = models.PositiveIntegerField(default=1)
 	date_last_requested = models.DateTimeField(auto_now=True)
 
 	### Methods
