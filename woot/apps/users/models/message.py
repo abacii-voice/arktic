@@ -13,7 +13,14 @@ class Message(models.Model):
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
-	content = models.TextField()
+
+class Token(models.Model):
+
+	### Connections
+	message = models.ForeignKey(Message, related_name='tokens')
+
+	### Properties
+	index = models.PositiveIntegerField(default=0)
 
 class Attachment(models.Model):
 
@@ -21,6 +28,7 @@ class Attachment(models.Model):
 	message = models.ForeignKey(Message, related_name='attachments')
 
 	### Properties
+	index = models.PositiveIntegerField(default=0)
 	package_name = models.CharField(max_length=255)
 	class_name = models.CharField(max_length=255)
 	attach_pk = models.CharField(max_length=255)
