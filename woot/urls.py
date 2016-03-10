@@ -118,8 +118,11 @@ moderation.js
 
 
 ### Actions
+urlpatterns += [
+	url(r'^action/', include('apps.action.actions')),
+]
 
 ### Commands
 urlpatterns += [
-	url(r'^commands/', include('apps.users.commands')),
+	url(r'^command/', include('apps.users.commands')),
 ]
