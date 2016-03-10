@@ -16,7 +16,14 @@ urlpatterns = [
 
 
 	# account
-	# url(r'^user_context/', user_context),
-	# url(r'^user_list/', user_list),
-	url(r'^audio_upload/', audio_upload),
+	url(r'^create_user/', create_user), # name, email
+	url(r'^modify_user/', modify_user), # user, name, email
+	url(r'^add_role_to_user/', add_role_to_user), # email, role
+	url(r'^create_message/', create_message), # from_user, to_user, text, attachments
+	url(r'^create_rule/', create_rule), 
+	url(r'^modify_rule/', modify_rule),
+	url(r'^create_caption/', create_caption),
+	url(r'^create_moderation/', create_moderation),
+	url(r'^create_report/', create_report),
+	url(r'^create_issue/', create_issue),
 ]
