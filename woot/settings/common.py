@@ -252,7 +252,6 @@ LOCAL_APPS = (
 	'apps.tr',
 	'apps.users',
 	'apps.client',
-	'apps.audio',
 	'apps.action',
 )
 

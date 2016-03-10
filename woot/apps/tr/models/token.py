@@ -2,69 +2,25 @@
 from django.db import models
 
 # local
-from apps.client.models.project import Project
-from apps.tr.models.utterance import WorkerUtterance
+from apps.tr.models.dictionary import Dictionary, UserDictionary
+from apps.tr.models.caption import Caption
 
 ### Token classes
-class AbstractToken(models.Model):
-	class Meta():
-		abstract = True
-
-	'''
-	This can be either a word or a tag and can be accessed like a dictionary.
-	Each token has a position in an utterance.
-	'''
+class Token(models.Model):
 
 	### Connections
-	project = models.ForeignKey(Project, related_name='%(app_label)s_%(class)s_tokens') # specific to a project
+	dictionary = models.ForeignKey(Dictionary, related_name='tokens')
+	user_dictionary = models.ForeignKey(UserDictionary, related_name='tokens', null=True)
 
 	### Properties
-	text = models.CharField(max_length=30)
+	is_tag = models.BooleanField(default=False)
+	value = models.CharField(max_length=255)
 
-class AbstractTokenInstance(models.Model):
-	class Meta():
-		abstract = True
-
-	'''
-	A token connected to an utterance.
-	'''
+class TokenInstance(models.Model):
 
 	### Connections
-	utterance = models.ForeignKey(WorkerUtterance, related_name='%(app_label)s_%(class)s_token_instances')
+	parent = models.ForeignKey(Token, related_name='instances')
+	caption = models.ForeignKey(Caption, related_name='tokens')
 
 	### Properties
-	position = models.PositiveIntegerField(default=0)
-
-### Words
-class Word(AbstractToken):
-	'''
-	Your typical dictionary entry.
-	'''
-	pass
-
-class WordInstance(AbstractTokenInstance):
-	'''
-	A word connected to an utterance.
-	'''
-
-	### Connections
-	word = models.ForeignKey(Word, related_name='instances')
-
-### Tags
-class Tag(AbstractToken):
-	'''
-
-	'''
-
-	### Properties
-	name = models.CharField(max_length=30)
-	shortcut = models.CharField(max_length=255)
-	is_issue = models.BooleanField(default=False)
-
-class TagInstance(AbstractTokenInstance):
-	'''
-	A word connected to an utterance.
-	'''
-
-	### Connections
-	tag = models.ForeignKey(Tag, related_name='instances')
+	index = models.IntegerField(default=0)
