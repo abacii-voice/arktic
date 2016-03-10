@@ -19,10 +19,16 @@ import json
 
 # admin signup
 def check_client(request):
-	pass
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
 
 def register_client(request):
-	pass
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
 
 # user signup
 
