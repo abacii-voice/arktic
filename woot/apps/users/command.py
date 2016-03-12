@@ -39,3 +39,63 @@ def audio_upload(request):
 		user = request.user
 		if user.is_authenticated():
 			pass
+
+def create_user(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def modify_user(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def add_role_to_user(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def create_message(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def create_rule(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def modify_rule(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def create_caption(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def create_moderation(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def create_report(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def create_issue(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
