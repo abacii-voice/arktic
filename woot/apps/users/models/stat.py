@@ -3,7 +3,7 @@ from django.db import models
 
 # local
 from apps.client.models.client import Client
-from apps.users.models.role import RoleInstance
+from apps.users.models.role import Role
 
 ### Stat models
 class Stat(models.Model):
@@ -16,7 +16,7 @@ class StatInstance(models.Model):
 	### Connections
 	parent = models.ForeignKey(Stat, related_name='instances')
 	client = models.ForeignKey(Client, related_name='stats')
-	role = models.ForeignKey(RoleInstance, related_name='stats')
+	role = models.ForeignKey(Role, related_name='stats')
 
 	### Properties
 	value = models.FloatField(default=0.0)

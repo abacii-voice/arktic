@@ -124,5 +124,10 @@ urlpatterns += [
 
 ### Commands
 urlpatterns += [
-	url(r'^command/', include('apps.users.commands')),
+	url(r'^command/', include('apps.users.commands.urls')),
+]
+
+### Data
+urlpatterns += [
+	url(r'^data/', include('apps.users.data.urls'))
 ]

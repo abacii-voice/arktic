@@ -7,16 +7,16 @@ from apps.users.models.user import User
 
 ### Role classes
 class Role(models.Model):
-	### Properties
-	type = models.CharField(max_length=255)
-
-class RoleInstance(models.Model):
 	### Connections
-	role = models.ForeignKey(Role, related_name='instances')
+	supervisor = models.ForeignKey('self', related_name='subordinates', null=True)
 	client = models.ForeignKey(Client, related_name='roles')
 	user = models.ForeignKey(User, related_name='roles')
 
 	### Properties
+	# type
+	type = models.CharField(max_length=255)
+
+	# status
 	is_new = models.BooleanField(default=True)
 	is_approved = models.BooleanField(default=False)
 	is_enabled = models.BooleanField(default=False)

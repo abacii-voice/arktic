@@ -10,7 +10,7 @@ import uuid
 # local
 from apps.client.models.client import Client
 
-### Abstract classes
+### User classes
 class UserManager(BaseUserManager):
 	def create_user(self, email, password=None):
 		user = self.model(email=self.normalize_email(email))
@@ -66,3 +66,38 @@ class User(AbstractBaseUser, PermissionsMixin):
 			return True
 		else:
 			return False
+
+	# get list of clients
+	def clients(self):
+		return set(self.roles.values_list('client', flat=True))
+
+	# roles
+	def create_productionadmin(self, production_client):
+		# test if production client is_production
+		if production_client.is_production:
+			production_admin_role, production_admin_role_created = self.roles.get_or_create(client=production_client, type='productionadmin')
+
+			return production_admin_role
+
+	def create_contractadmin(self, contract_client):
+		# test if production client is_production
+		if contract_client.is_contract:
+			contract_admin_role, contract_admin_role_created = self.roles.get_or_create(client=contract_client, type='contractadmin')
+
+			return contract_admin_role
+
+	def create_moderator(self, production_client):
+		# test if production client is_production
+		if production_client.is_production:
+			moderator_role, moderator_role_created = self.roles.get_or_create(client=production_client, type='moderator')
+
+			return moderator_role
+
+	def create_worker(self, production_client, moderator):
+		# test if production client is_production
+		if production_client.is_production:
+			# test if moderator shares the same production_client
+			if moderator.client == production_client:
+				worker_role, worker_role_created = self.roles.get_or_create(supervisor=moderator, client=production_client, type='worker')
+
+				return production_admin_role
