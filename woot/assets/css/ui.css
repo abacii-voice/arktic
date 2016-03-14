@@ -11,94 +11,36 @@ This file should contain all styling related to interface elements, but no speci
 
 */
 
-/* navbar */
-.navbar-default {
-	background-color: transparent;
-	background-image: none;
-	border-color: transparent;
-	box-shadow: none;
-	-webkit-box-shadow: none;
+.navbar {
+
 }
 
-/* title */
-.navbar-default .navbar-brand {
-	color: #fff;
-}
-.navbar-default .navbar-brand:hover,
-.navbar-default .navbar-brand:focus {
-	color: #AAA;
+.navbar .nav-link {
+
 }
 
-/* link */
-.navbar-default .navbar-nav > li > a {
-	color: #fff;
-}
-.navbar-brand, .navbar-nav > li > a {
-	color: #777;
-	text-shadow: none;
-}
-.navbar-default .navbar-nav > li > a:hover,
-.navbar-default .navbar-nav > li > a:focus {
-	color: #AAA;
-}
-.navbar-default .navbar-nav > .active > a,
-.navbar-default .navbar-nav > .active > a:hover,
-.navbar-default .navbar-nav > .active > a:focus {
-	color: #555;
-	background-color: #E7E7E7;
-}
-.navbar-default .navbar-nav > .open > a,
-.navbar-default .navbar-nav > .open > a:hover,
-.navbar-default .navbar-nav > .open > a:focus {
-	color: #555;
-	background-color: #D5D5D5;
-}
-.navbar-default .navbar-text {
-	color: #bbb;
-}
-.navbar-default .navbar-link {
-	color: #fff;
-}
-.navbar-default .navbar-link:hover {
-	color: #aaa;
-	text-decoration: none;
+.navbar .navbar-left .nav-link {
+	margin-left: 15px;
+	float: left;
 }
 
-/* caret */
-.navbar-default .navbar-nav > .dropdown > a .caret {
-	border-top-color: #777;
-	border-bottom-color: #777;
+.navbar .navbar-right .nav-link {
+	margin-right: 15px;
+	float: right;
 }
-.navbar-default .navbar-nav > .dropdown > a:hover .caret,
-.navbar-default .navbar-nav > .dropdown > a:focus .caret {
-	border-top-color: #333;
-	border-bottom-color: #333;
+
+.navbar .nav-link {
+	margin-top: 10px;
+	font-size: 18px;
 }
-.navbar-default .navbar-nav > .open > a .caret,
-.navbar-default .navbar-nav > .open > a:hover .caret,
-.navbar-default .navbar-nav > .open > a:focus .caret {
-	border-top-color: #555;
-	border-bottom-color: #555;
+
+.navbar .nav-link.header {
+	margin-top: 7px;
+	font-size: 22px;
 }
-/* mobile version */
-.navbar-default .navbar-toggle {
-	border-color: #DDD;
-}
-.navbar-default .navbar-toggle:hover,
-.navbar-default .navbar-toggle:focus {
-	background-color: #DDD;
-}
-.navbar-default .navbar-toggle .icon-bar {
-	background-color: #CCC;
-}
-@media (max-width: 767px) {
-	.navbar-default .navbar-nav .open .dropdown-menu > li > a {
-		color: #777;
-	}
-	.navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
-	.navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
-		color: #333;
-	}
+
+.navbar .nav-link span {
+
 }
 
 /*
@@ -110,9 +52,12 @@ Common interface elements
 .ie {
 	position: absolute;
 	background-color: transparent;
-	/*display: none; /* no display by default, must be activated by UI code. */*/
 	overflow-x: hidden; /* all content must fit inside the box. No expansion left-right will be allowed. */
 	box-sizing: border-box;
+	font-family: inherit;
+	font-size: inherit;
+	line-height: inherit;
+	margin: 0;
 }
 
 .ie.show {
@@ -121,6 +66,11 @@ Common interface elements
 
 .ie.relative {
 	position: relative;
+}
+
+.ie.title {
+	font-size: 22px;
+	margin-bottom: 10px;
 }
 
 /* Scroll */
@@ -173,7 +123,6 @@ Common interface elements
 }
 
 .ie.border {
-	border-radius: 4px;
 	border-left: 2px solid #ccc;
 	border-right: 2px solid #ccc;
 	border-top: 2px solid #ccc;
@@ -254,16 +203,20 @@ Common interface elements
 
 */
 .ie.button {
+	height: 50px;
+	width: 100px;
 	background-image: none;
 	background-color: transparent;
 	-webkit-box-shadow: none;
 	box-shadow: none;
 	text-shadow: none;
+	font-size: 15px;
 	color: #ccc;
 }
 
 .ie.button:hover {
 	border-color: #fff;
+	background-color: transparent;
 }
 
 .ie.button:active {
@@ -289,6 +242,7 @@ Common interface elements
 */
 
 .ie.input {
+	font-size: 14px;
 	width: 400px;
 	box-sizing: border-box;
 	border: 2px solid #ccc;
@@ -305,7 +259,6 @@ Common interface elements
 	outline: none;
 	color: #ccc;
 }
-
 
 /*
 
