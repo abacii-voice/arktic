@@ -144,6 +144,17 @@ UI.createApp('hook', [
 	}),
 	UI.createComponent('user-management-interface', {
 		template: UI.template('div', 'ie panel context centred-vertically'),
+		state: {
+			defaultState: {
+				style: {
+					'opacity': '0.0',
+				},
+				fn: UI.functions.deactivate,
+			},
+			states: {
+
+			},
+		},
 		children: [
 			UI.createComponent('user-management-interface-left-panel', {
 				template: UI.template('div', 'ie panel sub-panel'),
