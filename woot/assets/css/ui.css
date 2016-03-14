@@ -50,6 +50,7 @@ Common interface elements
  */
  /* interface element */
 .ie {
+	display: none;
 	position: absolute;
 	background-color: transparent;
 	overflow-x: hidden; /* all content must fit inside the box. No expansion left-right will be allowed. */
