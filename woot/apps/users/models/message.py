@@ -8,6 +8,7 @@ from apps.users.models.role import Role
 class Message(models.Model):
 
 	### Connections
+	client = models.ForeignKey()
 	from_user = models.ForeignKey(Role, related_name='messages_from')
 	to_user = models.ForeignKey(Role, related_name='messages_to')
 
