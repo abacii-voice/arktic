@@ -11,6 +11,7 @@ from django.template import Template
 # local
 from apps.client.models.client import Client
 from apps.users.models.user import User
+from apps.tr.models.rule import RuleInstance
 from util import check_request
 
 # util
@@ -34,6 +35,7 @@ def context(request):
 			'clients': {
 				client.name: client.dict(permission_user=user) for client in user.clients()
 			},
+			'global_rules': ["rules that don't have clients"],
 		}
 
 		return JsonResponse(context_dict)
