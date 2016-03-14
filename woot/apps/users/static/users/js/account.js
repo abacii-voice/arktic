@@ -3,25 +3,25 @@
 // don't have to use for loading context either. Ajax is fine for that.
 
 // 1. Load Context
-Context.setFn(command('user_context', {}, function (data) {
-	Context.store = data;
-
-	if (Context.get('one_client')) {
-		if (Context.get('one_role')) {
-			UI.changeState('control-state');
-		} else {
-			UI.changeState('role-state');
-		}
-	}
-
-	// debug and construction
-	$.when(new Promise (function (resolve, reject) {
-		Context.set('current_client', 'TestProductionClient');
-		Context.set('current_role', 'productionadmin')
-	})).done(function () {
-		UI.changeState('user-management-state');
-	});
-}));
+// Context.setFn(command('user_context', {}, function (data) {
+// 	Context.store = data;
+//
+// 	if (Context.get('one_client')) {
+// 		if (Context.get('one_role')) {
+// 			UI.changeState('control-state');
+// 		} else {
+// 			UI.changeState('role-state');
+// 		}
+// 	}
+//
+// 	// debug and construction
+// 	$.when(new Promise (function (resolve, reject) {
+// 		Context.set('current_client', 'TestProductionClient');
+// 		Context.set('current_role', 'productionadmin')
+// 	})).done(function () {
+// 		UI.changeState('user-management-state');
+// 	});
+// }));
 
 // 2. Define global states
 UI.createGlobalStates('client-state', [
