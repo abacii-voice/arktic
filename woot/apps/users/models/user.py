@@ -69,7 +69,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 	# get list of clients
 	def clients(self):
-		return set(self.roles.values_list('client', flat=True))
+		return set([Client.objects.get(name=client_name) for client_name in self.roles.values_list('client__name', flat=True)])
 
 	# roles
 	def create_productionadmin(self, production_client):
@@ -100,4 +100,4 @@ class User(AbstractBaseUser, PermissionsMixin):
 			if moderator.client == production_client:
 				worker_role, worker_role_created = self.roles.get_or_create(supervisor=moderator, client=production_client, type='worker')
 
-				return production_admin_role
+				return worker_role
