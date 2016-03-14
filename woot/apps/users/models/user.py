@@ -101,3 +101,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 				worker_role, worker_role_created = self.roles.get_or_create(supervisor=moderator, client=production_client, type='worker')
 
 				return worker_role
+
+	# data
+	def dict(self, client=None, permission_user=None, permission_role_type=None):
+		
