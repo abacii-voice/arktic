@@ -464,6 +464,19 @@ var UI = {
 		});
 	},
 
+	////////////
+	// STANDARD FUNCTIONS
+	//
+
+	functions: {
+		activate: function (_this) {
+			_this.model().css({'display': ' block'});
+		},
+		deactivate: function (_this) {
+			_this.model().css({'display': 'none'});
+		}
+	},
+
 }
 
 // CONTEXT: This is the context definition. It is a local storage of the relevant variables from

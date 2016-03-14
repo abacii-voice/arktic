@@ -10,13 +10,13 @@
 
 {# CONTENT #}
 {% block content %}
-<div id='login-wrapper' class='ie centred'>
-	<h2 id='login-header' class='ie title relative'>Arktic Login</h2>
+<div id='login-wrapper' class='ie show centred'>
+	<h2 id='login-header' class='ie show title relative'>Arktic Login</h2>
 	<form action='/login/' method='POST'>
 		{% csrf_token %}
-		<input type='email' id='login-email' class='ie input border border-radius relative' name='email' placeholder='Email address' required>
-		<input type='password' id='login-password' class='ie input border border-radius relative' name='password' placeholder='Password' required>
-		<input type='submit' id='login-submit' value='Submit' class='ie button border border-radius relative'>
+		<input type='email' id='login-email' class='ie show input border border-radius relative' name='email' placeholder='Email address' required>
+		<input type='password' id='login-password' class='ie show input border border-radius relative' name='password' placeholder='Password' required>
+		<input type='submit' id='login-submit' value='Submit' class='ie show button border border-radius relative'>
 	</form>
 </div>
 {% endblock %}
