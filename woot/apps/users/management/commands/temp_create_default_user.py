@@ -2,7 +2,7 @@
 from django.core.management.base import BaseCommand, CommandError
 
 # local
-from apps.client.models.client import ProductionClient, ContractClient
+from apps.client.models.client import Client
 from apps.users.models.user import User
 
 ### Command: create default user
@@ -10,8 +10,8 @@ class Command(BaseCommand):
 
 	def handle(self, *args, **options):
 		# create clients
-		production_client, production_client_created = ProductionClient.objects.get_or_create(name='TestProductionClient')
-		contract_client, contract_client_created = ContractClient.objects.get_or_create(name='TestContractClient')
+		production_client, production_client_created = Client.objects.get_or_create(name='TestProductionClient', is_production=True)
+		contract_client, contract_client_created = Client.objects.get_or_create(name='TestContractClient', is_contract=True)
 
 		# details
 		user_email = 'n@a.com'
