@@ -11,21 +11,28 @@ but not specific #element stylings. These are found in elements.css.
 
 */
 
-html, body {
-	background-color: transparent;
-}
-
 html {
-	/*background-image: url('../img/main-background-small-no-moon.jpg');*/
-	/*background-position: left top;*/
-	/*background-attachment: fixed;*/
-	/*background-size: cover;*/
+	font-family: sans-serif;
+	-webkit-text-size-adjust: 100%;
+	-ms-text-size-adjust: 100%;
 	background-color: #00869B;
 	color: #ccc;
+	height: 100%;
 }
 
-/*
+body {
+	margin: 0;
+	box-sizing: border-box;
+	width: auto;
+	height: 100%;
+}
 
-1. Navbar
+a, a:hover, a:focus, a:active {
+	color: #ccc;
+	text-decoration: none;
+	font-family: sans-serif;
+}
 
-*/
+h2, h3 {
+	font-family: sans-serif;
+}
