@@ -24,7 +24,7 @@ def context(request):
 		user = request.user
 
 		# context containing everything about user and clients
-		context_dict = {
+		context_data = {
 			'user': {
 				'first_name': user.first_name,
 				'last_name': user.last_name,
@@ -47,9 +47,13 @@ def context(request):
 
 		return JsonResponse(context_dict)
 
+def context_projects(request):
+	if check_request(request):
+		
+
 def load_attachment(request):
 	if check_request(request):
 		# return audio file url or rule reference
 		# data type
-		# data content 
+		# data content
 		pass

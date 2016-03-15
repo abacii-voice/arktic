@@ -9,4 +9,5 @@ from apps.users.data.views import *
 ### Data
 urlpatterns = [
 	url(r'^context/$', context),
+	url(r'^context/projects$', context_projects),
 ]
