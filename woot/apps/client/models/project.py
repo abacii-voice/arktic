@@ -27,8 +27,8 @@ class Project(models.Model):
 	# methods
 	# data
 	def data(self):
-		project_dict = {
+		project_data = {
 			'name': self.name,
 		}
 
-		return project_dict
+		return project_data

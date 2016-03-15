@@ -34,7 +34,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 	activation_key = models.CharField(max_length=20) # use utils to generate unique key
 
 	# settings
-	billing_date = models.DateTimeField(auto_now_add=False)
+	billing_date = models.DateTimeField(auto_now_add=True)
 
 	# other
 	objects = UserManager()
@@ -118,7 +118,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 		# RETURN DATA
 		if role_permission is not None:
-			user_dict = {
+			user_data = {
 				'id': self.id,
 				'first_name': self.first_name,
 				'last_name': self.last_name,
@@ -126,7 +126,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 			}
 
 			if permission_role in ['productionadmin', 'moderator']:
-				user_dict.update({
+				user_data.update({
 					'role_list': [
 						role.type for role in self.roles.filter(client=client, user=permission_user)
 					],
@@ -135,4 +135,4 @@ class User(AbstractBaseUser, PermissionsMixin):
 					},
 				})
 
-			return user_dict
+			return user_data
