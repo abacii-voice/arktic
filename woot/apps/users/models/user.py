@@ -33,6 +33,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 	activation_email_sent = models.BooleanField(default=False)
 	activation_key = models.CharField(max_length=20) # use utils to generate unique key
 
+	# settings
+	billing_date = models.DateTimeField(auto_now_add=False)
+
 	# other
 	objects = UserManager()
 	USERNAME_FIELD = 'email'
@@ -103,9 +106,33 @@ class User(AbstractBaseUser, PermissionsMixin):
 				return worker_role
 
 	# data
-	def dict(self, client=None, permission_user=None, permission_role_type=None):
-		user_dict = {
-			'name': self.first_name,
-		}
+	def data(self, client, permission_user=None, permission_role_type=None):
 
-		return user_dict
+		# DETERMINE PERMISSIONS
+		# admins are the only ones who can approve new users, see their billing cycle, and see roles
+		role_permission = None
+		if permission_user is not None and permission_role_type is not None:
+			# if user has role
+			if client.roles.filter(user=permission_user, type=permission_role_type).count():
+				role_permission = permission_role_type
+
+		# RETURN DATA
+		if role_permission is not None:
+			user_dict = {
+				'id': self.id,
+				'first_name': self.first_name,
+				'last_name': self.last_name,
+				'email': self.email,
+			}
+
+			if permission_role in ['productionadmin', 'moderator']:
+				user_dict.update({
+					'role_list': [
+						role.type for role in self.roles.filter(client=client, user=permission_user)
+					],
+					'roles': {
+						role.type: role.data(permission_user=None, permission_role_type=None) for role in self.roles.filter(client=client, user=permission_user)
+					},
+				})
+
+			return user_dict

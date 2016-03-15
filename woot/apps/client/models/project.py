@@ -26,7 +26,7 @@ class Project(models.Model):
 
 	# methods
 	# data
-	def dict(self):
+	def data(self):
 		project_dict = {
 			'name': self.name,
 		}

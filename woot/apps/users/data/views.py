@@ -12,6 +12,7 @@ from django.template import Template
 from apps.client.models.client import Client
 from apps.users.models.user import User
 from apps.tr.models.rule import RuleInstance
+from apps.users.models.message import Message
 from util import check_request
 
 # util
@@ -33,9 +34,22 @@ def context(request):
 				client.name for client in user.clients()
 			],
 			'clients': {
-				client.name: client.dict(permission_user=user) for client in user.clients()
+				client.name: client.data(permission_user=user) for client in user.clients()
 			},
-			'global_rules': ["rules that don't have clients"],
+			'global_rules': RuleInstance.objects.filter(client__is_null=True),
+			'messages_from': [
+				message.data() for message in Message.objects.filter(from_user__user=user)
+			],
+			'messages_to': [
+				message.data() for message in Message.objects.filter(to_user__user=user)
+			],
 		}
 
 		return JsonResponse(context_dict)
+
+def load_attachment(request):
+	if check_request(request):
+		# return audio file url or rule reference
+		# data type
+		# data content 
+		pass
