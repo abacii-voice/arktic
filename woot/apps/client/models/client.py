@@ -22,7 +22,7 @@ class Client(models.Model):
 		# RETURN DATA
 		return set([role.user for role in self.roles.all()])
 
-	def dict(self, permission_user=None, permission_role_type=None):
+	def data(self, permission_user=None, permission_role_type=None):
 		if permission_user is not None:
 
 			# DETERMINE PERMISSIONS
@@ -33,34 +33,19 @@ class Client(models.Model):
 					# user has specified role with client
 					permission_role = permission_role_type
 
-			else:
-				# return results using the highest permission level
-				highest_permission_role = None
-				if self.roles.filter(user=permission_user, type='contractadmin').count():
-					highest_permission_role = 'contractadmin'
-				elif self.roles.filter(user=permission_user, type='productionadmin').count():
-					highest_permission_role = 'productionadmin'
-				elif self.roles.filter(user=permission_user, type='moderator').count():
-					highest_permission_role = 'moderator'
-				elif self.roles.filter(user=permission_user, type='worker').count():
-					highest_permission_role = 'worker'
-
-				permission_role = highest_permission_role
-
 			# RETURN DATA
 			if permission_role is not None:
 				client_dict = {
 					'name': self.name,
-					'production': self.is_production,
-					'contract': self.is_contract,
-					'messages_from': [
-						message.dict() for message in self.messages.filter(from_user__user=permission_user)
-					],
-					'messages_to': [
-						message.dict() for message in self.messages.filter(to_user__user=permission_user)
-					],
+					'is_production': self.is_production,
+					'is_contract': self.is_contract,
 					'client_rules': [],
-					'roles': [role.type for role in self.roles.filter(user=permission_user)],
+					'role_list': [
+						role.type for role in self.roles.filter(user=permission_user)
+					],
+					'roles': {
+						role.type: role.data() for role in self.roles.filter(user=permission_user)
+					},
 					'actions': [],
 				}
 
@@ -71,7 +56,7 @@ class Client(models.Model):
 							project.name for project in self.production_projects.all()
 						],
 						'projects': {
-							project.name: project.dict() for project in self.production_projects.all()
+							project.name: project.data() for project in self.production_projects.all()
 						},
 					})
 
@@ -84,7 +69,7 @@ class Client(models.Model):
 							project.name for project in self.contract_projects.all()
 						],
 						'projects': {
-							project.name: project.dict() for project in self.contract_projects.all()
+							project.name: project.data() for project in self.contract_projects.all()
 						},
 					})
 
@@ -92,10 +77,10 @@ class Client(models.Model):
 				if permission_role in ['productionadmin', 'contractadmin', 'moderator']:
 					client_dict.update({
 						'user_list': [
-							user.email for user in self.users(permission_user=permission_user, permission_role_type=permission_role)
+							user.id for user in self.users(permission_user=permission_user, permission_role_type=permission_role)
 						],
 						'users': {
-							user.email: user.dict(client=self, permission_user=permission_user, permission_role_type=permission_role) for user in self.users(permission_user=permission_user, permission_role_type=permission_role)
+							user.id: user.data(self, permission_user=permission_user, permission_role_type=permission_role) for user in self.users(permission_user=permission_user, permission_role_type=permission_role)
 						},
 					})
 
