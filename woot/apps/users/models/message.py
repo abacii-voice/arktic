@@ -2,13 +2,14 @@
 from django.db import models
 
 # local
+from apps.client.models.client import Client
 from apps.users.models.role import Role
 
 ### Message models
 class Message(models.Model):
 
 	### Connections
-	client = models.ForeignKey()
+	client = models.ForeignKey(Client, related_name='messages')
 	from_user = models.ForeignKey(Role, related_name='messages_from')
 	to_user = models.ForeignKey(Role, related_name='messages_to')
 
