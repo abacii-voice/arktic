@@ -104,4 +104,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 	# data
 	def dict(self, client=None, permission_user=None, permission_role_type=None):
-		
+		user_dict = {
+			'name': self.first_name,
+		}
+
+		return user_dict
