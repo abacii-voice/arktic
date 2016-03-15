@@ -22,7 +22,7 @@ class Message(models.Model):
 		unsorted_items = list(self.tokens.all()) + list(self.attachments.all())
 		sorted_items = sorted(unsorted_items, key=lambda i: i.index)
 
-		message_dict = {
+		message_data = {
 			'client': self.client.name,
 			'from_user': self.from_user.user.id,
 			'to_user': self.to_user.user.id,
@@ -31,7 +31,7 @@ class Message(models.Model):
 			],
 		}
 
-		return message_dict
+		return message_data
 
 class Token(models.Model):
 
@@ -45,13 +45,13 @@ class Token(models.Model):
 	### Methods
 	# data
 	def data(self):
-		token_dict = {
+		token_data = {
 			'is_token': True,
 			'index': self.index,
 			'value': self.value,
 		}
 
-		return token_dict
+		return token_data
 
 class Attachment(models.Model):
 
@@ -67,7 +67,7 @@ class Attachment(models.Model):
 	### Methods
 	# data
 	def data(self):
-		attachment_dict = {
+		attachment_data = {
 			'is_token': False,
 			'index': self.index,
 			'package_name': self.package_name,
@@ -75,4 +75,4 @@ class Attachment(models.Model):
 			'attach_pk': self.attach_pk,
 		}
 
-		return attachment_dict
+		return attachment_data

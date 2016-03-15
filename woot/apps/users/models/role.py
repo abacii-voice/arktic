@@ -32,13 +32,13 @@ class Role(models.Model):
 
 			# RETURN DATA
 			if permission_role is not None:
-				role_dict = {
+				role_data = {
 					'type': self.type,
 				}
 
 				# moderator and productionadmin
 				if permission_role in ['moderator', 'productionadmin']:
-					role_dict.update({
+					role_data.update({
 						'stat_list': [
 							stat.parent.name for stat in self.stats.all()
 						],
@@ -49,13 +49,13 @@ class Role(models.Model):
 
 				# productionadmin
 				if permission_role == 'productionadmin':
-					role_dict.update({
+					role_data.update({
 						'is_new': self.is_new,
 						'is_approved': self.is_approved,
 						'is_enabled': self.is_enabled,
 					})
 
-				return role_dict
+				return role_data
 			else:
 				return {}
 		else:
