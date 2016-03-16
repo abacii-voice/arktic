@@ -111,10 +111,10 @@ class Client(models.Model):
 	def user_data(self, permission_user, permission_role_type):
 		user_data = {
 			'user_list': [
-				user.id for user in self.users(permission_user=permission_user, permission_role_type=permission_role)
+				user.id for user in self.users(permission_user=permission_user, permission_role_type=permission_role_type)
 			],
 			'users': {
-				user.id: user.data(self, permission_user=permission_user, permission_role_type=permission_role) for user in self.users(permission_user=permission_user, permission_role_type=permission_role)
+				user.id: user.data(self, permission_user=permission_user, permission_role_type=permission_role_type) for user in self.users(permission_user=permission_user, permission_role_type=permission_role_type)
 			},
 		}
 

@@ -49,7 +49,7 @@ def context(request):
 
 def context_projects(request):
 	if check_request(request):
-		
+		pass
 
 def load_attachment(request):
 	if check_request(request):
