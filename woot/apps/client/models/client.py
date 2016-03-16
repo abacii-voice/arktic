@@ -18,7 +18,7 @@ class Client(models.Model):
 	# data
 	def users(self, permission_user=None, permission_role_type=None):
 		# DETERMINE PERMISSIONS
-		
+
 
 		# RETURN DATA
 		return set([role.user for role in self.roles.all()])
