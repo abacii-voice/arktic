@@ -23,30 +23,21 @@ def context(request):
 	if check_request(request):
 		user = request.user
 
-		# context containing everything about user and clients
-		context_data = {
-			'user': {
-				'first_name': user.first_name,
-				'last_name': user.last_name,
-				'email': user.email,
-			},
-			'client_list': [
-				client.name for client in user.clients()
-			],
-			'clients': {
-				client.name: client.data(permission_user=user) for client in user.clients()
-			},
-			'global_rules': RuleInstance.objects.filter(client__is_null=True),
-			'messages_from': [
-				message.data() for message in Message.objects.filter(from_user__user=user)
-			],
-			'messages_to': [
-				message.data() for message in Message.objects.filter(to_user__user=user)
-			],
-			'actions': [],
-		}
+		# initialise data
+		context_data = {}
 
-		return JsonResponse(context_dict)
+		# 1. basic current user details
+		context_data.update(user.details())
+
+		# 2. client data
+		context_data.update(user.client_data())
+
+		# 3. initialise data
+		context_data.update({
+			'actions': [],
+		})
+
+		return JsonResponse(context_data)
 
 def context_projects(request):
 	if check_request(request):

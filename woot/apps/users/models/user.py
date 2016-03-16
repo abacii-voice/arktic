@@ -105,44 +105,34 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 				return worker_role
 
-	# data
-	def data(self, client, permission_user=None, permission_role_type=None):
+	# highest permission
+	def get_highest_permission(self):
+		pass
 
-		# DETERMINE PERMISSIONS
-		# admins are the only ones who can approve new users, see their billing cycle, and see roles
-		permission_role = None
-		if permission_user is not None and permission_role_type is not None:
-			# if user has role
-			if client.roles.filter(user=permission_user, type=permission_role_type).count():
-				permission_role = permission_role_type
-
-		# RETURN DATA
-		if permission_role is not None:
-			user_data = {
-				'id': self.id,
+	# details - basic data that does not require permissions
+	def details(self):
+		details = {
+			'user': {
 				'first_name': self.first_name,
 				'last_name': self.last_name,
 				'email': self.email,
 			}
+		}
 
-			if permission_role == 'productionadmin':
-				user_data.update({
-					'role_list': [
-						role.type for role in self.roles.filter(client=client)
-					],
-					'roles': {
-						role.type: role.data(permission_user=permission_user, permission_role_type=permission_role_type) for role in self.roles.filter(client=client)
-					},
-				})
+		return details
 
-			if permission_role == 'moderator':
-				user_data.update({
-					'role_list': [
-						role.type for role in self.roles.filter(client=client, supervisor=permission_user.roles.get(client=client, type=permission_role)) if role.type == 'worker'
-					],
-					'roles': {
-						role.type: role.data(permission_user=permission_user, permission_role_type=permission_role_type) for role in self.roles.filter(client=client, supervisor=permission_user.roles.get(client=client, type=permission_role))
-					},
-				})
+	# clients - determine clients from roles
+	def clients(self):
+		return set([role.client for role in self.roles.all()])
 
-			return user_data
+	# clients - fetch data using permissions
+	def client_data(self, role):
+		client_data = {
+
+		}
+
+		return client_data
+
+	# user data - requires permissions
+	def data(self):
+		pass
