@@ -125,13 +125,23 @@ class User(AbstractBaseUser, PermissionsMixin):
 				'email': self.email,
 			}
 
-			if permission_role in ['productionadmin', 'moderator']:
+			if permission_role == 'productionadmin':
 				user_data.update({
 					'role_list': [
-						role.type for role in self.roles.filter(client=client, user=permission_user)
+						role.type for role in self.roles.filter(client=client)
 					],
 					'roles': {
-						role.type: role.data(permission_user=None, permission_role_type=None) for role in self.roles.filter(client=client, user=permission_user)
+						role.type: role.data(permission_user=permission_user, permission_role_type=permission_role_type) for role in self.roles.filter(client=client)
+					},
+				})
+
+			if permission_role == 'moderator':
+				user_data.update({
+					'role_list': [
+						role.type for role in self.roles.filter(client=client, supervisor=permission_user.roles.get(client=client, type=permission_role)) if role.type == 'worker'
+					],
+					'roles': {
+						role.type: role.data(permission_user=permission_user, permission_role_type=permission_role_type) for role in self.roles.filter(client=client, supervisor=permission_user.roles.get(client=client, type=permission_role))
 					},
 				})
 

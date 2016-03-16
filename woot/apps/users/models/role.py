@@ -27,36 +27,39 @@ class Role(models.Model):
 		# DETERMINE PERMISSIONS
 		permission_role = None
 		if permission_user is not None and permission_role_type is not None:
-			if permission_user.roles.filter(client=self.client, type=permission_role_type).count():
+			# if user has role
+			if self.client.roles.filter(user=permission_user, type=permission_role_type).count():
 				permission_role = permission_role_type
 
-			# RETURN DATA
-			if permission_role is not None:
-				role_data = {
-					'type': self.type,
-				}
+		# RETURN DATA
+		if permission_role is not None:
+			role_data = {}
 
-				# moderator and productionadmin
-				if permission_role in ['moderator', 'productionadmin']:
-					role_data.update({
-						'stat_list': [
-							stat.parent.name for stat in self.stats.all()
-						],
-						'stats': {
-							stat.parent.name: state.value for stat in self.stats.all()
-						}
-					})
+			# moderator and productionadmin
+			if permission_role == 'moderator' and self.type == 'worker':
+				role_data.update({
+					'stat_list': [
+						stat.parent.name for stat in self.stats.all()
+					],
+					'stats': {
+						stat.parent.name: state.value for stat in self.stats.all()
+					},
+				})
 
-				# productionadmin
-				if permission_role == 'productionadmin':
-					role_data.update({
-						'is_new': self.is_new,
-						'is_approved': self.is_approved,
-						'is_enabled': self.is_enabled,
-					})
+			# productionadmin
+			if permission_role == 'productionadmin':
+				role_data.update({
+					'is_new': self.is_new,
+					'is_approved': self.is_approved,
+					'is_enabled': self.is_enabled,
+					'stat_list': [
+						stat.parent.name for stat in self.stats.all()
+					],
+					'stats': {
+						stat.parent.name: state.value for stat in self.stats.all()
+					},
+				})
 
-				return role_data
-			else:
-				return {}
+			return role_data
 		else:
 			return {}

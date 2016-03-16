@@ -43,3 +43,4 @@ class BasicUserTestCase(TestCase):
 		pp = pprint.PrettyPrinter(indent=2)
 		pp.pprint(production_client.data(permission_user=moderator_user, permission_role_type='moderator'))
 		pp.pprint(production_client.data(permission_user=productionadmin_user, permission_role_type='productionadmin'))
+		pp.pprint(production_client.data(permission_user=productionadmin_user, permission_role_type='worker'))
