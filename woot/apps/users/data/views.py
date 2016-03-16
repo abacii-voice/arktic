@@ -43,6 +43,7 @@ def context(request):
 			'messages_to': [
 				message.data() for message in Message.objects.filter(to_user__user=user)
 			],
+			'actions': [],
 		}
 
 		return JsonResponse(context_dict)
