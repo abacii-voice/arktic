@@ -19,19 +19,7 @@ class Message(models.Model):
 	### Methods
 	# data
 	def data(self):
-		unsorted_items = list(self.tokens.all()) + list(self.attachments.all())
-		sorted_items = sorted(unsorted_items, key=lambda i: i.index)
-
-		message_data = {
-			'client': self.client.name,
-			'from_user': self.from_user.user.id,
-			'to_user': self.to_user.user.id,
-			'items': [
-				item.dict for item in sorted_items
-			],
-		}
-
-		return message_data
+		pass
 
 class Token(models.Model):
 

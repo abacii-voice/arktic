@@ -20,3 +20,7 @@ class StatInstance(models.Model):
 
 	### Properties
 	value = models.FloatField(default=0.0)
+
+	### Methods
+	def data(self):
+		pass
