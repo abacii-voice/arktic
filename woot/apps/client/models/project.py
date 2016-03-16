@@ -24,11 +24,7 @@ class Project(models.Model):
 	completion_percentage = models.FloatField(default=0.0)
 	redundancy_percentage = models.FloatField(default=0.0)
 
-	# methods
+	### Methods
 	# data
 	def data(self):
-		project_data = {
-			'name': self.name,
-		}
-
-		return project_data
+		pass
