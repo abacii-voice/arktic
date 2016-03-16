@@ -46,10 +46,9 @@ class Client(models.Model):
 						role.type for role in self.roles.filter(user=permission_user)
 					],
 					'roles': {
-						role.type: role.data() for role in self.roles.filter(user=permission_user)
+						role.type: role.data(permission_user=permission_user, permission_role_type=permission_role_type) for role in self.roles.filter(user=permission_user)
 					},
 					'new_roles': [],
-					'actions': [],
 				}
 
 				# projects
