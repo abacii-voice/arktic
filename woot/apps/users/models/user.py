@@ -110,14 +110,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 		# DETERMINE PERMISSIONS
 		# admins are the only ones who can approve new users, see their billing cycle, and see roles
-		role_permission = None
+		permission_role = None
 		if permission_user is not None and permission_role_type is not None:
 			# if user has role
 			if client.roles.filter(user=permission_user, type=permission_role_type).count():
-				role_permission = permission_role_type
+				permission_role = permission_role_type
 
 		# RETURN DATA
-		if role_permission is not None:
+		if permission_role is not None:
 			user_data = {
 				'id': self.id,
 				'first_name': self.first_name,
