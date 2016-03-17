@@ -6,6 +6,7 @@ from django.core.mail import send_mail
 
 # util
 import uuid
+from permission import Permission
 
 # local
 from apps.client.models.client import Client
@@ -20,6 +21,9 @@ class UserManager(BaseUserManager):
 		return user
 
 class User(AbstractBaseUser, PermissionsMixin):
+
+	### Connections
+	clients = models.ManyToManyField(Client, related_name='users')
 
 	### Properties
 	# identification
@@ -70,15 +74,13 @@ class User(AbstractBaseUser, PermissionsMixin):
 		else:
 			return False
 
-	# get list of clients
-	def clients(self):
-		return set([Client.objects.get(name=client_name) for client_name in self.roles.values_list('client__name', flat=True)])
-
 	# roles
 	def create_productionadmin(self, production_client):
 		# test if production client is_production
 		if production_client.is_production:
 			production_admin_role, production_admin_role_created = self.roles.get_or_create(client=production_client, type='productionadmin')
+			self.clients.add(production_client)
+			self.save()
 
 			return production_admin_role
 
@@ -86,6 +88,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 		# test if production client is_production
 		if contract_client.is_contract:
 			contract_admin_role, contract_admin_role_created = self.roles.get_or_create(client=contract_client, type='contractadmin')
+			self.clients.add(contract_client)
+			self.save()
 
 			return contract_admin_role
 
@@ -93,6 +97,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 		# test if production client is_production
 		if production_client.is_production:
 			moderator_role, moderator_role_created = self.roles.get_or_create(client=production_client, type='moderator')
+			self.clients.add(production_client)
+			self.save()
 
 			return moderator_role
 
@@ -102,37 +108,44 @@ class User(AbstractBaseUser, PermissionsMixin):
 			# test if moderator shares the same production_client
 			if moderator.client == production_client:
 				worker_role, worker_role_created = self.roles.get_or_create(supervisor=moderator, client=production_client, type='worker')
+				self.clients.add(production_client)
+				self.save()
 
 				return worker_role
 
-	# highest permission
-	def get_highest_permission(self):
-		pass
+	# get role
+	def get_role(self, client_name, role_type):
+		role = None
+		if self.roles.filter(client__name=client_name, type=role_type).count():
+			role = self.roles.get(client__name=client_name, type=role_type)
+
+		return role
+
+	# get permission
+	def get_permission(self, client_name, role_type):
+		return Permission(self, self.get_role(client_name, role_type))
+
+	def data(self, permission):
+		
 
 	# details - basic data that does not require permissions
-	def details(self):
-		details = {
+	def basic_data(self):
+		basic_data = {
 			'user': {
+				'id': str(self.id),
 				'first_name': self.first_name,
 				'last_name': self.last_name,
 				'email': self.email,
 			}
 		}
 
-		return details
-
-	# clients - determine clients from roles
-	def clients(self):
-		return set([role.client for role in self.roles.all()])
+		return basic_data
 
 	# clients - fetch data using permissions
-	def client_data(self, role):
+	def client_data(self, permission):
 		client_data = {
-
+			'clients': {
+				client.name: client.data(permission) for client in self.clients.all()
+			}
 		}
-
 		return client_data
-
-	# user data - requires permissions
-	def data(self):
-		pass
