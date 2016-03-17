@@ -28,5 +28,11 @@ class Role(models.Model):
 			# only give type
 			return self.type
 
-		else:
-			return self.type
+		elif permission.is_contractadmin or permission.is_productionadmin:
+			role_data = {
+				'is_new': self.is_new,
+				'is_approved': self.is_approved,
+				'is_enabled': self.is_enabled,
+			}
+
+			return role_data
