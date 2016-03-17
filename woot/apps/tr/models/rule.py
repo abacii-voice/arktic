@@ -19,6 +19,17 @@ class Rule(models.Model):
 	name = models.CharField(max_length=255)
 	description = models.TextField()
 
+	### Methods
+	# data
+	def data(self, permission):
+		rule_data = {
+			'number': self.number,
+			'name': self.name,
+			'description': self.description,
+		}
+
+		return rule_data
+
 class RuleInstance(models.Model):
 	'''
 	A rule attached to a moderation.

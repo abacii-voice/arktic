@@ -26,7 +26,9 @@ def context(request):
 		context_data = {}
 
 		# 1. basic current user details
-		context_data.update(user.basic_data())
+		context_data.update({
+			'user': user.basic_data()
+		})
 
 		# 2. client data
 		context_data.update(user.client_data(permission))

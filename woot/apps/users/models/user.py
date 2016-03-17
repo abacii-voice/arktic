@@ -116,30 +116,53 @@ class User(AbstractBaseUser, PermissionsMixin):
 	# get role
 	def get_role(self, client_name, role_type):
 		role = None
-		if self.roles.filter(client__name=client_name, type=role_type).count():
+		if role_type is not None and self.roles.filter(client__name=client_name, type=role_type).count():
 			role = self.roles.get(client__name=client_name, type=role_type)
 
 		return role
 
 	# get permission
-	def get_permission(self, client_name, role_type):
+	def get_permission(self, client_name, role_type=None):
 		return Permission(self, self.get_role(client_name, role_type))
 
 	def data(self, permission):
-		
+		user_data = {}
+
+		is_moderator_sub = permission.is_moderator and permission.role.subordinates.filter(user=self)
+		if is_moderator_sub or permission.is_contractadmin or permission.is_productionadmin:
+
+			# basic data
+			user_data.update(self.basic_data())
+
+		if permission.is_contractadmin or permission.is_productionadmin:
+
+			# roles
+			user_data.update(self.role_data(permission))
+
+		return user_data
 
 	# details - basic data that does not require permissions
 	def basic_data(self):
 		basic_data = {
-			'user': {
-				'id': str(self.id),
-				'first_name': self.first_name,
-				'last_name': self.last_name,
-				'email': self.email,
-			}
+			'id': str(self.id),
+			'first_name': self.first_name,
+			'last_name': self.last_name,
+			'email': self.email,
 		}
 
 		return basic_data
+
+	def role_data(self, permission):
+		role_data = {}
+
+		if permission.is_contractadmin or permission.is_productionadmin:
+			role_data.update({
+				'roles': {
+					role.type: role.data(permission) for role in self.roles.filter(client=permission.role.client)
+				}
+			})
+
+		return role_data
 
 	# clients - fetch data using permissions
 	def client_data(self, permission):

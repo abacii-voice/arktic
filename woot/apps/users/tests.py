@@ -40,4 +40,5 @@ class BasicUserTestCase(TestCase):
 		productionadmin_user = User.objects.get(email='admin@production_client.com')
 
 		### TESTS
-		print(json.dumps(moderator_user.client_data(moderator_user.get_permission(production_client.name, 'moderator')), indent=2, sort_keys=True))
+		print(json.dumps(moderator_user.client_data(moderator_user.get_permission(production_client.name)), indent=2, sort_keys=True))
+		print(json.dumps(productionadmin_user.client_data(productionadmin_user.get_permission(production_client.name, role_type='worker')), indent=2, sort_keys=True))

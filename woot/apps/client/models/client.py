@@ -35,6 +35,9 @@ class Client(models.Model):
 		# users
 		client_data.update(self.user_data(permission))
 
+		# rules
+		client_data.update(self.rule_data(permission))
+
 		return client_data
 
 	# roles
@@ -97,3 +100,12 @@ class Client(models.Model):
 			})
 
 		return user_data
+
+	def rule_data(self, permission):
+		rule_data = {
+			'rules': {
+				rule.name: rule.data(permission) for rule in self.rules.all()
+			}
+		}
+
+		return rule_data
