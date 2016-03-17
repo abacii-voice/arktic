@@ -36,6 +36,8 @@ def context(request):
 		# 3. initialise data
 		context_data.update({
 			'actions': [],
+			'one_client': user.clients.count() == 1,
+			'one_role': user.roles.count() == 1,
 		})
 
 		return JsonResponse(context_data)

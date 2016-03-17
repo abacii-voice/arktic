@@ -3,7 +3,7 @@
 // don't have to use for loading context either. Ajax is fine for that.
 
 // 1. Load Context
-Context.setFn(command('context', {}, function (data) {
+Context.setFn(data('context', {}, function (data) {
 	Context.store = data;
 
 	if (Context.get('one_client')) {
