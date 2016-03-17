@@ -1,5 +1,43 @@
-// all purpose ajax
+// call command
 function command (name, data, callback) {
+	var ajax_params = {
+		type: 'post',
+		data: data,
+		url:'/commands/{name}/'.format({name: name}),
+		success: function (data, textStatus, XMLHttpRequest) {
+			callback(data);
+		},
+		error: function (xhr, ajaxOptions, thrownError) {
+			if (xhr.status === 404 || xhr.status === 0) {
+				command(name, data, callback);
+			}
+		}
+	};
+
+	return $.ajax(ajax_params); // this is a promise
+};
+
+// request data
+function data (name, data, callback) {
+	var ajax_params = {
+		type: 'post',
+		data: data,
+		url:'/action/{name}/'.format({name: name}),
+		success: function (data, textStatus, XMLHttpRequest) {
+			callback(data);
+		},
+		error: function (xhr, ajaxOptions, thrownError) {
+			if (xhr.status === 404 || xhr.status === 0) {
+				command(name, data, callback);
+			}
+		}
+	};
+
+	return $.ajax(ajax_params); // this is a promise
+};
+
+// perform action
+function action (name, data, callback) {
 	var ajax_params = {
 		type: 'post',
 		data: data,
