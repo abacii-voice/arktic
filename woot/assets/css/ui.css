@@ -206,6 +206,7 @@ Common interface elements
 .ie.button {
 	height: 50px;
 	width: 100px;
+	text-align: center;
 	background-image: none;
 	background-color: transparent;
 	-webkit-box-shadow: none;
@@ -213,6 +214,7 @@ Common interface elements
 	text-shadow: none;
 	font-size: 15px;
 	color: #ccc;
+	cursor: pointer;
 }
 
 .ie.button:hover {
@@ -224,9 +226,15 @@ Common interface elements
 	border-color: #fff;
 }
 
-.ie.sidebar .ie.button.border {
-	left: 10px;
+.ie.sidebar .ie.button {
 	width: 180px;
+}
+
+.ie.sidebar.mini .ie.button {
+	width: 50px;
+}
+
+.ie.sidebar .ie.button.border {
 	margin-bottom: 10px;
 }
 
