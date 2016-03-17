@@ -10,7 +10,14 @@
 	},
 	"clients": {
 		"client1": {
-
+			"roles": {
+				"moderator": {
+					"is_approved": true,
+				},
+				"admin": {
+					"is_approved": true,
+				}
+			},
 		}
 	}
 }

@@ -13,24 +13,23 @@ from apps.client.models.client import Client
 from apps.users.models.user import User
 from apps.tr.models.rule import RuleInstance
 from apps.users.models.message import Message
-from util import check_request
+from permission import check_request
 
 # util
 import json
 
 ### Data
 def context(request):
-	if check_request(request):
-		user = request.user
-
+	user, permission, verified = check_request(request)
+	if verified:
 		# initialise data
 		context_data = {}
 
 		# 1. basic current user details
-		context_data.update(user.details())
+		context_data.update(user.basic_data())
 
 		# 2. client data
-		context_data.update(user.client_data())
+		context_data.update(user.client_data(permission))
 
 		# 3. initialise data
 		context_data.update({

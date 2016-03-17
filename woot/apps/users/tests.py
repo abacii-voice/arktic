@@ -6,7 +6,7 @@ from apps.client.models.client import Client
 from apps.users.models.user import User
 
 # util
-import pprint
+import json
 
 # Create your tests here.
 class BasicUserTestCase(TestCase):
@@ -40,7 +40,4 @@ class BasicUserTestCase(TestCase):
 		productionadmin_user = User.objects.get(email='admin@production_client.com')
 
 		### TESTS
-		pp = pprint.PrettyPrinter(indent=2)
-		pp.pprint(production_client.data(permission_user=moderator_user, permission_role_type='moderator'))
-		pp.pprint(production_client.data(permission_user=productionadmin_user, permission_role_type='productionadmin'))
-		pp.pprint(production_client.data(permission_user=productionadmin_user, permission_role_type='worker'))
+		print(json.dumps(moderator_user.client_data(moderator_user.get_permission(production_client.name, 'moderator')), indent=2, sort_keys=True))
