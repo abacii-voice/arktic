@@ -26,7 +26,7 @@ def check_request(request):
 	role = user.get_role(client_name, role_type)
 
 	# 2. get permission
-	permission = Permission(user, role)
+	permission = Permission(user, role=role)
 
 	# 3. get verification
 	verified = request.method == 'POST' and request.user.is_authenticated()
