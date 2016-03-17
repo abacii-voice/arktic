@@ -723,7 +723,7 @@ UI.createApp('hook', [
 		],
 	}),
 	UI.createComponent('role-sidebar', {
-		template: UI.template('div', 'ie sidebar border-right centred-vertically'),
+		template: UI.template('div', 'ie sidebar border-right centred-vertically show'),
 		state: {
 			defaultState: {
 				style: {
@@ -742,7 +742,7 @@ UI.createApp('hook', [
 		},
 		children: [
 			UI.createComponent('rs-title', {
-				template: UI.template('h4', 'ie sidebar-title centred-horizontally'),
+				template: UI.template('h4', 'ie sidebar-title centred-horizontally show'),
 				appearance: {
 					html: 'Roles',
 					style: {
@@ -751,7 +751,7 @@ UI.createApp('hook', [
 				},
 			}),
 			UI.createComponent('rs-role-list-wrapper', {
-				template: UI.template('div', 'ie scroll-wrapper'),
+				template: UI.template('div', 'ie scroll-wrapper show'),
 				appearance: {
 					style: {
 						'position': 'relative',
@@ -761,7 +761,7 @@ UI.createApp('hook', [
 				},
 				children: [
 					UI.createComponent('rs-role-list', {
-						template: UI.template('div', 'ie scroll'),
+						template: UI.template('div', 'ie scroll show'),
 						state: {
 							states: [
 								{name: 'role-state', args: {
@@ -774,7 +774,7 @@ UI.createApp('hook', [
 										_this.children = [];
 
 										// 2. map data from context to new children and render
-										var data = Context.get('roles', 'clients', Context.get('current_client'), 'roles');
+										var data = Context.get('clients', Context.get('current_client'), 'roles');
 										data.map(function (roleName) {
 											var child = UI.createComponent('rs-{name}-button'.format({name: roleName}), {
 												root: _this.id,
@@ -783,6 +783,7 @@ UI.createApp('hook', [
 													style: {
 														'opacity': '0.0',
 													},
+													classes: ['show'],
 													html: Context.get('role_display', roleName),
 												},
 												state: {
@@ -816,11 +817,11 @@ UI.createApp('hook', [
 		],
 	}),
 	UI.createComponent('role-back-sidebar', {
-		template: UI.template('div', 'ie sidebar mini border-right centred-vertically'),
+		template: UI.template('div', 'ie sidebar mini border-right centred-vertically show'),
 		state: {
 			defaultState: {
 				style: {
-					'left': '-50px',
+					'left': '-100px',
 				}
 			},
 			states: [
@@ -962,7 +963,7 @@ UI.createApp('hook', [
 		state: {
 			defaultState: {
 				style: {
-					'left': '-50px',
+					'left': '-100px',
 				}
 			},
 			states: [

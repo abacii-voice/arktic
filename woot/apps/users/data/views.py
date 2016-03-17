@@ -38,6 +38,12 @@ def context(request):
 			'actions': [],
 			'one_client': user.clients.count() == 1,
 			'one_role': user.roles.count() == 1,
+			'role_display': {
+				'worker': 'Transcriber',
+				'contractadmin': 'Admin',
+				'productionadmin': 'Admin',
+				'moderator': 'Moderator',
+			}
 		})
 
 		return JsonResponse(context_data)
