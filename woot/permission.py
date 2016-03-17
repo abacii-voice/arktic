@@ -21,8 +21,8 @@ class Permission(object):
 def check_request(request):
 	# 1. get user and role_type
 	user = request.user
-	client_name = request.POST['current_client']
-	role_type = request.POST['current_role']
+	client_name = request.POST['current_client'] if 'current_client' in request.POST else ''
+	role_type = request.POST['current_role'] if 'current_role' in request.POST else ''
 	role = user.get_role(client_name, role_type)
 
 	# 2. get permission

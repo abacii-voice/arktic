@@ -436,7 +436,7 @@ var UI = {
 	//
 	templates: {
 		button: `
-			<div id={id} class='ie button btn btn-default {classes}' style='{style}' {properties}>
+			<div id={id} class='ie show button relative centred-horizontally {classes}' style='{style}' {properties}>
 				{html}
 			</div>
 		`,
@@ -535,4 +535,9 @@ var Context = {
 			});
 		});
 	},
+
+	// include new data in context
+	extend: function (data) {
+		$.extend(true, Context.store, data);
+	}
 }

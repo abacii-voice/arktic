@@ -3,8 +3,8 @@
 // don't have to use for loading context either. Ajax is fine for that.
 
 // 1. Load Context
-Context.setFn(data('context', {}, function (data) {
-	Context.store = data;
+Context.setFn(getdata('context', {}, function (data) {
+	Context.extend(data);
 
 	if (Context.get('one_client')) {
 		if (Context.get('one_role')) {
@@ -860,12 +860,14 @@ UI.createApp('hook', [
 			defaultState: {
 				style: {
 					'left': '-300px',
+					'display': 'none',
 				},
 			},
 			states: [
 				{name: 'client-state', args: {
 					style: {
 						'left': '0px',
+						'display': 'block',
 					},
 				}},
 				{name: 'role-state', args: 'default'},
@@ -873,7 +875,7 @@ UI.createApp('hook', [
 		},
 		children: [
 			UI.createComponent('cs-title', {
-				template: UI.template('h4', 'ie sidebar-title centred-horizontally'),
+				template: UI.template('h4', 'ie sidebar-title centred-horizontally show'),
 				appearance: {
 					html: 'Clients',
 					style: {
@@ -882,17 +884,17 @@ UI.createApp('hook', [
 				},
 			}),
 			UI.createComponent('cs-client-list-wrapper', {
-				template: UI.template('div', 'ie scroll-wrapper'),
+				template: UI.template('div', 'ie scroll-wrapper show'),
 				appearance: {
 					style: {
 						'position': 'relative',
-						'top': '50px',
+						'top': '40px',
 						'height': 'calc(100% - 40px)',
 					},
 				},
 				children: [
 					UI.createComponent('cs-client-list', {
-						template: UI.template('div', 'ie scroll'),
+						template: UI.template('div', 'ie scroll show'),
 						registry: {
 							path: function () {
 								return ['clients'];
@@ -905,8 +907,10 @@ UI.createApp('hook', [
 								var loadingIcon = UI.getComponent('cs-loading-icon');
 								loadingIcon.model().fadeOut();
 
+								var clientList = Object.keys(data);
+
 								// map data to new buttons
-								data.map(function (clientName) {
+								clientList.map(function (clientName) {
 									var child = UI.createComponent('cs-{name}-button'.format({name: clientName}), {
 										root: _this.id,
 										template: UI.templates.button,
@@ -914,6 +918,7 @@ UI.createApp('hook', [
 											style: {
 												'opacity': '0.0',
 											},
+											classes: ['show'],
 											html: '{name}'.format({name: clientName}),
 										},
 										state: {
@@ -945,7 +950,7 @@ UI.createApp('hook', [
 					UI.createComponent('cs-loading-icon', {
 						template: UI.templates.loadingIcon,
 						appearance: {
-							classes: ['ie centred'],
+							classes: ['ie centred show'],
 						},
 					}),
 				],
@@ -953,7 +958,7 @@ UI.createApp('hook', [
 		],
 	}),
 	UI.createComponent('client-back-sidebar', {
-		template: UI.template('div', 'ie sidebar mini border-right centred-vertically'),
+		template: UI.template('div', 'ie sidebar mini border-right centred-vertically show'),
 		state: {
 			defaultState: {
 				style: {
@@ -978,7 +983,7 @@ UI.createApp('hook', [
 				},
 				children: [
 					UI.createComponent('cbs-bb-span', {
-						template: UI.template('span', 'glyphicon glyphicon-chevron-left'),
+						template: UI.template('span', 'glyphicon glyphicon-chevron-left show'),
 					}),
 				],
 				bindings: [
