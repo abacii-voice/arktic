@@ -1,0 +1,8 @@
+/* Initial data needed for each type of user */
+
+/* Contract admin */
+{
+	"user": {
+		""
+	},
+}
