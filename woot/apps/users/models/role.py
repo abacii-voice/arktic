@@ -23,5 +23,10 @@ class Role(models.Model):
 
 	### Methods
 	# data
-	def data(self):
-		pass
+	def data(self, permission):
+		if permission.is_basic:
+			# only give type
+			return self.type
+
+		else:
+			return self.type
