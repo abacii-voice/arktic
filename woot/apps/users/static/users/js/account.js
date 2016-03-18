@@ -442,7 +442,7 @@ UI.createApp('hook', [
 		},
 		children: [
 			UI.createComponent('cns-scroll-wrapper', {
-				template: UI.template('div', 'ie scroll-wrapper'),
+				template: UI.template('div', 'ie scroll-wrapper show'),
 				appearance: {
 					style: {
 						'height': '100%',
@@ -450,7 +450,7 @@ UI.createApp('hook', [
 				},
 				children: [
 					UI.createComponent('cns-scroll', {
-						template: UI.template('div', 'ie scroll'),
+						template: UI.template('div', 'ie scroll show'),
 						children: [
 							UI.createComponent('cns-start-button', {
 								template: UI.templates.button,
@@ -919,7 +919,6 @@ UI.createApp('hook', [
 											style: {
 												'opacity': '0.0',
 											},
-											classes: ['show'],
 											html: '{name}'.format({name: clientName}),
 										},
 										state: {
@@ -959,7 +958,7 @@ UI.createApp('hook', [
 		],
 	}),
 	UI.createComponent('client-back-sidebar', {
-		template: UI.template('div', 'ie sidebar mini border-right centred-vertically show'),
+		template: UI.template('div', 'ie sidebar mini border-right centred-vertically'),
 		state: {
 			defaultState: {
 				style: {
@@ -984,7 +983,7 @@ UI.createApp('hook', [
 				},
 				children: [
 					UI.createComponent('cbs-bb-span', {
-						template: UI.template('span', 'glyphicon glyphicon-chevron-left show'),
+						template: UI.template('span', 'glyphicon glyphicon-chevron-left'),
 					}),
 				],
 				bindings: [
