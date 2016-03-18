@@ -141,6 +141,7 @@ Common interface elements
 */
 /* Sidebar */
 .ie.sidebar {
+	display: block;
 	width: 200px;
 	height: 70%;
 	/*left: -200px; /* Initially hidden until activated */*/
@@ -215,6 +216,7 @@ Common interface elements
 	font-size: 15px;
 	color: #ccc;
 	cursor: pointer;
+	display: block;
 }
 
 .ie.button:hover {
