@@ -74,6 +74,6 @@ MIDDLEWARE_CLASSES += (
 )
 
 DEBUG_TOOLBAR_CONFIG = {
-
+	'JQUERY_URL': '/static/js/jquery/2.2.2/jquery.min.js'
 }
 ########## END TOOLBAR CONFIGURATION
