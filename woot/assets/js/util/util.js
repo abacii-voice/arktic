@@ -28,7 +28,7 @@ function getdata (name, data, callback) {
 		},
 		error: function (xhr, ajaxOptions, thrownError) {
 			if (xhr.status === 404 || xhr.status === 0) {
-				command(name, data, callback);
+				getdata(name, data, callback);
 			}
 		}
 	};
@@ -37,17 +37,15 @@ function getdata (name, data, callback) {
 };
 
 // perform action
-function action (name, data, callback) {
+function action (name, data) {
 	var ajax_params = {
 		type: 'post',
 		data: data,
 		url:'/action/{name}/'.format({name: name}),
-		success: function (data, textStatus, XMLHttpRequest) {
-			callback(data);
-		},
+		success: function (data, textStatus, XMLHttpRequest) {},
 		error: function (xhr, ajaxOptions, thrownError) {
 			if (xhr.status === 404 || xhr.status === 0) {
-				command(name, data, callback);
+				action(name, data);
 			}
 		}
 	};
