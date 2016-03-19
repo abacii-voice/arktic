@@ -18,6 +18,10 @@ class Permission(object):
 			self.is_worker = False
 			self.is_basic = True
 
+	def check_client(self, client):
+		is_same_client = self.role is not None and self.role.client == client
+		return is_same_client
+
 def check_request(request):
 	# 1. get user and role_type
 	user = request.user

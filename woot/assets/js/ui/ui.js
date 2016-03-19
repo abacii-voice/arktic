@@ -525,7 +525,7 @@ var Context = {
 	},
 
 	// A custom function can be defined to update the store and even trigger a state based on the result.
-	update: function () {
+	load: function () {
 		$.when(this.fn).done(function () {
 			// call back to every component that has registered
 			Object.keys(Context.registry).map(function (registryId) {
@@ -537,7 +537,7 @@ var Context = {
 	},
 
 	// include new data in context
-	extend: function (data) {
+	update: function (data) {
 		$.extend(true, Context.store, data);
 	}
 }

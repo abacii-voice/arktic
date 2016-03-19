@@ -26,17 +26,18 @@ class Client(models.Model):
 		# basic
 		client_data.update(self.basic_data(permission))
 
-		# projects
-		client_data.update(self.project_data(permission))
-
 		# roles
 		client_data.update(self.role_data(permission))
 
-		# users
-		client_data.update(self.user_data(permission))
+		if permission.check_client(self):
+			# projects
+			client_data.update(self.project_data(permission))
 
-		# rules
-		client_data.update(self.rule_data(permission))
+			# users
+			client_data.update(self.user_data(permission))
+
+			# rules
+			client_data.update(self.rule_data(permission))
 
 		return client_data
 

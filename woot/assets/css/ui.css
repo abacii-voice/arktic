@@ -124,10 +124,11 @@ Common interface elements
 }
 
 .ie.border {
-	border-left: 2px solid #ccc;
-	border-right: 2px solid #ccc;
-	border-top: 2px solid #ccc;
-	border-bottom: 2px solid #ccc;
+	border: 2px solid #ccc;
+}
+
+.ie.border.error {
+	border: 2px solid #c00;
 }
 
 .ie.border-radius {
@@ -180,8 +181,8 @@ Common interface elements
 
 /* Context panel */
 .ie.panel.context {
-	left: 270px;
-	width: 744px;
+	left: 250px;
+	width: 764px;
 }
 
 /* Sub panel */
@@ -238,6 +239,7 @@ Common interface elements
 
 .ie.sidebar .ie.button.border {
 	margin-bottom: 10px;
+	border-radius: 4px;
 }
 
 .ie.sidebar .ie.button.start-button {
@@ -263,10 +265,13 @@ Common interface elements
 	border-radius: 4px;
 }
 
+.ie.input.error {
+	border: 2px solid #c00;
+}
+
 .ie.input:focus {
 	-webkit-box-shadow: inset 0 0px 0px rgba(0, 0, 0, .075), 0 0 0px rgba(102, 175, 233, .6);
 	box-shadow: inset 0 0px 0px rgba(0, 0, 0, .075), 0 0 0px rgba(102, 175, 233, .6);
-	border-color: #ccc;
 	outline: none;
 	color: #ccc;
 }
@@ -278,4 +283,14 @@ Common interface elements
 */
 .breadcrumbs {
 
+}
+
+/*
+
+Misc
+
+*/
+
+.glyphicon-hidden {
+	display: none;
 }
