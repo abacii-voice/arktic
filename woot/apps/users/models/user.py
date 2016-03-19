@@ -17,6 +17,7 @@ class UserManager(BaseUserManager):
 		user = self.model(email=self.normalize_email(email))
 
 		user.set_password(password)
+		user.activation_key = get_random_string(length=20)
 		user.save()
 		return user
 

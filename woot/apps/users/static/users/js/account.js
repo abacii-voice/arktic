@@ -4,7 +4,7 @@
 
 // 1. Load Context
 Context.setFn(getdata('context', {}, function (data) {
-	Context.extend(data);
+	Context.update(data);
 
 	if (Context.get('one_client')) {
 		if (Context.get('one_role')) {
@@ -152,6 +152,9 @@ UI.createApp('hook', [
 				fn: UI.functions.deactivate,
 			},
 			states: [
+				{name: 'role-state', args: 'default'},
+				{name: 'upload-state', args: 'default'},
+				{name: 'control-state', args: 'default'},
 				{name: 'user-management-state', args: {
 					preFn: UI.functions.activate,
 					style: {
@@ -162,7 +165,7 @@ UI.createApp('hook', [
 		},
 		children: [
 			UI.createComponent('user-management-interface-left-panel', {
-				template: UI.template('div', 'ie panel sub-panel'),
+				template: UI.template('div', 'ie panel sub-panel show'),
 				appearance: {
 					style: {
 						'height': '100%',
@@ -171,21 +174,22 @@ UI.createApp('hook', [
 				},
 				children: [
 					UI.createComponent('user-title', {
-						template: UI.template('h4', 'ie panel-title'),
+						template: UI.template('h4', 'ie panel-title show'),
 						appearance: {
 							html: 'Users',
 							style: {
+								'margin-top': '0px',
 								'text-align': 'left',
 								'padding-left': '0px',
 							},
 						},
 					}),
 					UI.createComponent('user-list-search-input', {
-						template: UI.template('input', 'ie input'),
+						template: UI.template('input', 'ie input show'),
 						appearance: {
 							style: {
-								'top': '35px',
-								'width': '190px',
+								'top': '25px',
+								'width': '200px',
 							},
 							properties: {
 								placeholder: 'Search or filter...'
@@ -193,16 +197,16 @@ UI.createApp('hook', [
 						},
 					}),
 					UI.createComponent('user-list-wrapper', {
-						template: UI.template('div', 'ie scroll-wrapper relative'),
+						template: UI.template('div', 'ie scroll-wrapper relative show'),
 						appearance: {
 							style: {
-								'top': '80px',
-								'height': 'calc(100% - 80px)',
+								'top': '70px',
+								'height': 'calc(100% - 70px)',
 							},
 						},
 						children: [
 							UI.createComponent('user-list', {
-								template: UI.template('div', 'ie scroll'),
+								template: UI.template('div', 'ie scroll show'),
 								state: {
 									states: [
 										{name: 'user-management-state', args: {
@@ -214,12 +218,19 @@ UI.createApp('hook', [
 
 												_this.children = [];
 
-												// load and display user buttons
-												command('user_list', {'current_client': Context.get('current_client'), 'current_role': Context.get('current_role')}, function (data) {
+												// promise to fetch data and update Context
+												var permissionData = {
+													current_client: Context.get('current_client'),
+													current_role: Context.get('current_role'),
+												};
+												$.when(getdata('context', permissionData, function (data) {
+													// update Context
+													Context.update(data);
+												})).done(function () {
 													// data is a list of user objects with relevant details
-													var users = data.users;
-													users.map(function (userPrototype) {
-														var userId = makeid();
+													var users = Context.get('clients', Context.get('current_client'), 'users');
+													Object.keys(users).map(function (userId) {
+														var userPrototype = users[userId];
 														var userButton = UI.createComponent('user-button-{id}'.format({id: userId}), {
 															root: _this.id,
 															template: UI.templates.button,
@@ -260,7 +271,12 @@ UI.createApp('hook', [
 
 													// fade loading icon
 													UI.getComponent('ul-loading-icon').model().fadeOut();
-												})
+												});
+
+												// load and display user buttons
+												// command('user_list', {'current_client': Context.get('current_client'), 'current_role': Context.get('current_role')}, function (data) {
+
+												// });
 											}
 										}},
 									],
@@ -269,7 +285,7 @@ UI.createApp('hook', [
 							UI.createComponent('ul-loading-icon', {
 								template: UI.templates.loadingIcon,
 								appearance: {
-									classes: ['ie centred'],
+									classes: ['ie centred show'],
 								}
 							}),
 						],
@@ -277,7 +293,7 @@ UI.createApp('hook', [
 				],
 			}),
 			UI.createComponent('user-management-interface-right-panel', {
-				template: UI.template('div', 'ie panel sub-panel border'),
+				template: UI.template('div', 'ie panel sub-panel border border-radius show'),
 				appearance: {
 					style: {
 						'height': '100%',
@@ -290,28 +306,38 @@ UI.createApp('hook', [
 						children: [
 							UI.createComponent('user-card', {
 								state: {
+									defaultState: {
+										preFn: function (_this) {
+
+										},
+										style: {
+											'opacity': '0.0',
+										},
+										fn: function (_this) {
+											_this.model().css({'display': 'none'});
+
+											var nameField = UI.getComponent('uc-name');
+											var emailField = UI.getComponent('uc-email');
+
+											// remove content from user card
+											nameField.model().html('');
+											emailField.model().html('');
+										},
+									},
 									states: [
-										{name: 'user-management-state', args: {
-											style: {
-												'opacity': '0.0',
-											},
-											fn: function (_this) {
-												_this.model().css({'display': 'none'});
-											},
-										}},
+										{name: 'user-management-state', args: 'default'},
 										{name: 'user-management-user-state', args: {
-											preFn: function (_this) {
-												_this.model().css({'display': 'block'});
-											},
+											preFn: UI.functions.activate,
 											style: {
 												'opacity': '1.0',
 											},
 										}},
+										{name: 'user-management-new-user-state', args: 'default'},
 									],
 								},
 								children: [
 									UI.createComponent('uc-name', {
-										template: UI.template('span', 'ie'),
+										template: UI.template('span', 'ie show'),
 										appearance: {
 											style: {
 												'font-size': '18px',
@@ -322,7 +348,7 @@ UI.createApp('hook', [
 										},
 									}),
 									UI.createComponent('uc-email', {
-										template: UI.template('span', 'ie'),
+										template: UI.template('span', 'ie show'),
 										appearance: {
 											style: {
 												'color': '#ccc',
@@ -333,10 +359,454 @@ UI.createApp('hook', [
 									}),
 								],
 							}),
-							UI.createComponent('new-user-button'),
-							UI.createComponent('new-user-card'),
-							UI.createComponent('new-user-confirmation-card'),
-							UI.createComponent('user-title-card'),
+							UI.createComponent('new-user-button', {
+								template: UI.templates.button,
+								appearance: {
+									classes: ['border border-radius'],
+									style: {
+										'position': 'absolute',
+										'width': '40px',
+										'height': '40px',
+										'left': 'auto',
+										'top': '10px',
+										'right': '10px',
+										'transform': 'none',
+										'padding-top': '10px',
+									},
+								},
+								children: [
+									UI.createComponent('nub-span', {
+										template: UI.template('span', 'glyphicon glyphicon-plus'),
+									}),
+								],
+								bindings: [
+									{name: 'click', fn: function (_this) {
+										_this.triggerState();
+									}}
+								],
+								state: {
+									stateMap: 'user-management-new-user-state',
+								},
+							}),
+							UI.createComponent('new-user-card', {
+								appearance: {
+									style: {
+										'display': 'none',
+									},
+								},
+								state: {
+									defaultState: {
+										style: {
+											'opacity': '0.0',
+										},
+										fn: UI.functions.deactivate,
+									},
+									states: [
+										{name: 'user-management-user-state', args: 'default'},
+										{name: 'user-management-state', args: 'default'},
+										{name: 'control-state', args: 'default'},
+										{name: 'role-state', args: 'default'},
+										{name: 'user-management-new-user-state', args: {
+											preFn: UI.functions.activate,
+											style: {
+												'opacity': '1.0',
+											},
+										}},
+									],
+								},
+								children: [
+									UI.createComponent('nuc-title', {
+										template: UI.template('span', 'ie show'),
+										appearance: {
+											style: {
+												'font-size': '18px',
+												'top': '10px',
+												'left': '10px',
+												'color': '#ccc',
+											},
+											html: `New user`,
+										},
+									}),
+									UI.createComponent('nuc-client-subtitle', {
+										template: UI.template('span', 'ie show'),
+										appearance: {
+											style: {
+												'font-size': '14px',
+												'color': '#ccc',
+												'top': '35px',
+												'left': '10px',
+											},
+											html: '',
+										},
+										state: {
+											states: [
+												{name: 'user-management-new-user-state', args: {
+													preFn: function (_this) {
+														_this.model().html(Context.get('current_client'));
+													}
+												}}
+											],
+										},
+									}),
+									UI.createComponent('nuc-first-name', {
+										template: UI.template('input', 'ie input show'),
+										appearance: {
+											style: {
+												'top': '60px',
+												'left': '10px',
+												'width': '225px',
+											},
+											properties: {
+												'placeholder': 'First name',
+											},
+										},
+									}),
+									UI.createComponent('nuc-last-name', {
+										template: UI.template('input', 'ie input show'),
+										appearance: {
+											style: {
+												'top': '106px',
+												'left': '10px',
+												'width': '225px',
+											},
+											properties: {
+												'placeholder': 'Last name',
+											},
+										},
+									}),
+									UI.createComponent('nuc-email', {
+										template: UI.template('input', 'ie input show'),
+										appearance: {
+											style: {
+												'top': '152px',
+												'left': '10px',
+												'width': '275px',
+											},
+											properties: {
+												'placeholder': 'Email',
+											},
+										},
+									}),
+									UI.createComponent('nuc-roles', {
+										template: UI.template('div', 'ie show'),
+										appearance: {
+											style: {
+												'top': '200px',
+												'width': '100%',
+												'height': '200px',
+											}
+										},
+										children: [
+											UI.createComponent('nuc-roles-title', {
+												template: UI.template('span', 'ie show'),
+												appearance: {
+													style: {
+														'font-size': '18px',
+														'color': '#ccc',
+														'top': '0px',
+														'left': '10px',
+													},
+													html: 'Roles',
+												},
+											}),
+											UI.createComponent('nuc-roles-admin-wrapper', {
+												template: UI.template('div', 'ie show'),
+												appearance: {
+													style: {
+														'top': '30px',
+														'width': '100%',
+														'height': '40px',
+													}
+												},
+												children: [
+													UI.createComponent('nraw-tick-button', {
+														template: UI.templates.button,
+														appearance: {
+															classes: ['border border-radius'],
+															style: {
+																'position': 'absolute',
+																'transform': 'none',
+																'left': '10px',
+																'height': '40px',
+																'width': '40px',
+																'padding-top': '10px',
+																'margin-right': '0px',
+															},
+														},
+														children: [
+															UI.createComponent('nraw-tb-check', {
+																template: UI.template('span', 'glyphicon glyphicon-ok glyphicon-hidden'),
+															}),
+														],
+														bindings: [
+															{name: 'click', fn: function (_this) {
+																var check = UI.getComponent('nraw-tb-check');
+																check.model().toggleClass('glyphicon-hidden');
+															}}
+														],
+													}),
+													UI.createComponent('nraw-name-button', {
+														template: UI.templates.button,
+														appearance: {
+															style: {
+																'position': 'absolute',
+																'top': '0px',
+																'left': '50px',
+																'transform': 'none',
+																'height': '40px',
+																'padding-top': '10px',
+																'text-align': 'left',
+																'padding-left': '10px',
+															},
+															html: 'Admin',
+														},
+														bindings: [
+															{name: 'click', fn: function (_this) {
+																var check = UI.getComponent('nraw-tb-check');
+																check.model().toggleClass('glyphicon-hidden');
+															}}
+														],
+													})
+												],
+											}),
+											UI.createComponent('nuc-roles-moderator-wrapper', {
+												template: UI.template('div', 'ie show'),
+												appearance: {
+													style: {
+														'top': '80px',
+														'width': '100%',
+														'height': '40px',
+													}
+												},
+												children: [
+													UI.createComponent('nrmw-tick-button', {
+														template: UI.templates.button,
+														appearance: {
+															classes: ['border border-radius'],
+															style: {
+																'position': 'absolute',
+																'transform': 'none',
+																'left': '10px',
+																'height': '40px',
+																'width': '40px',
+																'padding-top': '10px',
+																'margin-right': '0px',
+															},
+														},
+														children: [
+															UI.createComponent('nrmw-tb-check', {
+																template: UI.template('span', 'glyphicon glyphicon-ok glyphicon-hidden'),
+															}),
+														],
+														bindings: [
+															{name: 'click', fn: function (_this) {
+																var check = UI.getComponent('nrmw-tb-check');
+																check.model().toggleClass('glyphicon-hidden');
+															}}
+														],
+													}),
+													UI.createComponent('nrmw-name-button', {
+														template: UI.templates.button,
+														appearance: {
+															style: {
+																'position': 'absolute',
+																'top': '0px',
+																'left': '50px',
+																'transform': 'none',
+																'height': '40px',
+																'padding-top': '10px',
+																'text-align': 'left',
+																'padding-left': '10px',
+															},
+															html: 'Moderator',
+														},
+														bindings: [
+															{name: 'click', fn: function (_this) {
+																var check = UI.getComponent('nrmw-tb-check');
+																check.model().toggleClass('glyphicon-hidden');
+															}}
+														],
+													})
+												],
+											}),
+											UI.createComponent('nuc-roles-worker-wrapper', {
+												template: UI.template('div', 'ie show'),
+												appearance: {
+													style: {
+														'top': '130px',
+														'width': '100%',
+														'height': '40px',
+													}
+												},
+												children: [
+													UI.createComponent('nrww-tick-button', {
+														template: UI.templates.button,
+														appearance: {
+															classes: ['border border-radius'],
+															style: {
+																'position': 'absolute',
+																'transform': 'none',
+																'left': '10px',
+																'height': '40px',
+																'width': '40px',
+																'padding-top': '10px',
+																'margin-right': '0px',
+															},
+														},
+														children: [
+															UI.createComponent('nrww-tb-check', {
+																template: UI.template('span', 'glyphicon glyphicon-ok glyphicon-hidden'),
+															}),
+														],
+														bindings: [
+															{name: 'click', fn: function (_this) {
+																var check = UI.getComponent('nrww-tb-check');
+																check.model().toggleClass('glyphicon-hidden');
+															}}
+														],
+													}),
+													UI.createComponent('nrww-name-button', {
+														template: UI.templates.button,
+														appearance: {
+															style: {
+																'position': 'absolute',
+																'top': '0px',
+																'left': '50px',
+																'transform': 'none',
+																'height': '40px',
+																'padding-top': '10px',
+																'text-align': 'left',
+																'padding-left': '10px',
+															},
+															html: 'Transcriber',
+														},
+														bindings: [
+															{name: 'click', fn: function (_this) {
+																var check = UI.getComponent('nrww-tb-check');
+																check.model().toggleClass('glyphicon-hidden');
+															}}
+														],
+													})
+												],
+											}),
+											UI.createComponent('nuc-roles-error-box', {
+												template: UI.template('div', 'ie border border-radius'),
+												appearance: {
+													style: {
+
+													},
+												},
+											}),
+										],
+									}),
+									UI.createComponent('nuc-confirm-button', {
+										template: UI.templates.button,
+										appearance: {
+											classes: ['border border-radius'],
+											style: {
+												'transform': 'none',
+												'left': '10px',
+												'top': '380px',
+											},
+											html: 'Confirm',
+										},
+										bindings: [
+											{name: 'click', fn: function (_this) {
+												// perform checks
+												var noProblems = true;
+												// 1. must have first name
+												var firstName = UI.getComponent('nuc-first-name');
+												if (firstName.model().val() === '') {
+													firstName.model().addClass('error');
+													noProblems = false;
+												}
+
+												// 2. must have last name
+												var lastName = UI.getComponent('nuc-last-name');
+												if (firstName.model().val() === '') {
+													lastName.model().addClass('error');
+													noProblems = false;
+												}
+
+												// 3. must have email
+												var email = UI.getComponent('nuc-email').model;
+												if (email.model().val() === '') {
+													email.model().addClass('error');
+													noProblems = false;
+												}
+
+												// 4. must have at least one role
+												var adminRole = !UI.getComponent('nraw-tb-check').model().hasClass('glyphicon-hidden');
+												var moderatorRole = !UI.getComponent('nrmw-tb-check').model().hasClass('glyphicon-hidden');
+												var workerRole = !UI.getComponent('nrww-tb-check').model().hasClass('glyphicon-hidden');
+												var roleErrorBox = UI.getComponent('nuc-roles-error-box');
+												if (!adminRole && !moderatorRole && !workerRole) {
+													roleErrorBox.model().addClass('show error');
+													noProblems = false;
+												}
+
+												if (noProblems) {
+													// submit user
+													// 1. unset all error classes
+
+													// 2. call add_user command
+													var userData = {
+														'current_client': Context.get(),
+														'first_name': firstName.model().val(),
+														'last_name': lastName.model().val(),
+														'email': email.model().val(),
+														'roles': {
+															'admin': adminRole,
+															'moderator': moderatorRole,
+															'worker': workerRole,
+														}
+													};
+													command('add_user', userData, function (data) {
+
+													});
+
+													// 3. add user button to list when done
+
+												}
+											}},
+										],
+									}),
+								],
+							}),
+							UI.createComponent('user-title-card', {
+								state: {
+									defaultState: {
+										style: {
+											'opacity': '0.0',
+										},
+										fn: UI.functions.deactivate,
+									},
+									states: [
+										{name: 'user-management-user-state', args: 'default'},
+										{name: 'user-management-new-user-state', args: 'default'},
+										{name: 'user-management-state', args: {
+											preFn: UI.functions.activate,
+											style: {
+												'opacity': '1.0',
+											},
+										}},
+									],
+								},
+								children: [
+									UI.createComponent('utc-title', {
+										template: UI.template('div', 'ie show centred'),
+										appearance: {
+											style: {
+												'text-align': 'center',
+											},
+											html: `
+												<h3>User</h3>
+												<h3>Details</h3>
+											`,
+										},
+									}),
+								],
+							}),
 						],
 					}),
 				],
@@ -547,7 +1017,7 @@ UI.createApp('hook', [
 										{name: 'control-state', args: {
 											preFn: function (_this) {
 												var role = Context.get('current_role');
-												var visibleCondition = (role === 'productionadmin' || role === 'moderator');
+												var visibleCondition = (role === 'productionadmin' || role === 'moderator' || role === 'contractadmin');
 												if (visibleCondition) {
 													_this.model().css('display', 'block');
 												} else {
@@ -1000,4 +1470,4 @@ UI.createApp('hook', [
 UI.renderApp();
 
 // 5. Load data
-Context.update();
+Context.load();
