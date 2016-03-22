@@ -244,12 +244,12 @@ var UI = {
 			this.children.map(this.renderChild, this);
 
 			// 6. add bindings
+			var _this = this;
 			this.bindings.map(function (binding) {
-				var _this = this;
 				model.on(binding.name, function () {
 					binding.fn(_this);
 				});
-			}, this);
+			});
 		}
 
 		// render child
@@ -500,6 +500,15 @@ var Context = {
 
 	set: function (key, value) {
 		Context.store[key] = value;
+	},
+
+	del: function () {
+		sub = this.store;
+		var i;
+		for (i=0; i<arguments.length; i++) {
+			sub = sub[arguments[i]];
+		}
+		delete sub;
 	},
 
 	// REGISTRY
