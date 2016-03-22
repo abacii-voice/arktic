@@ -13,8 +13,8 @@ from apps.client.models.client import Client
 
 ### User classes
 class UserManager(BaseUserManager):
-	def create_user(self, email, password=None):
-		user = self.model(email=self.normalize_email(email))
+	def create_user(self, first_name, last_name, email, password=None):
+		user = self.model(first_name=first_name, last_name=last_name, email=self.normalize_email(email))
 
 		user.set_password(password)
 		user.activation_key = get_random_string(length=20)

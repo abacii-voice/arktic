@@ -93,10 +93,17 @@ class Client(models.Model):
 	def user_data(self, permission):
 		user_data = {}
 
-		if permission.is_productionadmin or permission.is_contractadmin or permission.is_moderator:
+		if permission.is_productionadmin or permission.is_contractadmin:
 			user_data.update({
 				'users': {
 					str(user.id): user.data(permission) for user in self.users.all()
+				}
+			})
+
+		if permission.is_moderator:
+			user_data.update({
+				'users': {
+					str(user.id): user.data(permission) for user in [role.user for role in self.roles.filter(supervisor=permission.role)]
 				}
 			})
 
@@ -110,3 +117,12 @@ class Client(models.Model):
 		}
 
 		return rule_data
+
+
+	# fetch most available moderator
+	def available_moderator(self):
+		# pick the moderator with the least number of subordinates
+		moderators = self.roles.filter(type='moderator')
+		moderator_with_least_subordinates = min(moderators, key=lambda m: m.subordinates.count())
+
+		return moderator_with_least_subordinates
