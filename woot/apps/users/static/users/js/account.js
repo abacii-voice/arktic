@@ -250,15 +250,61 @@ UI.createApp('hook', [
 																stateMap: 'user-management-user-state',
 																svitches: [
 																	{stateName: 'user-management-user-state', fn: function (_this) {
+																		// get user data
+																		var userFirstName = userPrototype.first_name;
+																		var userLastName = userPrototype.last_name;
+
+																		var userAdminEnabled = false;
+																		var userAdminActivated = false;
+																		if (userPrototype.roles.productionadmin !== undefined || userPrototype.roles.contractadmin !== undefined) {
+																			if (Context.get('clients', Context.get('current_client')).is_production) {
+																				userAdminEnabled = userPrototype.roles.productionadmin.is_enabled;
+																				userAdminActivated = !userPrototype.roles.productionadmin.is_new;
+																			} else {
+																				userAdminEnabled = userPrototype.roles.contractadmin.is_enabled;
+																				userAdminActivated = !userPrototype.roles.contractadmin.is_new;
+																			}
+																		}
+
+																		var userModeratorEnabled = false;
+																		var userModeratorActivated = false
+																		var userWorkerEnabled = false;
+																		var userWorkerActivated = false;
+
+																		if () {
+
+																		}
+																		userModeratorEnabled = !userPrototype.roles['moderator'].is_new;
+																		userModeratorActivated =
+																		userWorkerEnabled =
+																		userWorkerActivated =
+
 																		// get user card objects
 																		var nameField = UI.getComponent('uc-name');
 																		var emailField = UI.getComponent('uc-email');
-																		// var rolesPanel = UI.getComponent('uc-roles-panel');
-																		// var statsPanel = UI.getComponent('uc-stats-panel');
+
+																		// roles
+																		var adminRoleEnabled = UI.getComponent('urab-enabled');
+																		var adminRoleDisabled = UI.getComponent('urab-disabled');
+																		var adminRolePending = UI.getComponent('urab-pending');
+																		var adminRoleAdd = UI.getComponent('urab-add');
+
+																		var moderatorRoleEnabled = UI.getComponent('urmb-enabled');
+																		var moderatorRoleDisabled = UI.getComponent('urmb-disabled');
+																		var moderatorRolePending = UI.getComponent('urmb-pending');
+																		var moderatorRoleAdd = UI.getComponent('urmb-add');
+
+																		var workerRoleEnabled = UI.getComponent('urwb-enabled');
+																		var workerRoleDisabled = UI.getComponent('urwb-disabled');
+																		var workerRolePending = UI.getComponent('urwb-pending');
+																		var workerRoleAdd = UI.getComponent('urwb-add');
 
 																		// update values
-																		nameField.model().html('{first_name} {last_name}'.format({first_name: userPrototype.first_name, last_name: userPrototype.last_name}));
+																		nameField.model().html('{first_name} {last_name}'.format({first_name: userFirstName, last_name: userLastName}));
 																		emailField.model().html(userPrototype.email);
+
+
+																		adminRoleEnabled.model().
 																	}}
 																],
 															},
@@ -272,11 +318,6 @@ UI.createApp('hook', [
 													// fade loading icon
 													UI.getComponent('ul-loading-icon').model().fadeOut();
 												});
-
-												// load and display user buttons
-												// command('user_list', {'current_client': Context.get('current_client'), 'current_role': Context.get('current_role')}, function (data) {
-
-												// });
 											}
 										}},
 									],
@@ -425,16 +466,16 @@ UI.createApp('hook', [
 														},
 														children: [
 															UI.createComponent('urab-enabled', {
-																template: UI.template('span', 'glyphicon glyphicon-ok enabled'),
+																template: UI.template('span', 'glyphicon glyphicon-ok'),
 															}),
 															UI.createComponent('urab-disabled', {
-																template: UI.template('span', 'glyphicon glyphicon-remove glyphicon-hidden'),
+																template: UI.template('span', 'glyphicon glyphicon-remove'),
 															}),
 															UI.createComponent('urab-pending', {
-																template: UI.template('span', 'glyphicon glyphicon-option-horizontal glyphicon-hidden'),
+																template: UI.template('span', 'glyphicon glyphicon-option-horizontal'),
 															}),
 															UI.createComponent('urab-add', {
-																template: UI.template('span', 'glyphicon glyphicon-plus glyphicon-hidden'),
+																template: UI.template('span', 'glyphicon glyphicon-plus'),
 															}),
 														],
 														bindings: [
@@ -471,6 +512,7 @@ UI.createApp('hook', [
 																		command('add_role_to_user', roleData, function (data) {});
 
 																		// 2. switch to pending button
+																		pending.model().addClass('enabled');
 																		pending.model().toggleClass('glyphicon-hidden');
 																		add.model().toggleClass('glyphicon-hidden');
 																	}
@@ -523,13 +565,13 @@ UI.createApp('hook', [
 														},
 														children: [
 															UI.createComponent('urmb-enabled', {
-																template: UI.template('span', 'glyphicon glyphicon-ok glyphicon-hidden'),
+																template: UI.template('span', 'glyphicon glyphicon-ok'),
 															}),
 															UI.createComponent('urmb-disabled', {
-																template: UI.template('span', 'glyphicon glyphicon-remove glyphicon-hidden'),
+																template: UI.template('span', 'glyphicon glyphicon-remove'),
 															}),
 															UI.createComponent('urmb-pending', {
-																template: UI.template('span', 'glyphicon glyphicon-option-horizontal glyphicon-hidden'),
+																template: UI.template('span', 'glyphicon glyphicon-option-horizontal'),
 															}),
 															UI.createComponent('urmb-add', {
 																template: UI.template('span', 'glyphicon glyphicon-plus'),
@@ -569,6 +611,7 @@ UI.createApp('hook', [
 																		command('add_role_to_user', roleData, function (data) {});
 
 																		// 2. switch to pending button
+																		pending.model().addClass('enabled');
 																		pending.model().toggleClass('glyphicon-hidden');
 																		add.model().toggleClass('glyphicon-hidden');
 																	}
@@ -621,13 +664,13 @@ UI.createApp('hook', [
 														},
 														children: [
 															UI.createComponent('urwb-enabled', {
-																template: UI.template('span', 'glyphicon glyphicon-ok glyphicon-hidden'),
+																template: UI.template('span', 'glyphicon glyphicon-ok'),
 															}),
 															UI.createComponent('urwb-disabled', {
-																template: UI.template('span', 'glyphicon glyphicon-remove glyphicon-hidden'),
+																template: UI.template('span', 'glyphicon glyphicon-remove'),
 															}),
 															UI.createComponent('urwb-pending', {
-																template: UI.template('span', 'glyphicon glyphicon-option-horizontal glyphicon-hidden'),
+																template: UI.template('span', 'glyphicon glyphicon-option-horizontal'),
 															}),
 															UI.createComponent('urwb-add', {
 																template: UI.template('span', 'glyphicon glyphicon-plus'),
@@ -667,6 +710,7 @@ UI.createApp('hook', [
 																		command('add_role_to_user', roleData, function (data) {});
 
 																		// 2. switch to pending button
+																		pending.model().addClass('enabled');
 																		pending.model().toggleClass('glyphicon-hidden');
 																		add.model().toggleClass('glyphicon-hidden');
 																	}
