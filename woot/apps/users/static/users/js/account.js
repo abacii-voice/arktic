@@ -15,12 +15,12 @@ Context.setFn(getdata('context', {}, function (data) {
 	}
 
 	// debug and construction
-	// $.when(new Promise (function (resolve, reject) {
-	// 	Context.set('current_client', 'TestProductionClient');
-	// 	Context.set('current_role', 'productionadmin')
-	// })).done(function () {
-	// 	UI.changeState('user-management-state');
-	// });
+	$.when(new Promise (function (resolve, reject) {
+		Context.set('current_client', 'TestProductionClient');
+		Context.set('current_role', 'productionadmin')
+	})).done(function () {
+		UI.changeState('user-management-state');
+	});
 }));
 
 // 2. Define global states
@@ -321,10 +321,13 @@ UI.createApp('hook', [
 
 											// remove content from user card
 											nameField.model().html('');
+											nameField.model().attr('userid', '');
 											emailField.model().html('');
 										},
 									},
 									states: [
+										{name: 'role-state', args: 'default'},
+										{name: 'control-state', args: 'default'},
 										{name: 'user-management-state', args: 'default'},
 										{name: 'user-management-user-state', args: {
 											preFn: UI.functions.activate,
@@ -356,6 +359,324 @@ UI.createApp('hook', [
 												'left': '10px',
 											},
 										},
+									}),
+									UI.createComponent('uc-roles', {
+										template: UI.template('div', 'ie show'),
+										appearance: {
+											style: {
+												'top': '61px',
+												'width': '100%',
+												'height': '200px',
+											},
+										},
+										children: [
+											UI.createComponent('uc-roles-title', {
+												template: UI.template('span', 'ie show'),
+												appearance: {
+													style: {
+														'font-size': '18px',
+														'color': '#ccc',
+														'top': '0px',
+														'left': '10px',
+													},
+													html: 'Roles',
+												},
+											}),
+											UI.createComponent('uc-roles-admin-wrapper', {
+												template: UI.template('div', 'ie show'),
+												appearance: {
+													style: {
+														'top': '30px',
+														'width': '100%',
+													},
+												},
+												children: [
+													UI.createComponent('uc-roles-admin-title', {
+														template: UI.templates.button,
+														appearance: {
+															style: {
+																'position': 'absolute',
+																'padding-left': '10px',
+																'padding-top': '12px',
+																'height': '40px',
+																'transform': 'none',
+																'left': '0px',
+																'width': '200px',
+																'text-align': 'left',
+															},
+															html: 'Admin',
+														},
+														bindings: [
+															// click to show stats
+														],
+													}),
+													UI.createComponent('uc-roles-admin-button', {
+														template: UI.templates.button,
+														appearance: {
+															classes: ['border border-radius'],
+															style: {
+																'transform': 'none',
+																'left': '246px',
+																'height': '40px',
+																'width': '40px',
+																'padding-top': '10px',
+																'margin-right': '0px',
+															},
+														},
+														children: [
+															UI.createComponent('urab-enabled', {
+																template: UI.template('span', 'glyphicon glyphicon-ok enabled'),
+															}),
+															UI.createComponent('urab-disabled', {
+																template: UI.template('span', 'glyphicon glyphicon-remove glyphicon-hidden'),
+															}),
+															UI.createComponent('urab-pending', {
+																template: UI.template('span', 'glyphicon glyphicon-option-horizontal glyphicon-hidden'),
+															}),
+															UI.createComponent('urab-add', {
+																template: UI.template('span', 'glyphicon glyphicon-plus glyphicon-hidden'),
+															}),
+														],
+														bindings: [
+															{name: 'click', fn: function (_this) {
+																// get elements
+																var enabled = UI.getComponent('urab-enabled');
+																var disabled = UI.getComponent('urab-disabled');
+																var pending = UI.getComponent('urab-pending');
+																var add = UI.getComponent('urab-add');
+
+																var roleData = {
+																	'current_client': Context.get('current_client'),
+																	'user_id': UI.getComponent('uc-name').model().attr('userid'),
+																	'role_type': 'admin',
+																};
+
+																// check for status to determine action
+																if (enabled.model().hasClass('enabled')) {
+																	// role is activated
+																	if (!enabled.model().hasClass('glyphicon-hidden')) {
+																		command('disable_role', roleData, function (data) {});
+																	} else {
+																		command('enable_role', roleData, function (data) {});
+																	}
+
+																	enabled.model().toggleClass('glyphicon-hidden');
+																	disabled.model().toggleClass('glyphicon-hidden');
+
+																} else {
+																	// role is either pending or non-existent
+																	if (!pending.model().hasClass('enabled')) {
+																		// press add
+																		// 1. send add role
+																		command('add_role_to_user', roleData, function (data) {});
+
+																		// 2. switch to pending button
+																		pending.model().toggleClass('glyphicon-hidden');
+																		add.model().toggleClass('glyphicon-hidden');
+																	}
+																}
+															}},
+														],
+													}),
+												],
+											}),
+											UI.createComponent('uc-roles-moderator-wrapper', {
+												template: UI.template('div', 'ie show'),
+												appearance: {
+													style: {
+														'top': '80px',
+														'width': '100%',
+													},
+												},
+												children: [
+													UI.createComponent('uc-roles-moderator-title', {
+														template: UI.templates.button,
+														appearance: {
+															style: {
+																'position': 'absolute',
+																'padding-left': '10px',
+																'padding-top': '12px',
+																'height': '40px',
+																'transform': 'none',
+																'left': '0px',
+																'width': '200px',
+																'text-align': 'left',
+															},
+															html: 'Moderator',
+														},
+														bindings: [
+															// click to show stats
+														],
+													}),
+													UI.createComponent('uc-roles-moderator-button', {
+														template: UI.templates.button,
+														appearance: {
+															classes: ['border border-radius'],
+															style: {
+																'transform': 'none',
+																'left': '246px',
+																'height': '40px',
+																'width': '40px',
+																'padding-top': '10px',
+																'margin-right': '0px',
+															},
+														},
+														children: [
+															UI.createComponent('urmb-enabled', {
+																template: UI.template('span', 'glyphicon glyphicon-ok glyphicon-hidden'),
+															}),
+															UI.createComponent('urmb-disabled', {
+																template: UI.template('span', 'glyphicon glyphicon-remove glyphicon-hidden'),
+															}),
+															UI.createComponent('urmb-pending', {
+																template: UI.template('span', 'glyphicon glyphicon-option-horizontal glyphicon-hidden'),
+															}),
+															UI.createComponent('urmb-add', {
+																template: UI.template('span', 'glyphicon glyphicon-plus'),
+															}),
+														],
+														bindings: [
+															{name: 'click', fn: function (_this) {
+																// get elements
+																var enabled = UI.getComponent('urmb-enabled');
+																var disabled = UI.getComponent('urmb-disabled');
+																var pending = UI.getComponent('urmb-pending');
+																var add = UI.getComponent('urmb-add');
+
+																var roleData = {
+																	'current_client': Context.get('current_client'),
+																	'user_id': UI.getComponent('uc-name').model().attr('userid'),
+																	'role_type': 'moderator',
+																};
+
+																// check for status to determine action
+																if (enabled.model().hasClass('enabled')) {
+																	// role is activated
+																	if (!enabled.model().hasClass('glyphicon-hidden')) {
+																		command('disable_role', roleData, function (data) {});
+																	} else {
+																		command('enable_role', roleData, function (data) {});
+																	}
+
+																	enabled.model().toggleClass('glyphicon-hidden');
+																	disabled.model().toggleClass('glyphicon-hidden');
+
+																} else {
+																	// role is either pending or non-existent
+																	if (!pending.model().hasClass('enabled')) {
+																		// press add
+																		// 1. send add role
+																		command('add_role_to_user', roleData, function (data) {});
+
+																		// 2. switch to pending button
+																		pending.model().toggleClass('glyphicon-hidden');
+																		add.model().toggleClass('glyphicon-hidden');
+																	}
+																}
+															}},
+														],
+													}),
+												],
+											}),
+											UI.createComponent('uc-roles-worker-wrapper', {
+												template: UI.template('div', 'ie show'),
+												appearance: {
+													style: {
+														'top': '130px',
+														'width': '100%',
+													},
+												},
+												children: [
+													UI.createComponent('uc-roles-worker-title', {
+														template: UI.templates.button,
+														appearance: {
+															style: {
+																'position': 'absolute',
+																'padding-left': '10px',
+																'padding-top': '12px',
+																'height': '40px',
+																'transform': 'none',
+																'left': '0px',
+																'width': '200px',
+																'text-align': 'left',
+															},
+															html: 'Transcriber',
+														},
+														bindings: [
+															// click to show stats
+														],
+													}),
+													UI.createComponent('uc-roles-worker-button', {
+														template: UI.templates.button,
+														appearance: {
+															classes: ['border border-radius'],
+															style: {
+																'transform': 'none',
+																'left': '246px',
+																'height': '40px',
+																'width': '40px',
+																'padding-top': '10px',
+																'margin-right': '0px',
+															},
+														},
+														children: [
+															UI.createComponent('urwb-enabled', {
+																template: UI.template('span', 'glyphicon glyphicon-ok glyphicon-hidden'),
+															}),
+															UI.createComponent('urwb-disabled', {
+																template: UI.template('span', 'glyphicon glyphicon-remove glyphicon-hidden'),
+															}),
+															UI.createComponent('urwb-pending', {
+																template: UI.template('span', 'glyphicon glyphicon-option-horizontal glyphicon-hidden'),
+															}),
+															UI.createComponent('urwb-add', {
+																template: UI.template('span', 'glyphicon glyphicon-plus'),
+															}),
+														],
+														bindings: [
+															{name: 'click', fn: function (_this) {
+																// get elements
+																var enabled = UI.getComponent('urwb-enabled');
+																var disabled = UI.getComponent('urwb-disabled');
+																var pending = UI.getComponent('urwb-pending');
+																var add = UI.getComponent('urwb-add');
+
+																var roleData = {
+																	'current_client': Context.get('current_client'),
+																	'user_id': UI.getComponent('uc-name').model().attr('userid'),
+																	'role_type': 'worker',
+																};
+
+																// check for status to determine action
+																if (enabled.model().hasClass('enabled')) {
+																	// role is activated
+																	if (!enabled.model().hasClass('glyphicon-hidden')) {
+																		command('disable_role', roleData, function (data) {});
+																	} else {
+																		command('enable_role', roleData, function (data) {});
+																	}
+
+																	enabled.model().toggleClass('glyphicon-hidden');
+																	disabled.model().toggleClass('glyphicon-hidden');
+
+																} else {
+																	// role is either pending or non-existent
+																	if (!pending.model().hasClass('enabled')) {
+																		// press add
+																		// 1. send add role
+																		command('add_role_to_user', roleData, function (data) {});
+
+																		// 2. switch to pending button
+																		pending.model().toggleClass('glyphicon-hidden');
+																		add.model().toggleClass('glyphicon-hidden');
+																	}
+																}
+															}},
+														],
+													}),
+												],
+											}),
+										],
 									}),
 								],
 							}),
@@ -693,8 +1014,15 @@ UI.createApp('hook', [
 												template: UI.template('div', 'ie border border-radius'),
 												appearance: {
 													style: {
-
+														'width': '135px',
+														'height': '140px',
+														'top': '30px',
+														'left': '150px',
+														'padding-top': '50px',
+														'text-align': 'center',
+														'color': '#aaa',
 													},
+													html: `Please enter at least one role.`,
 												},
 											}),
 										],
@@ -719,20 +1047,26 @@ UI.createApp('hook', [
 												if (firstName.model().val() === '') {
 													firstName.model().addClass('error');
 													noProblems = false;
+												} else {
+													firstName.model().removeClass('error');
 												}
 
 												// 2. must have last name
 												var lastName = UI.getComponent('nuc-last-name');
-												if (firstName.model().val() === '') {
+												if (lastName.model().val() === '') {
 													lastName.model().addClass('error');
 													noProblems = false;
+												} else {
+													lastName.model().removeClass('error');
 												}
 
 												// 3. must have email
-												var email = UI.getComponent('nuc-email').model;
+												var email = UI.getComponent('nuc-email');
 												if (email.model().val() === '') {
 													email.model().addClass('error');
 													noProblems = false;
+												} else {
+													email.model().removeClass('error');
 												}
 
 												// 4. must have at least one role
@@ -743,6 +1077,8 @@ UI.createApp('hook', [
 												if (!adminRole && !moderatorRole && !workerRole) {
 													roleErrorBox.model().addClass('show error');
 													noProblems = false;
+												} else {
+													roleErrorBox.model().removeClass('show error');
 												}
 
 												if (noProblems) {
@@ -751,22 +1087,30 @@ UI.createApp('hook', [
 
 													// 2. call add_user command
 													var userData = {
-														'current_client': Context.get(),
+														'current_client': Context.get('current_client'),
 														'first_name': firstName.model().val(),
 														'last_name': lastName.model().val(),
 														'email': email.model().val(),
-														'roles': {
-															'admin': adminRole,
-															'moderator': moderatorRole,
-															'worker': workerRole,
-														}
+														'roles_admin': adminRole,
+														'roles_moderator': moderatorRole,
+														'roles_worker': workerRole,
 													};
-													command('add_user', userData, function (data) {
 
+													// 3. add loading button to list
+													var loadingButton = UI.createComponent('nuc-loading-button', {
+														template: UI.templates.button,
+														children: [
+															UI.createComponent('nuc-lb-loading-icon', {
+																template: UI.template.loadingIcon,
+															}),
+														],
 													});
 
-													// 3. add user button to list when done
-
+													command('create_user', userData, function (data) {
+														// 4. add user button to list when done
+														// 5. remove loading button
+														// 6. show new user confirmation panel
+													});
 												}
 											}},
 										],
@@ -1027,6 +1371,12 @@ UI.createApp('hook', [
 										}},
 									],
 									stateMap: 'user-management-state',
+									svitches: [
+										{stateName: 'user-management-state', fn: function (_this) {
+											// clear users
+											Context.store['clients'][Context.get('current_client')]['users'] = {};
+										}}
+									],
 								},
 								bindings: [
 									{name: 'click', fn: function (_this) {

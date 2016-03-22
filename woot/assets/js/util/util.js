@@ -3,7 +3,7 @@ function command (name, data, callback) {
 	var ajax_params = {
 		type: 'post',
 		data: data,
-		url:'/commands/{name}/'.format({name: name}),
+		url:'/command/{name}/'.format({name: name}),
 		success: function (data, textStatus, XMLHttpRequest) {
 			callback(data);
 		},
