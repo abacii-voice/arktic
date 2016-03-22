@@ -18,7 +18,7 @@ class Role(models.Model):
 
 	# status
 	is_new = models.BooleanField(default=True)
-	is_approved = models.BooleanField(default=False)
+	is_approved = models.BooleanField(default=True)
 	is_enabled = models.BooleanField(default=False)
 
 	### Methods
