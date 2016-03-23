@@ -340,7 +340,8 @@ UI.createApp('hook', [
 											states: [
 												{name: 'user-management-user-state', args: {
 													preFn: function (_this) {
-
+														var user = Context.get('current_user_profile');
+														_this.model().html('{first} {last}'.format({first: user.first_name, last: user.last_name}));
 													},
 												}}
 											],
@@ -359,7 +360,8 @@ UI.createApp('hook', [
 											states: [
 												{name: 'user-management-user-state', args: {
 													preFn: function (_this) {
-
+														var user = Context.get('current_user_profile');
+														_this.model().html(user.email);
 													},
 												}}
 											],
@@ -437,7 +439,21 @@ UI.createApp('hook', [
 																			preFn: function (_this) {
 																				// get data
 																				var user = Context.get('current_user_profile');
-																				var isAdmin = user.roles.hasOwnProperty('admin');
+																				var model = _this.model();
+																				// {is_approved: false, is_new: true, is_enabled: false}
+																				if (user.roles.hasOwnProperty('admin')) {
+																					if (user.roles.admin.is_enabled) {
+																						model.removeClass('glyphicon-hidden').addClass('enabled');
+																					} else {
+																						if (user.roles.admin.is_new) {
+																							model.addClass('glyphicon-hidden').removeClass('enabled');
+																						} else {
+																							model.addClass('glyphicon-hidden').addClass('enabled');
+																						}
+																					}
+																				} else {
+																					_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																				}
 																			},
 																		}}
 																	],
@@ -449,7 +465,21 @@ UI.createApp('hook', [
 																	states: [
 																		{name: 'user-management-user-state', args: {
 																			preFn: function (_this) {
-
+																				// get data
+																				var user = Context.get('current_user_profile');
+																				if (user.roles.hasOwnProperty('admin')) {
+																					if (user.roles.admin.is_enabled) {
+																						_this.model().addClass('glyphicon-hidden');
+																					} else {
+																						if (user.roles.admin.is_new) {
+																							_this.model().addClass('glyphicon-hidden');
+																						} else {
+																							_this.model().removeClass('glyphicon-hidden');
+																						}
+																					}
+																				} else {
+																					_this.model().addClass('glyphicon-hidden');
+																				}
 																			},
 																		}}
 																	],
@@ -461,7 +491,17 @@ UI.createApp('hook', [
 																	states: [
 																		{name: 'user-management-user-state', args: {
 																			preFn: function (_this) {
-
+																				// get data
+																				var user = Context.get('current_user_profile');
+																				if (user.roles.hasOwnProperty('admin')) {
+																					if (user.roles.admin.is_new) {
+																						_this.model().removeClass('glyphicon-hidden').addClass('enabled');
+																					} else {
+																						_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																					}
+																				} else {
+																					_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																				}
 																			},
 																		}}
 																	],
@@ -473,7 +513,13 @@ UI.createApp('hook', [
 																	states: [
 																		{name: 'user-management-user-state', args: {
 																			preFn: function (_this) {
-
+																				// get data
+																				var user = Context.get('current_user_profile');
+																				if (user.roles.hasOwnProperty('admin')) {
+																					_this.model().addClass('glyphicon-hidden');
+																				} else {
+																					_this.model().removeClass('glyphicon-hidden');
+																				}
 																			},
 																		}}
 																	],
@@ -572,7 +618,22 @@ UI.createApp('hook', [
 																	states: [
 																		{name: 'user-management-user-state', args: {
 																			preFn: function (_this) {
-
+																				// get data
+																				var user = Context.get('current_user_profile');
+																				var model = _this.model();
+																				if (user.roles.hasOwnProperty('moderator')) {
+																					if (user.roles.admin.is_enabled) {
+																						model.removeClass('glyphicon-hidden').addClass('enabled');
+																					} else {
+																						if (user.roles.admin.is_new) {
+																							model.addClass('glyphicon-hidden').removeClass('enabled');
+																						} else {
+																							model.addClass('glyphicon-hidden').addClass('enabled');
+																						}
+																					}
+																				} else {
+																					_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																				}
 																			},
 																		}}
 																	],
@@ -584,7 +645,21 @@ UI.createApp('hook', [
 																	states: [
 																		{name: 'user-management-user-state', args: {
 																			preFn: function (_this) {
-
+																				// get data
+																				var user = Context.get('current_user_profile');
+																				if (user.roles.hasOwnProperty('moderator')) {
+																					if (user.roles.admin.is_enabled) {
+																						_this.model().addClass('glyphicon-hidden');
+																					} else {
+																						if (user.roles.admin.is_new) {
+																							_this.model().addClass('glyphicon-hidden');
+																						} else {
+																							_this.model().removeClass('glyphicon-hidden');
+																						}
+																					}
+																				} else {
+																					_this.model().addClass('glyphicon-hidden');
+																				}
 																			},
 																		}}
 																	],
@@ -596,7 +671,17 @@ UI.createApp('hook', [
 																	states: [
 																		{name: 'user-management-user-state', args: {
 																			preFn: function (_this) {
-
+																				// get data
+																				var user = Context.get('current_user_profile');
+																				if (user.roles.hasOwnProperty('moderator')) {
+																					if (user.roles.admin.is_new) {
+																						_this.model().removeClass('glyphicon-hidden').addClass('enabled');
+																					} else {
+																						_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																					}
+																				} else {
+																					_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																				}
 																			},
 																		}}
 																	],
@@ -608,7 +693,13 @@ UI.createApp('hook', [
 																	states: [
 																		{name: 'user-management-user-state', args: {
 																			preFn: function (_this) {
-
+																				// get data
+																				var user = Context.get('current_user_profile');
+																				if (user.roles.hasOwnProperty('moderator')) {
+																					_this.model().addClass('glyphicon-hidden');
+																				} else {
+																					_this.model().removeClass('glyphicon-hidden');
+																				}
 																			},
 																		}}
 																	],
@@ -707,7 +798,22 @@ UI.createApp('hook', [
 																	states: [
 																		{name: 'user-management-user-state', args: {
 																			preFn: function (_this) {
-
+																				// get data
+																				var user = Context.get('current_user_profile');
+																				var model = _this.model();
+																				if (user.roles.hasOwnProperty('worker')) {
+																					if (user.roles.admin.is_enabled) {
+																						model.removeClass('glyphicon-hidden').addClass('enabled');
+																					} else {
+																						if (user.roles.admin.is_new) {
+																							model.addClass('glyphicon-hidden').removeClass('enabled');
+																						} else {
+																							model.addClass('glyphicon-hidden').addClass('enabled');
+																						}
+																					}
+																				} else {
+																					_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																				}
 																			},
 																		}}
 																	],
@@ -719,7 +825,21 @@ UI.createApp('hook', [
 																	states: [
 																		{name: 'user-management-user-state', args: {
 																			preFn: function (_this) {
-
+																				// get data
+																				var user = Context.get('current_user_profile');
+																				if (user.roles.hasOwnProperty('worker')) {
+																					if (user.roles.admin.is_enabled) {
+																						_this.model().addClass('glyphicon-hidden');
+																					} else {
+																						if (user.roles.admin.is_new) {
+																							_this.model().addClass('glyphicon-hidden');
+																						} else {
+																							_this.model().removeClass('glyphicon-hidden');
+																						}
+																					}
+																				} else {
+																					_this.model().addClass('glyphicon-hidden');
+																				}
 																			},
 																		}}
 																	],
@@ -731,7 +851,17 @@ UI.createApp('hook', [
 																	states: [
 																		{name: 'user-management-user-state', args: {
 																			preFn: function (_this) {
-
+																				// get data
+																				var user = Context.get('current_user_profile');
+																				if (user.roles.hasOwnProperty('worker')) {
+																					if (user.roles.admin.is_new) {
+																						_this.model().removeClass('glyphicon-hidden').addClass('enabled');
+																					} else {
+																						_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																					}
+																				} else {
+																					_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																				}
 																			},
 																		}}
 																	],
@@ -743,7 +873,13 @@ UI.createApp('hook', [
 																	states: [
 																		{name: 'user-management-user-state', args: {
 																			preFn: function (_this) {
-
+																				// get data
+																				var user = Context.get('current_user_profile');
+																				if (user.roles.hasOwnProperty('worker')) {
+																					_this.model().addClass('glyphicon-hidden');
+																				} else {
+																					_this.model().removeClass('glyphicon-hidden');
+																				}
 																			},
 																		}}
 																	],
