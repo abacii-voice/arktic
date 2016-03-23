@@ -15,12 +15,12 @@ Context.setFn(getdata('context', {}, function (data) {
 	}
 
 	// debug and construction
-	$.when(new Promise (function (resolve, reject) {
-		Context.set('current_client', 'TestProductionClient');
-		Context.set('current_role', 'admin')
-	})).done(function () {
-		UI.changeState('user-management-state');
-	});
+	// $.when(new Promise (function (resolve, reject) {
+	// 	Context.set('current_client', 'TestProductionClient');
+	// 	Context.set('current_role', 'admin')
+	// })).done(function () {
+	// 	UI.changeState('user-management-state');
+	// });
 }));
 
 // 2. Define global states
@@ -294,9 +294,6 @@ UI.createApp('hook', [
 							UI.createComponent('user-card', {
 								state: {
 									defaultState: {
-										preFn: function (_this) {
-
-										},
 										style: {
 											'opacity': '0.0',
 										},
@@ -326,55 +323,78 @@ UI.createApp('hook', [
 									],
 								},
 								children: [
-									UI.createComponent('uc-name', {
-										template: UI.template('span', 'ie show'),
+									UI.createComponent('uc-header-wrapper', {
+										template: UI.template('div', 'ie show relative'),
 										appearance: {
 											style: {
-												'font-size': '18px',
-												'top': '10px',
-												'left': '10px',
-												'color': '#ccc',
+												'width': '100%',
+												'height': '60px',
 											},
 										},
-										state: {
-											states: [
-												{name: 'user-management-user-state', args: {
-													preFn: function (_this) {
-														var user = Context.get('current_user_profile');
-														_this.model().html('{first} {last}'.format({first: user.first_name, last: user.last_name}));
+										children: [
+											UI.createComponent('uc-name', {
+												template: UI.template('span', 'ie show'),
+												appearance: {
+													style: {
+														'font-size': '18px',
+														'top': '10px',
+														'left': '10px',
+														'color': '#ccc',
 													},
-												}}
-											],
-										},
-									}),
-									UI.createComponent('uc-email', {
-										template: UI.template('span', 'ie show'),
-										appearance: {
-											style: {
-												'color': '#ccc',
-												'top': '35px',
-												'left': '10px',
-											},
-										},
-										state: {
-											states: [
-												{name: 'user-management-user-state', args: {
-													preFn: function (_this) {
-														var user = Context.get('current_user_profile');
-														_this.model().html(user.email);
+												},
+												state: {
+													states: [
+														{name: 'user-management-user-state', args: {
+															preFn: function (_this) {
+																var user = Context.get('current_user_profile');
+																_this.model().html('{first} {last}'.format({first: user.first_name, last: user.last_name}));
+															},
+														}}
+													],
+												},
+											}),
+											UI.createComponent('uc-email', {
+												template: UI.template('span', 'ie show'),
+												appearance: {
+													style: {
+														'color': '#ccc',
+														'top': '35px',
+														'left': '10px',
 													},
-												}}
-											],
-										},
+												},
+												state: {
+													states: [
+														{name: 'user-management-user-state', args: {
+															preFn: function (_this) {
+																var user = Context.get('current_user_profile');
+																_this.model().html(user.email);
+															},
+														}}
+													],
+												},
+											}),
+										],
 									}),
 									UI.createComponent('uc-roles', {
-										template: UI.template('div', 'ie show'),
+										template: UI.template('div', 'ie show relative'),
 										appearance: {
 											style: {
-												'top': '61px',
 												'width': '100%',
 												'height': '200px',
 											},
+										},
+										state: {
+											states: [
+												{name: 'user-management-user-state', args: {
+													preFn: function (_this) {
+														if (Context.get('current_role') === 'admin' && Context.get('clients', Context.get('current_client')).is_production) {
+															_this.model().addClass('show');
+														} else {
+															_this.model().removeClass('show');
+														}
+													}
+												}},
+											],
 										},
 										children: [
 											UI.createComponent('uc-roles-title', {
@@ -931,6 +951,9 @@ UI.createApp('hook', [
 												],
 											}),
 										],
+									}),
+									UI.createComponent('uc-threshold-wrapper', {
+
 									}),
 								],
 							}),
