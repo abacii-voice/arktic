@@ -117,10 +117,11 @@ class User(AbstractBaseUser, PermissionsMixin):
 	# get role
 	def get_role(self, client_name, role_type):
 		role = None
-		if client_name!='' and Client.objects.get(name=client_name).is_production and role_type=='admin':
-			role_type = 'productionadmin'
-		else:
-			role_type = 'contractadmin'
+		if role_type=='admin':
+			if client_name!='' and Client.objects.get(name=client_name).is_production:
+				role_type = 'productionadmin'
+			else:
+				role_type = 'contractadmin'
 
 		if role_type is not None and self.roles.filter(client__name=client_name, type=role_type).count():
 			role = self.roles.get(client__name=client_name, type=role_type)
