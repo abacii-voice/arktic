@@ -280,7 +280,7 @@ UI.createApp('hook', [
 				],
 			}),
 			UI.createComponent('user-management-interface-right-panel', {
-				template: UI.template('div', 'ie panel sub-panel border border-radius show'),
+				template: UI.template('div', 'ie panel sub-panel show'),
 				appearance: {
 					style: {
 						'height': '100%',
@@ -290,6 +290,12 @@ UI.createApp('hook', [
 				},
 				children: [
 					UI.createComponent('user-card-wrapper', {
+						appearance: {
+							style: {
+								'height': '100%',
+								'width': '100%',
+							},
+						},
 						children: [
 							UI.createComponent('user-card', {
 								state: {
@@ -1395,6 +1401,14 @@ UI.createApp('hook', [
 								],
 							}),
 							UI.createComponent('user-title-card', {
+								appearance: {
+									classes: ['border border-radius'],
+									style: {
+										'border-style': 'dotted',
+										'height': '100%',
+										'width': '100%',
+									},
+								},
 								state: {
 									defaultState: {
 										style: {
