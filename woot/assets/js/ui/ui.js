@@ -294,7 +294,7 @@ var UI = {
 				});
 
 				_this.stateStyle = _this.state.style !== undefined ? _this.state.style : {};
-				model.animate(_this.stateStyle, function () {
+				model.css(_this.stateStyle, function () {
 					if (_this.state.fn !== undefined) {
 						_this.state.fn(_this);
 					}
