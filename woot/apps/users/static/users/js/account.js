@@ -17,7 +17,7 @@ Context.setFn(getdata('context', {}, function (data) {
 	// debug and construction
 	$.when(new Promise (function (resolve, reject) {
 		Context.set('current_client', 'TestProductionClient');
-		Context.set('current_role', 'productionadmin')
+		Context.set('current_role', 'admin')
 	})).done(function () {
 		UI.changeState('user-management-state');
 	});
@@ -250,61 +250,7 @@ UI.createApp('hook', [
 																stateMap: 'user-management-user-state',
 																svitches: [
 																	{stateName: 'user-management-user-state', fn: function (_this) {
-																		// get user data
-																		var userFirstName = userPrototype.first_name;
-																		var userLastName = userPrototype.last_name;
-
-																		var userAdminEnabled = false;
-																		var userAdminActivated = false;
-																		if (userPrototype.roles.productionadmin !== undefined || userPrototype.roles.contractadmin !== undefined) {
-																			if (Context.get('clients', Context.get('current_client')).is_production) {
-																				userAdminEnabled = userPrototype.roles.productionadmin.is_enabled;
-																				userAdminActivated = !userPrototype.roles.productionadmin.is_new;
-																			} else {
-																				userAdminEnabled = userPrototype.roles.contractadmin.is_enabled;
-																				userAdminActivated = !userPrototype.roles.contractadmin.is_new;
-																			}
-																		}
-
-																		var userModeratorEnabled = false;
-																		var userModeratorActivated = false
-																		var userWorkerEnabled = false;
-																		var userWorkerActivated = false;
-
-																		if () {
-
-																		}
-																		userModeratorEnabled = !userPrototype.roles['moderator'].is_new;
-																		userModeratorActivated =
-																		userWorkerEnabled =
-																		userWorkerActivated =
-
-																		// get user card objects
-																		var nameField = UI.getComponent('uc-name');
-																		var emailField = UI.getComponent('uc-email');
-
-																		// roles
-																		var adminRoleEnabled = UI.getComponent('urab-enabled');
-																		var adminRoleDisabled = UI.getComponent('urab-disabled');
-																		var adminRolePending = UI.getComponent('urab-pending');
-																		var adminRoleAdd = UI.getComponent('urab-add');
-
-																		var moderatorRoleEnabled = UI.getComponent('urmb-enabled');
-																		var moderatorRoleDisabled = UI.getComponent('urmb-disabled');
-																		var moderatorRolePending = UI.getComponent('urmb-pending');
-																		var moderatorRoleAdd = UI.getComponent('urmb-add');
-
-																		var workerRoleEnabled = UI.getComponent('urwb-enabled');
-																		var workerRoleDisabled = UI.getComponent('urwb-disabled');
-																		var workerRolePending = UI.getComponent('urwb-pending');
-																		var workerRoleAdd = UI.getComponent('urwb-add');
-
-																		// update values
-																		nameField.model().html('{first_name} {last_name}'.format({first_name: userFirstName, last_name: userLastName}));
-																		emailField.model().html(userPrototype.email);
-
-
-																		adminRoleEnabled.model().
+																		Context.set('current_user_profile', userPrototype);
 																	}}
 																],
 															},
@@ -390,6 +336,15 @@ UI.createApp('hook', [
 												'color': '#ccc',
 											},
 										},
+										state: {
+											states: [
+												{name: 'user-management-user-state', args: {
+													preFn: function (_this) {
+
+													},
+												}}
+											],
+										},
 									}),
 									UI.createComponent('uc-email', {
 										template: UI.template('span', 'ie show'),
@@ -399,6 +354,15 @@ UI.createApp('hook', [
 												'top': '35px',
 												'left': '10px',
 											},
+										},
+										state: {
+											states: [
+												{name: 'user-management-user-state', args: {
+													preFn: function (_this) {
+
+													},
+												}}
+											],
 										},
 									}),
 									UI.createComponent('uc-roles', {
@@ -467,15 +431,53 @@ UI.createApp('hook', [
 														children: [
 															UI.createComponent('urab-enabled', {
 																template: UI.template('span', 'glyphicon glyphicon-ok'),
+																state: {
+																	states: [
+																		{name: 'user-management-user-state', args: {
+																			preFn: function (_this) {
+																				// get data
+																				var user = Context.get('current_user_profile');
+																				var isAdmin = user.roles.hasOwnProperty('admin');
+																			},
+																		}}
+																	],
+																},
 															}),
 															UI.createComponent('urab-disabled', {
 																template: UI.template('span', 'glyphicon glyphicon-remove'),
+																state: {
+																	states: [
+																		{name: 'user-management-user-state', args: {
+																			preFn: function (_this) {
+
+																			},
+																		}}
+																	],
+																},
 															}),
 															UI.createComponent('urab-pending', {
 																template: UI.template('span', 'glyphicon glyphicon-option-horizontal'),
+																state: {
+																	states: [
+																		{name: 'user-management-user-state', args: {
+																			preFn: function (_this) {
+
+																			},
+																		}}
+																	],
+																},
 															}),
 															UI.createComponent('urab-add', {
 																template: UI.template('span', 'glyphicon glyphicon-plus'),
+																state: {
+																	states: [
+																		{name: 'user-management-user-state', args: {
+																			preFn: function (_this) {
+
+																			},
+																		}}
+																	],
+																},
 															}),
 														],
 														bindings: [
@@ -566,15 +568,51 @@ UI.createApp('hook', [
 														children: [
 															UI.createComponent('urmb-enabled', {
 																template: UI.template('span', 'glyphicon glyphicon-ok'),
+																state: {
+																	states: [
+																		{name: 'user-management-user-state', args: {
+																			preFn: function (_this) {
+
+																			},
+																		}}
+																	],
+																},
 															}),
 															UI.createComponent('urmb-disabled', {
 																template: UI.template('span', 'glyphicon glyphicon-remove'),
+																state: {
+																	states: [
+																		{name: 'user-management-user-state', args: {
+																			preFn: function (_this) {
+
+																			},
+																		}}
+																	],
+																},
 															}),
 															UI.createComponent('urmb-pending', {
 																template: UI.template('span', 'glyphicon glyphicon-option-horizontal'),
+																state: {
+																	states: [
+																		{name: 'user-management-user-state', args: {
+																			preFn: function (_this) {
+
+																			},
+																		}}
+																	],
+																},
 															}),
 															UI.createComponent('urmb-add', {
 																template: UI.template('span', 'glyphicon glyphicon-plus'),
+																state: {
+																	states: [
+																		{name: 'user-management-user-state', args: {
+																			preFn: function (_this) {
+
+																			},
+																		}}
+																	],
+																},
 															}),
 														],
 														bindings: [
@@ -665,15 +703,51 @@ UI.createApp('hook', [
 														children: [
 															UI.createComponent('urwb-enabled', {
 																template: UI.template('span', 'glyphicon glyphicon-ok'),
+																state: {
+																	states: [
+																		{name: 'user-management-user-state', args: {
+																			preFn: function (_this) {
+
+																			},
+																		}}
+																	],
+																},
 															}),
 															UI.createComponent('urwb-disabled', {
 																template: UI.template('span', 'glyphicon glyphicon-remove'),
+																state: {
+																	states: [
+																		{name: 'user-management-user-state', args: {
+																			preFn: function (_this) {
+
+																			},
+																		}}
+																	],
+																},
 															}),
 															UI.createComponent('urwb-pending', {
 																template: UI.template('span', 'glyphicon glyphicon-option-horizontal'),
+																state: {
+																	states: [
+																		{name: 'user-management-user-state', args: {
+																			preFn: function (_this) {
+
+																			},
+																		}}
+																	],
+																},
 															}),
 															UI.createComponent('urwb-add', {
 																template: UI.template('span', 'glyphicon glyphicon-plus'),
+																state: {
+																	states: [
+																		{name: 'user-management-user-state', args: {
+																			preFn: function (_this) {
+
+																			},
+																		}}
+																	],
+																},
 															}),
 														],
 														bindings: [
@@ -1349,8 +1423,7 @@ UI.createApp('hook', [
 										{name: 'control-state', args: {
 											preFn: function (_this) {
 												var role = Context.get('current_role');
-												var visibleCondition = (role === 'contractadmin');
-												if (visibleCondition) {
+												if (role === 'admin') {
 													_this.model().css('display', 'block');
 												} else {
 													_this.model().css('display', 'none');
@@ -1377,8 +1450,7 @@ UI.createApp('hook', [
 										{name: 'control-state', args: {
 											preFn: function (_this) {
 												var role = Context.get('current_role');
-												var visibleCondition = (role === 'contractadmin' || role === 'productionadmin');
-												if (visibleCondition) {
+												if (role === 'admin') {
 													_this.model().css('display', 'block');
 												} else {
 													_this.model().css('display', 'none');
@@ -1405,7 +1477,7 @@ UI.createApp('hook', [
 										{name: 'control-state', args: {
 											preFn: function (_this) {
 												var role = Context.get('current_role');
-												var visibleCondition = (role === 'productionadmin' || role === 'moderator' || role === 'contractadmin');
+												var visibleCondition = (role === 'admin' || role === 'moderator');
 												if (visibleCondition) {
 													_this.model().css('display', 'block');
 												} else {
