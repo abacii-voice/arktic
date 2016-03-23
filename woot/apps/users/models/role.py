@@ -36,3 +36,9 @@ class Role(models.Model):
 			}
 
 			return role_data
+
+	def get_type(self):
+		if self.type == 'contractadmin' or self.type == 'productionadmin':
+			return 'admin'
+		else:
+			return self.type
