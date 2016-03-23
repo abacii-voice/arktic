@@ -3,6 +3,7 @@ from django.db import models
 
 # local
 from apps.client.models.client import Client
+from apps.client.models.project import Project
 from apps.users.models.user import User
 
 ### Role classes
@@ -33,6 +34,7 @@ class Role(models.Model):
 				'is_new': self.is_new,
 				'is_approved': self.is_approved,
 				'is_enabled': self.is_enabled,
+				'performances': self.performance_data(),
 			}
 
 			return role_data
@@ -42,3 +44,20 @@ class Role(models.Model):
 			return 'admin'
 		else:
 			return self.type
+
+	def performance_data(self):
+		pass
+
+class Performance(models.Model):
+
+	### Connections
+	role = models.ForeignKey(Role, related_name='performances')
+	project = models.ForeignKey(Project, related_name='performances')
+
+	### Properties
+	date_created = models.DateTimeField(auto_now_add=True)
+	transcription_threshold = models.PositiveIntegerField(default=0)
+	transcriptions_done = models.PositiveIntegerField(default=0)
+	moderations_done = models.PositiveIntegerField(default=0)
+	goal_percentage = models.FloatField(default=0.0)
+	reached_percentage = models.FloatField(default=0.0)
