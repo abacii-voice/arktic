@@ -84,7 +84,7 @@ class Client(models.Model):
 
 		roles = self.roles.filter(user=permission.user)
 		role_data.update({
-			'roles': [role.type for role in roles],
+			'roles': [role.get_type() for role in roles],
 		})
 
 		return role_data

@@ -40,8 +40,7 @@ def context(request):
 			'one_role': user.roles.count() == 1,
 			'role_display': {
 				'worker': 'Transcriber',
-				'contractadmin': 'Admin',
-				'productionadmin': 'Admin',
+				'admin': 'Admin',
 				'moderator': 'Moderator',
 			}
 		})
