@@ -159,7 +159,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 		if permission.is_contractadmin or permission.is_productionadmin:
 			role_data.update({
 				'roles': {
-					role.type: role.data(permission) for role in self.roles.filter(client=permission.role.client)
+					role.get_type(): role.data(permission) for role in self.roles.filter(client=permission.role.client)
 				}
 			})
 
