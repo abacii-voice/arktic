@@ -143,7 +143,12 @@ UI.createApp('hook', [
 		],
 	}),
 	UI.createComponent('user-management-interface', {
-		template: UI.template('div', 'ie panel context centred-vertically'),
+		template: UI.template('div', 'ie panel centred-vertically'),
+		appearance: {
+			style: {
+				'left': '60px',
+			},
+		},
 		state: {
 			defaultState: {
 				style: {
@@ -164,6 +169,7 @@ UI.createApp('hook', [
 			],
 		},
 		children: [
+			UI.createComponent('user-management-interface-button-panel'),
 			UI.createComponent('user-management-interface-left-panel', {
 				template: UI.template('div', 'ie panel sub-panel show'),
 				appearance: {
@@ -316,7 +322,6 @@ UI.createApp('hook', [
 										},
 									},
 									states: [
-										{name: 'role-state', args: 'default'},
 										{name: 'control-state', args: 'default'},
 										{name: 'user-management-state', args: 'default'},
 										{name: 'user-management-user-state', args: {
@@ -1541,7 +1546,7 @@ UI.createApp('hook', [
 						'left': '50px',
 					},
 				}},
-				{name: 'interface-state', args: 'default'},
+				{name: 'user-management-state', args: 'default'},
 				{name: 'upload-state', args: 'default'},
 			],
 		},
@@ -1800,12 +1805,7 @@ UI.createApp('hook', [
 				{name: 'client-state', args: 'default'},
 				{name: 'role-state', args: 'default'},
 				{name: 'control-state', args: 'default'},
-				{name: 'interface-state', args: {
-					style: {
-						'left': '0px',
-					},
-				}},
-				{name: 'upload-state', args: {
+				{name: 'user-management-state', args: {
 					style: {
 						'left': '0px',
 					},
@@ -1941,7 +1941,7 @@ UI.createApp('hook', [
 						'left': '0px',
 					},
 				}},
-				{name: 'interface-state', args: 'default'},
+				{name: 'user-management-state', args: 'default'},
 				{name: 'upload-state', args: 'default'},
 			],
 		},
