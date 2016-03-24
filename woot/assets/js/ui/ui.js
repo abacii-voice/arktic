@@ -281,8 +281,8 @@ var UI = {
 				}
 			});
 
-			// execute
-			$.when(preFnPromise).done(function () {
+			// style promise
+			var stylePromise = new Promise(function (resolve, reject) {
 				// 3. add classes
 				_this.stateClasses.map(function (className) {
 					model.removeClass(className);
@@ -294,16 +294,27 @@ var UI = {
 				});
 
 				_this.stateStyle = _this.state.style !== undefined ? _this.state.style : {};
-				model.css(_this.stateStyle, function () {
-					if (_this.state.fn !== undefined) {
-						_this.state.fn(_this);
-					}
-				});
+				model.animate(_this.stateStyle);
 
 				// 5. add html
 				if (_this.state.html !== undefined) {
 					model.html(_this.state.html);
 				}
+			});
+
+			var fnPromise = new Promise(function (resolve, reject) {
+				if (_this.state.fn !== undefined) {
+					_this.state.fn(_this);
+				}
+			});
+
+			// execute
+			$.when(function () {
+				return preFnPromise;
+			}).then(function () {
+				return stylePromise;
+			}).then(function () {
+				return fnPromise;
 			});
 		}
 
