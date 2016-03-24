@@ -283,7 +283,7 @@ var UI = {
 
 			// style promise
 			var stylePromise = new Promise(function (resolve, reject) {
-				// 3. add classes
+				// add classes
 				_this.stateClasses.map(function (className) {
 					model.removeClass(className);
 				});
@@ -293,13 +293,14 @@ var UI = {
 					model.addClass(className);
 				});
 
-				_this.stateStyle = _this.state.style !== undefined ? _this.state.style : {};
-				model.animate(_this.stateStyle);
-
-				// 5. add html
+				// add html
 				if (_this.state.html !== undefined) {
 					model.html(_this.state.html);
 				}
+
+				// animate style
+				_this.stateStyle = _this.state.style !== undefined ? _this.state.style : {};
+				model.animate(_this.stateStyle);
 			});
 
 			var fnPromise = new Promise(function (resolve, reject) {
@@ -309,9 +310,7 @@ var UI = {
 			});
 
 			// execute
-			$.when(function () {
-				return preFnPromise;
-			}).then(function () {
+			preFnPromise.then(function () {
 				return stylePromise;
 			}).then(function () {
 				return fnPromise;
