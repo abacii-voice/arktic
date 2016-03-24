@@ -300,7 +300,7 @@ var UI = {
 
 				// animate style
 				_this.stateStyle = _this.state.style !== undefined ? _this.state.style : {};
-				model.animate(_this.stateStyle);
+				model.css(_this.stateStyle);
 			});
 
 			var fnPromise = new Promise(function (resolve, reject) {

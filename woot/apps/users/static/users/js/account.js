@@ -147,6 +147,7 @@ UI.createApp('hook', [
 		appearance: {
 			style: {
 				'left': '60px',
+				'overflow': 'hidden',
 			},
 		},
 		state: {
@@ -169,13 +170,75 @@ UI.createApp('hook', [
 			],
 		},
 		children: [
-			UI.createComponent('user-management-interface-button-panel'),
+			UI.createComponent('user-management-interface-button-panel', {
+				template: UI.template('div', 'ie panel sub-panel show relative'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '40px',
+						'float': 'left',
+					},
+				},
+				children: [
+					UI.createComponent('new-user-button', {
+						template: UI.templates.button,
+						appearance: {
+							classes: ['border border-radius relative'],
+							style: {
+								'margin-bottom': '10px',
+								'width': '40px',
+								'height': '40px',
+								'padding-top': '10px',
+							},
+						},
+						children: [
+							UI.createComponent('nub-span', {
+								template: UI.template('span', 'glyphicon glyphicon-plus'),
+							}),
+						],
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								_this.triggerState();
+							}}
+						],
+						state: {
+							stateMap: 'user-management-new-user-state',
+						},
+					}),
+					UI.createComponent('user-settings-button', {
+						template: UI.templates.button,
+						appearance: {
+							classes: ['border border-radius relative'],
+							style: {
+								'margin-bottom': '10px',
+								'width': '40px',
+								'height': '40px',
+								'padding-top': '10px',
+							},
+						},
+						children: [
+							UI.createComponent('usb-span', {
+								template: UI.template('span', 'glyphicon glyphicon-cog'),
+							}),
+						],
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								_this.triggerState();
+							}}
+						],
+						state: {
+							stateMap: 'user-management-settings-state',
+						},
+					}),
+				],
+			}),
 			UI.createComponent('user-management-interface-left-panel', {
-				template: UI.template('div', 'ie panel sub-panel show'),
+				template: UI.template('div', 'ie panel sub-panel show relative'),
 				appearance: {
 					style: {
 						'height': '100%',
 						'width': '200px',
+						'float': 'left',
 					},
 				},
 				children: [
@@ -286,12 +349,13 @@ UI.createApp('hook', [
 				],
 			}),
 			UI.createComponent('user-management-interface-right-panel', {
-				template: UI.template('div', 'ie panel sub-panel show'),
+				template: UI.template('div', 'ie panel sub-panel show relative'),
 				appearance: {
 					style: {
 						'height': '100%',
-						'width': '300px',
-						'left': '210px',
+						'width': '654px',
+						'float': 'left',
+						'overflow': 'visible',
 					},
 				},
 				children: [
@@ -368,6 +432,7 @@ UI.createApp('hook', [
 												template: UI.template('span', 'ie show'),
 												appearance: {
 													style: {
+														'font-size': '14px',
 														'color': '#ccc',
 														'top': '35px',
 														'left': '10px',
@@ -425,40 +490,21 @@ UI.createApp('hook', [
 												appearance: {
 													style: {
 														'top': '30px',
-														'width': '100%',
+														'width': '150px',
 													},
 												},
 												children: [
-													UI.createComponent('uc-roles-admin-title', {
-														template: UI.templates.button,
-														appearance: {
-															style: {
-																'position': 'absolute',
-																'padding-left': '10px',
-																'padding-top': '12px',
-																'height': '40px',
-																'transform': 'none',
-																'left': '0px',
-																'width': '200px',
-																'text-align': 'left',
-															},
-															html: 'Admin',
-														},
-														bindings: [
-															// click to show stats
-														],
-													}),
 													UI.createComponent('uc-roles-admin-button', {
 														template: UI.templates.button,
 														appearance: {
-															classes: ['border border-radius'],
+															classes: ['border border-radius relative'],
 															style: {
+																'left': '10px',
 																'transform': 'none',
-																'left': '246px',
 																'height': '40px',
 																'width': '40px',
 																'padding-top': '10px',
-																'margin-right': '0px',
+																'float': 'left',
 															},
 														},
 														children: [
@@ -599,6 +645,26 @@ UI.createApp('hook', [
 															}},
 														],
 													}),
+													UI.createComponent('uc-roles-admin-title', {
+														template: UI.templates.button,
+														appearance: {
+															style: {
+																'position': 'relative',
+																'padding-left': '10px',
+																'padding-top': '12px',
+																'height': '40px',
+																'transform': 'none',
+																'left': '10px',
+																'width': '100px',
+																'text-align': 'left',
+																'float': 'left',
+															},
+															html: 'Admin',
+														},
+														bindings: [
+															// click to show stats
+														],
+													}),
 												],
 											}),
 											UI.createComponent('uc-roles-moderator-wrapper', {
@@ -606,40 +672,21 @@ UI.createApp('hook', [
 												appearance: {
 													style: {
 														'top': '80px',
-														'width': '100%',
+														'width': '150px',
 													},
 												},
 												children: [
-													UI.createComponent('uc-roles-moderator-title', {
-														template: UI.templates.button,
-														appearance: {
-															style: {
-																'position': 'absolute',
-																'padding-left': '10px',
-																'padding-top': '12px',
-																'height': '40px',
-																'transform': 'none',
-																'left': '0px',
-																'width': '200px',
-																'text-align': 'left',
-															},
-															html: 'Moderator',
-														},
-														bindings: [
-															// click to show stats
-														],
-													}),
 													UI.createComponent('uc-roles-moderator-button', {
 														template: UI.templates.button,
 														appearance: {
 															classes: ['border border-radius'],
 															style: {
+																'left': '10px',
 																'transform': 'none',
-																'left': '246px',
 																'height': '40px',
 																'width': '40px',
 																'padding-top': '10px',
-																'margin-right': '0px',
+																'float': 'left',
 															},
 														},
 														children: [
@@ -779,6 +826,25 @@ UI.createApp('hook', [
 															}},
 														],
 													}),
+													UI.createComponent('uc-roles-moderator-title', {
+														template: UI.templates.button,
+														appearance: {
+															style: {
+																'position': 'relative',
+																'padding-left': '10px',
+																'padding-top': '12px',
+																'height': '40px',
+																'transform': 'none',
+																'left': '10px',
+																'width': '100px',
+																'text-align': 'left',
+															},
+															html: 'Moderator',
+														},
+														bindings: [
+															// click to show stats
+														],
+													}),
 												],
 											}),
 											UI.createComponent('uc-roles-worker-wrapper', {
@@ -786,40 +852,21 @@ UI.createApp('hook', [
 												appearance: {
 													style: {
 														'top': '130px',
-														'width': '100%',
+														'width': '150px',
 													},
 												},
 												children: [
-													UI.createComponent('uc-roles-worker-title', {
-														template: UI.templates.button,
-														appearance: {
-															style: {
-																'position': 'absolute',
-																'padding-left': '10px',
-																'padding-top': '12px',
-																'height': '40px',
-																'transform': 'none',
-																'left': '0px',
-																'width': '200px',
-																'text-align': 'left',
-															},
-															html: 'Transcriber',
-														},
-														bindings: [
-															// click to show stats
-														],
-													}),
 													UI.createComponent('uc-roles-worker-button', {
 														template: UI.templates.button,
 														appearance: {
 															classes: ['border border-radius'],
 															style: {
+																'left': '10px',
 																'transform': 'none',
-																'left': '246px',
 																'height': '40px',
 																'width': '40px',
 																'padding-top': '10px',
-																'margin-right': '0px',
+																'float': 'left',
 															},
 														},
 														children: [
@@ -959,6 +1006,26 @@ UI.createApp('hook', [
 															}},
 														],
 													}),
+													UI.createComponent('uc-roles-worker-title', {
+														template: UI.templates.button,
+														appearance: {
+															style: {
+																'position': 'relative',
+																'padding-left': '10px',
+																'padding-top': '12px',
+																'height': '40px',
+																'transform': 'none',
+																'left': '10px',
+																'width': '100px',
+																'text-align': 'left',
+																'float': 'left',
+															},
+															html: 'Transcriber',
+														},
+														bindings: [
+															// click to show stats
+														],
+													}),
 												],
 											}),
 										],
@@ -967,35 +1034,6 @@ UI.createApp('hook', [
 
 									}),
 								],
-							}),
-							UI.createComponent('new-user-button', {
-								template: UI.templates.button,
-								appearance: {
-									classes: ['border border-radius'],
-									style: {
-										'position': 'absolute',
-										'width': '40px',
-										'height': '40px',
-										'left': 'auto',
-										'top': '10px',
-										'right': '10px',
-										'transform': 'none',
-										'padding-top': '10px',
-									},
-								},
-								children: [
-									UI.createComponent('nub-span', {
-										template: UI.template('span', 'glyphicon glyphicon-plus'),
-									}),
-								],
-								bindings: [
-									{name: 'click', fn: function (_this) {
-										_this.triggerState();
-									}}
-								],
-								state: {
-									stateMap: 'user-management-new-user-state',
-								},
 							}),
 							UI.createComponent('new-user-card', {
 								appearance: {
@@ -1069,6 +1107,18 @@ UI.createApp('hook', [
 												'placeholder': 'First name',
 											},
 										},
+										state: {
+											defaultState: {
+												fn: function (_this) {
+													_this.model().val('');
+													_this.model().removeClass('error');
+												},
+											},
+											states: [
+												{name: 'user-management-user-state', args: 'default'},
+												{name: 'control-state', args: 'default'},
+											],
+										},
 									}),
 									UI.createComponent('nuc-last-name', {
 										template: UI.template('input', 'ie input show'),
@@ -1082,6 +1132,18 @@ UI.createApp('hook', [
 												'placeholder': 'Last name',
 											},
 										},
+										state: {
+											defaultState: {
+												fn: function (_this) {
+													_this.model().val('');
+													_this.model().removeClass('error');
+												},
+											},
+											states: [
+												{name: 'user-management-user-state', args: 'default'},
+												{name: 'control-state', args: 'default'},
+											],
+										},
 									}),
 									UI.createComponent('nuc-email', {
 										template: UI.template('input', 'ie input show'),
@@ -1094,6 +1156,18 @@ UI.createApp('hook', [
 											properties: {
 												'placeholder': 'Email',
 											},
+										},
+										state: {
+											defaultState: {
+												fn: function (_this) {
+													_this.model().val('');
+													_this.model().removeClass('error');
+												},
+											},
+											states: [
+												{name: 'user-management-user-state', args: 'default'},
+												{name: 'control-state', args: 'default'},
+											],
 										},
 									}),
 									UI.createComponent('nuc-roles', {
@@ -1145,6 +1219,17 @@ UI.createApp('hook', [
 														children: [
 															UI.createComponent('nraw-tb-check', {
 																template: UI.template('span', 'glyphicon glyphicon-ok glyphicon-hidden'),
+																state: {
+																	defaultState: {
+																		fn: function (_this) {
+																			_this.model().addClass('glyphicon-hidden');
+																		},
+																	},
+																	states: [
+																		{name: 'user-management-user-state', args: 'default'},
+																		{name: 'control-state', args: 'default'},
+																	],
+																},
 															}),
 														],
 														bindings: [
@@ -1205,6 +1290,17 @@ UI.createApp('hook', [
 														children: [
 															UI.createComponent('nrmw-tb-check', {
 																template: UI.template('span', 'glyphicon glyphicon-ok glyphicon-hidden'),
+																state: {
+																	defaultState: {
+																		fn: function (_this) {
+																			_this.model().addClass('glyphicon-hidden');
+																		},
+																	},
+																	states: [
+																		{name: 'user-management-user-state', args: 'default'},
+																		{name: 'control-state', args: 'default'},
+																	],
+																},
 															}),
 														],
 														bindings: [
@@ -1265,6 +1361,17 @@ UI.createApp('hook', [
 														children: [
 															UI.createComponent('nrww-tb-check', {
 																template: UI.template('span', 'glyphicon glyphicon-ok glyphicon-hidden'),
+																state: {
+																	defaultState: {
+																		fn: function (_this) {
+																			_this.model().addClass('glyphicon-hidden');
+																		},
+																	},
+																	states: [
+																		{name: 'user-management-user-state', args: 'default'},
+																		{name: 'control-state', args: 'default'},
+																	],
+																},
 															}),
 														],
 														bindings: [
@@ -1311,6 +1418,17 @@ UI.createApp('hook', [
 														'color': '#aaa',
 													},
 													html: `Please enter at least one role.`,
+												},
+												state: {
+													defaultState: {
+														fn: function (_this) {
+															_this.model().removeClass('show error');
+														},
+													},
+													states: [
+														{name: 'user-management-user-state', args: 'default'},
+														{name: 'control-state', args: 'default'},
+													],
 												},
 											}),
 										],
@@ -1406,8 +1524,8 @@ UI.createApp('hook', [
 								],
 							}),
 							UI.createComponent('user-title-card', {
+								template: UI.template('div', 'ie border border-radius'),
 								appearance: {
-									classes: ['border border-radius'],
 									style: {
 										'border-style': 'dotted',
 										'height': '100%',
