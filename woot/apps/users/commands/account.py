@@ -40,7 +40,7 @@ def create_user(request):
 
 		# 1. check if email is already in the system
 		is_unique_email = User.objects.filter(email=user_data['email']).count()==0
-		is_unique_email_for_client = is_unique_email if is_unique_email else User.objects.get(email=user_data['email']).roles.filter(client=client).count()==0
+		is_unique_email_for_client = is_unique_email and User.objects.get(email=user_data['email']).roles.filter(client=client).count()==0 if is_unique_email else is_unique_email
 
 		# 2. create user
 		if is_unique_email_for_client:
@@ -62,7 +62,7 @@ def create_user(request):
 			if user_data['roles_worker']:
 				new_user.create_worker(client, client.available_moderator())
 
-		return JsonResponse({'is_unique_email_for_client': is_unique_email_for_client})
+		return JsonResponse({'new': is_unique_email_for_client})
 
 def modify_user(request):
 	user, permission, verified = check_request(request)

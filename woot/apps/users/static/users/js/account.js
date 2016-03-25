@@ -38,17 +38,25 @@ UI.createGlobalStates('client-state', [
 	'upload-relfile-drop-state',
 	'upload-audio-drop-state',
 
-	// interfaces
+	// ### interfaces
 	'message-state',
 	'billing-state',
 	'stats-state',
 	'rules-state',
 	'user-stats-state',
 	'search-state',
+
+	// user management
 	'user-management-state',
 	'user-management-user-state',
+	'user-management-user-stats-state',
+	'user-management-user-message-state',
+	'user-management-user-moderation-state',
+	'user-management-user-settings-state',
 	'user-management-new-user-state',
 	'user-management-confirm-user-state',
+
+	// projects
 	'project-state',
 ]);
 
@@ -203,6 +211,19 @@ UI.createApp('hook', [
 						],
 						state: {
 							stateMap: 'user-management-new-user-state',
+							defaultState: {
+								preFn: function (_this) {
+									var isAdmin = Context.get('current_role') === 'admin';
+									if (isAdmin) {
+										_this.model().css({'display': 'block'});
+									} else {
+										_this.model().css({'display': 'none'});
+									}
+								},
+							},
+							states: [
+								{name: 'user-management-state', args: 'default'},
+							],
 						},
 					}),
 					UI.createComponent('user-settings-button', {
@@ -368,6 +389,13 @@ UI.createApp('hook', [
 						},
 						children: [
 							UI.createComponent('user-card', {
+								template: UI.template('div', 'ie show'),
+								appearance: {
+									style: {
+										'height': '100%',
+										'width': '100%',
+									},
+								},
 								state: {
 									defaultState: {
 										style: {
@@ -398,640 +426,1057 @@ UI.createApp('hook', [
 									],
 								},
 								children: [
-									UI.createComponent('uc-header-wrapper', {
+									UI.createComponent('user-card-left-column', {
 										template: UI.template('div', 'ie show relative'),
 										appearance: {
 											style: {
-												'width': '100%',
-												'height': '60px',
+												'width': '200px',
+												'height': '100%',
+												'float': 'left',
 											},
 										},
 										children: [
-											UI.createComponent('uc-name', {
-												template: UI.template('span', 'ie show'),
+											UI.createComponent('uc-header-wrapper', {
+												template: UI.template('div', 'ie show relative'),
 												appearance: {
 													style: {
-														'font-size': '18px',
-														'top': '10px',
-														'left': '10px',
-														'color': '#ccc',
+														'width': '200px',
+														'height': '70px',
+														'float': 'left',
+													},
+												},
+												children: [
+													UI.createComponent('uc-name', {
+														template: UI.template('span', 'ie show'),
+														appearance: {
+															style: {
+																'font-size': '18px',
+																'top': '10px',
+																'color': '#ccc',
+															},
+														},
+														state: {
+															states: [
+																{name: 'user-management-user-state', args: {
+																	preFn: function (_this) {
+																		var user = Context.get('current_user_profile');
+																		_this.model().html('{first} {last}'.format({first: user.first_name, last: user.last_name}));
+																	},
+																}}
+															],
+														},
+													}),
+													UI.createComponent('uc-email', {
+														template: UI.template('span', 'ie show'),
+														appearance: {
+															style: {
+																'font-size': '14px',
+																'color': '#ccc',
+																'top': '35px',
+																'height': '20px',
+															},
+														},
+														state: {
+															states: [
+																{name: 'user-management-user-state', args: {
+																	preFn: function (_this) {
+																		var user = Context.get('current_user_profile');
+																		_this.model().html(user.email);
+																	},
+																}}
+															],
+														},
+													}),
+												],
+											}),
+											UI.createComponent('uc-roles', {
+												template: UI.template('div', 'ie show relative'),
+												appearance: {
+													style: {
+														'width': '100%',
+														'height': '190px',
+														'float': 'left',
 													},
 												},
 												state: {
 													states: [
 														{name: 'user-management-user-state', args: {
 															preFn: function (_this) {
-																var user = Context.get('current_user_profile');
-																_this.model().html('{first} {last}'.format({first: user.first_name, last: user.last_name}));
-															},
-														}}
+																if (Context.get('current_role') === 'admin' && Context.get('clients', Context.get('current_client')).is_production) {
+																	_this.model().addClass('show');
+																} else {
+																	_this.model().removeClass('show');
+																}
+															}
+														}},
 													],
 												},
+												children: [
+													UI.createComponent('uc-roles-title', {
+														template: UI.template('span', 'ie show'),
+														appearance: {
+															style: {
+																'font-size': '18px',
+																'color': '#ccc',
+																'top': '0px',
+															},
+															html: 'Roles',
+														},
+													}),
+													UI.createComponent('uc-roles-admin-wrapper', {
+														template: UI.template('div', 'ie show'),
+														appearance: {
+															style: {
+																'top': '30px',
+																'width': '150px',
+															},
+														},
+														children: [
+															UI.createComponent('uc-roles-admin-button', {
+																template: UI.templates.button,
+																appearance: {
+																	classes: ['border border-radius relative'],
+																	style: {
+																		'transform': 'none',
+																		'height': '40px',
+																		'width': '40px',
+																		'padding-top': '10px',
+																		'float': 'left',
+																		'left': '0px',
+																	},
+																},
+																children: [
+																	UI.createComponent('urab-enabled', {
+																		template: UI.template('span', 'glyphicon glyphicon-ok'),
+																		state: {
+																			states: [
+																				{name: 'user-management-user-state', args: {
+																					preFn: function (_this) {
+																						// get data
+																						var user = Context.get('current_user_profile');
+																						var model = _this.model();
+																						// {is_approved: false, is_new: true, is_enabled: false}
+																						if (user.roles.hasOwnProperty('admin')) {
+																							if (user.roles.admin.is_enabled) {
+																								model.removeClass('glyphicon-hidden').addClass('enabled');
+																							} else {
+																								if (user.roles.admin.is_new) {
+																									model.addClass('glyphicon-hidden').removeClass('enabled');
+																								} else {
+																									model.addClass('glyphicon-hidden').addClass('enabled');
+																								}
+																							}
+																						} else {
+																							_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																						}
+																					},
+																				}}
+																			],
+																		},
+																	}),
+																	UI.createComponent('urab-disabled', {
+																		template: UI.template('span', 'glyphicon glyphicon-remove'),
+																		state: {
+																			states: [
+																				{name: 'user-management-user-state', args: {
+																					preFn: function (_this) {
+																						// get data
+																						var user = Context.get('current_user_profile');
+																						if (user.roles.hasOwnProperty('admin')) {
+																							if (user.roles.admin.is_enabled) {
+																								_this.model().addClass('glyphicon-hidden');
+																							} else {
+																								if (user.roles.admin.is_new) {
+																									_this.model().addClass('glyphicon-hidden');
+																								} else {
+																									_this.model().removeClass('glyphicon-hidden');
+																								}
+																							}
+																						} else {
+																							_this.model().addClass('glyphicon-hidden');
+																						}
+																					},
+																				}}
+																			],
+																		},
+																	}),
+																	UI.createComponent('urab-pending', {
+																		template: UI.template('span', 'glyphicon glyphicon-option-horizontal'),
+																		state: {
+																			states: [
+																				{name: 'user-management-user-state', args: {
+																					preFn: function (_this) {
+																						// get data
+																						var user = Context.get('current_user_profile');
+																						if (user.roles.hasOwnProperty('admin')) {
+																							if (user.roles.admin.is_new) {
+																								_this.model().removeClass('glyphicon-hidden').addClass('enabled');
+																							} else {
+																								_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																							}
+																						} else {
+																							_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																						}
+																					},
+																				}}
+																			],
+																		},
+																	}),
+																	UI.createComponent('urab-add', {
+																		template: UI.template('span', 'glyphicon glyphicon-plus'),
+																		state: {
+																			states: [
+																				{name: 'user-management-user-state', args: {
+																					preFn: function (_this) {
+																						// get data
+																						var user = Context.get('current_user_profile');
+																						if (user.roles.hasOwnProperty('admin')) {
+																							_this.model().addClass('glyphicon-hidden');
+																						} else {
+																							_this.model().removeClass('glyphicon-hidden');
+																						}
+																					},
+																				}}
+																			],
+																		},
+																	}),
+																],
+																bindings: [
+																	{name: 'click', fn: function (_this) {
+																		// get elements
+																		var enabled = UI.getComponent('urab-enabled');
+																		var disabled = UI.getComponent('urab-disabled');
+																		var pending = UI.getComponent('urab-pending');
+																		var add = UI.getComponent('urab-add');
+
+																		var roleData = {
+																			'current_client': Context.get('current_client'),
+																			'user_id': UI.getComponent('uc-name').model().attr('userid'),
+																			'role_type': 'admin',
+																		};
+
+																		// check for status to determine action
+																		if (enabled.model().hasClass('enabled')) {
+																			// role is activated
+																			if (!enabled.model().hasClass('glyphicon-hidden')) {
+																				command('disable_role', roleData, function (data) {});
+																			} else {
+																				command('enable_role', roleData, function (data) {});
+																			}
+
+																			enabled.model().toggleClass('glyphicon-hidden');
+																			disabled.model().toggleClass('glyphicon-hidden');
+
+																		} else {
+																			// role is either pending or non-existent
+																			if (!pending.model().hasClass('enabled')) {
+																				// press add
+																				// 1. send add role
+																				command('add_role_to_user', roleData, function (data) {});
+
+																				// 2. switch to pending button
+																				pending.model().addClass('enabled');
+																				pending.model().toggleClass('glyphicon-hidden');
+																				add.model().toggleClass('glyphicon-hidden');
+																			}
+																		}
+																	}},
+																],
+															}),
+															UI.createComponent('uc-roles-admin-title', {
+																template: UI.templates.button,
+																appearance: {
+																	style: {
+																		'position': 'relative',
+																		'padding-left': '10px',
+																		'padding-top': '12px',
+																		'height': '40px',
+																		'transform': 'none',
+																		'left': '0px',
+																		'width': '100px',
+																		'text-align': 'left',
+																		'float': 'left',
+																	},
+																	html: 'Admin',
+																},
+																bindings: [
+																	// click to show stats
+																],
+															}),
+														],
+													}),
+													UI.createComponent('uc-roles-moderator-wrapper', {
+														template: UI.template('div', 'ie show'),
+														appearance: {
+															style: {
+																'top': '80px',
+																'width': '150px',
+															},
+														},
+														children: [
+															UI.createComponent('uc-roles-moderator-button', {
+																template: UI.templates.button,
+																appearance: {
+																	classes: ['border border-radius'],
+																	style: {
+																		'left': '0px',
+																		'transform': 'none',
+																		'height': '40px',
+																		'width': '40px',
+																		'padding-top': '10px',
+																		'float': 'left',
+																	},
+																},
+																children: [
+																	UI.createComponent('urmb-enabled', {
+																		template: UI.template('span', 'glyphicon glyphicon-ok'),
+																		state: {
+																			states: [
+																				{name: 'user-management-user-state', args: {
+																					preFn: function (_this) {
+																						// get data
+																						var user = Context.get('current_user_profile');
+																						var model = _this.model();
+																						if (user.roles.hasOwnProperty('moderator')) {
+																							if (user.roles.admin.is_enabled) {
+																								model.removeClass('glyphicon-hidden').addClass('enabled');
+																							} else {
+																								if (user.roles.admin.is_new) {
+																									model.addClass('glyphicon-hidden').removeClass('enabled');
+																								} else {
+																									model.addClass('glyphicon-hidden').addClass('enabled');
+																								}
+																							}
+																						} else {
+																							_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																						}
+																					},
+																				}}
+																			],
+																		},
+																	}),
+																	UI.createComponent('urmb-disabled', {
+																		template: UI.template('span', 'glyphicon glyphicon-remove'),
+																		state: {
+																			states: [
+																				{name: 'user-management-user-state', args: {
+																					preFn: function (_this) {
+																						// get data
+																						var user = Context.get('current_user_profile');
+																						if (user.roles.hasOwnProperty('moderator')) {
+																							if (user.roles.admin.is_enabled) {
+																								_this.model().addClass('glyphicon-hidden');
+																							} else {
+																								if (user.roles.admin.is_new) {
+																									_this.model().addClass('glyphicon-hidden');
+																								} else {
+																									_this.model().removeClass('glyphicon-hidden');
+																								}
+																							}
+																						} else {
+																							_this.model().addClass('glyphicon-hidden');
+																						}
+																					},
+																				}}
+																			],
+																		},
+																	}),
+																	UI.createComponent('urmb-pending', {
+																		template: UI.template('span', 'glyphicon glyphicon-option-horizontal'),
+																		state: {
+																			states: [
+																				{name: 'user-management-user-state', args: {
+																					preFn: function (_this) {
+																						// get data
+																						var user = Context.get('current_user_profile');
+																						if (user.roles.hasOwnProperty('moderator')) {
+																							if (user.roles.admin.is_new) {
+																								_this.model().removeClass('glyphicon-hidden').addClass('enabled');
+																							} else {
+																								_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																							}
+																						} else {
+																							_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																						}
+																					},
+																				}}
+																			],
+																		},
+																	}),
+																	UI.createComponent('urmb-add', {
+																		template: UI.template('span', 'glyphicon glyphicon-plus'),
+																		state: {
+																			states: [
+																				{name: 'user-management-user-state', args: {
+																					preFn: function (_this) {
+																						// get data
+																						var user = Context.get('current_user_profile');
+																						if (user.roles.hasOwnProperty('moderator')) {
+																							_this.model().addClass('glyphicon-hidden');
+																						} else {
+																							_this.model().removeClass('glyphicon-hidden');
+																						}
+																					},
+																				}}
+																			],
+																		},
+																	}),
+																],
+																bindings: [
+																	{name: 'click', fn: function (_this) {
+																		// get elements
+																		var enabled = UI.getComponent('urmb-enabled');
+																		var disabled = UI.getComponent('urmb-disabled');
+																		var pending = UI.getComponent('urmb-pending');
+																		var add = UI.getComponent('urmb-add');
+
+																		var roleData = {
+																			'current_client': Context.get('current_client'),
+																			'user_id': UI.getComponent('uc-name').model().attr('userid'),
+																			'role_type': 'moderator',
+																		};
+
+																		// check for status to determine action
+																		if (enabled.model().hasClass('enabled')) {
+																			// role is activated
+																			if (!enabled.model().hasClass('glyphicon-hidden')) {
+																				command('disable_role', roleData, function (data) {});
+																			} else {
+																				command('enable_role', roleData, function (data) {});
+																			}
+
+																			enabled.model().toggleClass('glyphicon-hidden');
+																			disabled.model().toggleClass('glyphicon-hidden');
+
+																		} else {
+																			// role is either pending or non-existent
+																			if (!pending.model().hasClass('enabled')) {
+																				// press add
+																				// 1. send add role
+																				command('add_role_to_user', roleData, function (data) {});
+
+																				// 2. switch to pending button
+																				pending.model().addClass('enabled');
+																				pending.model().toggleClass('glyphicon-hidden');
+																				add.model().toggleClass('glyphicon-hidden');
+																			}
+																		}
+																	}},
+																],
+															}),
+															UI.createComponent('uc-roles-moderator-title', {
+																template: UI.templates.button,
+																appearance: {
+																	style: {
+																		'position': 'relative',
+																		'padding-left': '10px',
+																		'padding-top': '12px',
+																		'height': '40px',
+																		'transform': 'none',
+																		'left': '0px',
+																		'width': '100px',
+																		'text-align': 'left',
+																	},
+																	html: 'Moderator',
+																},
+																bindings: [
+																	// click to show stats
+																],
+															}),
+														],
+													}),
+													UI.createComponent('uc-roles-worker-wrapper', {
+														template: UI.template('div', 'ie show'),
+														appearance: {
+															style: {
+																'top': '130px',
+																'width': '150px',
+															},
+														},
+														children: [
+															UI.createComponent('uc-roles-worker-button', {
+																template: UI.templates.button,
+																appearance: {
+																	classes: ['border border-radius'],
+																	style: {
+																		'left': '0px',
+																		'transform': 'none',
+																		'height': '40px',
+																		'width': '40px',
+																		'padding-top': '10px',
+																		'float': 'left',
+																	},
+																},
+																children: [
+																	UI.createComponent('urwb-enabled', {
+																		template: UI.template('span', 'glyphicon glyphicon-ok'),
+																		state: {
+																			states: [
+																				{name: 'user-management-user-state', args: {
+																					preFn: function (_this) {
+																						// get data
+																						var user = Context.get('current_user_profile');
+																						var model = _this.model();
+																						if (user.roles.hasOwnProperty('worker')) {
+																							if (user.roles.admin.is_enabled) {
+																								model.removeClass('glyphicon-hidden').addClass('enabled');
+																							} else {
+																								if (user.roles.admin.is_new) {
+																									model.addClass('glyphicon-hidden').removeClass('enabled');
+																								} else {
+																									model.addClass('glyphicon-hidden').addClass('enabled');
+																								}
+																							}
+																						} else {
+																							_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																						}
+																					},
+																				}}
+																			],
+																		},
+																	}),
+																	UI.createComponent('urwb-disabled', {
+																		template: UI.template('span', 'glyphicon glyphicon-remove'),
+																		state: {
+																			states: [
+																				{name: 'user-management-user-state', args: {
+																					preFn: function (_this) {
+																						// get data
+																						var user = Context.get('current_user_profile');
+																						if (user.roles.hasOwnProperty('worker')) {
+																							if (user.roles.admin.is_enabled) {
+																								_this.model().addClass('glyphicon-hidden');
+																							} else {
+																								if (user.roles.admin.is_new) {
+																									_this.model().addClass('glyphicon-hidden');
+																								} else {
+																									_this.model().removeClass('glyphicon-hidden');
+																								}
+																							}
+																						} else {
+																							_this.model().addClass('glyphicon-hidden');
+																						}
+																					},
+																				}}
+																			],
+																		},
+																	}),
+																	UI.createComponent('urwb-pending', {
+																		template: UI.template('span', 'glyphicon glyphicon-option-horizontal'),
+																		state: {
+																			states: [
+																				{name: 'user-management-user-state', args: {
+																					preFn: function (_this) {
+																						// get data
+																						var user = Context.get('current_user_profile');
+																						if (user.roles.hasOwnProperty('worker')) {
+																							if (user.roles.admin.is_new) {
+																								_this.model().removeClass('glyphicon-hidden').addClass('enabled');
+																							} else {
+																								_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																							}
+																						} else {
+																							_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																						}
+																					},
+																				}}
+																			],
+																		},
+																	}),
+																	UI.createComponent('urwb-add', {
+																		template: UI.template('span', 'glyphicon glyphicon-plus'),
+																		state: {
+																			states: [
+																				{name: 'user-management-user-state', args: {
+																					preFn: function (_this) {
+																						// get data
+																						var user = Context.get('current_user_profile');
+																						if (user.roles.hasOwnProperty('worker')) {
+																							_this.model().addClass('glyphicon-hidden');
+																						} else {
+																							_this.model().removeClass('glyphicon-hidden');
+																						}
+																					},
+																				}}
+																			],
+																		},
+																	}),
+																],
+																bindings: [
+																	{name: 'click', fn: function (_this) {
+																		// get elements
+																		var enabled = UI.getComponent('urwb-enabled');
+																		var disabled = UI.getComponent('urwb-disabled');
+																		var pending = UI.getComponent('urwb-pending');
+																		var add = UI.getComponent('urwb-add');
+
+																		var roleData = {
+																			'current_client': Context.get('current_client'),
+																			'user_id': UI.getComponent('uc-name').model().attr('userid'),
+																			'role_type': 'worker',
+																		};
+
+																		// check for status to determine action
+																		if (enabled.model().hasClass('enabled')) {
+																			// role is activated
+																			if (!enabled.model().hasClass('glyphicon-hidden')) {
+																				command('disable_role', roleData, function (data) {});
+																			} else {
+																				command('enable_role', roleData, function (data) {});
+																			}
+
+																			enabled.model().toggleClass('glyphicon-hidden');
+																			disabled.model().toggleClass('glyphicon-hidden');
+
+																		} else {
+																			// role is either pending or non-existent
+																			if (!pending.model().hasClass('enabled')) {
+																				// press add
+																				// 1. send add role
+																				command('add_role_to_user', roleData, function (data) {});
+
+																				// 2. switch to pending button
+																				pending.model().addClass('enabled');
+																				pending.model().toggleClass('glyphicon-hidden');
+																				add.model().toggleClass('glyphicon-hidden');
+																			}
+																		}
+																	}},
+																],
+															}),
+															UI.createComponent('uc-roles-worker-title', {
+																template: UI.templates.button,
+																appearance: {
+																	style: {
+																		'position': 'relative',
+																		'padding-left': '10px',
+																		'padding-top': '12px',
+																		'height': '40px',
+																		'transform': 'none',
+																		'left': '0px',
+																		'width': '100px',
+																		'text-align': 'left',
+																		'float': 'left',
+																	},
+																	html: 'Transcriber',
+																},
+																bindings: [
+																	// click to show stats
+																],
+															}),
+														],
+													}),
+												],
 											}),
-											UI.createComponent('uc-email', {
-												template: UI.template('span', 'ie show'),
+											UI.createComponent('uc-actions', {
+												template: UI.template('div', 'ie show relative'),
 												appearance: {
 													style: {
-														'font-size': '14px',
-														'color': '#ccc',
-														'top': '35px',
-														'left': '10px',
+														'width': '100%',
+														'height': '400px',
+														'float': 'left',
 													},
 												},
-												state: {
-													states: [
-														{name: 'user-management-user-state', args: {
-															preFn: function (_this) {
-																var user = Context.get('current_user_profile');
-																_this.model().html(user.email);
+												children: [
+													UI.createComponent('uc-actions-title', {
+														template: UI.template('span', 'ie show'),
+														appearance: {
+															style: {
+																'font-size': '18px',
+																'color': '#ccc',
+																'top': '0px',
 															},
-														}}
-													],
-												},
+															html: 'Actions',
+														},
+													}),
+													UI.createComponent('uc-actions-buttons', {
+														template: UI.template('div', 'ie show relative'),
+														appearance: {
+															style: {
+																'top': '30px',
+																'height': '100%',
+																'width': '100%',
+															},
+														},
+														children: [
+															UI.createComponent('uab-message-button', {
+																template: UI.templates.button,
+																appearance: {
+																	style: {
+																		'transform': 'none',
+																		'left': '0px',
+																		'width': '190px',
+																		'margin-bottom': '10px',
+																		'height': '40px',
+																		'padding-top': '10px',
+																	},
+																	classes: ['border border-radius'],
+																	html: 'Message',
+																},
+															}),
+															UI.createComponent('uab-moderate-button', {
+																template: UI.templates.button,
+																appearance: {
+																	style: {
+																		'transform': 'none',
+																		'left': '0px',
+																		'width': '190px',
+																		'margin-bottom': '10px',
+																		'height': '78px',
+																		'padding-top': '10px',
+																	},
+																	classes: ['border border-radius'],
+																},
+																state: {
+																	stateMap: 'user-management-user-moderation-state',
+																	states: [
+																		{name: 'user-management-user-state', args: {
+																			preFn: function (_this) {
+																				var isModerator = Context.get('current_role') === 'moderator';
+																				if (isModerator) {
+																					_this.model().css({'display': 'block'});
+																				} else {
+																					_this.model().css({'display': 'none'});
+																				}
+																			},
+																		}},
+																	],
+																},
+																children: [
+																	UI.createComponent('uab-moderation-title', {
+																		template: UI.template('span', 'ie show relative'),
+																		appearance: {
+																			style: {
+																				'top': '-5px',
+																				'width': '100%',
+																			},
+																			html: 'Moderation'
+																		},
+																	}),
+																	UI.createComponent('uab-moderation-score', {
+																		template: UI.template('div', 'ie show relative'),
+																		appearance: {
+																			style: {
+																				'width': '100%',
+																				'padding-left': '10px',
+																				'padding-right': '10px',
+																				'font-size': '12px',
+																				'margin-bottom': '4px',
+																			},
+																		},
+																		children: [
+																			UI.createComponent('uabms-title', {
+																				template: UI.template('span', 'ie show relative'),
+																				appearance: {
+																					style: {
+																						'float': 'left',
+																					},
+																					html: 'Score',
+																				},
+																			}),
+																			UI.createComponent('uabms-value', {
+																				template: UI.template('span', 'ie show relative'),
+																				appearance: {
+																					style: {
+																						'float': 'right',
+																					},
+																					html: '1000',
+																				},
+																			}),
+																		],
+																	}),
+																	UI.createComponent('uab-moderation-percentage', {
+																		template: UI.template('div', 'ie show relative'),
+																		appearance: {
+																			style: {
+																				'width': '100%',
+																				'padding-left': '10px',
+																				'padding-right': '10px',
+																				'font-size': '12px',
+																				'margin-bottom': '4px',
+																			},
+																		},
+																		children: [
+																			UI.createComponent('uabmp-title', {
+																				template: UI.template('span', 'ie show relative'),
+																				appearance: {
+																					style: {
+																						'float': 'left',
+																					},
+																					html: 'Current redundancy',
+																				},
+																			}),
+																			UI.createComponent('uabmp-value', {
+																				template: UI.template('span', 'ie show relative'),
+																				appearance: {
+																					style: {
+																						'float': 'right',
+																					},
+																					html: '13%',
+																				},
+																			}),
+																		],
+																	}),
+																],
+																bindings: [
+																	{name: 'click', fn: UI.functions.triggerState}
+																],
+															}),
+															UI.createComponent('uab-stats-button', {
+																template: UI.templates.button,
+																appearance: {
+																	style: {
+																		'transform': 'none',
+																		'left': '0px',
+																		'width': '190px',
+																		'margin-bottom': '10px',
+																		'height': '100px',
+																	},
+																	classes: ['border border-radius'],
+																},
+																children: [
+																	UI.createComponent('uab-stats-title', {
+																		template: UI.template('span', 'ie show relative'),
+																		appearance: {
+																			style: {
+																				'top': '-5px',
+																				'width': '100%',
+																			},
+																			html: 'Statistics'
+																		},
+																	}),
+																	UI.createComponent('uab-stats-total', {
+																		template: UI.template('div', 'ie show relative'),
+																		appearance: {
+																			style: {
+																				'width': '100%',
+																				'padding-left': '10px',
+																				'padding-right': '10px',
+																				'font-size': '12px',
+																				'margin-bottom': '4px',
+																			},
+																		},
+																		children: [
+																			UI.createComponent('uabst-title', {
+																				template: UI.template('span', 'ie show relative'),
+																				appearance: {
+																					style: {
+																						'float': 'left',
+																					},
+																					html: 'Total',
+																				},
+																			}),
+																			UI.createComponent('uabst-value', {
+																				template: UI.template('span', 'ie show relative'),
+																				appearance: {
+																					style: {
+																						'float': 'right',
+																					},
+																					html: '1000',
+																				},
+																			}),
+																		],
+																	}),
+																	UI.createComponent('uab-stats-week', {
+																		template: UI.template('div', 'ie show relative'),
+																		appearance: {
+																			style: {
+																				'width': '100%',
+																				'padding-left': '10px',
+																				'padding-right': '10px',
+																				'font-size': '12px',
+																				'margin-bottom': '4px',
+																			},
+																		},
+																		children: [
+																			UI.createComponent('uabsw-title', {
+																				template: UI.template('span', 'ie show relative'),
+																				appearance: {
+																					style: {
+																						'float': 'left',
+																					},
+																					html: 'Since 1/3/2016',
+																				},
+																			}),
+																			UI.createComponent('uabsw-value', {
+																				template: UI.template('span', 'ie show relative'),
+																				appearance: {
+																					style: {
+																						'float': 'right',
+																					},
+																					html: '278',
+																				},
+																			}),
+																		],
+																	}),
+																	UI.createComponent('uab-stats-percentage', {
+																		template: UI.template('div', 'ie show relative'),
+																		appearance: {
+																			style: {
+																				'width': '100%',
+																				'padding-left': '10px',
+																				'padding-right': '10px',
+																				'font-size': '12px',
+																				'margin-bottom': '4px',
+																			},
+																		},
+																		children: [
+																			UI.createComponent('uabsp-title', {
+																				template: UI.template('span', 'ie show relative'),
+																				appearance: {
+																					style: {
+																						'float': 'left',
+																					},
+																					html: 'Redundancy',
+																				},
+																			}),
+																			UI.createComponent('uabsp-value', {
+																				template: UI.template('span', 'ie show relative'),
+																				appearance: {
+																					style: {
+																						'float': 'right',
+																					},
+																					html: '14%',
+																				},
+																			}),
+																		],
+																	}),
+																],
+															}),
+															UI.createComponent('uab-settings-button', {
+																template: UI.templates.button,
+																appearance: {
+																	style: {
+																		'transform': 'none',
+																		'left': '0px',
+																		'width': '190px',
+																		'margin-bottom': '10px',
+																		'height': '40px',
+																		'padding-top': '10px',
+																	},
+																	classes: ['border border-radius'],
+																	html: `<span class='glyphicon glyphicon-cog'></span> Settings`,
+																},
+															}),
+														],
+													}),
+												],
 											}),
 										],
 									}),
-									UI.createComponent('uc-roles', {
+									UI.createComponent('user-card-right-column', {
 										template: UI.template('div', 'ie show relative'),
 										appearance: {
 											style: {
-												'width': '100%',
-												'height': '200px',
+												'width': '454px',
+												'height': '100%',
+												'float': 'left',
 											},
 										},
-										state: {
-											states: [
-												{name: 'user-management-user-state', args: {
-													preFn: function (_this) {
-														if (Context.get('current_role') === 'admin' && Context.get('clients', Context.get('current_client')).is_production) {
-															_this.model().addClass('show');
-														} else {
-															_this.model().removeClass('show');
-														}
-													}
-												}},
-											],
-										},
 										children: [
-											UI.createComponent('uc-roles-title', {
-												template: UI.template('span', 'ie show'),
+											UI.createComponent('uc-additional-panel', {
+												template: UI.template('div', 'ie show border border-radius'),
 												appearance: {
 													style: {
-														'font-size': '18px',
-														'color': '#ccc',
-														'top': '0px',
-														'left': '10px',
+														'border-style': 'dotted',
+														'height': '100%',
+														'width': '100%',
 													},
-													html: 'Roles',
 												},
-											}),
-											UI.createComponent('uc-roles-admin-wrapper', {
-												template: UI.template('div', 'ie show'),
-												appearance: {
-													style: {
-														'top': '30px',
-														'width': '150px',
+												state: {
+													defaultState: {
+														style: {
+															'opacity': '0.0',
+														},
+														fn: UI.functions.deactivate,
 													},
+													states: [
+														{name: 'user-management-user-state', args: {
+															preFn: UI.functions.activate,
+															style: {
+																'opacity': '1.0',
+															},
+														}},
+														{name: 'user-management-user-moderation-state', args: 'default'},
+														{name: 'user-management-user-stats-state', args: 'default'},
+														{name: 'user-management-user-message-state', args: 'default'},
+													],
 												},
 												children: [
-													UI.createComponent('uc-roles-admin-button', {
-														template: UI.templates.button,
-														appearance: {
-															classes: ['border border-radius relative'],
-															style: {
-																'left': '10px',
-																'transform': 'none',
-																'height': '40px',
-																'width': '40px',
-																'padding-top': '10px',
-																'float': 'left',
-															},
-														},
-														children: [
-															UI.createComponent('urab-enabled', {
-																template: UI.template('span', 'glyphicon glyphicon-ok'),
-																state: {
-																	states: [
-																		{name: 'user-management-user-state', args: {
-																			preFn: function (_this) {
-																				// get data
-																				var user = Context.get('current_user_profile');
-																				var model = _this.model();
-																				// {is_approved: false, is_new: true, is_enabled: false}
-																				if (user.roles.hasOwnProperty('admin')) {
-																					if (user.roles.admin.is_enabled) {
-																						model.removeClass('glyphicon-hidden').addClass('enabled');
-																					} else {
-																						if (user.roles.admin.is_new) {
-																							model.addClass('glyphicon-hidden').removeClass('enabled');
-																						} else {
-																							model.addClass('glyphicon-hidden').addClass('enabled');
-																						}
-																					}
-																				} else {
-																					_this.model().addClass('glyphicon-hidden').removeClass('enabled');
-																				}
-																			},
-																		}}
-																	],
-																},
-															}),
-															UI.createComponent('urab-disabled', {
-																template: UI.template('span', 'glyphicon glyphicon-remove'),
-																state: {
-																	states: [
-																		{name: 'user-management-user-state', args: {
-																			preFn: function (_this) {
-																				// get data
-																				var user = Context.get('current_user_profile');
-																				if (user.roles.hasOwnProperty('admin')) {
-																					if (user.roles.admin.is_enabled) {
-																						_this.model().addClass('glyphicon-hidden');
-																					} else {
-																						if (user.roles.admin.is_new) {
-																							_this.model().addClass('glyphicon-hidden');
-																						} else {
-																							_this.model().removeClass('glyphicon-hidden');
-																						}
-																					}
-																				} else {
-																					_this.model().addClass('glyphicon-hidden');
-																				}
-																			},
-																		}}
-																	],
-																},
-															}),
-															UI.createComponent('urab-pending', {
-																template: UI.template('span', 'glyphicon glyphicon-option-horizontal'),
-																state: {
-																	states: [
-																		{name: 'user-management-user-state', args: {
-																			preFn: function (_this) {
-																				// get data
-																				var user = Context.get('current_user_profile');
-																				if (user.roles.hasOwnProperty('admin')) {
-																					if (user.roles.admin.is_new) {
-																						_this.model().removeClass('glyphicon-hidden').addClass('enabled');
-																					} else {
-																						_this.model().addClass('glyphicon-hidden').removeClass('enabled');
-																					}
-																				} else {
-																					_this.model().addClass('glyphicon-hidden').removeClass('enabled');
-																				}
-																			},
-																		}}
-																	],
-																},
-															}),
-															UI.createComponent('urab-add', {
-																template: UI.template('span', 'glyphicon glyphicon-plus'),
-																state: {
-																	states: [
-																		{name: 'user-management-user-state', args: {
-																			preFn: function (_this) {
-																				// get data
-																				var user = Context.get('current_user_profile');
-																				if (user.roles.hasOwnProperty('admin')) {
-																					_this.model().addClass('glyphicon-hidden');
-																				} else {
-																					_this.model().removeClass('glyphicon-hidden');
-																				}
-																			},
-																		}}
-																	],
-																},
-															}),
-														],
-														bindings: [
-															{name: 'click', fn: function (_this) {
-																// get elements
-																var enabled = UI.getComponent('urab-enabled');
-																var disabled = UI.getComponent('urab-disabled');
-																var pending = UI.getComponent('urab-pending');
-																var add = UI.getComponent('urab-add');
-
-																var roleData = {
-																	'current_client': Context.get('current_client'),
-																	'user_id': UI.getComponent('uc-name').model().attr('userid'),
-																	'role_type': 'admin',
-																};
-
-																// check for status to determine action
-																if (enabled.model().hasClass('enabled')) {
-																	// role is activated
-																	if (!enabled.model().hasClass('glyphicon-hidden')) {
-																		command('disable_role', roleData, function (data) {});
-																	} else {
-																		command('enable_role', roleData, function (data) {});
-																	}
-
-																	enabled.model().toggleClass('glyphicon-hidden');
-																	disabled.model().toggleClass('glyphicon-hidden');
-
-																} else {
-																	// role is either pending or non-existent
-																	if (!pending.model().hasClass('enabled')) {
-																		// press add
-																		// 1. send add role
-																		command('add_role_to_user', roleData, function (data) {});
-
-																		// 2. switch to pending button
-																		pending.model().addClass('enabled');
-																		pending.model().toggleClass('glyphicon-hidden');
-																		add.model().toggleClass('glyphicon-hidden');
-																	}
-																}
-															}},
-														],
-													}),
-													UI.createComponent('uc-roles-admin-title', {
-														template: UI.templates.button,
+													UI.createComponent('utc-title', {
+														template: UI.template('div', 'ie show centred'),
 														appearance: {
 															style: {
-																'position': 'relative',
-																'padding-left': '10px',
-																'padding-top': '12px',
-																'height': '40px',
-																'transform': 'none',
-																'left': '10px',
-																'width': '100px',
-																'text-align': 'left',
-																'float': 'left',
+																'text-align': 'center',
 															},
-															html: 'Admin',
+															html: `
+																<h3>Additional</h3>
+																<h3>Details</h3>
+															`,
 														},
-														bindings: [
-															// click to show stats
-														],
 													}),
 												],
 											}),
-											UI.createComponent('uc-roles-moderator-wrapper', {
+											UI.createComponent('uc-stats-panel'),
+											UI.createComponent('uc-moderation-panel', {
 												template: UI.template('div', 'ie show'),
 												appearance: {
 													style: {
-														'top': '80px',
-														'width': '150px',
+														'height': '100%',
+														'width': '100%',
 													},
 												},
-												children: [
-													UI.createComponent('uc-roles-moderator-button', {
-														template: UI.templates.button,
-														appearance: {
-															classes: ['border border-radius'],
+												state: {
+													defaultState: {
+														style: {
+															'opacity': '0.0',
+														},
+														fn: UI.functions.deactivate,
+													},
+													states: [
+														{name: 'user-management-user-moderation-state', args: {
+															preFn: UI.functions.activate,
 															style: {
-																'left': '10px',
-																'transform': 'none',
-																'height': '40px',
-																'width': '40px',
-																'padding-top': '10px',
+																'opacity': '1.0',
+															},
+														}},
+														{name: 'user-management-user-settings-state', args: 'default'},
+														{name: 'user-management-user-message-state', args: 'default'},
+														{name: 'user-management-user-stats-state', args: 'default'},
+														{name: 'user-management-user-state', args: 'default'},
+													],
+												},
+												children: [
+													UI.createComponent('ucmp-left-column', {
+														template: UI.template('div', 'ie show panel sub-panel border border-radius relative'),
+														appearance: {
+															style: {
+																'height': '100%',
+																'width': '300px',
 																'float': 'left',
 															},
 														},
 														children: [
-															UI.createComponent('urmb-enabled', {
-																template: UI.template('span', 'glyphicon glyphicon-ok'),
-																state: {
-																	states: [
-																		{name: 'user-management-user-state', args: {
-																			preFn: function (_this) {
-																				// get data
-																				var user = Context.get('current_user_profile');
-																				var model = _this.model();
-																				if (user.roles.hasOwnProperty('moderator')) {
-																					if (user.roles.admin.is_enabled) {
-																						model.removeClass('glyphicon-hidden').addClass('enabled');
-																					} else {
-																						if (user.roles.admin.is_new) {
-																							model.addClass('glyphicon-hidden').removeClass('enabled');
-																						} else {
-																							model.addClass('glyphicon-hidden').addClass('enabled');
-																						}
-																					}
-																				} else {
-																					_this.model().addClass('glyphicon-hidden').removeClass('enabled');
-																				}
-																			},
-																		}}
-																	],
-																},
+															UI.createComponent('ucmplc-project-details-wrapper', {
+																
 															}),
-															UI.createComponent('urmb-disabled', {
-																template: UI.template('span', 'glyphicon glyphicon-remove'),
-																state: {
-																	states: [
-																		{name: 'user-management-user-state', args: {
-																			preFn: function (_this) {
-																				// get data
-																				var user = Context.get('current_user_profile');
-																				if (user.roles.hasOwnProperty('moderator')) {
-																					if (user.roles.admin.is_enabled) {
-																						_this.model().addClass('glyphicon-hidden');
-																					} else {
-																						if (user.roles.admin.is_new) {
-																							_this.model().addClass('glyphicon-hidden');
-																						} else {
-																							_this.model().removeClass('glyphicon-hidden');
-																						}
-																					}
-																				} else {
-																					_this.model().addClass('glyphicon-hidden');
-																				}
-																			},
-																		}}
-																	],
-																},
-															}),
-															UI.createComponent('urmb-pending', {
-																template: UI.template('span', 'glyphicon glyphicon-option-horizontal'),
-																state: {
-																	states: [
-																		{name: 'user-management-user-state', args: {
-																			preFn: function (_this) {
-																				// get data
-																				var user = Context.get('current_user_profile');
-																				if (user.roles.hasOwnProperty('moderator')) {
-																					if (user.roles.admin.is_new) {
-																						_this.model().removeClass('glyphicon-hidden').addClass('enabled');
-																					} else {
-																						_this.model().addClass('glyphicon-hidden').removeClass('enabled');
-																					}
-																				} else {
-																					_this.model().addClass('glyphicon-hidden').removeClass('enabled');
-																				}
-																			},
-																		}}
-																	],
-																},
-															}),
-															UI.createComponent('urmb-add', {
-																template: UI.template('span', 'glyphicon glyphicon-plus'),
-																state: {
-																	states: [
-																		{name: 'user-management-user-state', args: {
-																			preFn: function (_this) {
-																				// get data
-																				var user = Context.get('current_user_profile');
-																				if (user.roles.hasOwnProperty('moderator')) {
-																					_this.model().addClass('glyphicon-hidden');
-																				} else {
-																					_this.model().removeClass('glyphicon-hidden');
-																				}
-																			},
-																		}}
-																	],
-																},
-															}),
-														],
-														bindings: [
-															{name: 'click', fn: function (_this) {
-																// get elements
-																var enabled = UI.getComponent('urmb-enabled');
-																var disabled = UI.getComponent('urmb-disabled');
-																var pending = UI.getComponent('urmb-pending');
-																var add = UI.getComponent('urmb-add');
-
-																var roleData = {
-																	'current_client': Context.get('current_client'),
-																	'user_id': UI.getComponent('uc-name').model().attr('userid'),
-																	'role_type': 'moderator',
-																};
-
-																// check for status to determine action
-																if (enabled.model().hasClass('enabled')) {
-																	// role is activated
-																	if (!enabled.model().hasClass('glyphicon-hidden')) {
-																		command('disable_role', roleData, function (data) {});
-																	} else {
-																		command('enable_role', roleData, function (data) {});
-																	}
-
-																	enabled.model().toggleClass('glyphicon-hidden');
-																	disabled.model().toggleClass('glyphicon-hidden');
-
-																} else {
-																	// role is either pending or non-existent
-																	if (!pending.model().hasClass('enabled')) {
-																		// press add
-																		// 1. send add role
-																		command('add_role_to_user', roleData, function (data) {});
-
-																		// 2. switch to pending button
-																		pending.model().addClass('enabled');
-																		pending.model().toggleClass('glyphicon-hidden');
-																		add.model().toggleClass('glyphicon-hidden');
-																	}
-																}
-															}},
+															UI.createComponent('ucmplc-threshold-plot-wrapper'),
 														],
 													}),
-													UI.createComponent('uc-roles-moderator-title', {
-														template: UI.templates.button,
+													UI.createComponent('ucmp-right-column', {
+														template: UI.template('div', 'ie show panel sub-panel border border-radius relative'),
 														appearance: {
 															style: {
-																'position': 'relative',
-																'padding-left': '10px',
-																'padding-top': '12px',
-																'height': '40px',
-																'transform': 'none',
-																'left': '10px',
-																'width': '100px',
-																'text-align': 'left',
-															},
-															html: 'Moderator',
-														},
-														bindings: [
-															// click to show stats
-														],
-													}),
-												],
-											}),
-											UI.createComponent('uc-roles-worker-wrapper', {
-												template: UI.template('div', 'ie show'),
-												appearance: {
-													style: {
-														'top': '130px',
-														'width': '150px',
-													},
-												},
-												children: [
-													UI.createComponent('uc-roles-worker-button', {
-														template: UI.templates.button,
-														appearance: {
-															classes: ['border border-radius'],
-															style: {
-																'left': '10px',
-																'transform': 'none',
-																'height': '40px',
-																'width': '40px',
-																'padding-top': '10px',
+																'height': '100%',
+																'width': '144px',
 																'float': 'left',
+																'margin-right': '0px',
 															},
 														},
-														children: [
-															UI.createComponent('urwb-enabled', {
-																template: UI.template('span', 'glyphicon glyphicon-ok'),
-																state: {
-																	states: [
-																		{name: 'user-management-user-state', args: {
-																			preFn: function (_this) {
-																				// get data
-																				var user = Context.get('current_user_profile');
-																				var model = _this.model();
-																				if (user.roles.hasOwnProperty('worker')) {
-																					if (user.roles.admin.is_enabled) {
-																						model.removeClass('glyphicon-hidden').addClass('enabled');
-																					} else {
-																						if (user.roles.admin.is_new) {
-																							model.addClass('glyphicon-hidden').removeClass('enabled');
-																						} else {
-																							model.addClass('glyphicon-hidden').addClass('enabled');
-																						}
-																					}
-																				} else {
-																					_this.model().addClass('glyphicon-hidden').removeClass('enabled');
-																				}
-																			},
-																		}}
-																	],
-																},
-															}),
-															UI.createComponent('urwb-disabled', {
-																template: UI.template('span', 'glyphicon glyphicon-remove'),
-																state: {
-																	states: [
-																		{name: 'user-management-user-state', args: {
-																			preFn: function (_this) {
-																				// get data
-																				var user = Context.get('current_user_profile');
-																				if (user.roles.hasOwnProperty('worker')) {
-																					if (user.roles.admin.is_enabled) {
-																						_this.model().addClass('glyphicon-hidden');
-																					} else {
-																						if (user.roles.admin.is_new) {
-																							_this.model().addClass('glyphicon-hidden');
-																						} else {
-																							_this.model().removeClass('glyphicon-hidden');
-																						}
-																					}
-																				} else {
-																					_this.model().addClass('glyphicon-hidden');
-																				}
-																			},
-																		}}
-																	],
-																},
-															}),
-															UI.createComponent('urwb-pending', {
-																template: UI.template('span', 'glyphicon glyphicon-option-horizontal'),
-																state: {
-																	states: [
-																		{name: 'user-management-user-state', args: {
-																			preFn: function (_this) {
-																				// get data
-																				var user = Context.get('current_user_profile');
-																				if (user.roles.hasOwnProperty('worker')) {
-																					if (user.roles.admin.is_new) {
-																						_this.model().removeClass('glyphicon-hidden').addClass('enabled');
-																					} else {
-																						_this.model().addClass('glyphicon-hidden').removeClass('enabled');
-																					}
-																				} else {
-																					_this.model().addClass('glyphicon-hidden').removeClass('enabled');
-																				}
-																			},
-																		}}
-																	],
-																},
-															}),
-															UI.createComponent('urwb-add', {
-																template: UI.template('span', 'glyphicon glyphicon-plus'),
-																state: {
-																	states: [
-																		{name: 'user-management-user-state', args: {
-																			preFn: function (_this) {
-																				// get data
-																				var user = Context.get('current_user_profile');
-																				if (user.roles.hasOwnProperty('worker')) {
-																					_this.model().addClass('glyphicon-hidden');
-																				} else {
-																					_this.model().removeClass('glyphicon-hidden');
-																				}
-																			},
-																		}}
-																	],
-																},
-															}),
-														],
-														bindings: [
-															{name: 'click', fn: function (_this) {
-																// get elements
-																var enabled = UI.getComponent('urwb-enabled');
-																var disabled = UI.getComponent('urwb-disabled');
-																var pending = UI.getComponent('urwb-pending');
-																var add = UI.getComponent('urwb-add');
-
-																var roleData = {
-																	'current_client': Context.get('current_client'),
-																	'user_id': UI.getComponent('uc-name').model().attr('userid'),
-																	'role_type': 'worker',
-																};
-
-																// check for status to determine action
-																if (enabled.model().hasClass('enabled')) {
-																	// role is activated
-																	if (!enabled.model().hasClass('glyphicon-hidden')) {
-																		command('disable_role', roleData, function (data) {});
-																	} else {
-																		command('enable_role', roleData, function (data) {});
-																	}
-
-																	enabled.model().toggleClass('glyphicon-hidden');
-																	disabled.model().toggleClass('glyphicon-hidden');
-
-																} else {
-																	// role is either pending or non-existent
-																	if (!pending.model().hasClass('enabled')) {
-																		// press add
-																		// 1. send add role
-																		command('add_role_to_user', roleData, function (data) {});
-
-																		// 2. switch to pending button
-																		pending.model().addClass('enabled');
-																		pending.model().toggleClass('glyphicon-hidden');
-																		add.model().toggleClass('glyphicon-hidden');
-																	}
-																}
-															}},
-														],
-													}),
-													UI.createComponent('uc-roles-worker-title', {
-														template: UI.templates.button,
-														appearance: {
-															style: {
-																'position': 'relative',
-																'padding-left': '10px',
-																'padding-top': '12px',
-																'height': '40px',
-																'transform': 'none',
-																'left': '10px',
-																'width': '100px',
-																'text-align': 'left',
-																'float': 'left',
-															},
-															html: 'Transcriber',
-														},
-														bindings: [
-															// click to show stats
-														],
 													}),
 												],
 											}),
 										],
-									}),
-									UI.createComponent('uc-threshold-wrapper', {
-
 									}),
 								],
 							}),
@@ -1083,7 +1528,6 @@ UI.createApp('hook', [
 												'top': '35px',
 												'left': '10px',
 											},
-											html: '',
 										},
 										state: {
 											states: [
@@ -1718,8 +2162,9 @@ UI.createApp('hook', [
 									states: [
 										{name: 'control-state', args: {
 											preFn: function (_this) {
+												var client = Context.get('clients', Context.get('current_client'));
 												var role = Context.get('current_role');
-												if (role === 'admin') {
+												if (role === 'admin' && client.is_contract) {
 													_this.model().css('display', 'block');
 												} else {
 													_this.model().css('display', 'none');
@@ -2169,7 +2614,7 @@ UI.createApp('hook', [
 									child.render();
 
 									// make buttons visible
-									child.model().animate({'opacity': '1.0'});
+									child.model().css({'opacity': '1.0'});
 								});
 							}
 						},
