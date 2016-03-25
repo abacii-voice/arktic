@@ -35,43 +35,15 @@ class AdminSignupView(View):
 			If the user is logged in already, they will need to log out before creating a new admin user. If they want to add an admin for the same client, they can do so from the admin account interface.
 			'''
 
-			return HttpResponseRedirect('/logged-in/')
+			return HttpResponseRedirect('/admin-logged-in/')
 		else:
-			return render(request, 'users/admin_signup.html', {})
+			return render(request, 'users/admin-signup.html', {})
 
-	def post(self, request, **kwargs):
-		'''
-		The new admin form needs to be verified. New objects can then be created.
-		'''
-		form = NewAdminForm(request.POST)
+# 2. User signup
+class UserSignupView(View):
+	pass
 
-		if form.is_valid():
-			# 1. create new user
-			# 2. set activation key
-			# 3. get or create new client
-			# 4. add admin role to user
-			# 5. send email with activation key
-			# 6. add token to superuser register
-			pass
-
-		else:
-			pass
-
-def new_admin_logged_in_redirect(request):
-	'''
-	This is a message that redirects to the account page after a few seconds of notifying the user that they are required to log out before attempting to signup for a new admin account.
-	'''
-	if request.method == 'GET':
-		user = request.user
-		if user.is_authenticated():
-
-
-			return render(request, 'users/logged_in_redirect.html', {})
-		else:
-			# return to login view
-			return HttpResponseRedirect('/login/')
-
-# 2. Account SPA
+# 3. Account SPA
 class AccountSPAView(View):
 	'''
 	The Account SPA view serves a skeleton template containing a small amount of data,
@@ -87,9 +59,6 @@ class AccountSPAView(View):
 		# get the user from the request
 		user = request.user
 		if user.is_authenticated():
-
-			# get base user object
-			user = User.objects.get(email=user)
 
 			# METADATA
 			# several things about the user must be known in order to continue.
@@ -115,13 +84,13 @@ class AccountSPAView(View):
 			# PSYCH! The decision about the user permissions isn't even made here! It's made by the template by
 			# simply adding or omitting components server side. What comes across in the code will
 			# just not have parts of the interface that do not pertain to the user.
-			return render(request, 'users/account.html', {'user':user, 'roles':user.roles()})
+			return render(request, 'users/account.html', {'user': user})
 
 		else:
 			# return to login view
 			return HttpResponseRedirect('/login/')
 
-# 3. Login view
+# 4. Login view
 class LoginView(View):
 	'''
 	It is the responsability of the Login view to determine
@@ -130,11 +99,7 @@ class LoginView(View):
 	is a decision left for the Account SPA.
 	'''
 
-	def get(self, request, **kwargs):
-		# process kwargs
-		if 'key' in kwargs:
-			activation_key = kwargs['key']
-
+	def get(self, request):
 		if request.user.is_authenticated():
 			return HttpResponseRedirect('/account/')
 		else:
@@ -145,13 +110,26 @@ class LoginView(View):
 
 		if form.is_valid():
 			user = authenticate(email=request.POST['email'], password=request.POST['password'])
+			user_test = User.objects.get(email=request.POST['email'])
 			if user is not None and user.is_active:
 				login(request, user)
 				return HttpResponseRedirect('/account/')
 			else:
 				return render(request, 'users/login.html', {'invalid_username_or_password':True})
 		else:
+			print('form invalid')
 			return render(request, 'users/login.html', {'bad_formatting':True})
+
+# Verify
+def verify(request, **kwargs):
+	if request.method == 'GET':
+		user_key = kwargs['user']
+		activation_key = kwargs['key']
+
+		# user
+		user = User.objects.get(id=user_key)
+		verified = user.verify_email(activation_key)
+		return render(request, 'users/verified.html', {'verified': verified})
 
 # Logout view
 def logout_view(request):

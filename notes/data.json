@@ -1,0 +1,110 @@
+/* Initial data needed for each type of user */
+
+/* Contract admin */
+{
+	"user": {
+		"first_name": "",
+		"last_name": "",
+		"email": "",
+		"id": "",
+	},
+	"clients": {
+		"client1": {
+			"roles": {
+				"moderator": {
+					"is_approved": true,
+				},
+				"admin": {
+					"is_approved": true,
+				}
+			},
+		}
+	}
+}
+
+
+{
+	"active_moderation": {},
+	"client_rules": [],
+	"is_contract": false,
+	"is_production": true,
+	"moderations": [0, 1, 2],
+	"name": "test_production_client",
+	"new_moderations": [],
+	"new_roles": [],
+	"role_list": ["moderator"],
+	"roles": {
+		"moderator": {}
+	},
+	"user_list": [
+		"ac8a6f5d-b6d5-4a00-81bb-0bc980f15bdc",
+		"cd8f6fc8-9715-46df-a8be-607e5cba1ecb",
+		"56c15cf7-0783-4c16-892d-2ece7e6d234d"],
+	"users": {
+		"56c15cf7-0783-4c16-892d-2ece7e6d234d": {
+			"email": "moderator@production_client.com",
+			"first_name": "moderator_user_first_name",
+			"id": "56c15cf7-0783-4c16-892d-2ece7e6d234d",
+			"last_name": "moderator_user_last_name",
+			"role_list": [],
+			"roles": {}
+		},
+		"ac8a6f5d-b6d5-4a00-81bb-0bc980f15bdc": {
+			"email": "admin@production_client.com",
+			"first_name": "productionadmin_user_first_name",
+			"id": "ac8a6f5d-b6d5-4a00-81bb-0bc980f15bdc",
+			"last_name": "productionadmin_user_last_name",
+			"role_list": [ "worker"],
+			"roles": {
+				"worker": {
+					"stat_list": [],
+					"stats": {}
+				}
+			}
+		},
+		"cd8f6fc8-9715-46df-a8be-607e5cba1ecb": {
+			"email": "worker@production_client.com",
+			"first_name": "worker_user_first_name",
+			"id": "cd8f6fc8-9715-46df-a8be-607e5cba1ecb",
+			"last_name": "worker_user_last_name",
+			"role_list": [ "worker"],
+			"roles": {
+				"worker": {
+					"stat_list": [],
+					"stats": {}
+				}
+			}
+		}
+	}
+}
+
+var child = UI.createComponent('rs-{name}-button'.format({name: roleName}), {
+	root: _this.id,
+	template: UI.templates.button,
+	appearance: {
+		style: {
+			'opacity': '0.0',
+		},
+		classes: ['show'],
+		html: Context.get('role_display', roleName),
+	},
+	state: {
+		svitches: [
+			{stateName: 'control-state', fn: function (_this) {
+				Context.set('current_role', roleName);
+			}}
+		],
+		stateMap: 'control-state',
+	},
+	bindings: [
+		{name: 'click', fn: function (_this) {
+			_this.triggerState();
+		}}
+	],
+});
+
+_this.children.push(child);
+child.render();
+
+// make buttons visible
+child.model().css({'opacity': '1.0'});

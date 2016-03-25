@@ -1,14 +1,20 @@
 # django
 from django.conf.urls import include, url
 from django.views.generic import TemplateView, RedirectView
+from django.conf.urls.static import static
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.conf import settings
 
 # local
-from apps.users.views import HomeView, AdminSignupView, AccountSPAView, LoginView, logout_view
+from apps.users.views import HomeView, AdminSignupView, AccountSPAView, LoginView, logout_view, verify
 
 urlpatterns = [
 	# i18n / l10n
 	url(r'^i18n/', include('django.conf.urls.i18n')),
 ]
+
+# Static
+urlpatterns += staticfiles_urlpatterns()
 
 ### Users
 '''
@@ -29,7 +35,7 @@ This is the first thing linked from the main page. When someone wants to "sign u
 An email will be sent to their email address to verify it. A randomly generated key will be used for the link.
 '''
 urlpatterns += [
-	url(r'^signup/', AdminSignupView.as_view()),
+	url(r'^register/', AdminSignupView.as_view()),
 ]
 
 '''
@@ -77,7 +83,7 @@ Workers and moderators will also get keys in their emails, but they do not sign 
 urlpatterns += [
 	# login
 	url(r'^login/', LoginView.as_view()),
-	url(r'^login/(?P<key>[A-Z0-9]{10})/$', LoginView.as_view()),
+	url(r'^verify/(?P<user>)/(?P<key>)/$', verify),
 	url(r'^logout/', logout_view),
 ]
 
@@ -112,3 +118,16 @@ moderation.js
 
 
 ### Actions
+urlpatterns += [
+	url(r'^action/', include('apps.action.actions')),
+]
+
+### Commands
+urlpatterns += [
+	url(r'^command/', include('apps.users.commands.urls')),
+]
+
+### Data
+urlpatterns += [
+	url(r'^data/', include('apps.users.data.urls'))
+]

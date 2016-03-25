@@ -1,0 +1,363 @@
+/*
+
+This is an extension of assets/main.css. It contains specific styling for colours and body/html
+that is unique to the account app.
+
+*/
+
+html {
+	/*background-image: url(../img/main-background-small-no-moon-blur.jpg);*/
+}
+
+div {
+	/*-webkit-transition: left .5s ease-in-out;*/
+	/*transition: left .5s ease-in-out;*/
+}
+
+body {
+	overflow: hidden;
+}
+
+/*
+
+Sidebars
+
+*/
+
+.sidebar.hidden {
+	translate: translateY(-50%);
+}
+
+/*
+
+Panels
+
+*/
+
+.content-panel {
+	position: absolute;
+	top: 50%;
+	left: 220px;
+	display: block;
+	overflow-y: auto;
+	overflow-x: hidden;
+	width: 794px;
+	height: 70%;
+	transform: translateY(-50%);
+	border: 2px solid #aaa;
+	border-radius: 3px;
+	box-sizing: border-box;
+}
+
+.panel-large {
+	left: 60px;
+	width: 954px;
+	border: 0px solid #aaa;
+}
+
+/*
+
+Buttons
+
+*/
+
+.button {
+	color: #ccc;
+	padding-top: 1.0em;
+	width: 100%;
+	height: 50px;
+	background-image: none;
+	background-color: transparent;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+	text-shadow: none;
+}
+
+.button:hover {
+	color: #ddd;
+	background-color: transparent;
+}
+
+.button:active {
+	color: #eee;
+	background-color: transparent;
+}
+
+.button:focus {
+	color: #aaa;
+	background-color: transparent;
+}
+
+.button:active:focus {
+	color: #eee;
+	background-color: transparent;
+}
+
+.button:active:hover {
+	color: #eee;
+	background-color: transparent;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+
+.btn {
+	position: relative;
+	border-radius: 0px;
+	border-top: 0px;
+	border-right: 0px solid #CCC;
+	border-left: 0px solid #CCC;
+	border-bottom: 0px solid #CCC;
+}
+
+.btn:focus {
+	outline:0px !important;
+}
+
+button:focus {
+	outline:0px !important;
+}
+
+.sidebar.mini .btn {
+	left: 0px;
+	width: 50px;
+	border-right: 1px solid #CCC;
+	border-left: 0px;
+}
+
+.btn.notouch {
+	cursor: default;
+	border-bottom: 1px solid #CCC;
+	background-color: white;
+	box-shadow: none;
+}
+
+.btn.progress-inset {
+	padding: 0px;
+}
+
+div.progress-inset {
+	position: relative;
+	top: 0px;
+	left: 0px;
+	height: 100%;
+	width: 0%;
+	background-color: #00BA8A;
+}
+
+.btn.progress-inset input {
+	border: 0px;
+	outline: none;
+}
+
+.menu-button {
+	width: 150px;
+	height: 50px;
+	border: 2px solid #ccc;
+	left: 10px;
+	border-radius: 3px;
+	margin-bottom: 10px;
+	display: none;
+	box-sizing: border-box;
+}
+
+/*
+
+Input groups
+
+*/
+
+.custom-input {
+	position: absolute;
+	width: 400px;
+	box-sizing: border-box;
+	border: 2px solid #ccc;
+	background-color: transparent;
+	color: #ccc;
+	padding: 8px;
+	border-radius: 4px;
+}
+
+.custom-input:focus {
+	-webkit-box-shadow: inset 0 0px 0px rgba(0, 0, 0, .075), 0 0 0px rgba(102, 175, 233, .6);
+	box-shadow: inset 0 0px 0px rgba(0, 0, 0, .075), 0 0 0px rgba(102, 175, 233, .6);
+	border-color: #ccc;
+	outline: none;
+	color: #ccc;
+}
+
+.custom-text-area {
+	width: 400px;
+	padding: 8px;
+	position: absolute;
+	box-sizing: border-box;
+	border: 2px solid #ccc;
+	background-color: transparent;
+	color: #ccc;
+	border-radius: 4px;
+	resize: none;
+}
+
+.custom-text-area:focus {
+	-webkit-box-shadow: inset 0 0px 0px rgba(0, 0, 0, .075), 0 0 0px rgba(102, 175, 233, .6);
+	box-shadow: inset 0 0px 0px rgba(0, 0, 0, .075), 0 0 0px rgba(102, 175, 233, .6);
+	border-color: #ccc;
+	outline: none;
+	color: #ccc;
+}
+
+/*
+
+Dropzone
+
+*/
+
+.dz-wrapper {
+	position: absolute;
+	height: 300px;
+	width: 400px;
+	top: 235px;
+	text-align: center;
+	border: 2px dotted #ccc;
+	border-radius: 4px;
+}
+
+.dz-size {
+	display: none;
+}
+
+.dz-success-mark {
+	display: none;
+}
+
+.dz-error-mark {
+	display: none;
+}
+
+.dz-error-message {
+	position: absolute;
+	top: 250px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 100%;
+	color: #FD4F00;
+	pointer-events: none;
+}
+
+.dz-filename {
+	display: none;
+}
+
+/*
+
+Tables
+
+*/
+
+#rel-file-filelist {
+	position: absolute;
+	height: 300px;
+	width: 400px;
+	top: 235px;
+}
+
+#rel-file-filelist tr {
+	width: 400px;
+	box-sizing: border-box;
+	border-bottom: 1px solid #ccc;
+}
+
+#rel-file-filelist th {
+	width: 200px;
+	box-sizing: border-box;
+	padding: 8px;
+	color: #ccc;
+}
+
+#rel-file-filelist td {
+	width: 200px;
+	box-sizing: border-box;
+	padding: 8px;
+	color: #ccc;
+}
+
+.dropzone-demo-title {
+	position: absolute;
+	top: 10px;
+	width: 100%;
+	text-align: center;
+	font-size: 15px;
+	color: #ccc;
+	pointer-events: none;
+}
+
+.dropzone-demo-table {
+	position: absolute;
+	left: 15%;
+	width: 70%;
+	top: 100px;
+	pointer-events: none;
+}
+
+.dropzone-demo-table tr {
+	width: 100%;
+	border-bottom: 1px solid #ccc;
+}
+
+.dropzone-demo-table th {
+	width: 50%;
+	color: #ccc;
+	padding: 8px;
+}
+
+.dropzone-demo-table td {
+	text-align: left;
+	width: 50%;
+	color: #ccc;
+	padding: 8px;
+}
+
+/*
+
+Breadcrumbs
+
+*/
+
+#breadcrumbs span {
+	color: #ccc;
+}
+
+#breadcrumbs a {
+	color: #ccc;
+}
+
+#breadcrumbs a:hover {
+	color: #ccc;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+/*
+
+Other
+
+*/
+
+#audio-file-confirm-panel {
+	position: absolute;
+	height: 447px;
+	width: 400px;
+	border: 2px solid #ccc;
+	border-radius: 4px;
+	top: 28px;
+	left: 410px;
+}
+
+#audio-file-confirm-button {
+	position: absolute;
+	left: 410px;
+	top: 485px;
+	height: 50px;
+	width: 400px;
+	border: 2px solid #ccc;
+	border-radius: 4px;
+}

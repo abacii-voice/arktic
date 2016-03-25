@@ -1,0 +1,38 @@
+/*
+
+Only need to customise elements on login page
+
+*/
+
+/* 1. Login wrapper */
+#login-wrapper {
+	width: 400px;
+	height: 300px;
+}
+
+#login-header {
+	color: #fff;
+	font-weight: normal;
+}
+
+#login-email {
+	border-bottom-right-radius: 0px;
+	border-bottom-left-radius: 0px;
+	background-color: transparent;
+	border-color: #ccc;
+	color: #fff;
+}
+
+#login-password {
+	border-top-right-radius: 0px;
+	border-top-left-radius: 0px;
+	background-color: transparent;
+	border-top: transparent;
+	border-color: #ccc;
+	color: #fff;
+}
+
+#login-submit {
+	top: 10px;
+	color: #fff;
+}

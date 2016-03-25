@@ -2,27 +2,18 @@
 from django.db import models
 
 # local
-from apps.users.models.roles import Moderator
-from apps.tr.models.utterance import WorkerUtterance
-from apps.tr.models.overwatch import Overwatch
+from apps.tr.models.transcription import Transcription
+from apps.tr.models.caption import Caption
+from apps.users.models.role import Role
 
 ### Moderation classes
-class AbstractModeration(models.Model):
-	class Meta():
-		abstract = True
+class Moderation(models.Model):
 
 	### Connections
-	moderator = models.ForeignKey(Moderator, related_name='%(app_label)s_%(class)s_moderations')
+	transcription = models.ForeignKey(Transcription, related_name='moderations')
+	caption = models.ForeignKey(Caption, related_name='moderations')
+	moderator = models.ForeignKey(Role, related_name='moderations')
 
-	###
-	score = models.BooleanField(default=True)
-
-class UtteranceModeration(AbstractModeration):
-
-	### Connections
-	utterance = models.ForeignKey(WorkerUtterance, related_name='utterance_moderations')
-
-class OverwatchModeration(AbstractModeration):
-
-	### Connections
-	overwatch = models.ForeignKey(Overwatch, related_name='overwatch_moderations')
+	### Properties
+	is_approved = models.BooleanField(default=True)
+	comment = models.TextField()
