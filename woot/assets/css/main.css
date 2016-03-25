@@ -1,0 +1,38 @@
+/* main.css
+
+This is where the basic styling of the site is stored. It controls colours and global background images,
+but not specific #element stylings. These are found in elements.css.
+
+*/
+
+/*
+
+0. Main background
+
+*/
+
+html {
+	font-family: sans-serif;
+	-webkit-text-size-adjust: 100%;
+	-ms-text-size-adjust: 100%;
+	background-color: #00869B;
+	color: #ccc;
+	height: 100%;
+}
+
+body {
+	margin: 0;
+	box-sizing: border-box;
+	width: auto;
+	height: 100%;
+}
+
+a, a:hover, a:focus, a:active {
+	color: #ccc;
+	text-decoration: none;
+	font-family: sans-serif;
+}
+
+h2, h3 {
+	font-family: sans-serif;
+}
