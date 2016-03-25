@@ -1458,7 +1458,7 @@ UI.createApp('hook', [
 														},
 														children: [
 															UI.createComponent('ucmplc-project-details-wrapper', {
-																
+
 															}),
 															UI.createComponent('ucmplc-threshold-plot-wrapper'),
 														],
@@ -1481,9 +1481,11 @@ UI.createApp('hook', [
 								],
 							}),
 							UI.createComponent('new-user-card', {
+								template: UI.template('div', 'ie show'),
 								appearance: {
 									style: {
-										'display': 'none',
+										'height': '100%',
+										'width': '100%',
 									},
 								},
 								state: {
@@ -1513,7 +1515,6 @@ UI.createApp('hook', [
 											style: {
 												'font-size': '18px',
 												'top': '10px',
-												'left': '10px',
 												'color': '#ccc',
 											},
 											html: `New user`,
@@ -1526,7 +1527,6 @@ UI.createApp('hook', [
 												'font-size': '14px',
 												'color': '#ccc',
 												'top': '35px',
-												'left': '10px',
 											},
 										},
 										state: {
@@ -1544,7 +1544,6 @@ UI.createApp('hook', [
 										appearance: {
 											style: {
 												'top': '60px',
-												'left': '10px',
 												'width': '225px',
 											},
 											properties: {
@@ -1569,7 +1568,6 @@ UI.createApp('hook', [
 										appearance: {
 											style: {
 												'top': '106px',
-												'left': '10px',
 												'width': '225px',
 											},
 											properties: {
@@ -1594,7 +1592,6 @@ UI.createApp('hook', [
 										appearance: {
 											style: {
 												'top': '152px',
-												'left': '10px',
 												'width': '275px',
 											},
 											properties: {
@@ -1631,7 +1628,6 @@ UI.createApp('hook', [
 														'font-size': '18px',
 														'color': '#ccc',
 														'top': '0px',
-														'left': '10px',
 													},
 													html: 'Roles',
 												},
@@ -1653,7 +1649,7 @@ UI.createApp('hook', [
 															style: {
 																'position': 'absolute',
 																'transform': 'none',
-																'left': '10px',
+																'left': '0px',
 																'height': '40px',
 																'width': '40px',
 																'padding-top': '10px',
@@ -1689,7 +1685,7 @@ UI.createApp('hook', [
 															style: {
 																'position': 'absolute',
 																'top': '0px',
-																'left': '50px',
+																'left': '40px',
 																'transform': 'none',
 																'height': '40px',
 																'padding-top': '10px',
@@ -1724,7 +1720,7 @@ UI.createApp('hook', [
 															style: {
 																'position': 'absolute',
 																'transform': 'none',
-																'left': '10px',
+																'left': '0px',
 																'height': '40px',
 																'width': '40px',
 																'padding-top': '10px',
@@ -1760,7 +1756,7 @@ UI.createApp('hook', [
 															style: {
 																'position': 'absolute',
 																'top': '0px',
-																'left': '50px',
+																'left': '40px',
 																'transform': 'none',
 																'height': '40px',
 																'padding-top': '10px',
@@ -1795,7 +1791,7 @@ UI.createApp('hook', [
 															style: {
 																'position': 'absolute',
 																'transform': 'none',
-																'left': '10px',
+																'left': '0px',
 																'height': '40px',
 																'width': '40px',
 																'padding-top': '10px',
@@ -1831,7 +1827,7 @@ UI.createApp('hook', [
 															style: {
 																'position': 'absolute',
 																'top': '0px',
-																'left': '50px',
+																'left': '40px',
 																'transform': 'none',
 																'height': '40px',
 																'padding-top': '10px',
@@ -1856,7 +1852,7 @@ UI.createApp('hook', [
 														'width': '135px',
 														'height': '140px',
 														'top': '30px',
-														'left': '150px',
+														'left': '140px',
 														'padding-top': '50px',
 														'text-align': 'center',
 														'color': '#aaa',
@@ -1883,7 +1879,7 @@ UI.createApp('hook', [
 											classes: ['border border-radius'],
 											style: {
 												'transform': 'none',
-												'left': '10px',
+												'left': '0px',
 												'top': '380px',
 											},
 											html: 'Confirm',
