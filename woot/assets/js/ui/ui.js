@@ -484,7 +484,10 @@ var UI = {
 		},
 		deactivate: function (_this) {
 			_this.model().css({'display': 'none'});
-		}
+		},
+		triggerState: function (_this) {
+			_this.triggerState();
+		},
 	},
 
 }
