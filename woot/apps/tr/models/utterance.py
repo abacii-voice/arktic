@@ -2,38 +2,32 @@
 from django.db import models
 
 # local
+from apps.client.models.project import Project
 from apps.tr.models.transcription import Transcription
-from apps.users.models.roles import Worker
 
-### Utterance classes
-class AbstractUtterance(models.Model):
-	class Meta():
-		abstract = True
+# util
+import os
+from os.path import basename, join
+import uuid
 
+### Create your models here.
+def rename_audio_file(instance, file_name):
+	base = basename(file_name)
+	root, ext = base.split('.')
+	new_file_name = '{}_p-{}_f-{}-uuid-{}.{}'.format(instance.project.client.name, instance.project.name, root, instance.id, ext)
+	return join('audio', new_file_name)
+
+class Utterance(models.Model):
 	'''
-	A text utterance associated with a transcription.
-	'''
-
-	### Connections
-	transcription = models.ForeignKey(Transcription, related_name='%(app_label)s_%(class)s_utterances')
-
-	### Properties
-	text = models.TextField()
-	metadata = models.TextField()
-	date_created = models.DateTimeField(auto_now_add=True)
-
-class WorkerUtterance(AbstractUtterance):
-	'''
-	A text utterance added by a worker
+	This is an audio clip. It is probably in the form of a compressed .wav file.
+	In this case, it can be uncompressed for processing.
 	'''
 
 	### Connections
-	worker = models.ForeignKey(Worker, related_name='utterances')
-
-class RecogniserUtterance(AbstractUtterance):
-	'''
-	An utterance defined by a speech recogniser.
-	'''
+	project = models.ForeignKey(Project, related_name='utterances')
+	transcription = models.OneToOneField(Transcription, related_name='utterance')
 
 	### Properties
-	recogniser = models.CharField(max_length=255)
+	# https://docs.djangoproject.com/en/1.9/ref/models/fields/#uuidfield
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	file = models.FileField(upload_to=rename_audio_file)

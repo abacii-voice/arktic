@@ -60,10 +60,7 @@ def get_access():
 
 ########## DEBUG CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = False
-
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
-TEMPLATE_DEBUG = DEBUG
+DEBUG = True
 ########## END DEBUG CONFIGURATION
 
 
@@ -97,6 +94,11 @@ USE_L10N = True
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#use-tz
 USE_TZ = True
 ########## END GENERAL CONFIGURATION
+
+
+########## SESSION CONFIGURATION
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+########## END SESSION CONFIGURATION
 
 
 ########## MEDIA CONFIGURATION
@@ -250,7 +252,6 @@ LOCAL_APPS = (
 	'apps.tr',
 	'apps.users',
 	'apps.client',
-	'apps.audio',
 	'apps.action',
 )
 

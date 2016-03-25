@@ -1,0 +1,50 @@
+React cheat sheet and style guide being built as I learn it.
+
+### 1. React binds to a single DOM element, e.g.
+
+<body>
+	<div id='root'></div>
+</body>
+
+<script type='text/babel'>
+ReactDOM.render(
+	//stuff ,
+	document.getElementById('root')
+);
+</script>
+
+### 2. Only one React component can be included in '// stuff'. This means that the root element needs to contain all the information needed to start the entire app, so:
+
+<script type='text/babel'>
+ReactDOM.render(
+	<EntireApp anyDataPassedIn={whatever} />,
+	document.getElementById('root')
+);
+</script>
+
+### 3. Anything used in JS syntax within a JSX context needs to be enclosed in {}:
+
+var whatever = {};
+
+<EntireApp anyDataPassedIn={whatever} />, NOT <EntireApp anyDataPassedIn=whatever />,
+
+### 4. Your typical react component definition looks like this:
+
+<script type='text/babel'>
+var SomeComponent = React.createClass({
+	render: function() {
+		return (
+			<div className="some-component">
+				// text
+				// different components that live under this one
+				// whatever
+			</div>
+		);
+	},
+	otherMethodsAndProperties: function () {}, etc.
+});
+</script>
+
+The render method control the interaction of the virtualised component in React to what is contained in the actual HTML DOM.
+
+### 5. 
