@@ -1447,32 +1447,116 @@ UI.createApp('hook', [
 													],
 												},
 												children: [
-													UI.createComponent('ucmp-left-column', {
-														template: UI.template('div', 'ie show panel sub-panel border border-radius relative'),
+													UI.createComponent('ucmplc-threshold-plot-wrapper', {
+														template: UI.template('div', 'ie show relative'),
 														appearance: {
 															style: {
-																'height': '100%',
-																'width': '300px',
+																'width': '100%',
+																'height': '250px',
+																'float': 'left',
+																'margin-bottom': '10px',
+															},
+														},
+														children: [
+															UI.createComponent('ucmplc-plot-field', {
+																template: UI.template('div', 'ie show relative border border-radius'),
+																appearance: {
+																	style: {
+																		'width': 'calc(100% - 50px)',
+																		'height': '100%',
+																		'margin-right': '10px',
+																		'float': 'left',
+																	},
+																},
+																children: [
+																	UI.createComponent('ucmplc-plot', {
+																		template: UI.template('div', 'ie show centred'),
+																		appearance: {
+																			style: {
+																				'height': '95%',
+																				'width': '95%',
+																			},
+																		},
+																	}),
+																],
+															}),
+															UI.createComponent('ucmplc-plot-control-wrapper', {
+																template: UI.template('div', 'ie show relative'),
+																appearance: {
+																	style: {
+																		'width': '40px',
+																		'height': '100%',
+																		'float': 'left',
+																	},
+																},
+																children: [
+
+																],
+															}),
+														],
+													}),
+													UI.createComponent('ucmplc-lower-wrapper', {
+														template: UI.template('div', 'ie show relative'),
+														appearance: {
+															style: {
+																'width': '100%',
+																'height': '300px',
 																'float': 'left',
 															},
 														},
 														children: [
-															UI.createComponent('ucmplc-project-details-wrapper', {
-
+															UI.createComponent('ucmplc-project-wrapper', {
+																template: UI.template('div', 'ie show relative'),
+																appearance: {
+																	style: {
+																		'width': 'calc(100% - 160px)',
+																		'height': '300px',
+																		'float': 'left',
+																		'margin-right': '10px',
+																	},
+																},
+																children: [
+																	UI.createComponent('ucmplcpdw-project-title', {
+																		template: UI.template('span', 'ie show'),
+																		appearance: {
+																			style: {
+																				'font-size': '18px',
+																				'color': '#ccc',
+																				'top': '0px',
+																			},
+																			html: 'Current project',
+																		},
+																	}),
+																	UI.createComponent('ucmplcpdw-project-name'),
+																],
 															}),
-															UI.createComponent('ucmplc-threshold-plot-wrapper'),
+															UI.createComponent('ucmplc-control-wrapper', {
+																template: UI.template('div', 'ie show relative'),
+																appearance: {
+																	style: {
+																		'width': '150px',
+																		'height': '300px',
+																		'float': 'left',
+																	},
+																},
+																children: [
+																	UI.createComponent('ucmplccw-title', {
+																		template: UI.template('span', 'ie show'),
+																		appearance: {
+																			style: {
+																				'font-size': '18px',
+																				'color': '#ccc',
+																				'top': '0px',
+																			},
+																			html: 'Control',
+																		},
+																	}),
+																	UI.createComponent('ucmplccw-buttons', {
+
+																	}),
+																],
+															}),
 														],
-													}),
-													UI.createComponent('ucmp-right-column', {
-														template: UI.template('div', 'ie show panel sub-panel border border-radius relative'),
-														appearance: {
-															style: {
-																'height': '100%',
-																'width': '144px',
-																'float': 'left',
-																'margin-right': '0px',
-															},
-														},
 													}),
 												],
 											}),

@@ -54,6 +54,7 @@ Common interface elements
 	position: absolute;
 	background-color: transparent;
 	overflow-x: hidden; /* all content must fit inside the box. No expansion left-right will be allowed. */
+	overflow-y: hidden;
 	box-sizing: border-box;
 	font-family: inherit;
 	font-size: inherit;
@@ -302,5 +303,5 @@ Mouseover
 */
 
 .ie.mouseover {
-	
+
 }
