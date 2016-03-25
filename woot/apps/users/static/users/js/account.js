@@ -451,7 +451,6 @@ UI.createApp('hook', [
 														appearance: {
 															style: {
 																'font-size': '18px',
-																'top': '10px',
 																'color': '#ccc',
 															},
 														},
@@ -472,7 +471,7 @@ UI.createApp('hook', [
 															style: {
 																'font-size': '14px',
 																'color': '#ccc',
-																'top': '35px',
+																'top': '25px',
 																'height': '20px',
 															},
 														},
@@ -1598,7 +1597,6 @@ UI.createApp('hook', [
 										appearance: {
 											style: {
 												'font-size': '18px',
-												'top': '10px',
 												'color': '#ccc',
 											},
 											html: `New user`,
@@ -1610,7 +1608,7 @@ UI.createApp('hook', [
 											style: {
 												'font-size': '14px',
 												'color': '#ccc',
-												'top': '35px',
+												'top': '25px',
 											},
 										},
 										state: {
