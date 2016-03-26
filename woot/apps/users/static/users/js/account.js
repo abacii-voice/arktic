@@ -1981,6 +1981,9 @@ UI.createApp('hook', [
 													},
 													html: 'Confirm',
 												},
+												state: {
+													stateMap: 'user-management-confirm-user-state',
+												},
 												bindings: [
 													{name: 'click', fn: function (_this) {
 														// perform checks
@@ -2025,18 +2028,6 @@ UI.createApp('hook', [
 														}
 
 														if (noProblems) {
-															// submit user
-															// 2. call add_user command
-															var userData = {
-																'current_client': Context.get('current_client'),
-																'first_name': firstName.model().val(),
-																'last_name': lastName.model().val(),
-																'email': email.model().val(),
-																'roles_admin': adminRole,
-																'roles_moderator': moderatorRole,
-																'roles_worker': workerRole,
-															};
-
 															// 3. add loading button to list
 															var userList = UI.getComponent('user-list');
 															var index = '{index}'.format({index: userList.children.length});
@@ -2055,6 +2046,21 @@ UI.createApp('hook', [
 																children: [
 																	UI.createComponent('nuc-lb-loading-icon-{index}'.format({index: index}), {
 																		template: UI.templates.loadingIcon,
+																		appearance: {
+																			style: {
+																				'transform': 'translateY(-50%)',
+																				'left': '10px',
+																			},
+																		},
+																	}),
+																	UI.createComponent('nuc-lb-name-{index}'.format({index: index}), {
+																		template: UI.template('span', 'ie show'),
+																		appearance: {
+																			html: '{last_name}, {first_name}'.format({first_name: firstName.model().val(), last_name: lastName.model().val()}),
+																			style: {
+																				'width': '100%',
+																			},
+																		},
 																	}),
 																],
 															});
@@ -2062,12 +2068,27 @@ UI.createApp('hook', [
 															userList.children.push(tempUserButton);
 															tempUserButton.render();
 
-															// command('create_user', userData, function (data) {
-															// 	// nucrc-to-email
-															// 	// 4. add user button to list when done
-															// 	// 5. remove loading button
-															// 	// 6. show new user confirmation panel
-															// });
+															// submit user
+															var userData = {
+																'current_client': Context.get('current_client'),
+																'first_name': firstName.model().val(),
+																'last_name': lastName.model().val(),
+																'email': email.model().val(),
+																'roles_admin': adminRole,
+																'roles_moderator': moderatorRole,
+																'roles_worker': workerRole,
+															};
+
+															// change to user confirm state
+															_this.triggerState();
+
+															// call add_user command
+															command('create_user', userData, function (data) {
+																// nucrc-to-email
+																// 4. add user button to list when done
+																// 5. remove loading button
+																// 6. show new user confirmation panel
+															});
 														}
 													}},
 												],

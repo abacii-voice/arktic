@@ -456,7 +456,7 @@ var UI = {
 			</div>
 		`,
 		loadingIcon: `
-			<div id='{id}' class='ie loading-icon show {classes}'>
+			<div id='{id}' class='ie loading-icon show {classes}' style='{style}'>
 				<img src='/static/img/loading-icon.gif' />
 			</div>
 		`,
