@@ -303,7 +303,7 @@ UI.createApp('hook', [
 											preFn: function (_this) {
 												// 1. remove current children
 												$.when(new Promise(function (resolve, reject) {
-													_this.children.forEach(function (child, childIndex) { // make shallow copy with slice
+													_this.children.forEach(function (child) {
 														UI.removeComponent(child.id);
 													});
 												})).done(function () {
@@ -2053,7 +2053,7 @@ UI.createApp('hook', [
 																	},
 																},
 																children: [
-																	UI.createComponent('nuc-lb-loading-icon', {
+																	UI.createComponent('nuc-lb-loading-icon-{index}'.format({index: index}), {
 																		template: UI.templates.loadingIcon,
 																	}),
 																],
