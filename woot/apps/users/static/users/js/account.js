@@ -1983,6 +1983,13 @@ UI.createApp('hook', [
 												},
 												state: {
 													stateMap: 'user-management-confirm-user-state',
+													svitches: [
+														{stateName: 'user-management-confirm-user-state', fn: function (_this) {
+															var emailTo = UI.getComponent('nucrc-to-email');
+															var newUserEmail = Context.get('user_data', 'email');
+															emailTo.model().html(newUserEmail);
+														}}
+													],
 												},
 												bindings: [
 													{name: 'click', fn: function (_this) {
@@ -2071,6 +2078,7 @@ UI.createApp('hook', [
 															// submit user
 															var userData = {
 																'current_client': Context.get('current_client'),
+																'current_role': Context.get('current_role'),
 																'first_name': firstName.model().val(),
 																'last_name': lastName.model().val(),
 																'email': email.model().val(),
@@ -2083,11 +2091,35 @@ UI.createApp('hook', [
 															_this.triggerState();
 
 															// call add_user command
-															command('create_user', userData, function (data) {
-																// nucrc-to-email
-																// 4. add user button to list when done
-																// 5. remove loading button
-																// 6. show new user confirmation panel
+															command('create_user', userData, function (userPrototype) {
+																// update data - identical to userPrototype used in normal menu
+																// get model
+																var model = tempUserButton.model();
+
+																// set id and html
+																model.attr('id', 'user-button-{id}'.format({id: userPrototype.id}));
+																model.html('{last_name}, {first_name}'.format({first_name: userPrototype.first_name, last_name: userPrototype.last_name}));
+
+																// set svitch for user profile
+																tempUserButton.svitches = [
+																	UI.createSvitch(tempUserButton, 'user-management-user-state', function (_this) {
+																		Context.set('current_user_profile', userPrototype);
+																	}),
+																];
+
+																// set bindings for state change
+																
+
+																// remove from components
+																UI.components[model.attr('id')] = tempUserButton;
+																UI.removeComponent(tempUserButton.id);
+																tempUserButton.id = model.attr('id');
+
+																// THIS NEEDS TO BE IMPROVED.
+																// This is rushed and does not take advantage of good solutions.
+																// 1. Context.set
+																// 2. Methods for common interface component setups.
+																// 3. Need a comprehensive map of Context!!
 															});
 														}
 													}},
