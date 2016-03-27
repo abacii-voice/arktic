@@ -120,8 +120,9 @@ var UI = {
 		// 	children: [],
 		// })
 
-		// id
+		// initialise
 		this.id = id;
+		this.update(args);
 
 		// root
 		this.root = args.root;
@@ -203,12 +204,99 @@ var UI = {
 
 		///////////////
 		// METHODS
+		// update
+		this.setId = function (id) {
+			var currentId = this.id;
+			this.id = id !== undefined ? id : currentId;
+
+			// handle any changes
+			if (this.id !== currentId) {
+				// 1. change model id
+				// 2. swap key in UI.components object
+
+				// replace
+				// myHash["from"] = "value";
+				// myHash["to"] = myHash["from"];
+				// delete myHash["from"];
+			}
+		}
+
+		this.setRoot = function (root) {
+			var currentRoot = this.root !== undefined ? this.root : 'hook';
+			this.root = root !== undefined ? root : currentRoot;
+		}
+
+		this.setAfter = function (after) {
+			// sibling id to be placed after in children
+		}
+
+		this.setTemplate = function (template) {
+			var currentTemplate = this.template !== undefined ? this.template : UI.templates.div;
+			this.template = template !== undefined ? template : currentTemplate;
+		}
+
+		this.setAppearance = function (appearance) {
+			if (appearance !== undefined) {
+				this.properties = appearance.properties !== undefined ? appearance.properties : this.properties;
+				this.html = appearance.html !== undefined ? appearance.html : this.html;
+				this.classes = appearance.classes !== undefined ? appearance.classes : this.classes;
+				this.style = appearance.style !== undefined ? appearance.style : this.style;
+			}
+		}
+
+		this.setState = function (state) {
+
+		}
+
+		this.setRegistry = function (registry) {
+
+		}
+
+		this.setBindings = function (bindings) {
+			// add or replace
+		}
+
+		this.setChildren = function (children) {
+			// add but not replace
+		}
+
+		this.update = function (args) {
+			// id, root, after, template
+			this.setId(args.id);
+			this.setRoot(args.root);
+			this.setAfter(args.after);
+			this.setTemplate(args.template);
+
+			// appearance
+			this.setAppearance(args.appearance);
+
+			// state
+			this.setState(args.state);
+
+			// registry
+			this.setRegistry(args.registry);
+
+			// bindings
+			this.setBindings(args.bindings);
+
+			// children
+			this.setChildren(args.children);
+
+			// render
+			this.render();
+		}
+
 		// model
 		this.model = function () {
 			return $('#{id}'.format({id: this.id}));
 		}
 
 		// render
+		this.renderChild = function (child) {
+			child.root = this.id;
+			child.render();
+		}
+
 		this.render = function () {
 			// 1. root
 			var root = $('#{id}'.format({id: this.root}));
@@ -250,12 +338,6 @@ var UI = {
 					binding.fn(_this);
 				});
 			});
-		}
-
-		// render child
-		this.renderChild = function (child) {
-			child.root = this.id;
-			child.render();
 		}
 
 		// parent

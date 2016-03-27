@@ -108,3 +108,8 @@ function basename(str) {
 	var base = new String(str).substring(str.lastIndexOf('/') + 1);
 	return base;
 }
+
+// set
+function set() {
+	
+}
