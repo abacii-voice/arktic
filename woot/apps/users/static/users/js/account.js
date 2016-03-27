@@ -2038,7 +2038,7 @@ UI.createApp('hook', [
 															// 3. add loading button to list
 															var userList = UI.getComponent('user-list');
 															var index = '{index}'.format({index: userList.children.length});
-															var tempUserButton = UI.createComponent('temp-user-button-{index}'.format({index: index}), {
+															var userButton = UI.createComponent('user-button-{index}'.format({index: index}), {
 																root: userList.id,
 																template: UI.templates.button,
 																appearance: {
@@ -2072,8 +2072,8 @@ UI.createApp('hook', [
 																],
 															});
 
-															userList.children.push(tempUserButton);
-															tempUserButton.render();
+															userList.children.push(userButton);
+															userButton.render();
 
 															// submit user
 															var userData = {
@@ -2092,34 +2092,28 @@ UI.createApp('hook', [
 
 															// call add_user command
 															command('create_user', userData, function (userPrototype) {
-																// update data - identical to userPrototype used in normal menu
-																// get model
-																var model = tempUserButton.model();
+																var id = 'user-button-{id}'.format({id: userPrototype.id});
+																var html = '{last_name}, {first_name}'.format({first_name: userPrototype.first_name, last_name: userPrototype.last_name});
 
-																// set id and html
-																model.attr('id', 'user-button-{id}'.format({id: userPrototype.id}));
-																model.html('{last_name}, {first_name}'.format({first_name: userPrototype.first_name, last_name: userPrototype.last_name}));
-
-																// set svitch for user profile
-																tempUserButton.svitches = [
-																	UI.createSvitch(tempUserButton, 'user-management-user-state', function (_this) {
-																		Context.set('current_user_profile', userPrototype);
-																	}),
-																];
-
-																// set bindings for state change
-																
-
-																// remove from components
-																UI.components[model.attr('id')] = tempUserButton;
-																UI.removeComponent(tempUserButton.id);
-																tempUserButton.id = model.attr('id');
-
-																// THIS NEEDS TO BE IMPROVED.
-																// This is rushed and does not take advantage of good solutions.
-																// 1. Context.set
-																// 2. Methods for common interface component setups.
-																// 3. Need a comprehensive map of Context!!
+																userButton.update({
+																	id: id,
+																	appearance: {
+																		html: html,
+																	},
+																	state: {
+																		stateMap: 'user-management-user-state',
+																		svtiches: [
+																			{stateName: 'user-management-user-state', fn: function (_this) {
+																				Context.set('current_user_profile', userPrototype);
+																			}},
+																		],
+																	},
+																	bindings: [
+																		{name: 'click', fn: function (_this) {
+																			_this.triggerState();
+																		}}
+																	],
+																});
 															});
 														}
 													}},
