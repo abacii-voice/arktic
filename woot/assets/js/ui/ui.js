@@ -122,33 +122,8 @@ var UI = {
 
 		// initialise
 		this.id = id;
-		this.init(args);
-
-		// state
-		// if states have been defined for the component
-		if (args.state !== undefined) {
-			// state map
-			if (args.state.stateMap !== undefined) {
-				if (typeof args.state.stateMap === 'string') {
-					this.stateMap = {};
-					UI.globalStates.map(function (globalState) {
-						this.stateMap[globalState] = args.state.stateMap;
-					}, this);
-				} else {
-					this.stateMap = args.state.stateMap;
-				}
-			}
-		}
-
-		// registry
-		if (args.registry !== undefined) {
-			// vars
-			this.registryPath = args.registry.path; // a function that generates an array of args
-			this.registryResponse = args.registry.fn;
-
-			// register
-			Context.register(this.id, this.registryPath);
-		}
+		this.rendered = false; // establish whether or not the component has been rendered to the DOM.
+		this.update(args);
 
 		// bindings
 		this.bindings = args.bindings !== undefined ? args.bindings : [];
@@ -178,15 +153,21 @@ var UI = {
 		this.setRoot = function (root) {
 			var currentRoot = this.root !== undefined ? this.root : 'hook';
 			this.root = root !== undefined ? root : currentRoot;
+
+			// if rendered, need to update position IRL
 		}
 
 		this.setAfter = function (after) {
 			// sibling id to be placed after in children
+
+			// if rendered, need to update position IRL
 		}
 
 		this.setTemplate = function (template) {
 			var currentTemplate = this.template !== undefined ? this.template : UI.templates.div;
 			this.template = template !== undefined ? template : currentTemplate;
+
+			// if rendered, re-render
 		}
 
 		this.setAppearance = function (appearance) {
@@ -196,11 +177,10 @@ var UI = {
 				this.classes = appearance.classes !== undefined ? appearance.classes : this.classes;
 				this.style = appearance.style !== undefined ? appearance.style : this.style;
 			}
-			this.stateClasses = []; // Can be added by states
-			this.stateStyle = {};
+
+			// if rendered, re-render
 		}
 
-		// get state
 		this.getState = function (stateName) {
 			return this.states.filter(function (state) {
 				return state.name === stateName;
@@ -221,17 +201,6 @@ var UI = {
 
 				// state map
 				this.addStateMap(argsState.stateMap);
-
-				if (args.state.stateMap !== undefined) {
-					if (typeof args.state.stateMap === 'string') {
-						this.stateMap = {};
-						UI.globalStates.forEach(function (globalState) {
-							this.stateMap[globalState] = args.state.stateMap;
-						}, this);
-					} else {
-						this.stateMap = args.state.stateMap;
-					}
-				}
 			}
 		}
 
@@ -297,29 +266,46 @@ var UI = {
 			});
 		}
 
-		this.setStateMap = function (stateMap) {
-			Object.keys(stateMap).forEach(function (stateName) {
-				if (this.stateMap.hasOwnProperty(stateName)) {
-					this.stateMap[stateName] =
-				} else {
+		this.addStateMap = function (stateMap) {
+			var this.stateMap = this.stateMap !== undefined ? this.stateMap : {};
 
+			if (stateMap !== undefined) {
+				if (typeof stateMap === 'string') {
+					UI.globalStates.forEach(function (globalState) {
+						this.stateMap[globalState] = stateMap;
+					}, this);
+				} else {
+					Object.keys(stateMap).forEach(function (stateName) {
+						this.stateMap[stateName] = stateMap[stateName];
+					});
 				}
-			});
+			}
 		}
 
 		this.setRegistry = function (registry) {
+			if (registry !== undefined) {
+				// vars
+				this.registryPath = registry.path; // a function that generates an array of args
+				this.registryResponse = registry.fn;
 
+				// register
+				Context.register(this.id, this.registryPath);
+			}
 		}
 
 		this.setBindings = function (bindings) {
 			// add or replace
+
+			// if rendered, add to model
 		}
 
 		this.setChildren = function (children) {
 			// add but not replace
+
+			// if rendered, render extra children
 		}
 
-		this.init = function (args) {
+		this.update = function (args) {
 			// id, root, after, template
 			this.setId(args.id);
 			this.setRoot(args.root);
