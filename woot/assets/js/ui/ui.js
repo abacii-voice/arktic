@@ -122,57 +122,11 @@ var UI = {
 
 		// initialise
 		this.id = id;
-		this.update(args);
-
-		// root
-		this.root = args.root;
-
-		// template
-		this.template = args.template !== undefined ? args.template : UI.templates.div;
-
-		// appearance
-		if (args.appearance !== undefined) {
-			this.properties = args.appearance.properties; // e.g. default value for input
-			this.html = args.appearance.html;
-			this.classes = args.appearance.classes; // Default state classes
-			this.style = args.appearance.style;
-		}
-		this.stateClasses = []; // Can be added by states
-		this.stateStyle = {};
+		this.init(args);
 
 		// state
 		// if states have been defined for the component
 		if (args.state !== undefined) {
-			// get state
-			this.getState = function (stateName) {
-				return this.states.filter(function (state) {
-					return state.name === stateName;
-				})[0];
-			}
-
-			// default state
-			this.defaultState = args.state.defaultState !== undefined ? args.state.defaultState : {}; // args
-
-			// states
-			if (args.state.states !== undefined) {
-				this.states = args.state.states.map(function (state) {
-					return UI.createState(this, state.name, state.args);
-				}, this);
-
-				this.state = this.getState(UI.globalState);
-				if (this.state !== undefined) {
-					this.stateClasses = this.state.classes !== undefined ? this.state.classes : [];
-					this.stateStyle = this.state.style !== undefined ? this.state.style : {};
-				}
-			}
-
-			// svitches
-			if (args.state.svitches !== undefined) {
-				this.svitches = args.state.svitches.map(function (svitch) {
-					return UI.createSvitch(this, svitch.stateName, svitch.fn);
-				}, this);
-			}
-
 			// state map
 			if (args.state.stateMap !== undefined) {
 				if (typeof args.state.stateMap === 'string') {
@@ -242,10 +196,115 @@ var UI = {
 				this.classes = appearance.classes !== undefined ? appearance.classes : this.classes;
 				this.style = appearance.style !== undefined ? appearance.style : this.style;
 			}
+			this.stateClasses = []; // Can be added by states
+			this.stateStyle = {};
 		}
 
-		this.setState = function (state) {
+		// get state
+		this.getState = function (stateName) {
+			return this.states.filter(function (state) {
+				return state.name === stateName;
+			})[0];
+		};
 
+		this.setState = function (argsState) {
+			if (argsState !== undefined) {
+				// default state
+				var currentDefaultState = this.defaultState !== undefined ? this.defaultState : {};
+				this.defaultState = argsState.defaultState !== undefined ? argsState.defaultState : currentDefaultState;
+
+				// states
+				this.addStates(argsState.states);
+
+				// svitches
+				this.addSvitches(argsState.svitches);
+
+				// state map
+				this.addStateMap(argsState.stateMap);
+
+				if (args.state.stateMap !== undefined) {
+					if (typeof args.state.stateMap === 'string') {
+						this.stateMap = {};
+						UI.globalStates.forEach(function (globalState) {
+							this.stateMap[globalState] = args.state.stateMap;
+						}, this);
+					} else {
+						this.stateMap = args.state.stateMap;
+					}
+				}
+			}
+		}
+
+		this.addStates = function (states) {
+			if (states !== undefined) {
+				states.forEach(this.addState, this);
+
+				if (this.state === undefined) {
+					this.state = this.getState(UI.globalState);
+					if (this.state !== undefined) {
+						this.stateClasses = this.state.classes !== undefined ? this.state.classes : [];
+						this.stateStyle = this.state.style !== undefined ? this.state.style : {};
+					}
+				}
+			}
+		}
+
+		this.addState = function (statePrototype) {
+			// get conflicts
+			var conflictStates = this.states().filter(function (stateInstance) {
+				return stateInstance.name === statePrototype.name;
+			});
+
+			if (conflictStates.length !== 0) {
+				// replace current state -> delete from global list
+				UI.removeState(conflictStates[0]);
+			}
+
+			// add as new state
+			UI.createState(this, statePrototype.name, statePrototype.args);
+		}
+
+		this.states = function () {
+			return UI.allStates().filter(function (state) {
+				return state.component.id === this.id;
+			});
+		}
+
+		this.addSvitches = function (svitches) {
+			if (svitches !== undefined) {
+				svitches.forEach(this.addSvitch, this);
+			}
+		}
+
+		this.addSvitch = function (svitchPrototype) {
+			// get conflicts
+			var conflictSvitches = this.svitches().filter(function (svitchInstance) {
+				return svitchInstance.stateName === svitchPrototype.stateName;
+			});
+
+			if (conflictSvitches.length !== 0) {
+				// replace current state -> delete from global list
+				UI.removeSvitch(conflictSvitches[0]);
+			}
+
+			// add as new svitch
+			UI.createSvitch(this, svitchPrototype.stateName, svitchPrototype.fn);
+		}
+
+		this.svitches = function () {
+			return UI.allSvitches().filter(function (svitch) {
+				return svitch.component.id === this.id;
+			});
+		}
+
+		this.setStateMap = function (stateMap) {
+			Object.keys(stateMap).forEach(function (stateName) {
+				if (this.stateMap.hasOwnProperty(stateName)) {
+					this.stateMap[stateName] =
+				} else {
+
+				}
+			});
 		}
 
 		this.setRegistry = function (registry) {
@@ -260,7 +319,7 @@ var UI = {
 			// add but not replace
 		}
 
-		this.update = function (args) {
+		this.init = function (args) {
 			// id, root, after, template
 			this.setId(args.id);
 			this.setRoot(args.root);
@@ -281,9 +340,6 @@ var UI = {
 
 			// children
 			this.setChildren(args.children);
-
-			// render
-			this.render();
 		}
 
 		// model
@@ -461,6 +517,16 @@ var UI = {
 	// States grouped by name
 	states: {},
 
+	allStates: function () {
+		var stateArray = [];
+		this.globalStates.forEach(function (globalState) {
+			this.states[globalState].forEach(function (state) {
+				stateArray.push(state);
+			});
+		});
+		return stateArray;
+	},
+
 	// Basic state definition
 	state: function (component, name, args) {
 		this.component = component;
@@ -482,6 +548,7 @@ var UI = {
 		} else {
 			state = new this.state(component, name, args);
 		}
+		state.index = this.states[name].length - 1; // able to find state again
 		this.states[name].push(state);
 		return state;
 	},
@@ -491,6 +558,16 @@ var UI = {
 	// Svitches are specific actions that must be carried out before a particular state change, such as a server API call.
 	// A svitch can be used to access its component or state or be filtered by state name
 	svitches: {},
+
+	allSvitches: function () {
+		var svitchArray = [];
+		this.globalStates.forEach(function (globalState) {
+			this.svitches[globalState].forEach(function (svitch) {
+				svitchArray.push(svitch);
+			});
+		});
+		return svitchArray;
+	},
 
 	// Svitch definition
 	svitch: function (component, stateName, fn) {
