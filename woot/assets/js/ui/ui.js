@@ -125,12 +125,6 @@ var UI = {
 		this.rendered = false; // establish whether or not the component has been rendered to the DOM.
 		this.update(args);
 
-		// bindings
-		this.bindings = args.bindings !== undefined ? args.bindings : [];
-
-		// children
-		this.children = args.children !== undefined ? args.children : [];
-
 		///////////////
 		// METHODS
 		// update
@@ -139,35 +133,24 @@ var UI = {
 			this.id = id !== undefined ? id : currentId;
 
 			// handle any changes
-			if (this.id !== currentId) {
+			if (this.id !== currentId && this.rendered) {
 				// 1. change model id
-				// 2. swap key in UI.components object
+				this.model().attr('id', this.id);
 
-				// replace
-				// myHash["from"] = "value";
-				// myHash["to"] = myHash["from"];
-				// delete myHash["from"];
+				// 2. swap key in UI.components object
+				UI.components[this.id] = UI.components[currentId];
+				delete UI.components[currentId];
 			}
 		}
 
 		this.setRoot = function (root) {
 			var currentRoot = this.root !== undefined ? this.root : 'hook';
 			this.root = root !== undefined ? root : currentRoot;
-
-			// if rendered, need to update position IRL
-		}
-
-		this.setAfter = function (after) {
-			// sibling id to be placed after in children
-
-			// if rendered, need to update position IRL
 		}
 
 		this.setTemplate = function (template) {
 			var currentTemplate = this.template !== undefined ? this.template : UI.templates.div;
 			this.template = template !== undefined ? template : currentTemplate;
-
-			// if rendered, re-render
 		}
 
 		this.setAppearance = function (appearance) {
@@ -177,8 +160,6 @@ var UI = {
 				this.classes = appearance.classes !== undefined ? appearance.classes : this.classes;
 				this.style = appearance.style !== undefined ? appearance.style : this.style;
 			}
-
-			// if rendered, re-render
 		}
 
 		this.getState = function (stateName) {
@@ -294,15 +275,11 @@ var UI = {
 		}
 
 		this.setBindings = function (bindings) {
-			// add or replace
 
-			// if rendered, add to model
 		}
 
 		this.setChildren = function (children) {
-			// add but not replace
-
-			// if rendered, render extra children
+			
 		}
 
 		this.update = function (args) {
@@ -380,6 +357,9 @@ var UI = {
 					binding.fn(_this);
 				});
 			});
+
+			// 7. set rendered
+			this.rendered = true;
 		}
 
 		// parent
