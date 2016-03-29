@@ -52,16 +52,16 @@ def create_user(request):
 				user_data['email'],
 			)
 
-			if user_data['roles_admin']:
+			if user_data['roles_admin']=='true':
 				if client.is_production:
 					new_user.create_productionadmin(client)
 				else:
 					new_user.create_contractadmin(client)
 
-			if user_data['roles_moderator']:
+			if user_data['roles_moderator']=='true':
 				new_user.create_moderator(client)
 
-			if user_data['roles_worker']:
+			if user_data['roles_worker']=='true':
 				new_user.create_worker(client, client.available_moderator())
 
 			return JsonResponse(new_user.data(permission))
