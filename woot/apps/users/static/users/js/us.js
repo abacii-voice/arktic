@@ -1,16 +1,16 @@
 
 // global states
 UI.createGlobalStates('details-state', [
-	'verification-email-sent-state',
+	
 ]);
 
 /*
 
 STEPS:
 1. Opens with details state. User is prompted for their details.
-2. User data is sent to the server and checked for a conflicts.
+2. User data is sent to the server and checked for conflicts.
 3. If no conflicts, user is accepted and notified that their account will be approved by an admin.
-4. Users are notified that a verification email has been sent and are invited to close the window.
+4. Users are then redirected to the account page
 
 */
 
