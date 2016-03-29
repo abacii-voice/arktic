@@ -682,6 +682,19 @@ UI.createApp('hook', [
 																				pending.model().addClass('enabled');
 																				pending.model().toggleClass('glyphicon-hidden');
 																				add.model().toggleClass('glyphicon-hidden');
+
+																				// 3. change data in context
+																				var userProfile = Context.get('current_user_profile');
+																				if (userProfile.roles.admin !== undefined) {
+																					userProfile.roles.admin.is_new = true;
+																				} else {
+																					userProfile.role.admin = {
+																						'is_new': true,
+																						'is_enabled': false,
+																						'is_approved': true,
+																					};
+																				}
+																				Context.set('current_user_profile', userProfile);
 																			}
 																		}
 																	}},
@@ -866,6 +879,19 @@ UI.createApp('hook', [
 																				pending.model().addClass('enabled');
 																				pending.model().toggleClass('glyphicon-hidden');
 																				add.model().toggleClass('glyphicon-hidden');
+
+																				// 3. change data in context
+																				var userProfile = Context.get('current_user_profile');
+																				if (userProfile.roles.moderator !== undefined) {
+																					userProfile.roles.moderator.is_new = true;
+																				} else {
+																					userProfile.roles.moderator = {
+																						'is_new': true,
+																						'is_enabled': false,
+																						'is_approved': true,
+																					};
+																				}
+																				Context.set('current_user_profile', userProfile);
 																			}
 																		}
 																	}},
@@ -1049,6 +1075,19 @@ UI.createApp('hook', [
 																				pending.model().addClass('enabled');
 																				pending.model().toggleClass('glyphicon-hidden');
 																				add.model().toggleClass('glyphicon-hidden');
+
+																				// 3. change data in context
+																				var userProfile = Context.get('current_user_profile');
+																				if (userProfile.roles.worker !== undefined) {
+																					userProfile.roles.worker.is_new = true;
+																				} else {
+																					userProfile.roles.worker = {
+																						'is_new': true,
+																						'is_enabled': false,
+																						'is_approved': true,
+																					};
+																				}
+																				Context.set('current_user_profile', userProfile);
 																			}
 																		}
 																	}},
