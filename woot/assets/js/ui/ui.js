@@ -247,8 +247,9 @@ var UI = {
 		}
 
 		this.states = function () {
+			var _this = this;
 			return UI.allStates().filter(function (state) {
-				return state.component.id === this.id;
+				return state.component.id === _this.id;
 			});
 		}
 
