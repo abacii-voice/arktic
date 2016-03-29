@@ -2097,6 +2097,14 @@ UI.createApp('hook', [
 																'roles_worker': workerRole,
 															};
 
+															// clear inputs
+															firstName.model().val('');
+															lastName.model().val('');
+															email.model().val('');
+															UI.getComponent('nraw-tb-check').model().addClass('glyphicon-hidden');
+															UI.getComponent('nrmw-tb-check').model().addClass('glyphicon-hidden');
+															UI.getComponent('nrww-tb-check').model().addClass('glyphicon-hidden');
+
 															// change to user confirm state
 															_this.triggerState();
 
@@ -2105,6 +2113,7 @@ UI.createApp('hook', [
 																var id = 'user-button-{id}'.format({id: userPrototype.id});
 																var html = '{last_name}, {first_name}'.format({first_name: userPrototype.first_name, last_name: userPrototype.last_name});
 
+																// update user button
 																userButton.update({
 																	id: id,
 																	appearance: {
