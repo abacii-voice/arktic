@@ -15,12 +15,12 @@ Context.setFn(getdata('context', {}, function (data) {
 	}
 
 	// debug and construction
-	$.when(new Promise (function (resolve, reject) {
-		Context.set('current_client', 'TestProductionClient');
-		Context.set('current_role', 'admin')
-	})).done(function () {
-		UI.changeState('user-management-state');
-	});
+	// $.when(new Promise (function (resolve, reject) {
+	// 	Context.set('current_client', 'TestProductionClient');
+	// 	Context.set('current_role', 'admin')
+	// })).done(function () {
+	// 	UI.changeState('user-management-state');
+	// });
 }));
 
 // 2. Define global states
