@@ -177,8 +177,9 @@ var UI = {
 				var model = this.model();
 
 				// properties
+				var _this = this;
 				Object.keys(this.properties).forEach(function (property) {
-					model.attr(property, this.properties[property]);
+					model.attr(property, _this.properties[property]);
 				});
 
 				// html
@@ -413,9 +414,9 @@ var UI = {
 			// 6. add bindings
 			var _this = this;
 			Object.keys(this.bindings).map(function (bindingName) {
-				var binding = _this.bindings[bindingName];
-				model.on(binding.name, function () {
-					binding.fn(_this);
+				var fn = _this.bindings[bindingName];
+				model.on(bindingName, function () {
+					fn(_this);
 				});
 			});
 
