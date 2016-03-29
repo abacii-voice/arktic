@@ -2881,7 +2881,7 @@ UI.createApp('hook', [
 										],
 									});
 
-									_this.children.push(child);
+									_this.children[child.id] = child;
 									child.render();
 
 									// make buttons visible
