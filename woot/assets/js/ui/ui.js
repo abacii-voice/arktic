@@ -48,7 +48,7 @@ var UI = {
 			var componentSvitchPromise = new Promise(function (resolve, reject) {
 				UI.svitches[stateName].filter(function (svitch) {
 					return svitch.component.id === trigger;
-				}).map(function (svitch) {
+				}).forEach(function (svitch) {
 					svitch.fn(svitch.component);
 				});
 			});
@@ -136,6 +136,9 @@ var UI = {
 				// 2. swap key in UI.components object
 				UI.components[this.id] = UI.components[currentId];
 				delete UI.components[currentId];
+
+				// 3. remove old from parent children
+				delete this.parent().children[currentId];
 			}
 		}
 
@@ -322,6 +325,7 @@ var UI = {
 						this.model().on(binding.name, function () {
 							binding.fn(_this);
 						});
+						console.log(this.id, $._data(this.model()[0], 'events'));
 					}
 				}, this);
 			}
@@ -403,18 +407,18 @@ var UI = {
 			// 4. Add classes and style of initial state
 			var model = this.model();
 			if (this.state !== undefined) {
-				this.stateClasses.map(function (stateClass) {
+				this.stateClasses.forEach(function (stateClass) {
 					model.addClass(stateClass);
 				});
 				model.css(this.stateStyle);
 			}
 
 			// 5. render children
-			Object.keys(this.children).map(this.renderChild, this);
+			Object.keys(this.children).forEach(this.renderChild, this);
 
 			// 6. add bindings
 			var _this = this;
-			Object.keys(this.bindings).map(function (bindingName) {
+			Object.keys(this.bindings).forEach(function (bindingName) {
 				var fn = _this.bindings[bindingName];
 				model.on(bindingName, function () {
 					fn(_this);
