@@ -306,6 +306,7 @@ UI.createApp('hook', [
 													Object.keys(_this.children).forEach(function (childId) {
 														UI.removeComponent(childId);
 													});
+													_this.children = {};
 												})).done(function () {
 													// promise to fetch data and update Context
 													var permissionData = {
@@ -688,7 +689,7 @@ UI.createApp('hook', [
 																				if (userProfile.roles.admin !== undefined) {
 																					userProfile.roles.admin.is_new = true;
 																				} else {
-																					userProfile.role.admin = {
+																					userProfile.roles.admin = {
 																						'is_new': true,
 																						'is_enabled': false,
 																						'is_approved': true,
