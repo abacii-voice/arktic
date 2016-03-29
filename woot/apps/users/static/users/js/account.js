@@ -568,7 +568,7 @@ UI.createApp('hook', [
 																								}
 																							}
 																						} else {
-																							_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																							model.addClass('glyphicon-hidden').removeClass('enabled');
 																						}
 																					},
 																				}}
@@ -583,18 +583,19 @@ UI.createApp('hook', [
 																					preFn: function (_this) {
 																						// get data
 																						var user = Context.get('current_user_profile');
+																						var model = _this.model()
 																						if (user.roles.hasOwnProperty('admin')) {
 																							if (user.roles.admin.is_enabled) {
-																								_this.model().addClass('glyphicon-hidden');
+																								model.addClass('glyphicon-hidden');
 																							} else {
 																								if (user.roles.admin.is_new) {
-																									_this.model().addClass('glyphicon-hidden');
+																									model.addClass('glyphicon-hidden');
 																								} else {
-																									_this.model().removeClass('glyphicon-hidden');
+																									model.removeClass('glyphicon-hidden');
 																								}
 																							}
 																						} else {
-																							_this.model().addClass('glyphicon-hidden');
+																							model.addClass('glyphicon-hidden');
 																						}
 																					},
 																				}}
@@ -609,14 +610,15 @@ UI.createApp('hook', [
 																					preFn: function (_this) {
 																						// get data
 																						var user = Context.get('current_user_profile');
+																						var model = _this.model();
 																						if (user.roles.hasOwnProperty('admin')) {
 																							if (user.roles.admin.is_new) {
-																								_this.model().removeClass('glyphicon-hidden').addClass('enabled');
+																								model.removeClass('glyphicon-hidden').addClass('enabled');
 																							} else {
-																								_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																								model.addClass('glyphicon-hidden').removeClass('enabled');
 																							}
 																						} else {
-																							_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																							model.addClass('glyphicon-hidden').removeClass('enabled');
 																						}
 																					},
 																				}}
@@ -631,10 +633,11 @@ UI.createApp('hook', [
 																					preFn: function (_this) {
 																						// get data
 																						var user = Context.get('current_user_profile');
+																						var model = _this.model();
 																						if (user.roles.hasOwnProperty('admin')) {
-																							_this.model().addClass('glyphicon-hidden');
+																							model.addClass('glyphicon-hidden');
 																						} else {
-																							_this.model().removeClass('glyphicon-hidden');
+																							model.removeClass('glyphicon-hidden');
 																						}
 																					},
 																				}}
@@ -739,17 +742,17 @@ UI.createApp('hook', [
 																						var user = Context.get('current_user_profile');
 																						var model = _this.model();
 																						if (user.roles.hasOwnProperty('moderator')) {
-																							if (user.roles.admin.is_enabled) {
+																							if (user.roles.moderator.is_enabled) {
 																								model.removeClass('glyphicon-hidden').addClass('enabled');
 																							} else {
-																								if (user.roles.admin.is_new) {
+																								if (user.roles.moderator.is_new) {
 																									model.addClass('glyphicon-hidden').removeClass('enabled');
 																								} else {
 																									model.addClass('glyphicon-hidden').addClass('enabled');
 																								}
 																							}
 																						} else {
-																							_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																							model.addClass('glyphicon-hidden').removeClass('enabled');
 																						}
 																					},
 																				}}
@@ -764,18 +767,19 @@ UI.createApp('hook', [
 																					preFn: function (_this) {
 																						// get data
 																						var user = Context.get('current_user_profile');
+																						var model = _this.model();
 																						if (user.roles.hasOwnProperty('moderator')) {
-																							if (user.roles.admin.is_enabled) {
-																								_this.model().addClass('glyphicon-hidden');
+																							if (user.roles.moderator.is_enabled) {
+																								model.addClass('glyphicon-hidden');
 																							} else {
-																								if (user.roles.admin.is_new) {
-																									_this.model().addClass('glyphicon-hidden');
+																								if (user.roles.moderator.is_new) {
+																									model.addClass('glyphicon-hidden');
 																								} else {
-																									_this.model().removeClass('glyphicon-hidden');
+																									model.removeClass('glyphicon-hidden');
 																								}
 																							}
 																						} else {
-																							_this.model().addClass('glyphicon-hidden');
+																							model.addClass('glyphicon-hidden');
 																						}
 																					},
 																				}}
@@ -790,14 +794,15 @@ UI.createApp('hook', [
 																					preFn: function (_this) {
 																						// get data
 																						var user = Context.get('current_user_profile');
+																						var model = _this.model();
 																						if (user.roles.hasOwnProperty('moderator')) {
-																							if (user.roles.admin.is_new) {
-																								_this.model().removeClass('glyphicon-hidden').addClass('enabled');
+																							if (user.roles.moderator.is_new) {
+																								model.removeClass('glyphicon-hidden').addClass('enabled');
 																							} else {
-																								_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																								model.addClass('glyphicon-hidden').removeClass('enabled');
 																							}
 																						} else {
-																							_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																							model.addClass('glyphicon-hidden').removeClass('enabled');
 																						}
 																					},
 																				}}
@@ -812,10 +817,11 @@ UI.createApp('hook', [
 																					preFn: function (_this) {
 																						// get data
 																						var user = Context.get('current_user_profile');
+																						var model = _this.model();
 																						if (user.roles.hasOwnProperty('moderator')) {
-																							_this.model().addClass('glyphicon-hidden');
+																							model.addClass('glyphicon-hidden');
 																						} else {
-																							_this.model().removeClass('glyphicon-hidden');
+																							model.removeClass('glyphicon-hidden');
 																						}
 																					},
 																				}}
@@ -919,17 +925,17 @@ UI.createApp('hook', [
 																						var user = Context.get('current_user_profile');
 																						var model = _this.model();
 																						if (user.roles.hasOwnProperty('worker')) {
-																							if (user.roles.admin.is_enabled) {
+																							if (user.roles.worker.is_enabled) {
 																								model.removeClass('glyphicon-hidden').addClass('enabled');
 																							} else {
-																								if (user.roles.admin.is_new) {
+																								if (user.roles.worker.is_new) {
 																									model.addClass('glyphicon-hidden').removeClass('enabled');
 																								} else {
 																									model.addClass('glyphicon-hidden').addClass('enabled');
 																								}
 																							}
 																						} else {
-																							_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																							model.addClass('glyphicon-hidden').removeClass('enabled');
 																						}
 																					},
 																				}}
@@ -944,18 +950,19 @@ UI.createApp('hook', [
 																					preFn: function (_this) {
 																						// get data
 																						var user = Context.get('current_user_profile');
+																						var model = _this.model();
 																						if (user.roles.hasOwnProperty('worker')) {
-																							if (user.roles.admin.is_enabled) {
-																								_this.model().addClass('glyphicon-hidden');
+																							if (user.roles.worker.is_enabled) {
+																								model.addClass('glyphicon-hidden');
 																							} else {
-																								if (user.roles.admin.is_new) {
-																									_this.model().addClass('glyphicon-hidden');
+																								if (user.roles.worker.is_new) {
+																									model.addClass('glyphicon-hidden');
 																								} else {
-																									_this.model().removeClass('glyphicon-hidden');
+																									model.removeClass('glyphicon-hidden');
 																								}
 																							}
 																						} else {
-																							_this.model().addClass('glyphicon-hidden');
+																							model.addClass('glyphicon-hidden');
 																						}
 																					},
 																				}}
@@ -970,14 +977,15 @@ UI.createApp('hook', [
 																					preFn: function (_this) {
 																						// get data
 																						var user = Context.get('current_user_profile');
+																						var model = _this.model();
 																						if (user.roles.hasOwnProperty('worker')) {
-																							if (user.roles.admin.is_new) {
-																								_this.model().removeClass('glyphicon-hidden').addClass('enabled');
+																							if (user.roles.worker.is_new) {
+																								model.removeClass('glyphicon-hidden').addClass('enabled');
 																							} else {
-																								_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																								model.addClass('glyphicon-hidden').removeClass('enabled');
 																							}
 																						} else {
-																							_this.model().addClass('glyphicon-hidden').removeClass('enabled');
+																							model.addClass('glyphicon-hidden').removeClass('enabled');
 																						}
 																					},
 																				}}
@@ -992,10 +1000,11 @@ UI.createApp('hook', [
 																					preFn: function (_this) {
 																						// get data
 																						var user = Context.get('current_user_profile');
+																						var model = _this.model();
 																						if (user.roles.hasOwnProperty('worker')) {
-																							_this.model().addClass('glyphicon-hidden');
+																							model.addClass('glyphicon-hidden');
 																						} else {
-																							_this.model().removeClass('glyphicon-hidden');
+																							model.removeClass('glyphicon-hidden');
 																						}
 																					},
 																				}}
@@ -2076,6 +2085,7 @@ UI.createApp('hook', [
 															userButton.render();
 
 															// submit user
+															console.log(adminRole, moderatorRole, workerRole);
 															var userData = {
 																'current_client': Context.get('current_client'),
 																'current_role': Context.get('current_role'),
