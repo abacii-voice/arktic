@@ -64,6 +64,9 @@ def create_user(request):
 			if user_data['roles_worker']=='true':
 				new_user.create_worker(client, client.available_moderator())
 
+			# start activation
+			new_user.send_verification_email()
+
 			return JsonResponse(new_user.data(permission))
 
 def modify_user(request):
