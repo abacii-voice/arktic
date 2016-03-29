@@ -146,6 +146,22 @@ var UI = {
 		this.setRoot = function (root) {
 			var currentRoot = this.root !== undefined ? this.root : 'hook';
 			this.root = root !== undefined ? root : currentRoot;
+
+			if (this.rendered) {
+				var newRoot = $('#{id}'.format({id: this.root}));
+				this.model().appendTo(newRoot);
+				UI.getComponent(this.root).children[this.id] = this;
+			}
+		}
+
+		this.setAfter = function (after) {
+			var currentAfter;
+			if (this.rendered) {
+				// find previous child
+
+			} else {
+
+			}
 		}
 
 		this.setTemplate = function (template) {
@@ -159,6 +175,27 @@ var UI = {
 				this.html = appearance.html !== undefined ? appearance.html : this.html;
 				this.classes = appearance.classes !== undefined ? appearance.classes : this.classes;
 				this.style = appearance.style !== undefined ? appearance.style : this.style;
+			}
+
+			if (this.rendered) {
+				// model
+				var model = this.model();
+
+				// properties
+				Object.keys(this.properties).forEach(function (property) {
+					model.attr(property, this.properties[property]);
+				});
+
+				// html
+				model.html(this.html);
+
+				// classes
+				this.classes.forEach(function (className) {
+					model.addClass(className);
+				});
+
+				// style
+				model.css(this.style);
 			}
 		}
 
@@ -275,11 +312,34 @@ var UI = {
 		}
 
 		this.setBindings = function (bindings) {
+			this.bindings = this.bindings !== undefined ? this.bindings : {};
+			if (bindings !== undefined) {
+				bindings.forEach(function (binding) {
+					// 1. determine if binding with the same name is in the current array
+					this.bindings[binding.name] = binding.fn;
 
+					// 2. if rendered, add to model
+					if (this.rendered) {
+						var _this = this;
+						this.model().on(binding.name, function () {
+							binding.fn(_this);
+						});
+					}
+				});
+			}
 		}
 
 		this.setChildren = function (children) {
-			
+			if (children !== undefined) {
+				children.forEach(function (child) {
+					this.children[child.id] = child;
+
+					if (this.rendered) {
+						child.root = this.id;
+						this.renderChild(child.id);
+					}
+				});
+			}
 		}
 
 		this.update = function (args) {
@@ -311,7 +371,8 @@ var UI = {
 		}
 
 		// render
-		this.renderChild = function (child) {
+		this.renderChild = function (childId) {
+			var child = this.children[childId];
 			child.root = this.id;
 			child.render();
 		}
@@ -348,7 +409,7 @@ var UI = {
 			model.css(this.stateStyle);
 
 			// 5. render children
-			this.children.map(this.renderChild, this);
+			Object.keys(this.children).map(this.renderChild, this);
 
 			// 6. add bindings
 			var _this = this;
