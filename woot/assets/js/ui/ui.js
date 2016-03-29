@@ -125,12 +125,13 @@ var UI = {
 		// update
 		this.setId = function (id) {
 			var currentId = this.id;
+			var model = this.model();
 			this.id = id !== undefined ? id : currentId;
 
 			// handle any changes
 			if (this.id !== currentId && this.rendered) {
 				// 1. change model id
-				this.model().attr('id', this.id);
+				model.attr('id', this.id);
 
 				// 2. swap key in UI.components object
 				UI.components[this.id] = UI.components[currentId];
@@ -510,18 +511,17 @@ var UI = {
 		Context.remove(component.id);
 
 		// remove all bindings
-		component.bindings.map(function (binding) {
-			var _this = this;
-			component.model().off(binding.name);
+		Object.keys(component.bindings).forEach(function (bindingName) {
+			component.model().off(bindingName);
 		}, component);
+
+		// remove children recursively
+		Object.keys(component.children).forEach(function (childId) {
+			UI.removeComponent(childId);
+		});
 
 		// remove model from DOM
 		component.model().remove();
-
-		// remove children recursively
-		component.children.map(function (child) {
-			UI.removeComponent(child.id);
-		});
 
 		// remove component from components
 		delete this.components[id];
