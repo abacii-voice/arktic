@@ -2709,8 +2709,8 @@ UI.createApp('hook', [
 								{name: 'role-state', args: {
 									preFn: function (_this) {
 										// 1. remove current children
-										_this.children.map(function (child) {
-											UI.removeComponent(child.id);
+										Object.keys(_this.children).forEach(function (childId) {
+											UI.removeComponent(childId);
 										});
 
 										_this.children = [];
