@@ -15,12 +15,12 @@ Context.setFn(getdata('context', {}, function (data) {
 	}
 
 	// debug and construction
-	// $.when(new Promise (function (resolve, reject) {
-	// 	Context.set('current_client', 'TestProductionClient');
-	// 	Context.set('current_role', 'admin')
-	// })).done(function () {
-	// 	UI.changeState('user-management-state');
-	// });
+	$.when(new Promise (function (resolve, reject) {
+		Context.set('current_client', 'TestProductionClient');
+		Context.set('current_role', 'admin')
+	})).done(function () {
+		UI.changeState('user-management-state');
+	});
 }));
 
 // 2. Define global states
@@ -303,8 +303,8 @@ UI.createApp('hook', [
 											preFn: function (_this) {
 												// 1. remove current children
 												$.when(new Promise(function (resolve, reject) {
-													_this.children.forEach(function (child) {
-														UI.removeComponent(child.id);
+													Object.keys(_this.children).forEach(function (childId) {
+														UI.removeComponent(childId);
 													});
 												})).done(function () {
 													// promise to fetch data and update Context
@@ -318,7 +318,7 @@ UI.createApp('hook', [
 													})).done(function () {
 														// data is a list of user objects with relevant details
 														var users = Context.get('clients', Context.get('current_client'), 'users');
-														_this.children = Object.keys(users).map(function (userId) {
+														Object.keys(users).forEach(function (userId) {
 															var userPrototype = users[userId];
 															var userButton = UI.createComponent('user-button-{id}'.format({id: userId}), {
 																root: _this.id,
@@ -349,7 +349,7 @@ UI.createApp('hook', [
 															userButton.render();
 
 															// return button
-															return userButton;
+															_this.children[userButton.id] = userButton;
 														});
 
 														// fade loading icon
@@ -2094,6 +2094,7 @@ UI.createApp('hook', [
 															command('create_user', userData, function (userPrototype) {
 																var id = 'user-button-{id}'.format({id: userPrototype.id});
 																var html = '{last_name}, {first_name}'.format({first_name: userPrototype.first_name, last_name: userPrototype.last_name});
+																console.log('update');
 
 																userButton.update({
 																	id: id,
