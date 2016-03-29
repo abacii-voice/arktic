@@ -120,11 +120,6 @@ var UI = {
 		// 	children: [],
 		// })
 
-		// initialise
-		this.id = id;
-		this.rendered = false; // establish whether or not the component has been rendered to the DOM.
-		this.update(args);
-
 		///////////////
 		// METHODS
 		// update
@@ -200,7 +195,7 @@ var UI = {
 		}
 
 		this.getState = function (stateName) {
-			return this.states.filter(function (state) {
+			return this.states().filter(function (state) {
 				return state.name === stateName;
 			})[0];
 		};
@@ -285,7 +280,7 @@ var UI = {
 		}
 
 		this.addStateMap = function (stateMap) {
-			var this.stateMap = this.stateMap !== undefined ? this.stateMap : {};
+			this.stateMap = this.stateMap !== undefined ? this.stateMap : {};
 
 			if (stateMap !== undefined) {
 				if (typeof stateMap === 'string') {
@@ -295,7 +290,7 @@ var UI = {
 				} else {
 					Object.keys(stateMap).forEach(function (stateName) {
 						this.stateMap[stateName] = stateMap[stateName];
-					});
+					}, this);
 				}
 			}
 		}
@@ -325,11 +320,12 @@ var UI = {
 							binding.fn(_this);
 						});
 					}
-				});
+				}, this);
 			}
 		}
 
 		this.setChildren = function (children) {
+			this.children = this.children !== undefined ? this.children : {};
 			if (children !== undefined) {
 				children.forEach(function (child) {
 					this.children[child.id] = child;
@@ -338,7 +334,7 @@ var UI = {
 						child.root = this.id;
 						this.renderChild(child.id);
 					}
-				});
+				}, this);
 			}
 		}
 
@@ -403,17 +399,20 @@ var UI = {
 
 			// 4. Add classes and style of initial state
 			var model = this.model();
-			this.stateClasses.map(function (stateClass) {
-				model.addClass(stateClass);
-			});
-			model.css(this.stateStyle);
+			if (this.state !== undefined) {
+				this.stateClasses.map(function (stateClass) {
+					model.addClass(stateClass);
+				});
+				model.css(this.stateStyle);
+			}
 
 			// 5. render children
 			Object.keys(this.children).map(this.renderChild, this);
 
 			// 6. add bindings
 			var _this = this;
-			this.bindings.map(function (binding) {
+			Object.keys(this.bindings).map(function (bindingName) {
+				var binding = _this.bindings[bindingName];
 				model.on(binding.name, function () {
 					binding.fn(_this);
 				});
@@ -490,6 +489,10 @@ var UI = {
 			UI.changeState(this.mapState(UI.globalState), this.id);
 		}
 
+		// initialise
+		this.id = id;
+		this.rendered = false; // establish whether or not the component has been rendered to the DOM.
+		this.update(args);
 	},
 
 	// component factory
@@ -549,8 +552,8 @@ var UI = {
 		this.globalStates.forEach(function (globalState) {
 			this.states[globalState].forEach(function (state) {
 				stateArray.push(state);
-			});
-		});
+			}, this);
+		}, this);
 		return stateArray;
 	},
 
@@ -591,8 +594,8 @@ var UI = {
 		this.globalStates.forEach(function (globalState) {
 			this.svitches[globalState].forEach(function (svitch) {
 				svitchArray.push(svitch);
-			});
-		});
+			}, this);
+		}, this);
 		return svitchArray;
 	},
 
