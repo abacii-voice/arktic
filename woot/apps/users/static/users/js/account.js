@@ -2037,7 +2037,7 @@ UI.createApp('hook', [
 														if (noProblems) {
 															// 3. add loading button to list
 															var userList = UI.getComponent('user-list');
-															var index = '{index}'.format({index: userList.children.length});
+															var index = Object.keys(userList.children).length;
 															var userButton = UI.createComponent('user-button-{index}'.format({index: index}), {
 																root: userList.id,
 																template: UI.templates.button,
@@ -2072,7 +2072,7 @@ UI.createApp('hook', [
 																],
 															});
 
-															userList.children.push(userButton);
+															userList.children[userButton.id] = userButton;
 															userButton.render();
 
 															// submit user
@@ -2094,7 +2094,6 @@ UI.createApp('hook', [
 															command('create_user', userData, function (userPrototype) {
 																var id = 'user-button-{id}'.format({id: userPrototype.id});
 																var html = '{last_name}, {first_name}'.format({first_name: userPrototype.first_name, last_name: userPrototype.last_name});
-																console.log('update');
 
 																userButton.update({
 																	id: id,
@@ -2103,7 +2102,7 @@ UI.createApp('hook', [
 																	},
 																	state: {
 																		stateMap: 'user-management-user-state',
-																		svtiches: [
+																		svitches: [
 																			{stateName: 'user-management-user-state', fn: function (_this) {
 																				Context.set('current_user_profile', userPrototype);
 																			}},
