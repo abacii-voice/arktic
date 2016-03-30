@@ -3,6 +3,12 @@
 
 {# LOAD JS #}
 {% block head-js %}
+<script type='text/javascript'>
+	var initialData = {
+		'user_id': '{{user_id}}',
+		'activation_key': '{{activation_key}}',
+	};
+</script>
 {% endblock %}
 
 {# CSS #}

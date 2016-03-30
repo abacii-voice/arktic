@@ -6,7 +6,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.conf import settings
 
 # local
-from apps.users.views import HomeView, AdminSignupView, AccountSPAView, LoginView, logout_view, verify
+from apps.users.views import HomeView, AdminSignupView, AccountSPAView, UserSignupView, LoginView, logout_view
 
 urlpatterns = [
 	# i18n / l10n
@@ -83,7 +83,7 @@ Workers and moderators will also get keys in their emails, but they do not sign 
 urlpatterns += [
 	# login
 	url(r'^login/', LoginView.as_view()),
-	url(r'^verify/(?P<user>)/(?P<key>)/$', verify),
+	url(r'^verify/(?P<user>.+)/(?P<key>.+)/$', UserSignupView.as_view()),
 	url(r'^logout/', logout_view),
 ]
 
