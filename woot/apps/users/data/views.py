@@ -19,6 +19,7 @@ from permission import check_request
 import json
 
 ### Data
+# account
 def context(request):
 	user, permission, verified = check_request(request)
 	if verified:
@@ -48,12 +49,31 @@ def context(request):
 		return JsonResponse(context_data)
 
 def context_projects(request):
-	if check_request(request):
+	user, permission, verified = check_request(request)
+	if verified:
 		pass
 
 def load_attachment(request):
-	if check_request(request):
+	user, permission, verified = check_request(request)
+	if verified:
 		# return audio file url or rule reference
 		# data type
 		# data content
 		pass
+
+# User signup
+def us_data(request):
+	if request.method == 'POST':
+		# no permission required
+
+		# get initial data
+		initial_data = {
+			'user_id': request.POST['user_id'],
+			'activation_key': request.POST['activation_key'],
+		}
+
+		# compile user data
+		user = User.objects.get(id=initial_data['user_id'])
+		user_data = user.basic_data()
+
+		return JsonResponse(user_data)

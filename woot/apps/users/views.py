@@ -41,7 +41,32 @@ class AdminSignupView(View):
 
 # 2. User signup
 class UserSignupView(View):
-	pass
+	'''
+	Responds to the link sent to the user's email. This link is of the form:
+
+	http://localhost:8000/verify/0c26e88d-e901-4a33-9946-76da9387a414/7lfGzO4lly5J
+	r'^verify/(?P<user>.+)/(?P<key>.+)/$'
+
+	If the user is verified by this method, they will be redirected to the user signup page to choose a password.
+	If not, they will be redirected to the login page.
+	'''
+
+	def get(self, request, **kwargs):
+		# get data
+		user_data = {
+			'user_id': kwargs['user'],
+			'activation_key': kwargs['key'],
+		}
+
+		# get user and determine if user is already verified or details are incorrect
+		user = User.objects.get(id=user_data['user_id'])
+		is_verified = user.verify(user_data['activation_key'])
+
+		if not is_verified:
+			# redirect to login
+			return HttpResponseRedirect('/login/')
+		else:
+			return render(request, 'users/user-signup.html', user_data)
 
 # 3. Account SPA
 class AccountSPAView(View):
