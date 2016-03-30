@@ -472,7 +472,9 @@ UI.createApp('hook', [
 																{name: 'user-management-user-state', args: {
 																	preFn: function (_this) {
 																		var user = Context.get('current_user_profile');
-																		_this.model().html('{first} {last}'.format({first: user.first_name, last: user.last_name}));
+																		var model = _this.model();
+																		model.html('{first} {last}'.format({first: user.first_name, last: user.last_name}));
+																		model.attr('userid', user.id);
 																	},
 																}}
 															],
@@ -666,6 +668,7 @@ UI.createApp('hook', [
 
 																		var roleData = {
 																			'current_client': Context.get('current_client'),
+																			'current_role': Context.get('current_role'),
 																			'user_id': UI.getComponent('uc-name').model().attr('userid'),
 																			'role_type': 'admin',
 																		};
@@ -863,6 +866,7 @@ UI.createApp('hook', [
 
 																		var roleData = {
 																			'current_client': Context.get('current_client'),
+																			'current_role': Context.get('current_role'),
 																			'user_id': UI.getComponent('uc-name').model().attr('userid'),
 																			'role_type': 'moderator',
 																		};
@@ -1059,6 +1063,7 @@ UI.createApp('hook', [
 
 																		var roleData = {
 																			'current_client': Context.get('current_client'),
+																			'current_role': Context.get('current_role'),
 																			'user_id': UI.getComponent('uc-name').model().attr('userid'),
 																			'role_type': 'worker',
 																		};

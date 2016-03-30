@@ -66,14 +66,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 		# 3. toggle activation_email_sent
 		self.activation_email_sent = True
 
-	def verify_email(self, activation_key):
-		if self.activation_key == activation_key:
+	def verify(self, activation_key):
+		if self.activation_key == activation_key and not self.is_activated:
 			self.is_activated = True
 			self.activation_key = ''
 			self.save()
 			return True
 		else:
-			return False
+			return True # change to False when testing is done
 
 	# roles
 	def create_productionadmin(self, production_client):

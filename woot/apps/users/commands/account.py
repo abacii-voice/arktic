@@ -69,12 +69,37 @@ def create_user(request):
 
 			return JsonResponse(new_user.data(permission))
 
-def modify_user(request):
-	user, permission, verified = check_request(request)
-	if verified:
-		pass
-
 def add_role_to_user(request):
+	user, permission, verified = check_request(request)
+	if verified and permission.is_productionadmin:
+		# get data
+		role_data = {
+			'current_client': request.POST['current_client'],
+			'user_id': request.POST['user_id'],
+			'role_type': request.POST['role_type'],
+		}
+
+		# create role
+		client = Client.objects.get(name=role_data['current_client'])
+		if permission.check_client(client):
+			user = User.objects.get(id=role_data['user_id'])
+
+			role_type = role_data['role_type']
+			if role_type == 'admin':
+				if client.is_production:
+					user.create_productionadmin(client)
+				else:
+					user.create_contractadmin(client)
+
+			elif role_type == 'moderator':
+				user.create_moderator(client)
+
+			elif role_type == 'worker':
+				user.create_worker(client, client.available_moderator())
+
+		return JsonResponse({'done': True})
+
+def modify_user(request):
 	user, permission, verified = check_request(request)
 	if verified:
 		# get data
