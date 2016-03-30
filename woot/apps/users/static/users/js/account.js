@@ -366,7 +366,17 @@ UI.createApp('hook', [
 								template: UI.templates.loadingIcon,
 								appearance: {
 									classes: ['ie centred show'],
-								}
+								},
+								state: {
+									states: [
+										{name: 'user-management-state', args: {
+											preFn: UI.functions.activate,
+											style: {
+												'opacity': '1.0',
+											},
+										}},
+									],
+								},
 							}),
 						],
 					}),
