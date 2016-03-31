@@ -2140,7 +2140,6 @@ UI.createApp('hook', [
 															userButton.render();
 
 															// submit user
-															console.log(adminRole, moderatorRole, workerRole);
 															var userData = {
 																'current_client': Context.get('current_client'),
 																'current_role': Context.get('current_role'),
@@ -2151,6 +2150,8 @@ UI.createApp('hook', [
 																'roles_moderator': moderatorRole,
 																'roles_worker': workerRole,
 															};
+
+															Context.set('user_data', userData);
 
 															// clear inputs
 															firstName.model().val('');
@@ -2164,31 +2165,31 @@ UI.createApp('hook', [
 															_this.triggerState();
 
 															// call add_user command
-															command('create_user', userData, function (userPrototype) {
-																var id = 'user-button-{id}'.format({id: userPrototype.id});
-																var html = '{last_name}, {first_name}'.format({first_name: userPrototype.first_name, last_name: userPrototype.last_name});
-
-																// update user button
-																userButton.update({
-																	id: id,
-																	appearance: {
-																		html: html,
-																	},
-																	state: {
-																		stateMap: 'user-management-user-state',
-																		svitches: [
-																			{stateName: 'user-management-user-state', fn: function (_this) {
-																				Context.set('current_user_profile', userPrototype);
-																			}},
-																		],
-																	},
-																	bindings: [
-																		{name: 'click', fn: function (_this) {
-																			_this.triggerState();
-																		}}
-																	],
-																});
-															});
+															// command('create_user', userData, function (userPrototype) {
+															// 	var id = 'user-button-{id}'.format({id: userPrototype.id});
+															// 	var html = '{last_name}, {first_name}'.format({first_name: userPrototype.first_name, last_name: userPrototype.last_name});
+															//
+															// 	// update user button
+															// 	userButton.update({
+															// 		id: id,
+															// 		appearance: {
+															// 			html: html,
+															// 		},
+															// 		state: {
+															// 			stateMap: 'user-management-user-state',
+															// 			svitches: [
+															// 				{stateName: 'user-management-user-state', fn: function (_this) {
+															// 					Context.set('current_user_profile', userPrototype);
+															// 				}},
+															// 			],
+															// 		},
+															// 		bindings: [
+															// 			{name: 'click', fn: function (_this) {
+															// 				_this.triggerState();
+															// 			}}
+															// 		],
+															// 	});
+															// });
 														}
 													}},
 												],

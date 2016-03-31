@@ -45,13 +45,13 @@ SECRET_KEY = 'x08ig!20zeo%q46l6dnc8eqzb5g+h&(t4o18e#!yex&g&7sn=n'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#email-host
-EMAIL_HOST = environ.get('EMAIL_HOST', 'localhost')
+EMAIL_HOST = environ.get('EMAIL_HOST', 'smtp.gmail.com')
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#email-host-password
-EMAIL_HOST_PASSWORD = environ.get('EMAIL_HOST_PASSWORD', '')
+EMAIL_HOST_PASSWORD = environ.get('EMAIL_HOST_PASSWORD', 'QhD-6Jt-HHJ-889-erd')
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#email-host-user
-EMAIL_HOST_USER = environ.get('EMAIL_HOST_USER', 'your_email@example.com')
+EMAIL_HOST_USER = environ.get('EMAIL_HOST_USER', 'arktic.email@gmail.com')
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#email-port
 EMAIL_PORT = environ.get('EMAIL_PORT', 1025)
