@@ -294,8 +294,9 @@ var UI = {
 		}
 
 		this.svitches = function () {
+			var _this = this;
 			return UI.allSvitches().filter(function (svitch) {
-				return svitch.component.id === this.id;
+				return svitch.component.id === _this.id;
 			});
 		}
 
