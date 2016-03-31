@@ -60,7 +60,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 			'Follow the link below to verify your email:', # text message
 			'no-reply@arktic.com', # from email: not sure yet
 			[self.email], # recipient list
-			'html-message' # html message: needs rendering and stuff
+			'Click <a href="localhost:8000/verify/{}/{}/">the link</a>'.format(self.id, self.activation_key) # html message: needs rendering and stuff
 		)
 
 		# 3. toggle activation_email_sent
