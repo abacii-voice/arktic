@@ -340,7 +340,6 @@ var UI = {
 						this.model().on(binding.name, function () {
 							binding.fn(_this);
 						});
-						console.log(this.id, $._data(this.model()[0], 'events'));
 					}
 				}, this);
 			}

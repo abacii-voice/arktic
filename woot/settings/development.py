@@ -54,7 +54,7 @@ EMAIL_HOST_PASSWORD = environ.get('EMAIL_HOST_PASSWORD', 'QhD-6Jt-HHJ-889-erd')
 EMAIL_HOST_USER = environ.get('EMAIL_HOST_USER', 'arktic.email@gmail.com')
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#email-port
-EMAIL_PORT = environ.get('EMAIL_PORT', 1025)
+EMAIL_PORT = environ.get('EMAIL_PORT', 587)
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#email-subject-prefix
 EMAIL_SUBJECT_PREFIX = ''
