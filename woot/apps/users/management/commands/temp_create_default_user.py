@@ -25,9 +25,24 @@ class Command(BaseCommand):
 
 		# create roles
 		production_admin_role = user.create_productionadmin(production_client)
+		production_admin_role.is_enabled = True
+		production_admin_role.is_new = False
+		production_admin_role.save()
+
 		contract_admin_role = user.create_contractadmin(contract_client)
+		contract_admin_role.is_enabled = True
+		contract_admin_role.is_new = False
+		contract_admin_role.save()
+
 		moderator_role = user.create_moderator(production_client)
+		moderator_role.is_enabled = True
+		moderator_role.is_new = False
+		moderator_role.save()
+
 		worker_role = user.create_worker(production_client, moderator_role)
+		worker_role.is_enabled = True
+		worker_role.is_new = False
+		worker_role.save()
 
 		# save
 		user.save()

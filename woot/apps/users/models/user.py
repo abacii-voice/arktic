@@ -70,9 +70,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 	def verify(self, activation_key):
 		print(self.activation_key, activation_key, self.id)
 		if self.activation_key == activation_key and not self.is_activated:
+			# reset activation
 			self.is_activated = True
 			self.activation_key = ''
 			self.save()
+
+			# return to confirm
 			return True
 		else:
 			return False # change to False when testing is done
