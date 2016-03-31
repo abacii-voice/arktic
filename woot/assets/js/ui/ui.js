@@ -146,7 +146,7 @@ var UI = {
 			var currentRoot = this.root !== undefined ? this.root : 'hook';
 			this.root = root !== undefined ? root : currentRoot;
 
-			if (this.rendered) {
+			if (this.rendered && this.root !== currentRoot) {
 				var newRoot = $('#{id}'.format({id: this.root}));
 				this.model().appendTo(newRoot);
 				UI.getComponent(this.root).children[this.id] = this;
@@ -170,10 +170,14 @@ var UI = {
 
 		this.setAppearance = function (appearance) {
 			if (appearance !== undefined) {
-				this.properties = appearance.properties !== undefined ? appearance.properties : this.properties;
+				var currentProperties = this.properties !== undefined ? this.properties : {};
+				var currentClasses = this.classes !== undefined ? this.classes : [];
+				var currentStyle = this.style !== undefined ? this.style : {};
+
+				this.properties = appearance.properties !== undefined ? appearance.properties : currentProperties;
 				this.html = appearance.html !== undefined ? appearance.html : this.html;
-				this.classes = appearance.classes !== undefined ? appearance.classes : this.classes;
-				this.style = appearance.style !== undefined ? appearance.style : this.style;
+				this.classes = appearance.classes !== undefined ? appearance.classes : currentClasses;
+				this.style = appearance.style !== undefined ? appearance.style : currentStyle;
 			}
 
 			if (this.rendered) {
@@ -190,9 +194,11 @@ var UI = {
 				model.html(this.html);
 
 				// classes
-				this.classes.forEach(function (className) {
-					model.addClass(className);
-				});
+				if (this.classes !== undefined) {
+					this.classes.forEach(function (className) {
+						model.addClass(className);
+					});
+				}
 
 				// style
 				model.css(this.style);
