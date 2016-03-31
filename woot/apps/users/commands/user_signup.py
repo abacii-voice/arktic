@@ -37,6 +37,12 @@ def verify(request):
 		# set password
 		user.set_password(user_data['password'])
 
+		# activate roles
+		for role in user.roles.all():
+			role.is_new = False
+			role.enabled = True
+			role.save()
+
 		user.save()
 
 		# return token response
