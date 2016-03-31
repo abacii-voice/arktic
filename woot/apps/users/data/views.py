@@ -46,6 +46,21 @@ def context(request):
 			}
 		})
 
+		# 4. role and client
+		one_client = user.clients.count() == 1
+		if one_client:
+			context_data.update({
+				'one_client': True,
+				'current_client': user.clients.get().name,
+			})
+
+		one_role = user.roles.count() == 1
+		if one_role:
+			context_data.update({
+				'one_role': True,
+				'current_role': user.roles.get().type,
+			})
+
 		return JsonResponse(context_data)
 
 def context_projects(request):
