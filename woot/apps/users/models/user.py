@@ -60,13 +60,15 @@ class User(AbstractBaseUser, PermissionsMixin):
 			'Follow the link below to verify your email:', # text message
 			'no-reply@arktic.com', # from email: not sure yet
 			[self.email], # recipient list
-			'Click <a href="localhost:8000/verify/{}/{}/">the link</a>'.format(self.id, self.activation_key) # html message: needs rendering and stuff
+			html_message='Click <a href="http://localhost:8000/verify/{}/{}/">the link</a>'.format(self.id, self.activation_key) # html message: needs rendering and stuff
 		)
 
 		# 3. toggle activation_email_sent
 		self.activation_email_sent = True
+		self.save()
 
 	def verify(self, activation_key):
+		print(self.activation_key, activation_key, self.id)
 		if self.activation_key == activation_key and not self.is_activated:
 			self.is_activated = True
 			self.activation_key = ''
