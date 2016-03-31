@@ -52,6 +52,9 @@ class UserSignupView(View):
 	'''
 
 	def get(self, request, **kwargs):
+		# logout any user by default
+		logout(request)
+
 		# get data
 		user_data = {
 			'user_id': kwargs['user'],

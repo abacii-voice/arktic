@@ -169,11 +169,11 @@ var UI = {
 		}
 
 		this.setAppearance = function (appearance) {
-			if (appearance !== undefined) {
-				var currentProperties = this.properties !== undefined ? this.properties : {};
-				var currentClasses = this.classes !== undefined ? this.classes : [];
-				var currentStyle = this.style !== undefined ? this.style : {};
+			var currentProperties = this.properties !== undefined ? this.properties : {};
+			var currentClasses = this.classes !== undefined ? this.classes : [];
+			var currentStyle = this.style !== undefined ? this.style : {};
 
+			if (appearance !== undefined) {
 				this.properties = appearance.properties !== undefined ? appearance.properties : currentProperties;
 				this.html = appearance.html !== undefined ? appearance.html : this.html;
 				this.classes = appearance.classes !== undefined ? appearance.classes : currentClasses;
@@ -194,8 +194,16 @@ var UI = {
 				model.html(this.html);
 
 				// classes
-				if (this.classes !== undefined) {
-					this.classes.forEach(function (className) {
+				if (_this.classes !== undefined) {
+					// remove current classes that are not the new classes variable
+					currentClasses.filter(function (className) {
+						return _this.classes.indexOf(className) === -1;
+					}).forEach(function (className) {
+						model.removeClass(className);
+					});
+
+					// add new classes
+					_this.classes.forEach(function (className) {
 						model.addClass(className);
 					});
 				}
