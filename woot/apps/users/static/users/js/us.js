@@ -52,6 +52,28 @@ UI.createApp('hook', [
 					],
 				},
 				children: [
+					UI.createComponent('usdp-loading-icon', {
+						template: UI.templates.loadingIcon,
+						appearance: {
+							style: {
+								'display': 'none',
+							},
+						},
+					}),
+					UI.createComponent('usdp-error-message', {
+						template: UI.template('span', 'ie show error'),
+						appearance: {
+							style: {
+								'top': '306px',
+								'left': '110px',
+								'height': '40px',
+								'width': '350px',
+								'text-align': 'left',
+								'padding-top': '12px',
+								'padding-left': '20px',
+							},
+						},
+					}),
 					UI.createComponent('usdp-details-title', {
 						template: UI.template('h3', 'ie show relative'),
 						appearance: {
@@ -204,19 +226,84 @@ UI.createApp('hook', [
 						bindings: [
 							{name: 'click', fn: function (_this) {
 								// 1. check details and compile data
-								// 2. send data and wait for reply
-								// 3. change state to confirmed
-								_this.triggerState();
+								var noProblems = true;
+								var errorMessage = UI.getComponent('usdp-error-message');
+
+								var firstNameField = UI.getComponent('usdp-first-name-input').model();
+								var firstName = firstNameField.val() !== '' ? firstNameField.val() : firstNameField.attr('placeholder');
+
+								var lastNameField = UI.getComponent('usdp-last-name-input').model();
+								var lastName = lastNameField.val() !== '' ? lastNameField.val() : lastNameField.attr('placeholder');
+
+								var emailField = UI.getComponent('usdp-email-input').model();
+								var email = emailField.val() !== '' ? emailField.val() : emailField.attr('placeholder');
+
+								var firstPasswordField = UI.getComponent('usdp-password-input');
+								var firstPassword = firstPasswordField.model().val();
+
+								if (firstPassword === '') {
+									noProblems = false;
+
+									firstPasswordField.update({
+										appearance: {
+											classes: ['error'],
+										},
+									});
+									errorMessage.update({
+										appearance: {
+											html: 'Please enter a password.',
+										},
+									});
+								} else {
+									firstPasswordField.update({
+										appearance: {
+											classes: [''],
+										},
+									});
+								}
+
+								var secondPasswordField = UI.getComponent('usdp-password-repeat-input');
+								var secondPassword = secondPasswordField.model().val();
+
+								if (firstPassword !== '' && secondPassword !== firstPassword) {
+									noProblems = false;
+
+									// upadte error
+									secondPasswordField.update({
+										appearance: {
+											classes: ['error'],
+										},
+									});
+									errorMessage.update({
+										appearance: {
+											html: 'Second password entry must match first.',
+										},
+									});
+								} else {
+									secondPasswordField.update({
+										appearance: {
+											classes: [''],
+										},
+									});
+								}
+
+								if (noProblems) {
+									// 2. send data
+									var userData = {
+										'user_id': Context.get('id'),
+										'first_name': firstName,
+										'last_name': lastName,
+										'email': email,
+										'password': firstPassword,
+									};
+
+									command('verify', userData, function (data) {});
+
+									// 3. change state to confirmed
+									_this.triggerState();
+								}
 							}}
 						],
-					}),
-					UI.createComponent('usdp-loading-icon', {
-						template: UI.templates.loadingIcon,
-						appearance: {
-							style: {
-								'display': 'none',
-							},
-						},
 					}),
 				],
 			}),

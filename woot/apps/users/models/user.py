@@ -73,7 +73,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 			self.save()
 			return True
 		else:
-			return True # change to False when testing is done
+			return False # change to False when testing is done
 
 	# roles
 	def create_productionadmin(self, production_client):
