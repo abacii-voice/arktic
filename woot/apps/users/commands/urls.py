@@ -15,7 +15,7 @@ urlpatterns = [
 	url(r'^register_client/', register_client),
 
 	# user signup
-
+	url(r'^verify/', verify),
 
 	# account
 	url(r'^create_user/', create_user), # name, email
