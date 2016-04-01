@@ -109,7 +109,20 @@ function basename(str) {
 	return base;
 }
 
-// set
-function set() {
-	
+// alphabetical sort
+function alphaSort(key) {
+	return function (a,b) {
+		if (key !== undefined) {
+			a = a[key];
+			b = b[key];
+		}
+
+		if (a>b) {
+			return 1;
+		} else if (a<b) {
+			return -1;
+		} else {
+			return 0;
+		}
+	}
 }

@@ -2791,7 +2791,7 @@ UI.createApp('hook', [
 
 										// 2. map data from context to new children and render
 										var data = Context.get('clients', Context.get('current_client'), 'roles');
-										data.forEach(function (roleName) {
+										data.sort(alphaSort()).forEach(function (roleName) {
 											var child = UI.createComponent('rs-{name}-button'.format({name: roleName}), {
 												root: _this.id,
 												template: UI.templates.button,
@@ -2929,7 +2929,7 @@ UI.createApp('hook', [
 								var clientList = Object.keys(data);
 
 								// map data to new buttons
-								clientList.map(function (clientName) {
+								clientList.sort(alphaSort()).forEach(function (clientName) {
 									var child = UI.createComponent('cs-{name}-button'.format({name: clientName}), {
 										root: _this.id,
 										template: UI.templates.button,
