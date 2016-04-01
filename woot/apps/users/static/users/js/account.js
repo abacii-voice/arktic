@@ -2787,11 +2787,11 @@ UI.createApp('hook', [
 											UI.removeComponent(childId);
 										});
 
-										_this.children = [];
+										_this.children = {};
 
 										// 2. map data from context to new children and render
 										var data = Context.get('clients', Context.get('current_client'), 'roles');
-										data.map(function (roleName) {
+										data.forEach(function (roleName) {
 											var child = UI.createComponent('rs-{name}-button'.format({name: roleName}), {
 												root: _this.id,
 												template: UI.templates.button,
@@ -2817,7 +2817,7 @@ UI.createApp('hook', [
 												],
 											});
 
-											_this.children.push(child);
+											_this.children[child.id] = child;
 											child.render();
 
 											// make buttons visible
