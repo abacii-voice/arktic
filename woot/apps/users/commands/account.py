@@ -108,13 +108,39 @@ def modify_user(request):
 def enable_role(request):
 	user, permission, verified = check_request(request)
 	if verified:
-		# get data
+		# get user role be enabled
+		role_data = {
+			'id': request.POST['user_id'],
+			'client': request.POST['current_client'],
+			'type': request.POST['role_type'],
+		}
+
+		if permission.is_productionadmin or permission.is_contractadmin:
+			user = User.objects.get(id=role_data['id'])
+			if user.roles.filter(client__name=role_data['current_client'], type=role_data['type']).count() > 0:
+				role = user.roles.get(client__name=role_data['current_client'], type=role_data['type'])
+				role.is_enabled = True
+				role.save()
+
 		return JsonResponse({'done': True})
 
 def disable_role(request):
 	user, permission, verified = check_request(request)
 	if verified:
-		# get data
+		# get user role be disabled
+		role_data = {
+			'id': request.POST['user_id'],
+			'client': request.POST['current_client'],
+			'type': request.POST['role_type'],
+		}
+
+		if permission.is_productionadmin or permission.is_contractadmin:
+			user = User.objects.get(id=role_data['id'])
+			if user.roles.filter(client__name=role_data['client'], type=role_data['type']).count() > 0:
+				role = user.roles.get(client__name=role_data['client'], type=role_data['type'])
+				role.is_enabled = False
+				role.save()
+
 		return JsonResponse({'done': True})
 
 def create_message(request):
