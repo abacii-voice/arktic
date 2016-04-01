@@ -44,14 +44,10 @@ class Client(models.Model):
 	# roles
 	def basic_data(self, permission):
 		basic_data = {
-			'name': self.name
+			'name': self.name,
+			'is_production': self.is_production,
+			'is_contract': self.is_contract,
 		}
-
-		if permission.is_productionadmin or permission.is_contractadmin:
-			basic_data.update({
-				'is_production': self.is_production,
-				'is_contract': self.is_contract,
-			})
 
 		return basic_data
 
