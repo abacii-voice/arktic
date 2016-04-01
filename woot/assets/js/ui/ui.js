@@ -251,16 +251,6 @@ var UI = {
 		}
 
 		this.addState = function (statePrototype) {
-			// get conflicts
-			var conflictStates = this.states().filter(function (stateInstance) {
-				return stateInstance.name === statePrototype.name;
-			});
-
-			if (conflictStates.length !== 0) {
-				// replace current state -> delete from global list
-				UI.removeState(conflictStates[0]);
-			}
-
 			// add as new state
 			UI.createState(this, statePrototype.name, statePrototype.args);
 		}
@@ -279,16 +269,6 @@ var UI = {
 		}
 
 		this.addSvitch = function (svitchPrototype) {
-			// get conflicts
-			var conflictSvitches = this.svitches().filter(function (svitchInstance) {
-				return svitchInstance.stateName === svitchPrototype.stateName;
-			});
-
-			if (conflictSvitches.length !== 0) {
-				// replace current state -> delete from global list
-				UI.removeSvitch(conflictSvitches[0]);
-			}
-
 			// add as new svitch
 			UI.createSvitch(this, svitchPrototype.stateName, svitchPrototype.fn);
 		}
