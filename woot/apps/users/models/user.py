@@ -170,7 +170,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 		if permission.is_contractadmin or permission.is_productionadmin:
 			role_data.update({
 				'roles': {
-					role.get_type(): role.data(permission) for role in self.roles.filter(client=permission.role.client)
+					role.get_type(): role.data(permission) for role in self.roles.filter(client=permission.role.client).order_by('type')
 				}
 			})
 
@@ -180,7 +180,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 	def client_data(self, permission):
 		client_data = {
 			'clients': {
-				client.name: client.data(permission) for client in self.clients.all()
+				client.name: client.data(permission) for client in self.clients.order_by('name')
 			}
 		}
 		return client_data
