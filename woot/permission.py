@@ -2,6 +2,16 @@
 
 # Check request for login
 class Permission(object):
+	def __str__(self):
+		return 'user: {}, role: {}, C: {}, P: {}, M: {}, W: {}'.format(
+			self.user.id,
+			self.role.type if self.role is not None else 'none',
+			self.is_contractadmin,
+			self.is_productionadmin,
+			self.is_moderator,
+			self.is_worker
+		)
+
 	def __init__(self, user, role=None):
 		self.user = user
 		self.role = role
