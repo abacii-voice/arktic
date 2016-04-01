@@ -15,12 +15,12 @@ Context.setFn(getdata('context', {}, function (data) {
 	}
 
 	// debug and construction
-	$.when(new Promise (function (resolve, reject) {
-		Context.set('current_client', 'TestProductionClient');
-		Context.set('current_role', 'admin')
-	})).done(function () {
-		UI.changeState('user-management-state');
-	});
+	// $.when(new Promise (function (resolve, reject) {
+	// 	Context.set('current_client', 'TestProductionClient');
+	// 	Context.set('current_role', 'admin')
+	// })).done(function () {
+	// 	UI.changeState('user-management-state');
+	// });
 }));
 
 // 2. Define global states
@@ -306,6 +306,7 @@ UI.createApp('hook', [
 													Object.keys(_this.children).forEach(function (childId) {
 														UI.removeComponent(childId);
 													});
+													_this.children = {};
 												})).done(function () {
 													// promise to fetch data and update Context
 													var permissionData = {
@@ -365,7 +366,17 @@ UI.createApp('hook', [
 								template: UI.templates.loadingIcon,
 								appearance: {
 									classes: ['ie centred show'],
-								}
+								},
+								state: {
+									states: [
+										{name: 'user-management-state', args: {
+											preFn: UI.functions.activate,
+											style: {
+												'opacity': '1.0',
+											},
+										}},
+									],
+								},
 							}),
 						],
 					}),
@@ -461,7 +472,9 @@ UI.createApp('hook', [
 																{name: 'user-management-user-state', args: {
 																	preFn: function (_this) {
 																		var user = Context.get('current_user_profile');
-																		_this.model().html('{first} {last}'.format({first: user.first_name, last: user.last_name}));
+																		var model = _this.model();
+																		model.html('{first} {last}'.format({first: user.first_name, last: user.last_name}));
+																		model.attr('userid', user.id);
 																	},
 																}}
 															],
@@ -556,15 +569,14 @@ UI.createApp('hook', [
 																						// get data
 																						var user = Context.get('current_user_profile');
 																						var model = _this.model();
-																						// {is_approved: false, is_new: true, is_enabled: false}
 																						if (user.roles.hasOwnProperty('admin')) {
 																							if (user.roles.admin.is_enabled) {
 																								model.removeClass('glyphicon-hidden').addClass('enabled');
 																							} else {
-																								if (user.roles.admin.is_new) {
-																									model.addClass('glyphicon-hidden').removeClass('enabled');
-																								} else {
+																								if (user.roles.admin.is_activated) {
 																									model.addClass('glyphicon-hidden').addClass('enabled');
+																								} else {
+																									model.addClass('glyphicon-hidden').removeClass('enabled');
 																								}
 																							}
 																						} else {
@@ -588,10 +600,10 @@ UI.createApp('hook', [
 																							if (user.roles.admin.is_enabled) {
 																								model.addClass('glyphicon-hidden');
 																							} else {
-																								if (user.roles.admin.is_new) {
-																									model.addClass('glyphicon-hidden');
-																								} else {
+																								if (user.roles.admin.is_activated) {
 																									model.removeClass('glyphicon-hidden');
+																								} else {
+																									model.addClass('glyphicon-hidden');
 																								}
 																							}
 																						} else {
@@ -612,10 +624,10 @@ UI.createApp('hook', [
 																						var user = Context.get('current_user_profile');
 																						var model = _this.model();
 																						if (user.roles.hasOwnProperty('admin')) {
-																							if (user.roles.admin.is_new) {
-																								model.removeClass('glyphicon-hidden').addClass('enabled');
-																							} else {
+																							if (user.roles.admin.is_activated) {
 																								model.addClass('glyphicon-hidden').removeClass('enabled');
+																							} else {
+																								model.removeClass('glyphicon-hidden').addClass('enabled');
 																							}
 																						} else {
 																							model.addClass('glyphicon-hidden').removeClass('enabled');
@@ -655,6 +667,7 @@ UI.createApp('hook', [
 
 																		var roleData = {
 																			'current_client': Context.get('current_client'),
+																			'current_role': Context.get('current_role'),
 																			'user_id': UI.getComponent('uc-name').model().attr('userid'),
 																			'role_type': 'admin',
 																		};
@@ -682,6 +695,19 @@ UI.createApp('hook', [
 																				pending.model().addClass('enabled');
 																				pending.model().toggleClass('glyphicon-hidden');
 																				add.model().toggleClass('glyphicon-hidden');
+
+																				// 3. change data in context
+																				var userProfile = Context.get('current_user_profile');
+																				if (userProfile.roles.admin !== undefined) {
+																					userProfile.roles.admin.is_activated = true;
+																				} else {
+																					userProfile.roles.admin = {
+																						'is_activated': true,
+																						'is_enabled': false,
+																						'is_approved': true,
+																					};
+																				}
+																				Context.set('current_user_profile', userProfile);
 																			}
 																		}
 																	}},
@@ -745,10 +771,10 @@ UI.createApp('hook', [
 																							if (user.roles.moderator.is_enabled) {
 																								model.removeClass('glyphicon-hidden').addClass('enabled');
 																							} else {
-																								if (user.roles.moderator.is_new) {
-																									model.addClass('glyphicon-hidden').removeClass('enabled');
-																								} else {
+																								if (user.roles.moderator.is_activated) {
 																									model.addClass('glyphicon-hidden').addClass('enabled');
+																								} else {
+																									model.addClass('glyphicon-hidden').removeClass('enabled');
 																								}
 																							}
 																						} else {
@@ -772,10 +798,10 @@ UI.createApp('hook', [
 																							if (user.roles.moderator.is_enabled) {
 																								model.addClass('glyphicon-hidden');
 																							} else {
-																								if (user.roles.moderator.is_new) {
-																									model.addClass('glyphicon-hidden');
-																								} else {
+																								if (user.roles.moderator.is_activated) {
 																									model.removeClass('glyphicon-hidden');
+																								} else {
+																									model.addClass('glyphicon-hidden');
 																								}
 																							}
 																						} else {
@@ -796,10 +822,10 @@ UI.createApp('hook', [
 																						var user = Context.get('current_user_profile');
 																						var model = _this.model();
 																						if (user.roles.hasOwnProperty('moderator')) {
-																							if (user.roles.moderator.is_new) {
-																								model.removeClass('glyphicon-hidden').addClass('enabled');
-																							} else {
+																							if (user.roles.moderator.is_activated) {
 																								model.addClass('glyphicon-hidden').removeClass('enabled');
+																							} else {
+																								model.removeClass('glyphicon-hidden').addClass('enabled');
 																							}
 																						} else {
 																							model.addClass('glyphicon-hidden').removeClass('enabled');
@@ -839,6 +865,7 @@ UI.createApp('hook', [
 
 																		var roleData = {
 																			'current_client': Context.get('current_client'),
+																			'current_role': Context.get('current_role'),
 																			'user_id': UI.getComponent('uc-name').model().attr('userid'),
 																			'role_type': 'moderator',
 																		};
@@ -866,6 +893,19 @@ UI.createApp('hook', [
 																				pending.model().addClass('enabled');
 																				pending.model().toggleClass('glyphicon-hidden');
 																				add.model().toggleClass('glyphicon-hidden');
+
+																				// 3. change data in context
+																				var userProfile = Context.get('current_user_profile');
+																				if (userProfile.roles.moderator !== undefined) {
+																					userProfile.roles.moderator.is_activated = true;
+																				} else {
+																					userProfile.roles.moderator = {
+																						'is_activated': true,
+																						'is_enabled': false,
+																						'is_approved': true,
+																					};
+																				}
+																				Context.set('current_user_profile', userProfile);
 																			}
 																		}
 																	}},
@@ -928,10 +968,10 @@ UI.createApp('hook', [
 																							if (user.roles.worker.is_enabled) {
 																								model.removeClass('glyphicon-hidden').addClass('enabled');
 																							} else {
-																								if (user.roles.worker.is_new) {
-																									model.addClass('glyphicon-hidden').removeClass('enabled');
-																								} else {
+																								if (user.roles.worker.is_activated) {
 																									model.addClass('glyphicon-hidden').addClass('enabled');
+																								} else {
+																									model.addClass('glyphicon-hidden').removeClass('enabled');
 																								}
 																							}
 																						} else {
@@ -955,10 +995,10 @@ UI.createApp('hook', [
 																							if (user.roles.worker.is_enabled) {
 																								model.addClass('glyphicon-hidden');
 																							} else {
-																								if (user.roles.worker.is_new) {
-																									model.addClass('glyphicon-hidden');
-																								} else {
+																								if (user.roles.worker.is_activated) {
 																									model.removeClass('glyphicon-hidden');
+																								} else {
+																									model.addClass('glyphicon-hidden');
 																								}
 																							}
 																						} else {
@@ -979,10 +1019,10 @@ UI.createApp('hook', [
 																						var user = Context.get('current_user_profile');
 																						var model = _this.model();
 																						if (user.roles.hasOwnProperty('worker')) {
-																							if (user.roles.worker.is_new) {
-																								model.removeClass('glyphicon-hidden').addClass('enabled');
-																							} else {
+																							if (user.roles.worker.is_activated) {
 																								model.addClass('glyphicon-hidden').removeClass('enabled');
+																							} else {
+																								model.removeClass('glyphicon-hidden').addClass('enabled');
 																							}
 																						} else {
 																							model.addClass('glyphicon-hidden').removeClass('enabled');
@@ -1022,6 +1062,7 @@ UI.createApp('hook', [
 
 																		var roleData = {
 																			'current_client': Context.get('current_client'),
+																			'current_role': Context.get('current_role'),
 																			'user_id': UI.getComponent('uc-name').model().attr('userid'),
 																			'role_type': 'worker',
 																		};
@@ -1049,6 +1090,19 @@ UI.createApp('hook', [
 																				pending.model().addClass('enabled');
 																				pending.model().toggleClass('glyphicon-hidden');
 																				add.model().toggleClass('glyphicon-hidden');
+
+																				// 3. change data in context
+																				var userProfile = Context.get('current_user_profile');
+																				if (userProfile.roles.worker !== undefined) {
+																					userProfile.roles.worker.is_activated = true;
+																				} else {
+																					userProfile.roles.worker = {
+																						'is_activated': true,
+																						'is_enabled': false,
+																						'is_approved': true,
+																					};
+																				}
+																				Context.set('current_user_profile', userProfile);
 																			}
 																		}
 																	}},
@@ -2085,7 +2139,6 @@ UI.createApp('hook', [
 															userButton.render();
 
 															// submit user
-															console.log(adminRole, moderatorRole, workerRole);
 															var userData = {
 																'current_client': Context.get('current_client'),
 																'current_role': Context.get('current_role'),
@@ -2097,6 +2150,16 @@ UI.createApp('hook', [
 																'roles_worker': workerRole,
 															};
 
+															Context.set('user_data', userData);
+
+															// clear inputs
+															firstName.model().val('');
+															lastName.model().val('');
+															email.model().val('');
+															UI.getComponent('nraw-tb-check').model().addClass('glyphicon-hidden');
+															UI.getComponent('nrmw-tb-check').model().addClass('glyphicon-hidden');
+															UI.getComponent('nrww-tb-check').model().addClass('glyphicon-hidden');
+
 															// change to user confirm state
 															_this.triggerState();
 
@@ -2105,6 +2168,7 @@ UI.createApp('hook', [
 																var id = 'user-button-{id}'.format({id: userPrototype.id});
 																var html = '{last_name}, {first_name}'.format({first_name: userPrototype.first_name, last_name: userPrototype.last_name});
 
+																// update user button
 																userButton.update({
 																	id: id,
 																	appearance: {
@@ -2723,11 +2787,11 @@ UI.createApp('hook', [
 											UI.removeComponent(childId);
 										});
 
-										_this.children = [];
+										_this.children = {};
 
 										// 2. map data from context to new children and render
 										var data = Context.get('clients', Context.get('current_client'), 'roles');
-										data.map(function (roleName) {
+										data.forEach(function (roleName) {
 											var child = UI.createComponent('rs-{name}-button'.format({name: roleName}), {
 												root: _this.id,
 												template: UI.templates.button,
@@ -2753,7 +2817,7 @@ UI.createApp('hook', [
 												],
 											});
 
-											_this.children.push(child);
+											_this.children[child.id] = child;
 											child.render();
 
 											// make buttons visible
@@ -2824,6 +2888,7 @@ UI.createApp('hook', [
 					},
 				}},
 				{name: 'role-state', args: 'default'},
+				{name: 'control-state', args: 'default'},
 				{name: 'user-management-state', args: 'default'},
 			],
 		},

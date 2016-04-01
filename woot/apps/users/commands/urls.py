@@ -15,14 +15,14 @@ urlpatterns = [
 	url(r'^register_client/', register_client),
 
 	# user signup
-
+	url(r'^verify/', verify),
 
 	# account
 	url(r'^create_user/', create_user), # name, email
 	url(r'^modify_user/', modify_user), # user, name, email
 	url(r'^add_role_to_user/', add_role_to_user), # email, role
-	url(r'^enable_role/', add_role_to_user), # email, role
-	url(r'^disable_role/', add_role_to_user), # email, role
+	url(r'^enable_role/', enable_role), # email, role
+	url(r'^disable_role/', disable_role), # email, role
 	url(r'^create_message/', create_message), # from_user, to_user, text, attachments
 	url(r'^create_rule/', create_rule),
 	url(r'^modify_rule/', modify_rule),

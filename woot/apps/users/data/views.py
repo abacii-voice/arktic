@@ -19,6 +19,7 @@ from permission import check_request
 import json
 
 ### Data
+# account
 def context(request):
 	user, permission, verified = check_request(request)
 	if verified:
@@ -36,8 +37,6 @@ def context(request):
 		# 3. initialise data
 		context_data.update({
 			'actions': [],
-			'one_client': user.clients.count() == 1,
-			'one_role': user.roles.count() == 1,
 			'role_display': {
 				'worker': 'Transcriber',
 				'admin': 'Admin',
@@ -45,15 +44,49 @@ def context(request):
 			}
 		})
 
+		# 4. role and client
+		one_client = user.clients.count() == 1
+		if one_client:
+			context_data.update({
+				'one_client': True,
+				'current_client': user.clients.get().name,
+			})
+
+		one_role = user.roles.count() == 1
+		if one_role:
+			context_data.update({
+				'one_role': True,
+				'current_role': user.roles.get().type,
+			})
+
 		return JsonResponse(context_data)
 
 def context_projects(request):
-	if check_request(request):
+	user, permission, verified = check_request(request)
+	if verified:
 		pass
 
 def load_attachment(request):
-	if check_request(request):
+	user, permission, verified = check_request(request)
+	if verified:
 		# return audio file url or rule reference
 		# data type
 		# data content
 		pass
+
+# User signup
+def us_data(request):
+	if request.method == 'POST':
+		# no permission required
+
+		# get initial data
+		initial_data = {
+			'user_id': request.POST['user_id'],
+			'activation_key': request.POST['activation_key'],
+		}
+
+		# compile user data
+		user = User.objects.get(id=initial_data['user_id'])
+		user_data = user.basic_data()
+
+		return JsonResponse(user_data)

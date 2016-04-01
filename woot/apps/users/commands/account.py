@@ -64,14 +64,42 @@ def create_user(request):
 			if user_data['roles_worker']=='true':
 				new_user.create_worker(client, client.available_moderator())
 
+			# start activation
+			new_user.send_verification_email()
+
 			return JsonResponse(new_user.data(permission))
 
-def modify_user(request):
-	user, permission, verified = check_request(request)
-	if verified:
-		pass
-
 def add_role_to_user(request):
+	user, permission, verified = check_request(request)
+	if verified and permission.is_productionadmin:
+		# get data
+		role_data = {
+			'current_client': request.POST['current_client'],
+			'user_id': request.POST['user_id'],
+			'role_type': request.POST['role_type'],
+		}
+
+		# create role
+		client = Client.objects.get(name=role_data['current_client'])
+		if permission.check_client(client):
+			user = User.objects.get(id=role_data['user_id'])
+
+			role_type = role_data['role_type']
+			if role_type == 'admin':
+				if client.is_production:
+					user.create_productionadmin(client)
+				else:
+					user.create_contractadmin(client)
+
+			elif role_type == 'moderator':
+				user.create_moderator(client)
+
+			elif role_type == 'worker':
+				user.create_worker(client, client.available_moderator())
+
+		return JsonResponse({'done': True})
+
+def modify_user(request):
 	user, permission, verified = check_request(request)
 	if verified:
 		# get data
@@ -80,13 +108,39 @@ def add_role_to_user(request):
 def enable_role(request):
 	user, permission, verified = check_request(request)
 	if verified:
-		# get data
+		# get user role be enabled
+		role_data = {
+			'id': request.POST['user_id'],
+			'client': request.POST['current_client'],
+			'type': request.POST['role_type'],
+		}
+
+		if permission.is_productionadmin or permission.is_contractadmin:
+			user = User.objects.get(id=role_data['id'])
+			if user.roles.filter(client__name=role_data['current_client'], type=role_data['type']).count() > 0:
+				role = user.roles.get(client__name=role_data['current_client'], type=role_data['type'])
+				role.is_enabled = True
+				role.save()
+
 		return JsonResponse({'done': True})
 
 def disable_role(request):
 	user, permission, verified = check_request(request)
 	if verified:
-		# get data
+		# get user role be disabled
+		role_data = {
+			'id': request.POST['user_id'],
+			'client': request.POST['current_client'],
+			'type': request.POST['role_type'],
+		}
+
+		if permission.is_productionadmin or permission.is_contractadmin:
+			user = User.objects.get(id=role_data['id'])
+			if user.roles.filter(client__name=role_data['client'], type=role_data['type']).count() > 0:
+				role = user.roles.get(client__name=role_data['client'], type=role_data['type'])
+				role.is_enabled = False
+				role.save()
+
 		return JsonResponse({'done': True})
 
 def create_message(request):

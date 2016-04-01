@@ -34,5 +34,7 @@ Only need to customise elements on login page
 
 #login-submit {
 	top: 10px;
+	height: 40px;
+	padding-top: 4px;
 	color: #fff;
 }
