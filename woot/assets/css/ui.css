@@ -19,23 +19,23 @@ This file should contain all styling related to interface elements, but no speci
 
 }
 
-.navbar .navbar-left .nav-link {
+.navbar .navbar-left {
 	margin-left: 15px;
 	float: left;
 }
 
-.navbar .navbar-right .nav-link {
+.navbar .navbar-right {
 	margin-right: 15px;
 	float: right;
 }
 
 .navbar .nav-link {
 	margin-top: 10px;
-	font-size: 18px;
+	color: #eee;
 }
 
 .navbar .nav-link.header {
-	margin-top: 7px;
+	margin-top: 15px;
 	font-size: 22px;
 }
 

@@ -84,7 +84,7 @@ class Client(models.Model):
 
 		roles = self.roles.filter(user=permission.user)
 		role_data.update({
-			'roles': [role.get_type() for role in roles],
+			'roles': [role.get_type() for role in roles.order_by('type')],
 		})
 
 		return role_data
@@ -96,7 +96,7 @@ class Client(models.Model):
 		if permission.is_productionadmin or permission.is_contractadmin:
 			user_data.update({
 				'users': {
-					str(user.id): user.data(permission) for user in self.users.all()
+					str(user.id): user.data(permission) for user in self.users.order_by('last_name')
 				}
 			})
 
@@ -112,7 +112,7 @@ class Client(models.Model):
 	def rule_data(self, permission):
 		rule_data = {
 			'rules': {
-				rule.name: rule.data(permission) for rule in self.rules.all()
+				rule.name: rule.data(permission) for rule in self.rules.order_by('number')
 			}
 		}
 

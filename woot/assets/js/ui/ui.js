@@ -146,7 +146,7 @@ var UI = {
 			var currentRoot = this.root !== undefined ? this.root : 'hook';
 			this.root = root !== undefined ? root : currentRoot;
 
-			if (this.rendered) {
+			if (this.rendered && this.root !== currentRoot) {
 				var newRoot = $('#{id}'.format({id: this.root}));
 				this.model().appendTo(newRoot);
 				UI.getComponent(this.root).children[this.id] = this;
@@ -169,11 +169,15 @@ var UI = {
 		}
 
 		this.setAppearance = function (appearance) {
+			var currentProperties = this.properties !== undefined ? this.properties : {};
+			var currentClasses = this.classes !== undefined ? this.classes : [];
+			var currentStyle = this.style !== undefined ? this.style : {};
+
 			if (appearance !== undefined) {
-				this.properties = appearance.properties !== undefined ? appearance.properties : this.properties;
+				this.properties = appearance.properties !== undefined ? appearance.properties : currentProperties;
 				this.html = appearance.html !== undefined ? appearance.html : this.html;
-				this.classes = appearance.classes !== undefined ? appearance.classes : this.classes;
-				this.style = appearance.style !== undefined ? appearance.style : this.style;
+				this.classes = appearance.classes !== undefined ? appearance.classes : currentClasses;
+				this.style = appearance.style !== undefined ? appearance.style : currentStyle;
 			}
 
 			if (this.rendered) {
@@ -190,9 +194,19 @@ var UI = {
 				model.html(this.html);
 
 				// classes
-				this.classes.forEach(function (className) {
-					model.addClass(className);
-				});
+				if (_this.classes !== undefined) {
+					// remove current classes that are not the new classes variable
+					currentClasses.filter(function (className) {
+						return _this.classes.indexOf(className) === -1;
+					}).forEach(function (className) {
+						model.removeClass(className);
+					});
+
+					// add new classes
+					_this.classes.forEach(function (className) {
+						model.addClass(className);
+					});
+				}
 
 				// style
 				model.css(this.style);
@@ -237,16 +251,6 @@ var UI = {
 		}
 
 		this.addState = function (statePrototype) {
-			// get conflicts
-			var conflictStates = this.states().filter(function (stateInstance) {
-				return stateInstance.name === statePrototype.name;
-			});
-
-			if (conflictStates.length !== 0) {
-				// replace current state -> delete from global list
-				UI.removeState(conflictStates[0]);
-			}
-
 			// add as new state
 			UI.createState(this, statePrototype.name, statePrototype.args);
 		}
@@ -265,23 +269,14 @@ var UI = {
 		}
 
 		this.addSvitch = function (svitchPrototype) {
-			// get conflicts
-			var conflictSvitches = this.svitches().filter(function (svitchInstance) {
-				return svitchInstance.stateName === svitchPrototype.stateName;
-			});
-
-			if (conflictSvitches.length !== 0) {
-				// replace current state -> delete from global list
-				UI.removeSvitch(conflictSvitches[0]);
-			}
-
 			// add as new svitch
 			UI.createSvitch(this, svitchPrototype.stateName, svitchPrototype.fn);
 		}
 
 		this.svitches = function () {
+			var _this = this;
 			return UI.allSvitches().filter(function (svitch) {
-				return svitch.component.id === this.id;
+				return svitch.component.id === _this.id;
 			});
 		}
 
@@ -325,7 +320,6 @@ var UI = {
 						this.model().on(binding.name, function () {
 							binding.fn(_this);
 						});
-						console.log(this.id, $._data(this.model()[0], 'events'));
 					}
 				}, this);
 			}
