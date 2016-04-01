@@ -569,15 +569,14 @@ UI.createApp('hook', [
 																						// get data
 																						var user = Context.get('current_user_profile');
 																						var model = _this.model();
-																						// {is_approved: false, is_new: true, is_enabled: false}
 																						if (user.roles.hasOwnProperty('admin')) {
 																							if (user.roles.admin.is_enabled) {
 																								model.removeClass('glyphicon-hidden').addClass('enabled');
 																							} else {
-																								if (user.roles.admin.is_new) {
-																									model.addClass('glyphicon-hidden').removeClass('enabled');
-																								} else {
+																								if (user.roles.admin.is_activated) {
 																									model.addClass('glyphicon-hidden').addClass('enabled');
+																								} else {
+																									model.addClass('glyphicon-hidden').removeClass('enabled');
 																								}
 																							}
 																						} else {
@@ -601,10 +600,10 @@ UI.createApp('hook', [
 																							if (user.roles.admin.is_enabled) {
 																								model.addClass('glyphicon-hidden');
 																							} else {
-																								if (user.roles.admin.is_new) {
-																									model.addClass('glyphicon-hidden');
-																								} else {
+																								if (user.roles.admin.is_activated) {
 																									model.removeClass('glyphicon-hidden');
+																								} else {
+																									model.addClass('glyphicon-hidden');
 																								}
 																							}
 																						} else {
@@ -625,10 +624,10 @@ UI.createApp('hook', [
 																						var user = Context.get('current_user_profile');
 																						var model = _this.model();
 																						if (user.roles.hasOwnProperty('admin')) {
-																							if (user.roles.admin.is_new) {
-																								model.removeClass('glyphicon-hidden').addClass('enabled');
-																							} else {
+																							if (user.roles.admin.is_activated) {
 																								model.addClass('glyphicon-hidden').removeClass('enabled');
+																							} else {
+																								model.removeClass('glyphicon-hidden').addClass('enabled');
 																							}
 																						} else {
 																							model.addClass('glyphicon-hidden').removeClass('enabled');
@@ -700,10 +699,10 @@ UI.createApp('hook', [
 																				// 3. change data in context
 																				var userProfile = Context.get('current_user_profile');
 																				if (userProfile.roles.admin !== undefined) {
-																					userProfile.roles.admin.is_new = true;
+																					userProfile.roles.admin.is_activated = true;
 																				} else {
 																					userProfile.roles.admin = {
-																						'is_new': true,
+																						'is_activated': true,
 																						'is_enabled': false,
 																						'is_approved': true,
 																					};
@@ -772,10 +771,10 @@ UI.createApp('hook', [
 																							if (user.roles.moderator.is_enabled) {
 																								model.removeClass('glyphicon-hidden').addClass('enabled');
 																							} else {
-																								if (user.roles.moderator.is_new) {
-																									model.addClass('glyphicon-hidden').removeClass('enabled');
-																								} else {
+																								if (user.roles.moderator.is_activated) {
 																									model.addClass('glyphicon-hidden').addClass('enabled');
+																								} else {
+																									model.addClass('glyphicon-hidden').removeClass('enabled');
 																								}
 																							}
 																						} else {
@@ -799,10 +798,10 @@ UI.createApp('hook', [
 																							if (user.roles.moderator.is_enabled) {
 																								model.addClass('glyphicon-hidden');
 																							} else {
-																								if (user.roles.moderator.is_new) {
-																									model.addClass('glyphicon-hidden');
-																								} else {
+																								if (user.roles.moderator.is_activated) {
 																									model.removeClass('glyphicon-hidden');
+																								} else {
+																									model.addClass('glyphicon-hidden');
 																								}
 																							}
 																						} else {
@@ -823,10 +822,10 @@ UI.createApp('hook', [
 																						var user = Context.get('current_user_profile');
 																						var model = _this.model();
 																						if (user.roles.hasOwnProperty('moderator')) {
-																							if (user.roles.moderator.is_new) {
-																								model.removeClass('glyphicon-hidden').addClass('enabled');
-																							} else {
+																							if (user.roles.moderator.is_activated) {
 																								model.addClass('glyphicon-hidden').removeClass('enabled');
+																							} else {
+																								model.removeClass('glyphicon-hidden').addClass('enabled');
 																							}
 																						} else {
 																							model.addClass('glyphicon-hidden').removeClass('enabled');
@@ -898,10 +897,10 @@ UI.createApp('hook', [
 																				// 3. change data in context
 																				var userProfile = Context.get('current_user_profile');
 																				if (userProfile.roles.moderator !== undefined) {
-																					userProfile.roles.moderator.is_new = true;
+																					userProfile.roles.moderator.is_activated = true;
 																				} else {
 																					userProfile.roles.moderator = {
-																						'is_new': true,
+																						'is_activated': true,
 																						'is_enabled': false,
 																						'is_approved': true,
 																					};
@@ -969,10 +968,10 @@ UI.createApp('hook', [
 																							if (user.roles.worker.is_enabled) {
 																								model.removeClass('glyphicon-hidden').addClass('enabled');
 																							} else {
-																								if (user.roles.worker.is_new) {
-																									model.addClass('glyphicon-hidden').removeClass('enabled');
-																								} else {
+																								if (user.roles.worker.is_activated) {
 																									model.addClass('glyphicon-hidden').addClass('enabled');
+																								} else {
+																									model.addClass('glyphicon-hidden').removeClass('enabled');
 																								}
 																							}
 																						} else {
@@ -996,10 +995,10 @@ UI.createApp('hook', [
 																							if (user.roles.worker.is_enabled) {
 																								model.addClass('glyphicon-hidden');
 																							} else {
-																								if (user.roles.worker.is_new) {
-																									model.addClass('glyphicon-hidden');
-																								} else {
+																								if (user.roles.worker.is_activated) {
 																									model.removeClass('glyphicon-hidden');
+																								} else {
+																									model.addClass('glyphicon-hidden');
 																								}
 																							}
 																						} else {
@@ -1020,10 +1019,10 @@ UI.createApp('hook', [
 																						var user = Context.get('current_user_profile');
 																						var model = _this.model();
 																						if (user.roles.hasOwnProperty('worker')) {
-																							if (user.roles.worker.is_new) {
-																								model.removeClass('glyphicon-hidden').addClass('enabled');
-																							} else {
+																							if (user.roles.worker.is_activated) {
 																								model.addClass('glyphicon-hidden').removeClass('enabled');
+																							} else {
+																								model.removeClass('glyphicon-hidden').addClass('enabled');
 																							}
 																						} else {
 																							model.addClass('glyphicon-hidden').removeClass('enabled');
@@ -1095,10 +1094,10 @@ UI.createApp('hook', [
 																				// 3. change data in context
 																				var userProfile = Context.get('current_user_profile');
 																				if (userProfile.roles.worker !== undefined) {
-																					userProfile.roles.worker.is_new = true;
+																					userProfile.roles.worker.is_activated = true;
 																				} else {
 																					userProfile.roles.worker = {
-																						'is_new': true,
+																						'is_activated': true,
 																						'is_enabled': false,
 																						'is_approved': true,
 																					};
