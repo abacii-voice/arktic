@@ -103,53 +103,6 @@ UI.createApp('hook', [
 	UI.createComponent('audio-interface', {
 
 	}),
-	UI.createComponent('upload-interface', {
-		children: [
-			UI.createComponent('upload-interface-left-panel', {
-				children: [
-					UI.createComponent('new-project-dialogue', {
-						children: [
-							UI.createComponent('project-title'),
-							UI.createComponent('project-name-input'),
-							UI.createComponent('project-deadline-date-picker'),
-							UI.createComponent('project-description-textarea'),
-						],
-					}),
-					UI.createComponent('rel-file-dropzone-wrapper', {
-						children: [
-							UI.createComponent('rel-file-title'),
-							UI.createComponent('rel-file-dropzone', {
-								children: [
-									UI.createComponent('rel-file-dropzone-guide', {
-										children: [
-											UI.createComponent('rel-file-dropzone-guide-title'),
-											UI.createComponent('rel-file-dropzone-guide-table'),
-										],
-									}),
-									UI.createComponent('rel-file-dropzone-warning'),
-								],
-							}),
-							UI.createComponent('rel-file-file-list'),
-						],
-					}),
-				],
-			}),
-			UI.createComponent('upload-interface-right-panel', {
-				children: [
-					UI.createComponent('audio-title', {
-
-					}),
-					UI.createComponent('audio-file-dropzone-wrapper', {
-						children: [
-							UI.createComponent('audio-file-dropzone'),
-							UI.createComponent('audio-file-confirmation-panel'),
-						],
-					}),
-					UI.createComponent('upload-confirmation-button'),
-				],
-			}),
-		],
-	}),
 	UI.createComponent('user-management-interface', {
 		template: UI.template('div', 'ie panel centred-vertically'),
 		appearance: {
@@ -2361,21 +2314,10 @@ UI.createApp('hook', [
 	}),
 	UI.createComponent('project-interface', {
 		children: [
-			UI.createComponent('project-interface-left-panel', {
-				children: [
-					UI.createComponent('project-list'),
-				],
-			}),
-			UI.createComponent('project-interface-right-panel', {
-				children: [
-					UI.createComponent('project-card-wrapper', {
-						children: [
-							UI.createComponent('project-card'),
-							UI.createComponent('new-project-button'),
-						],
-					}),
-				],
-			}),
+			UI.createComponent('pi-button-panel'),
+			UI.createComponent('pi-project-list-panel'),
+			UI.createComponent('pi-project-info-panel'),
+			UI.createComponent('pi-button-panel'),
 		],
 	}),
 	UI.createComponent('billing-interface', {
