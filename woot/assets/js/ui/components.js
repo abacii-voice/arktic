@@ -24,6 +24,6 @@ var Components = {
 	},
 
 	sidebar: function () {
-		// contains and list and a "back" sidebar from any state it goes to.
+		// contains and list and a "back" sidebar from any state it goes to. 
 	}
 }
