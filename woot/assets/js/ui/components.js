@@ -9,6 +9,10 @@ var Components = {
 		// infinite scroll loading
 	},
 
+	listButton: function () {
+		// displays a title, but also other information at key points
+	},
+
 	scrollPanel: function () {
 		// simple scroll wrapper and container for a bunch of divs or whatever
 	},
