@@ -1,9 +1,16 @@
 var Components = {
+	breadcrumbs: function () {
+		// displays position in heirarchy
+	},
+
 	scrollList: function () {
 		// search field toggle
 		// scroll toggle
 		// infinite scroll loading
-		//
+	},
+
+	scrollPanel: function () {
+		// simple scroll wrapper and container for a bunch of divs or whatever
 	},
 
 	searchFilterField: function () {
@@ -18,12 +25,7 @@ var Components = {
 		// dispatch requests for each state
 	},
 
-	dataCard: function () {
-		// display data in ordered manner
-		// composed of children and distributor function
-	},
-
 	sidebar: function () {
-		// contains and list and a "back" sidebar from any state it goes to. 
-	}
+		// contains and list and a "back" sidebar from any state it goes to.
+	},
 }
