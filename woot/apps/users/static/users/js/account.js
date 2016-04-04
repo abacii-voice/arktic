@@ -2318,7 +2318,7 @@ UI.createApp('hook', [
 			UI.createComponent('pi-project-list-panel'),
 			UI.createComponent('pi-project-info-panel'),
 			UI.createComponent('pi-button-panel'),
-			UI.createComponent('pi-new-project-panel'),
+			UI.createComponent('pi-button-panel'),
 		],
 	}),
 	UI.createComponent('billing-interface', {
