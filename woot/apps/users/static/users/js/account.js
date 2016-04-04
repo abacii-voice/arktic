@@ -2314,11 +2314,16 @@ UI.createApp('hook', [
 	}),
 	UI.createComponent('project-interface', {
 		children: [
-			UI.createComponent('pi-button-panel'),
+			UI.createComponent('pi-button-panel', {
+				children: [
+					UI.createComponent('pi-bp-project-list-button'),
+					UI.createComponent('pi-bp-new-project-button'),
+					UI.createComponent('pi-bp-settings-button'),
+				],
+			}),
 			UI.createComponent('pi-project-list-panel'),
 			UI.createComponent('pi-project-info-panel'),
-			UI.createComponent('pi-button-panel'),
-			UI.createComponent('pi-button-panel'),
+			UI.createComponent('pi-new-project-panel'),
 		],
 	}),
 	UI.createComponent('billing-interface', {
