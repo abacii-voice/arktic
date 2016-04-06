@@ -8,7 +8,64 @@ var Components = {
 		// search field toggle
 		// scroll toggle
 		// infinite scroll loading
-		return UI.createComponent(id, args);
+
+		// 1. set search and filter toggles
+		var showSearch = args.search !== undefined ? 'show' : '';
+		var scrollHeight = args.search !== undefined ? 'calc(100% - 30px)' : '100%';
+
+		var container = UI.createComponent(id, {
+			template: UI.template('div', 'ie scroll-wrapper show relative'),
+			appearance: {
+				style: {
+					'height': '100%',
+					'width': '100%',
+				},
+			},
+			children: [
+				UI.createComponent('{id}-search'.format({id: id}), {
+					template: UI.template('div', 'ie relative'),
+					appearance: {
+						style: {
+							'height': '30px',
+							'width': '100%',
+						},
+						classes: [showSearch],
+					},
+				}),
+				UI.createComponent('{id}-scroll'.format({id: id}), {
+					template: UI.template('div', 'ie scroll show relative'),
+					appearance: {
+						style: {
+							'height': scrollHeight,
+						},
+					},
+					children: args.content,
+					registry: args.registry,
+				}),
+				UI.createComponent('{id}-filter'.format({id: id}), {
+					template: UI.template('div', 'ie scroll relative'),
+					appearance: {
+						style: {
+							'height': 'calc(100% - 30px)',
+						},
+					},
+				}),
+				UI.createComponent('{id}-loading-icon'.format({id: id}), {
+					template: UI.templates.loadingIcon,
+					appearance: {
+						classes: ['ie centred show'],
+					},
+				}),
+			],
+		});
+
+		// add methods
+		container.loadingIcon = function () {
+			return UI.getComponent('{id}-loading-icon'.format({id: id}));
+		}
+
+		// return
+		return container;
 	},
 
 	listButton: function (id, args) {
@@ -246,43 +303,6 @@ var Components = {
 // 						classes: ['ie centred show'],
 // 					},
 // 				}),
-// 			],
-// 		}),
-// 	],
-// }),
-// UI.createComponent('client-back-sidebar', {
-// 	template: UI.template('div', 'ie sidebar mini border-right centred-vertically'),
-// 	state: {
-// 		defaultState: {
-// 			style: {
-// 				'left': '-100px',
-// 			}
-// 		},
-// 		states: [
-// 			{name: 'client-state', args: 'default'},
-// 			{name: 'role-state', args: {
-// 				style: {
-// 					'left': '0px',
-// 				},
-// 			}},
-// 			{name: 'control-state', args: 'default'},
-// 		],
-// 	},
-// 	children: [
-// 		UI.createComponent('cbs-back-button', {
-// 			template: UI.templates.button,
-// 			state: {
-// 				stateMap: 'client-state',
-// 			},
-// 			children: [
-// 				UI.createComponent('cbs-bb-span', {
-// 					template: UI.template('span', 'glyphicon glyphicon-chevron-left'),
-// 				}),
-// 			],
-// 			bindings: [
-// 				{name: 'click', fn: function (_this) {
-// 					_this.triggerState();
-// 				}}
 // 			],
 // 		}),
 // 	],

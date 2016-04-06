@@ -89,7 +89,7 @@ UI.createGlobalStates('client-state', [
 // })
 UI.createApp('hook', [
 	// breadcrumbs
-	Components.breadcrumbs(),
+	// Components.breadcrumbs(),
 
 	// interfaces
 	UI.createComponent('transcription-interface', {
@@ -108,9 +108,9 @@ UI.createApp('hook', [
 			}),
 			UI.createComponent('umi-primary-panel', {
 				children: [
-					Components.scrollList('umi-pp-user-list', {
-
-					}),
+					// Components.scrollList('umi-pp-user-list', {
+					//
+					// }),
 					UI.createComponent('umi-pp-user-info'),
 					UI.createComponent('umi-pp-user-confirmed'),
 					UI.createComponent('umi-pp-user-card', {
@@ -121,9 +121,9 @@ UI.createApp('hook', [
 									UI.createComponent('umi-pp-uc-cp-subtitle'),
 									UI.createComponent('umi-pp-uc-cp-role-panel', {
 										children: [
-											Components.roleIndicator('umi-pp-uc-cp-rp-admin-role'),
-											Components.roleIndicator('umi-pp-uc-cp-rp-moderator-role'),
-											Components.roleIndicator('umi-pp-uc-cp-rp-worker-role'),
+											// Components.roleIndicator('umi-pp-uc-cp-rp-admin-role'),
+											// Components.roleIndicator('umi-pp-uc-cp-rp-moderator-role'),
+											// Components.roleIndicator('umi-pp-uc-cp-rp-worker-role'),
 										],
 									}),
 									UI.createComponent('umi-pp-uc-cp-admin-enabled-panel'), // for contract
@@ -161,9 +161,9 @@ UI.createApp('hook', [
 			}),
 			UI.createComponent('pi-primary-panel', {
 				children: [
-					Components.scrollList('pi-mp-project-group-list', {
-
-					}),
+					// Components.scrollList('pi-mp-project-group-list', {
+					//
+					// }),
 					UI.createComponent('pi-mp-project-info'),
 					UI.createComponent('pi-mp-project-card'),
 				],
@@ -199,7 +199,57 @@ UI.createApp('hook', [
 		},
 		content: [
 			Components.scrollList('cs-client-list', {
+				scroll: false,
+				registry: {
+					path: function () {
+						return ['clients'];
+					},
+					fn: function (_this, data) {
+						// create buttons from Context and remove loading icon
+						// 'data' is a list of client names
 
+						// remove loading button
+						var loadingIcon = _this.parent().loadingIcon();
+						loadingIcon.model().fadeOut();
+
+						var clientList = Object.keys(data);
+
+						// map data to new buttons
+						clientList.sort(alphaSort()).forEach(function (clientName) {
+							var child = UI.createComponent('cs-{name}-button'.format({name: clientName}), {
+								root: _this.id,
+								template: UI.templates.button,
+								appearance: {
+									style: {
+										'opacity': '0.0',
+									},
+									html: '{name}'.format({name: clientName}),
+								},
+								state: {
+									svitches: [
+										{stateName: 'role-state', fn: function (_this) {
+											Context.set('current_client', clientName);
+										}},
+									],
+									stateMap: {
+										'client-state': 'role-state',
+									},
+								},
+								bindings: [
+									{name: 'click', fn: function (_this) {
+										_this.triggerState();
+									}}
+								],
+							});
+
+							_this.children[child.id] = child;
+							child.render();
+
+							// make buttons visible
+							child.model().css({'opacity': '1.0'});
+						});
+					}
+				},
 			}),
 		],
 	}),
@@ -219,7 +269,7 @@ UI.createApp('hook', [
 		},
 		content: [
 			Components.scrollList('rs-role-list', {
-
+			
 			}),
 		],
 	}),
@@ -238,9 +288,9 @@ UI.createApp('hook', [
 			},
 		},
 		content: [
-			Components.scrollList('cs-action-list', {
-
-			}),
+			// Components.scrollList('cs-action-list', {
+			//
+			// }),
 		],
 	}),
 ]);
