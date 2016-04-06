@@ -36,61 +36,81 @@ var Components = {
 	},
 
 	sidebar: function (id, args) {
-		// contains and list and a "back" sidebar from any state it goes to.
-		// the main point here is that instead of a single object being returned,
-		// the call will be converted into multiple objects.
-		// In this case, the return value will be a UI.component object with two children, a sidebar and
-		// a back bar. The sidebar should assume all the args that are entered with some of
-		// the obvious ones like state and templates simplified and taken care of.
+		// Structure
+		// Top: Container
+			// a. Primary sidebar
+				// i. Title container
+					// - Title
+				// ii. Content container
+			// b. Back sidebar
+				// i. Back button
 
-		// 1. update args
-		// initialise
-		// these will be the args of the primary sidebar object
-		args = args !== undefined ? args : {}; // these args will be the args of the primary sidebar object
+		// The args entered need to be split into several different things:
+		// 1. The title is the html of the Title component.
+		// 2. The state primitives are split into state definitions for back and primary.
+		// 3. The content array is passed to the children of the content component
 
-		// args for primary sidebar
-		primaryArgs = {
-			template: UI.template('div', 'ie sidebar border-right centred-vertically'),
-			state: {
-				next: args.state.next,
-				defaultState: {
-					style: {
-						'left': '-300px',
-					},
-				},
-				states: args.state.states,
-			},
-			children: [
-
-			],
-		}
-		Object.keys(primaryArgs).forEach(function (key) {
-			args[key] = primaryArgs[key];
+		// 1. Calculate states for primary and back
+		var backStateMap;
+		var primaryStates = Object.keys(args.state.states).map(function (stateName) {
+			var value = args.state.states[stateName];
+			if (value === 'active') {
+				backStateMap = stateName;
+				return {name: stateName, args: args.state.active};
+			} else {
+				return {name: stateName, args: 'default'};
+			}
 		});
 
-		// args for back sidebar
-		// state
-		var backStateMap;
-		var backStates = args.state.states.map(function (state) {
-			if (state.args === 'next') {
-				state.args = 'default';
-				return {name: state.name, args: {
+		var backStates = Object.keys(args.state.states).map(function (stateName) {
+			var value = args.state.states[stateName];
+			if (value === 'next') {
+				return {name: stateName, args: {
 					style: {
 						'left': '0px',
 					},
 				}};
 			} else {
-				if (state.args !== 'default') {
-					backStateMap = state.name;
-				}
-				return {name: state.name, args: 'default'};
+				return {name: stateName, args: 'default'};
 			}
 		});
 
-		// 2. return component
+		// 2. Define components and return
 		return UI.createComponent(id, {
 			children: [
-				UI.createComponent('{id}-primary'.format({id: id}), args),
+				UI.createComponent('{id}-primary'.format({id: id}), {
+					template: UI.template('div', 'ie sidebar border-right centred-vertically'),
+					state: {
+						defaultState: {
+							style: {
+								'left': '-300px',
+							},
+						},
+						states: primaryStates,
+					},
+					children: [
+						UI.createComponent('{id}-title'.format({id: id}), {
+							template: UI.template('h4', 'ie sidebar-title centred-horizontally show'),
+							appearance: {
+								html: args.title,
+								style: {
+									'height': '30px',
+								},
+							},
+						}),
+						UI.createComponent('{id}-content'.format({id: id}), {
+							template: UI.template('div', 'ie show'),
+							appearance: {
+								style: {
+									'top': '30px',
+									'width': '100%',
+									'height': 'calc(100% - 30px)',
+								},
+							},
+							children: args.content,
+						}),
+					],
+				}),
 				UI.createComponent('{id}-back'.format({id: id}), {
 					template: UI.template('div', 'ie sidebar mini border-right centred-vertically'),
 					state: {
@@ -117,9 +137,9 @@ var Components = {
 									_this.triggerState();
 								}}
 							],
-						}),
+						})
 					],
-				})
+				}),
 			],
 		});
 	},
