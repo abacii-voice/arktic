@@ -12,6 +12,8 @@ var Components = {
 		// 1. set search and filter toggles
 		var showSearch = args.search !== undefined ? 'show' : '';
 		var scrollHeight = args.search !== undefined ? 'calc(100% - 30px)' : '100%';
+		var scrollOverflow = args.scroll !== undefined ? (args.scroll ? 'scroll' : 'hidden') : 'scroll';
+		var showLoadingIcon = args.loadingIcon !== undefined ? (args.loadingIcon ? 'show' : '') : '';
 
 		var container = UI.createComponent(id, {
 			template: UI.template('div', 'ie scroll-wrapper show relative'),
@@ -37,8 +39,10 @@ var Components = {
 					appearance: {
 						style: {
 							'height': scrollHeight,
+							'overflow-y': scrollOverflow,
 						},
 					},
+					state: args.state,
 					children: args.content,
 					registry: args.registry,
 				}),
@@ -53,7 +57,7 @@ var Components = {
 				UI.createComponent('{id}-loading-icon'.format({id: id}), {
 					template: UI.templates.loadingIcon,
 					appearance: {
-						classes: ['ie centred show'],
+						classes: [showLoadingIcon],
 					},
 				}),
 			],
@@ -201,109 +205,3 @@ var Components = {
 		});
 	},
 }
-
-
-// UI.createComponent('client-sidebar', {
-// 	template: UI.template('div', 'ie sidebar border-right centred-vertically'),
-// 	state: {
-// 		defaultState: {
-// 			style: {
-// 				'left': '-300px',
-// 				'display': 'none',
-// 			},
-// 		},
-// 		states: [
-// 			{name: 'client-state', args: {
-// 				style: {
-// 					'left': '0px',
-// 					'display': 'block',
-// 				},
-// 			}},
-// 			{name: 'role-state', args: 'default'},
-// 			{name: 'control-state', args: 'default'},
-// 			{name: 'user-management-state', args: 'default'},
-// 		],
-// 	},
-// 	children: [
-// 		UI.createComponent('cs-title', {
-// 			template: UI.template('h4', 'ie sidebar-title centred-horizontally show'),
-// 			appearance: {
-// 				html: 'Clients',
-// 				style: {
-// 					'height': '40px',
-// 				},
-// 			},
-// 		}),
-// 		UI.createComponent('cs-client-list-wrapper', {
-// 			template: UI.template('div', 'ie scroll-wrapper show'),
-// 			appearance: {
-// 				style: {
-// 					'position': 'relative',
-// 					'top': '40px',
-// 					'height': 'calc(100% - 40px)',
-// 				},
-// 			},
-// 			children: [
-// 				UI.createComponent('cs-client-list', {
-// 					template: UI.template('div', 'ie scroll show'),
-// 					registry: {
-// 						path: function () {
-// 							return ['clients'];
-// 						},
-// 						fn: function (_this, data) {
-// 							// create buttons from Context and remove loading icon
-// 							// 'data' is a list of client names
-//
-// 							// remove loading button
-// 							var loadingIcon = UI.getComponent('cs-loading-icon');
-// 							loadingIcon.model().fadeOut();
-//
-// 							var clientList = Object.keys(data);
-//
-// 							// map data to new buttons
-// 							clientList.sort(alphaSort()).forEach(function (clientName) {
-// 								var child = UI.createComponent('cs-{name}-button'.format({name: clientName}), {
-// 									root: _this.id,
-// 									template: UI.templates.button,
-// 									appearance: {
-// 										style: {
-// 											'opacity': '0.0',
-// 										},
-// 										html: '{name}'.format({name: clientName}),
-// 									},
-// 									state: {
-// 										svitches: [
-// 											{stateName: 'role-state', fn: function (_this) {
-// 												Context.set('current_client', clientName);
-// 											}},
-// 										],
-// 										stateMap: {
-// 											'client-state': 'role-state',
-// 										},
-// 									},
-// 									bindings: [
-// 										{name: 'click', fn: function (_this) {
-// 											_this.triggerState();
-// 										}}
-// 									],
-// 								});
-//
-// 								_this.children[child.id] = child;
-// 								child.render();
-//
-// 								// make buttons visible
-// 								child.model().css({'opacity': '1.0'});
-// 							});
-// 						}
-// 					},
-// 				}),
-// 				UI.createComponent('cs-loading-icon', {
-// 					template: UI.templates.loadingIcon,
-// 					appearance: {
-// 						classes: ['ie centred show'],
-// 					},
-// 				}),
-// 			],
-// 		}),
-// 	],
-// }),
