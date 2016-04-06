@@ -200,6 +200,7 @@ UI.createApp('hook', [
 		content: [
 			Components.scrollList('cs-client-list', {
 				scroll: false,
+				loadingIcon: true,
 				registry: {
 					path: function () {
 						return ['clients'];
@@ -269,7 +270,56 @@ UI.createApp('hook', [
 		},
 		content: [
 			Components.scrollList('rs-role-list', {
-			
+				state: {
+					states: [
+						{name: 'role-state', args: {
+							preFn: function (_this) {
+								// 1. remove current children
+								Object.keys(_this.children).forEach(function (childId) {
+									UI.removeComponent(childId);
+								});
+
+								_this.children = {};
+								_this.parent().loadingIcon().model().fadeOut();
+
+								// 2. map data from context to new children and render
+								var data = Context.get('clients', Context.get('current_client'), 'roles');
+								data.forEach(function (roleName) {
+									var child = UI.createComponent('rs-{name}-button'.format({name: roleName}), {
+										root: _this.id,
+										template: UI.templates.button,
+										appearance: {
+											style: {
+												'opacity': '0.0',
+											},
+											classes: ['show'],
+											html: Context.get('role_display', roleName),
+										},
+										state: {
+											svitches: [
+												{stateName: 'control-state', fn: function (_this) {
+													Context.set('current_role', roleName);
+												}}
+											],
+											stateMap: 'control-state',
+										},
+										bindings: [
+											{name: 'click', fn: function (_this) {
+												_this.triggerState();
+											}}
+										],
+									});
+
+									_this.children[child.id] = child;
+									child.render();
+
+									// make buttons visible
+									child.model().css({'opacity': '1.0'});
+								});
+							},
+						}},
+					],
+				},
 			}),
 		],
 	}),
@@ -288,9 +338,236 @@ UI.createApp('hook', [
 			},
 		},
 		content: [
-			// Components.scrollList('cs-action-list', {
-			//
-			// }),
+			Components.scrollList('cs-action-list', {
+				content: [
+					UI.createComponent('cns-start-button', {
+						template: UI.templates.button,
+						appearance: {
+							html: 'Start',
+							classes: ['border start-button'],
+						},
+						state: {
+							states: [
+								{name: 'control-state', args: {
+									preFn: function (_this) {
+										var role = Context.get('current_role');
+										var visibleCondition = (role === 'worker' || role === 'moderator');
+										if (visibleCondition) {
+											_this.model().css('display', 'block');
+										} else {
+											_this.model().css('display', 'none');
+										}
+									},
+								}},
+							],
+							stateMap: 'interface-state',
+						},
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								_this.triggerState();
+							}},
+						],
+					}),
+					UI.createComponent('cns-upload-button', {
+						template: UI.templates.button,
+						appearance: {
+							html: 'Upload',
+							classes: ['border start-button'],
+						},
+						state: {
+							states: [
+								{name: 'control-state', args: {
+									preFn: function (_this) {
+										var client = Context.get('clients', Context.get('current_client'));
+										var role = Context.get('current_role');
+										if (role === 'admin' && client.is_contract) {
+											_this.model().css('display', 'block');
+										} else {
+											_this.model().css('display', 'none');
+										}
+									},
+								}},
+							],
+							stateMap: 'upload-state',
+						},
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								_this.triggerState();
+							}},
+						],
+					}),
+					UI.createComponent('cns-projects-button', {
+						template: UI.templates.button,
+						appearance: {
+							html: 'Projects',
+							classes: ['border'],
+						},
+						state: {
+							states: [
+								{name: 'control-state', args: {
+									preFn: function (_this) {
+										var role = Context.get('current_role');
+										if (role === 'admin') {
+											_this.model().css('display', 'block');
+										} else {
+											_this.model().css('display', 'none');
+										}
+									},
+								}},
+							],
+							stateMap: 'project-state',
+						},
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								_this.triggerState();
+							}},
+						],
+					}),
+					UI.createComponent('cns-user-management-button', {
+						template: UI.templates.button,
+						appearance: {
+							html: 'User management',
+							classes: ['border'],
+						},
+						state: {
+							states: [
+								{name: 'control-state', args: {
+									preFn: function (_this) {
+										var role = Context.get('current_role');
+										var visibleCondition = (role === 'admin' || role === 'moderator');
+										if (visibleCondition) {
+											_this.model().css('display', 'block');
+										} else {
+											_this.model().css('display', 'none');
+										}
+									},
+								}},
+							],
+							stateMap: 'user-management-state',
+							svitches: [
+								{stateName: 'user-management-state', fn: function (_this) {
+									// clear users
+									Context.store['clients'][Context.get('current_client')]['users'] = {};
+								}}
+							],
+						},
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								_this.triggerState();
+							}},
+						],
+					}),
+					UI.createComponent('cns-rules-button', {
+						template: UI.templates.button,
+						appearance: {
+							html: 'Rules',
+							classes: ['border'],
+						},
+						state: {
+							states: [
+								{name: 'control-state', args: {
+									preFn: function (_this) {
+										var role = Context.get('current_role');
+										var visibleCondition = true;
+										if (visibleCondition) {
+											_this.model().css('display', 'block');
+										} else {
+											_this.model().css('display', 'none');
+										}
+									},
+								}},
+							],
+							stateMap: 'rules-state',
+						},
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								_this.triggerState();
+							}},
+						],
+					}),
+					UI.createComponent('cns-billing-button', {
+						template: UI.templates.button,
+						appearance: {
+							html: 'Billing',
+							classes: ['border'],
+						},
+						state: {
+							states: [
+								{name: 'control-state', args: {
+									preFn: function (_this) {
+										var visibleCondition = true;
+										if (visibleCondition) {
+											_this.model().css('display', 'block');
+										} else {
+											_this.model().css('display', 'none');
+										}
+									},
+								}},
+							],
+							stateMap: 'billing-state',
+						},
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								_this.triggerState();
+							}},
+						],
+					}),
+					UI.createComponent('cns-stats-button', {
+						template: UI.templates.button,
+						appearance: {
+							html: 'Stats',
+							classes: ['border'],
+						},
+						state: {
+							states: [
+								{name: 'control-state', args: {
+									preFn: function (_this) {
+										var visibleCondition = true;
+										if (visibleCondition) {
+											_this.model().css('display', 'block');
+										} else {
+											_this.model().css('display', 'none');
+										}
+									},
+								}},
+							],
+							stateMap: 'stats-state',
+						},
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								_this.triggerState();
+							}},
+						],
+					}),
+					UI.createComponent('cns-search-button', {
+						template: UI.templates.button,
+						appearance: {
+							html: `<span class='glyphicon glyphicon-search'></span> Search`,
+							classes: ['border'],
+						},
+						state: {
+							states: [
+								{name: 'control-state', args: {
+									preFn: function (_this) {
+										var visibleCondition = true;
+										if (visibleCondition) {
+											_this.model().css('display', 'block');
+										} else {
+											_this.model().css('display', 'none');
+										}
+									},
+								}},
+							],
+							stateMap: 'search-state',
+						},
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								_this.triggerState();
+							}},
+						],
+					}),
+				],
+			}),
 		],
 	}),
 ]);
