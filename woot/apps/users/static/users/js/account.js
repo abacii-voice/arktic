@@ -187,52 +187,60 @@ UI.createApp('hook', [
 	Components.sidebar('client-sidebar', {
 		title: 'Clients',
 		state: {
-			states: [
-				{name: 'client-state', args: {
-					style: {
-						'left': '0px',
-					},
-				}},
-				{name: 'role-state', args: 'next'},
-				{name: 'control-state', args: 'default'},
-			],
+			active: {
+				style: {
+					'left': '0px',
+				},
+			},
+			states: {
+				'client-state': 'active',
+				'role-state': 'next',
+			},
 		},
-		children: [
+		content: [
 			Components.scrollList('cs-client-list', {
 
 			}),
 		],
 	}),
 	Components.sidebar('role-sidebar', {
+		title: 'Roles',
 		state: {
-			states: [
-				{name: 'client-state', args: 'default'},
-				{name: 'role-state', args: {
-					style: {
-						'left': '50px',
-					},
-				}},
-				{name: 'control-state', args: 'next'},
-			],
+			active: {
+				style: {
+					'left': '50px',
+				},
+			},
+			states: {
+				'client-state': 'default',
+				'role-state': 'active',
+				'control-state': 'next',
+			},
 		},
-		children: [
-			Components.scrollList('rs-role-list'),
+		content: [
+			Components.scrollList('rs-role-list', {
+
+			}),
 		],
 	}),
 	Components.sidebar('control-sidebar', {
+		title: 'Actions',
 		state: {
-			states: [
-				{name: 'client-state', args: 'default'},
-				{name: 'role-state', args: 'default'},
-				{name: 'control-state', args: {
-					style: {
-						'left': '50px',
-					},
-				}},
-			],
+			active: {
+				style: {
+					'left': '50px',
+				},
+			},
+			states: {
+				'client-state': 'default',
+				'role-state': 'default',
+				'control-state': 'active',
+			},
 		},
-		children: [
-			Components.scrollList('cns-action-list'),
+		content: [
+			Components.scrollList('cs-action-list', {
+
+			}),
 		],
 	}),
 ]);
