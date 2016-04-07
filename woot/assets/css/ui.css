@@ -5,6 +5,17 @@ This file should contain all styling related to interface elements, but no speci
 
 */
 
+html {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  -webkit-box-sizing: inherit;
+  -moz-box-sizing: inherit;
+  box-sizing: inherit;
+}
+
 /*
 
 1. Navbar
@@ -266,6 +277,7 @@ Common interface elements
 
 .ie.input {
 	font-size: 14px;
+	height: 34px;
 	width: 400px;
 	box-sizing: border-box;
 	border: 1px solid #ccc;
