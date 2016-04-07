@@ -78,6 +78,7 @@ Common interface elements
 /* Scroll */
 .ie.scroll-wrapper {
 	width: 100%;
+	height: 100%;
 	overflow: hidden;
 }
 

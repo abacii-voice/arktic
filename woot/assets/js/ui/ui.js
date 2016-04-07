@@ -312,14 +312,25 @@ var UI = {
 			if (bindings !== undefined) {
 				bindings.forEach(function (binding) {
 					// 1. determine if binding with the same name is in the current array
-					this.bindings[binding.name] = binding.fn;
+					this.bindings[binding.name] = {fn: binding.fn};
+					if (binding.fn2 !== undefined) {
+						this.bindings[binding.name].fn2 = binding.fn2;
+					}
 
 					// 2. if rendered, add to model
 					if (this.rendered) {
 						var _this = this;
-						this.model().on(binding.name, function () {
-							binding.fn(_this);
-						});
+						if (binding.fn2 !== undefined) {
+							this.model().on(binding.name, function () {
+								binding.fn(_this);
+							}, function () {
+								binding.fn2(_this);
+							});
+						} else {
+							this.model().on(binding.name, function () {
+								binding.fn(_this);
+							});
+						}
 					}
 				}, this);
 			}
@@ -413,10 +424,20 @@ var UI = {
 			// 6. add bindings
 			var _this = this;
 			Object.keys(this.bindings).forEach(function (bindingName) {
-				var fn = _this.bindings[bindingName];
-				model.on(bindingName, function () {
-					fn(_this);
-				});
+				var fn = _this.bindings[bindingName].fn;
+				var fn2 = _this.bindings[bindingName].fn2;
+
+				if (fn2 !== undefined) {
+					model.on(bindingName, function () {
+						fn(_this);
+					}, function () {
+						fn2(_this);
+					});
+				} else {
+					model.on(bindingName, function () {
+						fn(_this);
+					});
+				}
 			});
 
 			// 7. set rendered
