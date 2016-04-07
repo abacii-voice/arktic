@@ -268,7 +268,7 @@ Common interface elements
 	font-size: 14px;
 	width: 400px;
 	box-sizing: border-box;
-	border: 2px solid #ccc;
+	border: 1px solid #ccc;
 	background-color: transparent;
 	color: #ccc;
 	padding: 8px;

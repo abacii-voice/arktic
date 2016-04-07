@@ -93,7 +93,6 @@ var Components = {
 			appearance: {
 				style: {
 					'width': '100%',
-					'border-width': '1px',
 					'margin-bottom': '10px',
 				},
 				classes: [show],
