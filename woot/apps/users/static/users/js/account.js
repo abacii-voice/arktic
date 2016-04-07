@@ -15,12 +15,12 @@ Context.setFn(getdata('context', {}, function (data) {
 	}
 
 	// debug and construction
-	// $.when(new Promise (function (resolve, reject) {
-	// 	Context.set('current_client', 'TestContractClient');
-	// 	Context.set('current_role', 'admin')
-	// })).done(function () {
-	// 	UI.changeState('control-state');
-	// });
+	$.when(new Promise (function (resolve, reject) {
+		Context.set('current_client', 'TestContractClient');
+		Context.set('current_role', 'admin')
+	})).done(function () {
+		UI.changeState('user-management-state');
+	});
 }));
 
 // 2. Define global states
@@ -55,6 +55,7 @@ UI.createGlobalStates('client-state', [
 	'user-management-user-settings-state',
 	'user-management-new-user-state',
 	'user-management-confirm-user-state',
+	'user-management-settings-state',
 
 	// projects
 	'project-state',
@@ -98,19 +99,217 @@ UI.createApp('hook', [
 		],
 	}),
 	UI.createComponent('user-management-interface', {
+		template: UI.template('div', 'ie panel centred-vertically'),
+		appearance: {
+			style: {
+				'left': '60px',
+				'overflow': 'hidden',
+			},
+		},
+		state: {
+			defaultState: {
+				style: {
+					'opacity': '0.0',
+				},
+				fn: UI.functions.deactivate,
+			},
+			states: [
+				{name: 'role-state', args: 'default'},
+				{name: 'upload-state', args: 'default'},
+				{name: 'control-state', args: 'default'},
+				{name: 'user-management-state', args: {
+					preFn: UI.functions.activate,
+					style: {
+						'opacity': '1.0',
+					}
+				}},
+			],
+		},
 		children: [
 			UI.createComponent('umi-button-panel', {
+				template: UI.template('div', 'ie sub-panel show relative'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '40px',
+						'float': 'left',
+					},
+				},
 				children: [
-					UI.createComponent('umi-list-button'),
-					UI.createComponent('umi-new-user-button'),
-					UI.createComponent('umi-settings-button'),
+					UI.createComponent('umi-list-button', {
+						template: UI.templates.button,
+						appearance: {
+							classes: ['border border-radius relative'],
+							style: {
+								'margin-bottom': '10px',
+								'width': '40px',
+								'height': '40px',
+								'padding-top': '10px',
+							},
+						},
+						children: [
+							UI.createComponent('nub-span', {
+								template: UI.template('span', 'glyphicon glyphicon-list'),
+							}),
+						],
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								_this.triggerState();
+							}}
+						],
+						state: {
+							stateMap: 'user-management-state',
+						},
+					}),
+					UI.createComponent('umi-settings-button', {
+						template: UI.templates.button,
+						appearance: {
+							classes: ['border border-radius relative'],
+							style: {
+								'margin-bottom': '10px',
+								'width': '40px',
+								'height': '40px',
+								'padding-top': '10px',
+							},
+						},
+						children: [
+							UI.createComponent('nub-span', {
+								template: UI.template('span', 'glyphicon glyphicon-cog'),
+							}),
+						],
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								_this.triggerState();
+							}}
+						],
+						state: {
+							stateMap: 'user-management-settings-state',
+						},
+					}),
+					UI.createComponent('umi-new-user-button', {
+						template: UI.templates.button,
+						appearance: {
+							classes: ['border border-radius relative'],
+							style: {
+								'margin-bottom': '10px',
+								'width': '40px',
+								'height': '40px',
+								'padding-top': '10px',
+							},
+						},
+						children: [
+							UI.createComponent('nub-span', {
+								template: UI.template('span', 'glyphicon glyphicon-plus'),
+							}),
+						],
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								_this.triggerState();
+							}}
+						],
+						state: {
+							stateMap: 'user-management-new-user-state',
+							defaultState: {
+								preFn: function (_this) {
+									var isAdmin = Context.get('current_role') === 'admin';
+									if (isAdmin) {
+										_this.model().css({'display': 'block'});
+									} else {
+										_this.model().css({'display': 'none'});
+									}
+								},
+							},
+							states: [
+								{name: 'user-management-state', args: 'default'},
+							],
+						},
+					}),
 				],
 			}),
 			UI.createComponent('umi-primary-panel', {
+				template: UI.template('div', 'ie sub-panel show relative'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': 'calc(100% - 50px)',
+						'float': 'left',
+						'margin-left': '10px',
+					},
+				},
 				children: [
-					// Components.scrollList('umi-pp-user-list', {
-					//
-					// }),
+					Components.scrollList('umi-pp-user-list', {
+						title: 'Users',
+						search: {
+
+						},
+						appearance: {
+							style: {
+								'width': '200px',
+								'float': 'left',
+							},
+						},
+						state: {
+							states: [
+								{name: 'user-management-state', args: {
+									preFn: function (_this) {
+										// 1. remove current children
+										Object.keys(_this.children).forEach(function (childId) {
+											UI.removeComponent(childId);
+										});
+
+										_this.children = {};
+
+										// promise to fetch data and update Context
+										var permissionData = {
+											current_client: Context.get('current_client'),
+											current_role: Context.get('current_role'),
+										};
+										$.when(getdata('context', permissionData, function (data) {
+											// update Context
+											Context.update(data);
+										})).done(function () {
+											// data is a list of user objects with relevant details
+											var users = Context.get('clients', Context.get('current_client'), 'users');
+											Object.keys(users).map(function (userId) {
+												var userPrototype = users[userId];
+												var userButton = UI.createComponent('user-button-{id}'.format({id: userId}), {
+													root: _this.id,
+													template: UI.templates.button,
+													appearance: {
+														html: '{last_name}, {first_name}'.format({first_name: userPrototype.first_name, last_name: userPrototype.last_name}),
+														classes: ['border-bottom'],
+														style: {
+															'width': '100%',
+														},
+													},
+													bindings: [
+														{name: 'click', fn: function (_this) {
+															_this.triggerState();
+														}},
+													],
+													state: {
+														stateMap: 'user-management-user-state',
+														svitches: [
+															{stateName: 'user-management-user-state', fn: function (_this) {
+																Context.set('current_user_profile', userPrototype);
+															}}
+														],
+													},
+												});
+
+												// render
+												_this.children[userButton.id] = userButton;
+												userButton.render();
+											});
+
+											// fade loading icon
+											_this.parent().loadingIcon().model().fadeOut();
+										});
+									}
+								}},
+							],
+						},
+					}),
 					UI.createComponent('umi-pp-user-info'),
 					UI.createComponent('umi-pp-user-confirmed'),
 					UI.createComponent('umi-pp-user-card', {
@@ -121,9 +320,9 @@ UI.createApp('hook', [
 									UI.createComponent('umi-pp-uc-cp-subtitle'),
 									UI.createComponent('umi-pp-uc-cp-role-panel', {
 										children: [
-											// Components.roleIndicator('umi-pp-uc-cp-rp-admin-role'),
-											// Components.roleIndicator('umi-pp-uc-cp-rp-moderator-role'),
-											// Components.roleIndicator('umi-pp-uc-cp-rp-worker-role'),
+											Components.roleIndicator('umi-pp-uc-cp-rp-admin-role'),
+											Components.roleIndicator('umi-pp-uc-cp-rp-moderator-role'),
+											Components.roleIndicator('umi-pp-uc-cp-rp-worker-role'),
 										],
 									}),
 									UI.createComponent('umi-pp-uc-cp-admin-enabled-panel'), // for contract
@@ -195,6 +394,8 @@ UI.createApp('hook', [
 			states: {
 				'client-state': 'active',
 				'role-state': 'next',
+				'control-state': 'default',
+				'user-management-state': 'default',
 			},
 		},
 		content: [
@@ -335,6 +536,9 @@ UI.createApp('hook', [
 				'client-state': 'default',
 				'role-state': 'default',
 				'control-state': 'active',
+				'interface-state': 'next',
+				'user-management-state': 'next',
+				'project-state': 'next',
 			},
 		},
 		content: [
