@@ -10,29 +10,30 @@ var Components = {
 		// infinite scroll loading
 
 		// 1. set search and filter toggles
+		var showTitle = args.title !== undefined ? 'show' : '';
 		var showSearch = args.search !== undefined ? 'show' : '';
 		var scrollHeight = args.search !== undefined ? 'calc(100% - 30px)' : '100%';
+		scrollHeight = args.title !== undefined ? 'calc(100% - 60px)' : scrollHeight;
+
 		var scrollOverflow = args.scroll !== undefined ? (args.scroll ? 'scroll' : 'hidden') : 'scroll';
 		var showLoadingIcon = args.loadingIcon !== undefined ? (args.loadingIcon ? 'show' : '') : '';
 
 		var container = UI.createComponent(id, {
 			template: UI.template('div', 'ie scroll-wrapper show relative'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '100%',
-				},
-			},
+			appearance: args.appearance,
 			children: [
-				UI.createComponent('{id}-search'.format({id: id}), {
-					template: UI.template('div', 'ie relative'),
+				UI.createComponent('{id}-title'.format({id: id}), {
+					template: UI.template('h4', 'ie sidebar-title'),
 					appearance: {
+						html: args.title,
 						style: {
 							'height': '30px',
-							'width': '100%',
 						},
-						classes: [showSearch],
+						classes: ['relative', showTitle],
 					},
+				}),
+				Components.searchFilterField('{id}-search'.format({id: id}), {
+					show: showSearch,
 				}),
 				UI.createComponent('{id}-scroll'.format({id: id}), {
 					template: UI.template('div', 'ie scroll show relative'),
@@ -68,18 +69,16 @@ var Components = {
 			return UI.getComponent('{id}-loading-icon'.format({id: id}));
 		}
 
+		container.filter = function () {
+			return UI.getComponent('{id}-filter'.format({id: id}));
+		}
+
+		container.searchField = function () {
+			return UI.getComponent('{id}-search'.format({id: id}));
+		}
+
 		// return
 		return container;
-	},
-
-	listButton: function (id, args) {
-		// displays a title, but also other information at key points
-		return UI.createComponent(id, args);
-	},
-
-	scrollPanel: function (id, args) {
-		// simple scroll wrapper and container for a bunch of divs or whatever
-		return UI.createComponent(id, args);
 	},
 
 	searchFilterField: function (id, args) {
@@ -87,7 +86,25 @@ var Components = {
 		// keywords and functions
 			// eg. ".." -> function () {} - search for single words
 			// "worker" -> filter by workers
-		return UI.createComponent(id, args);
+		var show = args.show !== undefined ? args.show : '';
+
+		var container =	UI.createComponent(id, {
+			template: UI.template('input', 'ie input relative'),
+			appearance: {
+				style: {
+					'width': '100%',
+					'border-width': '1px',
+					'margin-bottom': '10px',
+				},
+				classes: [show],
+				properties: {
+					'placeholder': 'Search or filter...',
+				},
+			},
+			bindings: args.bindings,
+		});
+
+		return container;
 	},
 
 	roleIndicator: function (id, args) {
