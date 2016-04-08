@@ -515,6 +515,11 @@ UI.createApp('hook', [
 							Components.roleIndicator('umi-nup-roles-admin', {
 								label: 'admin',
 								basic: true,
+								bindings: [
+									{name: 'click', fn: function (_this) {
+										_this.parent().click();
+									}},
+								],
 							}),
 							Components.roleIndicator('umi-nup-roles-moderator', {
 								label: 'moderator',
