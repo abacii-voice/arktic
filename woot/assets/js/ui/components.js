@@ -137,16 +137,16 @@ var Components = {
 					},
 					children: [
 						UI.createComponent('{id}-gb-enabled'.format({id: id}), {
-							template: UI.template('span', 'ie glyphicon glyphicon-ok'),
+							template: UI.template('span', 'glyphicon glyphicon-ok glyphicon-hidden'),
 						}),
 						UI.createComponent('{id}-gb-disabled'.format({id: id}), {
-							template: UI.template('span', 'ie glyphicon glyphicon-remove'),
+							template: UI.template('span', 'glyphicon glyphicon-remove glyphicon-hidden'),
 						}),
 						UI.createComponent('{id}-gb-pending'.format({id: id}), {
-							template: UI.template('span', 'ie glyphicon glyphicon-option-horizontal'),
+							template: UI.template('span', 'glyphicon glyphicon-option-horizontal glyphicon-hidden'),
 						}),
 						UI.createComponent('{id}-gb-add'.format({id: id}), {
-							template: UI.template('span', 'ie glyphicon glyphicon-plus'),
+							template: UI.template('span', 'glyphicon glyphicon-plus glyphicon-hidden'),
 						}),
 					],
 					bindings: args.bindings,
@@ -203,50 +203,48 @@ var Components = {
 
 		// methods
 		_this.isBasic = isBasic;
-		_this.isEnabled = false;
-		_this.isPending = true; // initially in the add state.
+		_this.status = 'empty';
 		_this.click = function () {
 			// what happens when clicked is dependent on the mode of the indicator and its current state.
-
 			if (_this.isBasic) {
 				// only indicates nothing or enabled.
-				if (_this.isEnabled) {
-					_this.empty();
+				if (_this.status == 'enabled') {
+					_this.update('empty');
 				} else {
-					_this.enable();
+					_this.update('enabled');
 				}
 			} else {
 				// has the full range of toggles
-				if (_this.isEnabled) {
-					if (!_this.isPending) {
-						_this.disable();
-					}
-				} else {
-					if (_this.isPending) {
-						_this.add();
-					} else {
-						_this.enable();
-					}
+				if (_this.status == 'enabled') {
+					_this.update('disabled');
+				} else if (_this.status === 'new') {
+					_this.update('add');
+				} else if (_this.status === 'disabled') {
+					_this.update('enabled');
 				}
 			}
 		}
 
-		_this.empty = function () {
+		_this.update = function (status) {
+			_this.status = status;
 
+			// deactivate everything
+			_this.enabledGlyph().model().addClass('glyphicon-hidden');
+			_this.disabledGlyph().model().addClass('glyphicon-hidden');
+			_this.pendingGlyph().model().addClass('glyphicon-hidden');
+			_this.addGlyph().model().addClass('glyphicon-hidden');
+
+			// reactivate certain things
+			if (_this.status == 'enabled') {
+				_this.enabledGlyph().model().removeClass('glyphicon-hidden');
+			} else if (_this.status == 'disabled') {
+				_this.disabledGlyph().model().removeClass('glyphicon-hidden');
+			} else if (_this.status == 'pending') {
+				_this.pendingGlyph().model().removeClass('glyphicon-hidden');
+			} else if (_this.status == 'add') {
+				_this.addGlyph().model().removeClass('glyphicon-hidden');
+			}
 		}
-		_this.add = function () {
-
-		}
-		_this.enable = function () {
-
-		}
-		_this.disable = function () {
-
-		}
-		_this.update = function (enabled, pending) {
-
-		}
-
 
 		return _this;
 	},
