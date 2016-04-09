@@ -178,38 +178,38 @@ var UI = {
 				this.html = appearance.html !== undefined ? appearance.html : this.html;
 				this.classes = appearance.classes !== undefined ? appearance.classes : currentClasses;
 				this.style = appearance.style !== undefined ? appearance.style : currentStyle;
-			}
 
-			if (this.rendered) {
-				// model
-				var model = this.model();
+				if (this.rendered) {
+					// model
+					var model = this.model();
 
-				// properties
-				var _this = this;
-				Object.keys(this.properties).forEach(function (property) {
-					model.attr(property, _this.properties[property]);
-				});
-
-				// html
-				model.html(this.html);
-
-				// classes
-				if (_this.classes !== undefined) {
-					// remove current classes that are not the new classes variable
-					currentClasses.filter(function (className) {
-						return _this.classes.indexOf(className) === -1;
-					}).forEach(function (className) {
-						model.removeClass(className);
+					// properties
+					var _this = this;
+					Object.keys(this.properties).forEach(function (property) {
+						model.attr(property, _this.properties[property]);
 					});
 
-					// add new classes
-					_this.classes.forEach(function (className) {
-						model.addClass(className);
-					});
+					// html
+					model.html(this.html);
+
+					// classes
+					if (_this.classes !== undefined) {
+						// remove current classes that are not the new classes variable
+						currentClasses.filter(function (className) {
+							return _this.classes.indexOf(className) === -1;
+						}).forEach(function (className) {
+							model.removeClass(className);
+						});
+
+						// add new classes
+						_this.classes.forEach(function (className) {
+							model.addClass(className);
+						});
+					}
+
+					// style
+					model.css(this.style);
 				}
-
-				// style
-				model.css(this.style);
 			}
 		}
 
@@ -717,8 +717,11 @@ var Context = {
 		var i;
 		for (i=0; i<arguments.length; i++) {
 			sub = sub[arguments[i]];
+			if (sub === undefined) {
+				break;
+			}
 		}
-		return sub;
+		return sub !== undefined ? sub : '';
 	},
 
 	set: function (key, value) {
@@ -771,5 +774,21 @@ var Context = {
 	// include new data in context
 	update: function (data) {
 		$.extend(true, Context.store, data);
+	},
+
+	updateUser: function (id, role, status) {
+		// 1. update in current_user_profile
+		if (Context.get('current_user_profile', 'roles', role) === '') {
+			Context.store.current_user_profile.roles[role] = {status: status};
+		} else {
+			Context.store.current_user_profile.roles[role].status = status;
+		}
+
+		// 2. update in clients
+		if (Context.get('clients', Context.get('current_client'), 'users', id, 'roles', role) === '') {
+			Context.store.clients[Context.get('current_client')].users[id].roles[role] = {status: status};
+		} else {
+			Context.store.clients[Context.get('current_client')].users[id].roles[role].status = status;
+		}
 	}
 }
