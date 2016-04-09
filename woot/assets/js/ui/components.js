@@ -1,3 +1,6 @@
+// These components are specific to the use case of the current arktic website, but they are
+// semi-generalised constructs for repeated use.
+
 var Components = {
 	breadcrumbs: function (id, args) {
 		// displays position in heirarchy
@@ -119,6 +122,15 @@ var Components = {
 		// dispatch requests for each state
 		// vars
 		var isBasic = args.basic !== undefined ? args.basic : false;
+		if (isBasic) {
+			args.bindings = [
+				{name: 'click', fn: function (_this) {
+					_this.parent().click();
+				}},
+			];
+		}
+
+		var initialState = args.initial !== undefined ? args.initial : (isBasic ? 'empty' : 'add');
 
 		// define
 		var _this = UI.createComponent(id, {
@@ -149,7 +161,30 @@ var Components = {
 							template: UI.template('span', 'glyphicon glyphicon-plus glyphicon-hidden'),
 						}),
 					],
-					bindings: args.bindings,
+					bindings: [
+						{name: 'click', fn: function (_this) {
+							var indicator = _this.parent();
+							indicator.click();
+
+							if (!indicator.isBasic) {
+								var roleData = {
+									'user_id': Context.get('current_user_profile', 'id'),
+									'current_client': Context.get('current_client'),
+									'current_role': Context.get('current_role'),
+									'role_type': args.label,
+								};
+								if (indicator.status === 'enabled') {
+									command('enable_role', roleData, function () {});
+								} else if (indicator.status === 'disabled') {
+									command('disable_role', roleData, function () {});
+								} else if (indicator.status === 'pending') {
+									command('add_role_to_user', roleData, function () {});
+								}
+
+								Context.updateUser(Context.get('current_user_profile', 'id'), args.label, indicator.status);
+							}
+						}}
+					],
 				}),
 				UI.createComponent('{id}-name-button'.format({id: id}), {
 					template: UI.template('div', 'ie button show relative'),
@@ -179,6 +214,19 @@ var Components = {
 					],
 				}),
 			],
+			state: {
+				states: [
+					{name: 'user-management-user-state', args: {
+						preFn: function (_this) {
+							if (!_this.isBasic) {
+								var status = Context.get('current_user_profile', 'roles', args.label, 'status');
+								status = status !== '' ? status : 'add';
+								_this.set(status);
+							}
+						}
+					}},
+				],
+			},
 		});
 
 		// vars
@@ -203,29 +251,29 @@ var Components = {
 
 		// methods
 		_this.isBasic = isBasic;
-		_this.status = 'empty';
+		_this.status = initialState;
 		_this.click = function () {
 			// what happens when clicked is dependent on the mode of the indicator and its current state.
 			if (_this.isBasic) {
 				// only indicates nothing or enabled.
 				if (_this.status == 'enabled') {
-					_this.update('empty');
+					_this.set('empty');
 				} else {
-					_this.update('enabled');
+					_this.set('enabled');
 				}
 			} else {
 				// has the full range of toggles
 				if (_this.status == 'enabled') {
-					_this.update('disabled');
-				} else if (_this.status === 'new') {
-					_this.update('add');
+					_this.set('disabled');
+				} else if (_this.status === 'add') {
+					_this.set('pending');
 				} else if (_this.status === 'disabled') {
-					_this.update('enabled');
+					_this.set('enabled');
 				}
 			}
 		}
 
-		_this.update = function (status) {
+		_this.set = function (status) {
 			_this.status = status;
 
 			// deactivate everything
@@ -235,15 +283,19 @@ var Components = {
 			_this.addGlyph().model().addClass('glyphicon-hidden');
 
 			// reactivate certain things
-			if (_this.status == 'enabled') {
+			if (_this.status === 'enabled') {
 				_this.enabledGlyph().model().removeClass('glyphicon-hidden');
-			} else if (_this.status == 'disabled') {
+			} else if (_this.status === 'disabled') {
 				_this.disabledGlyph().model().removeClass('glyphicon-hidden');
-			} else if (_this.status == 'pending') {
+			} else if (_this.status === 'pending') {
 				_this.pendingGlyph().model().removeClass('glyphicon-hidden');
-			} else if (_this.status == 'add') {
+			} else if (_this.status === 'add') {
 				_this.addGlyph().model().removeClass('glyphicon-hidden');
 			}
+		}
+
+		_this.isEnabled = function () {
+			return _this.status === 'enabled';
 		}
 
 		return _this;
@@ -358,274 +410,3 @@ var Components = {
 		});
 	},
 }
-//
-// UI.createComponent('nuc-roles-moderator-wrapper', {
-// 	template: UI.template('div', 'ie show'),
-// 	appearance: {
-// 		style: {
-// 			'top': '80px',
-// 			'width': '100%',
-// 			'height': '40px',
-// 		}
-// 	},
-// 	children: [
-// 		UI.createComponent('nrmw-tick-button', {
-// 			template: UI.templates.button,
-// 			appearance: {
-// 				classes: ['border border-radius'],
-// 				style: {
-// 					'position': 'absolute',
-// 					'transform': 'none',
-// 					'left': '0px',
-// 					'height': '40px',
-// 					'width': '40px',
-// 					'padding-top': '10px',
-// 					'margin-right': '0px',
-// 				},
-// 			},
-// 			children: [
-// 				UI.createComponent('nrmw-tb-check', {
-// 					template: UI.template('span', 'glyphicon glyphicon-ok glyphicon-hidden'),
-// 					state: {
-// 						defaultState: {
-// 							fn: function (_this) {
-// 								_this.model().addClass('glyphicon-hidden');
-// 							},
-// 						},
-// 						states: [
-// 							{name: 'user-management-user-state', args: 'default'},
-// 							{name: 'control-state', args: 'default'},
-// 						],
-// 					},
-// 				}),
-// 			],
-// 			bindings: [
-// 				{name: 'click', fn: function (_this) {
-// 					var check = UI.getComponent('nrmw-tb-check');
-// 					check.model().toggleClass('glyphicon-hidden');
-// 				}}
-// 			],
-// 		}),
-// 		UI.createComponent('nrmw-name-button', {
-// 			template: UI.templates.button,
-// 			appearance: {
-// 				style: {
-// 					'position': 'absolute',
-// 					'top': '0px',
-// 					'left': '40px',
-// 					'transform': 'none',
-// 					'height': '40px',
-// 					'padding-top': '10px',
-// 					'text-align': 'left',
-// 					'padding-left': '10px',
-// 				},
-// 				html: 'Moderator',
-// 			},
-// 			bindings: [
-// 				{name: 'click', fn: function (_this) {
-// 					var check = UI.getComponent('nrmw-tb-check');
-// 					check.model().toggleClass('glyphicon-hidden');
-// 				}}
-// 			],
-// 		})
-// 	],
-// }),
-//
-// UI.createComponent('uc-roles-admin-wrapper', {
-// 	template: UI.template('div', 'ie show'),
-// 	appearance: {
-// 		style: {
-// 			'top': '30px',
-// 			'width': '150px',
-// 		},
-// 	},
-// 	children: [
-// 		UI.createComponent('uc-roles-admin-button', {
-// 			template: UI.templates.button,
-// 			appearance: {
-// 				classes: ['border border-radius relative'],
-// 				style: {
-// 					'transform': 'none',
-// 					'height': '40px',
-// 					'width': '40px',
-// 					'padding-top': '10px',
-// 					'float': 'left',
-// 					'left': '0px',
-// 				},
-// 			},
-// 			children: [
-// 				UI.createComponent('urab-enabled', {
-// 					template: UI.template('span', 'glyphicon glyphicon-ok'),
-// 					state: {
-// 						states: [
-// 							{name: 'user-management-user-state', args: {
-// 								preFn: function (_this) {
-// 									// get data
-// 									var user = Context.get('current_user_profile');
-// 									var model = _this.model();
-// 									if (user.roles.hasOwnProperty('admin')) {
-// 										if (user.roles.admin.is_enabled) {
-// 											model.removeClass('glyphicon-hidden').addClass('enabled');
-// 										} else {
-// 											if (user.roles.admin.is_activated) {
-// 												model.addClass('glyphicon-hidden').addClass('enabled');
-// 											} else {
-// 												model.addClass('glyphicon-hidden').removeClass('enabled');
-// 											}
-// 										}
-// 									} else {
-// 										model.addClass('glyphicon-hidden').removeClass('enabled');
-// 									}
-// 								},
-// 							}}
-// 						],
-// 					},
-// 				}),
-// 				UI.createComponent('urab-disabled', {
-// 					template: UI.template('span', 'glyphicon glyphicon-remove'),
-// 					state: {
-// 						states: [
-// 							{name: 'user-management-user-state', args: {
-// 								preFn: function (_this) {
-// 									// get data
-// 									var user = Context.get('current_user_profile');
-// 									var model = _this.model()
-// 									if (user.roles.hasOwnProperty('admin')) {
-// 										if (user.roles.admin.is_enabled) {
-// 											model.addClass('glyphicon-hidden');
-// 										} else {
-// 											if (user.roles.admin.is_activated) {
-// 												model.removeClass('glyphicon-hidden');
-// 											} else {
-// 												model.addClass('glyphicon-hidden');
-// 											}
-// 										}
-// 									} else {
-// 										model.addClass('glyphicon-hidden');
-// 									}
-// 								},
-// 							}}
-// 						],
-// 					},
-// 				}),
-// 				UI.createComponent('urab-pending', {
-// 					template: UI.template('span', 'glyphicon glyphicon-option-horizontal'),
-// 					state: {
-// 						states: [
-// 							{name: 'user-management-user-state', args: {
-// 								preFn: function (_this) {
-// 									// get data
-// 									var user = Context.get('current_user_profile');
-// 									var model = _this.model();
-// 									if (user.roles.hasOwnProperty('admin')) {
-// 										if (user.roles.admin.is_activated) {
-// 											model.addClass('glyphicon-hidden').removeClass('enabled');
-// 										} else {
-// 											model.removeClass('glyphicon-hidden').addClass('enabled');
-// 										}
-// 									} else {
-// 										model.addClass('glyphicon-hidden').removeClass('enabled');
-// 									}
-// 								},
-// 							}}
-// 						],
-// 					},
-// 				}),
-// 				UI.createComponent('urab-add', {
-// 					template: UI.template('span', 'glyphicon glyphicon-plus'),
-// 					state: {
-// 						states: [
-// 							{name: 'user-management-user-state', args: {
-// 								preFn: function (_this) {
-// 									// get data
-// 									var user = Context.get('current_user_profile');
-// 									var model = _this.model();
-// 									if (user.roles.hasOwnProperty('admin')) {
-// 										model.addClass('glyphicon-hidden');
-// 									} else {
-// 										model.removeClass('glyphicon-hidden');
-// 									}
-// 								},
-// 							}}
-// 						],
-// 					},
-// 				}),
-// 			],
-// 			bindings: [
-// 				{name: 'click', fn: function (_this) {
-// 					// get elements
-// 					var enabled = UI.getComponent('urab-enabled');
-// 					var disabled = UI.getComponent('urab-disabled');
-// 					var pending = UI.getComponent('urab-pending');
-// 					var add = UI.getComponent('urab-add');
-//
-// 					var roleData = {
-// 						'current_client': Context.get('current_client'),
-// 						'current_role': Context.get('current_role'),
-// 						'user_id': UI.getComponent('uc-name').model().attr('userid'),
-// 						'role_type': 'admin',
-// 					};
-//
-// 					// check for status to determine action
-// 					if (enabled.model().hasClass('enabled')) {
-// 						// role is activated
-// 						if (!enabled.model().hasClass('glyphicon-hidden')) {
-// 							command('disable_role', roleData, function (data) {});
-// 						} else {
-// 							command('enable_role', roleData, function (data) {});
-// 						}
-//
-// 						enabled.model().toggleClass('glyphicon-hidden');
-// 						disabled.model().toggleClass('glyphicon-hidden');
-//
-// 					} else {
-// 						// role is either pending or non-existent
-// 						if (!pending.model().hasClass('enabled')) {
-// 							// press add
-// 							// 1. send add role
-// 							command('add_role_to_user', roleData, function (data) {});
-//
-// 							// 2. switch to pending button
-// 							pending.model().addClass('enabled');
-// 							pending.model().toggleClass('glyphicon-hidden');
-// 							add.model().toggleClass('glyphicon-hidden');
-//
-// 							// 3. change data in context
-// 							var userProfile = Context.get('current_user_profile');
-// 							if (userProfile.roles.admin !== undefined) {
-// 								userProfile.roles.admin.is_activated = true;
-// 							} else {
-// 								userProfile.roles.admin = {
-// 									'is_activated': true,
-// 									'is_enabled': false,
-// 									'is_approved': true,
-// 								};
-// 							}
-// 							Context.set('current_user_profile', userProfile);
-// 						}
-// 					}
-// 				}},
-// 			],
-// 		}),
-// 		UI.createComponent('uc-roles-admin-title', {
-// 			template: UI.templates.button,
-// 			appearance: {
-// 				style: {
-// 					'position': 'relative',
-// 					'padding-left': '10px',
-// 					'padding-top': '12px',
-// 					'height': '40px',
-// 					'transform': 'none',
-// 					'left': '0px',
-// 					'width': '100px',
-// 					'text-align': 'left',
-// 					'float': 'left',
-// 				},
-// 				html: 'Admin',
-// 			},
-// 			bindings: [
-// 				// click to show stats
-// 			],
-// 		}),
-// 	],
-// }),
