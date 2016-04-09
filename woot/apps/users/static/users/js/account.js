@@ -17,7 +17,7 @@ Context.setFn(getdata('context', {}, function (data) {
 	// debug and construction
 	$.when(new Promise (function (resolve, reject) {
 		Context.set('current_client', 'TestProductionClient');
-		Context.set('current_role', 'admin')
+		Context.set('current_role', 'moderator')
 	})).done(function () {
 		UI.changeState('user-management-state');
 	});
@@ -395,7 +395,7 @@ UI.createApp('hook', [
 								appearance: {
 									style: {
 										'height': '100%',
-										'width': '200px',
+										'width': '250px',
 										'margin-left': '10px',
 										'float': 'left',
 									}
@@ -466,8 +466,20 @@ UI.createApp('hook', [
 												label: 'worker',
 											}),
 										],
+										state: {
+											states: [
+												{name: 'user-management-user-state', args: {
+													preFn: function (_this) {
+														if (!(Context.get('current_role') === 'admin' && Context.get('clients', Context.get('current_client')).is_production)) {
+															_this.model().css({'display': 'none'});
+														} else {
+															_this.model().css({'display': 'block'});
+														}
+													},
+												}},
+											],
+										},
 									}),
-									UI.createComponent('umi-pp-uc-cp-worker-enabled-panel'), // for mods
 									UI.createComponent('umi-pp-uc-cp-action-panel', {
 										template: UI.template('div', 'ie show relative'),
 										appearance: {
@@ -740,7 +752,7 @@ UI.createApp('hook', [
 								appearance: {
 									style: {
 										'height': '100%',
-										'width': 'calc(100% - 220px)',
+										'width': 'calc(100% - 270px)',
 										'margin-left': '10px',
 										'float': 'left',
 									}
@@ -751,7 +763,7 @@ UI.createApp('hook', [
 								appearance: {
 									style: {
 										'height': '100%',
-										'width': 'calc(100% - 220px)',
+										'width': 'calc(100% - 270px)',
 										'margin-left': '10px',
 										'float': 'left',
 									}
@@ -762,7 +774,7 @@ UI.createApp('hook', [
 								appearance: {
 									style: {
 										'height': '100%',
-										'width': 'calc(100% - 220px)',
+										'width': 'calc(100% - 270px)',
 										'margin-left': '10px',
 										'float': 'left',
 									}
@@ -773,7 +785,7 @@ UI.createApp('hook', [
 								appearance: {
 									style: {
 										'height': '100%',
-										'width': 'calc(100% - 220px)',
+										'width': 'calc(100% - 270px)',
 										'margin-left': '10px',
 										'float': 'left',
 									}
