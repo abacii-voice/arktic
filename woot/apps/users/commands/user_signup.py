@@ -39,8 +39,7 @@ def verify(request):
 
 		# activate roles
 		for role in user.roles.all():
-			role.is_activated = True
-			role.enabled = True
+			role.status = 'enabled'
 			role.save()
 
 		user.save()
