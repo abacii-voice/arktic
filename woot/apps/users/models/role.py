@@ -18,8 +18,7 @@ class Role(models.Model):
 	type = models.CharField(max_length=255)
 
 	# status
-	is_activated = models.BooleanField(default=False)
-	is_enabled = models.BooleanField(default=False)
+	status = models.CharField(max_length=255, default='pending') # shows the stage of becoming a full user.
 
 	### Methods
 	# data
@@ -30,8 +29,7 @@ class Role(models.Model):
 
 		elif permission.is_contractadmin or permission.is_productionadmin:
 			role_data = {
-				'is_activated': self.is_activated,
-				'is_enabled': self.is_enabled,
+				'status': self.status,
 				'thresholds': self.threshold_data(),
 			}
 

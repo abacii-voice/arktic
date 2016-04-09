@@ -74,17 +74,17 @@ def add_role_to_user(request):
 	if verified and permission.is_productionadmin:
 		# get data
 		role_data = {
-			'current_client': request.POST['current_client'],
-			'user_id': request.POST['user_id'],
-			'role_type': request.POST['role_type'],
+			'id': request.POST['user_id'],
+			'client': request.POST['current_client'],
+			'type': request.POST['role_type'],
 		}
 
 		# create role
-		client = Client.objects.get(name=role_data['current_client'])
+		client = Client.objects.get(name=role_data['client'])
 		if permission.check_client(client):
-			user = User.objects.get(id=role_data['user_id'])
+			user = User.objects.get(id=role_data['id'])
 
-			role_type = role_data['role_type']
+			role_type = role_data['type']
 			if role_type == 'admin':
 				if client.is_production:
 					user.create_productionadmin(client)
@@ -95,7 +95,8 @@ def add_role_to_user(request):
 				user.create_moderator(client)
 
 			elif role_type == 'worker':
-				user.create_worker(client, client.available_moderator())
+				if user.get_role(client.name, 'worker') is None:
+					user.create_worker(client, client.available_moderator())
 
 		return JsonResponse({'done': True})
 
@@ -117,9 +118,9 @@ def enable_role(request):
 
 		if permission.is_productionadmin or permission.is_contractadmin:
 			user = User.objects.get(id=role_data['id'])
-			if user.roles.filter(client__name=role_data['current_client'], type=role_data['type']).count() > 0:
-				role = user.roles.get(client__name=role_data['current_client'], type=role_data['type'])
-				role.is_enabled = True
+			role = user.get_role(role_data['client'], role_data['type'])
+			if role is not None:
+				role.status = 'enabled'
 				role.save()
 
 		return JsonResponse({'done': True})
@@ -136,9 +137,9 @@ def disable_role(request):
 
 		if permission.is_productionadmin or permission.is_contractadmin:
 			user = User.objects.get(id=role_data['id'])
-			if user.roles.filter(client__name=role_data['client'], type=role_data['type']).count() > 0:
-				role = user.roles.get(client__name=role_data['client'], type=role_data['type'])
-				role.is_enabled = False
+			role = user.get_role(role_data['client'], role_data['type'])
+			if role is not None:
+				role.status = 'disabled'
 				role.save()
 
 		return JsonResponse({'done': True})
