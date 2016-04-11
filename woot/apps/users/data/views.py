@@ -64,7 +64,13 @@ def context(request):
 def context_projects(request):
 	user, permission, verified = check_request(request)
 	if verified:
-		pass
+		# initialise data
+		project_data = {}
+
+		# 1.
+
+
+		return JsonResponse(project_data)
 
 def load_attachment(request):
 	user, permission, verified = check_request(request)
