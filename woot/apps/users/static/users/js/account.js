@@ -15,12 +15,12 @@ Context.setFn(getdata('context', {}, function (data) {
 	}
 
 	// debug and construction
-	$.when(new Promise (function (resolve, reject) {
-		Context.set('current_client', 'TestProductionClient');
-		Context.set('current_role', 'moderator')
-	})).done(function () {
-		UI.changeState('user-management-state');
-	});
+	// $.when(new Promise (function (resolve, reject) {
+	// 	Context.set('current_client', 'TestProductionClient');
+	// 	Context.set('current_role', 'moderator')
+	// })).done(function () {
+	// 	UI.changeState('user-management-state');
+	// });
 }));
 
 // 2. Define global states
@@ -60,6 +60,7 @@ UI.createGlobalStates('client-state', [
 
 	// projects
 	'project-state',
+	'project-project-state',
 ]);
 
 // 3. Define component tree
@@ -494,6 +495,7 @@ UI.createApp('hook', [
 												appearance: {
 													style: {
 														'height': '20px',
+														'margin-bottom': '10px',
 													},
 													html: 'Actions',
 												},
@@ -632,6 +634,21 @@ UI.createApp('hook', [
 														'height': '100px',
 													},
 													classes: ['border border-radius'],
+												},
+												state: {
+													stateMap: 'user-management-user-stats-state',
+													states: [
+														{name: 'user-management-user-state', args: {
+															preFn: function (_this) {
+																var isProduction = Context.get('clients', Context.get('current_client')).is_production;
+																if (isProduction) {
+																	_this.model().css({'display': 'block'});
+																} else {
+																	_this.model().css({'display': 'none'});
+																}
+															},
+														}},
+													],
 												},
 												children: [
 													UI.createComponent('umi-pp-uc-cp-ap-sb-stats-title', {
@@ -1265,18 +1282,223 @@ UI.createApp('hook', [
 		],
 	}),
 	UI.createComponent('project-interface', {
+		template: UI.template('div', 'ie panel centred-vertically'),
+		appearance: {
+			style: {
+				'left': '60px',
+				'overflow': 'hidden',
+			},
+		},
+		state: {
+			defaultState: {
+				style: {
+					'opacity': '0.0',
+				},
+				fn: UI.functions.deactivate,
+			},
+			states: [
+				{name: 'role-state', args: 'default'},
+				{name: 'upload-state', args: 'default'},
+				{name: 'control-state', args: 'default'},
+				{name: 'project-state', args: {
+					preFn: UI.functions.activate,
+					style: {
+						'opacity': '1.0',
+					}
+				}},
+			],
+		},
 		children: [
 			UI.createComponent('pi-button-panel', {
+				template: UI.template('div', 'ie sub-panel show relative'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '40px',
+						'float': 'left',
+					},
+				},
 				children: [
-					UI.createComponent('pi-project-list-button'),
-					UI.createComponent('pi-new-project-button'),
-					UI.createComponent('pi-settings-button'),
+					UI.createComponent('pi-project-list-button', {
+						template: UI.templates.button,
+						appearance: {
+							classes: ['border border-radius relative'],
+							style: {
+								'margin-bottom': '10px',
+								'width': '40px',
+								'height': '40px',
+								'padding-top': '10px',
+							},
+						},
+						children: [
+							UI.createComponent('pi-plb-icon', {
+								template: UI.template('span', 'glyphicon glyphicon-list'),
+							}),
+						],
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								_this.triggerState();
+							}}
+						],
+					}),
+					UI.createComponent('pi-settings-button', {
+						template: UI.templates.button,
+						appearance: {
+							classes: ['border border-radius relative'],
+							style: {
+								'margin-bottom': '10px',
+								'width': '40px',
+								'height': '40px',
+								'padding-top': '10px',
+							},
+						},
+						children: [
+							UI.createComponent('pi-sb-icon', {
+								template: UI.template('span', 'glyphicon glyphicon-cog'),
+							}),
+						],
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								_this.triggerState();
+							}}
+						],
+					}),
+					UI.createComponent('pi-new-project-button', {
+						template: UI.templates.button,
+						appearance: {
+							classes: ['border border-radius relative'],
+							style: {
+								'margin-bottom': '10px',
+								'width': '40px',
+								'height': '40px',
+								'padding-top': '10px',
+							},
+						},
+						children: [
+							UI.createComponent('pi-npb-icon', {
+								template: UI.template('span', 'glyphicon glyphicon-plus'),
+							}),
+						],
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								_this.triggerState();
+							}}
+						],
+					}),
 				],
 			}),
 			UI.createComponent('pi-primary-panel', {
+				template: UI.template('div', 'ie sub-panel show relative'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': 'calc(100% - 50px)',
+						'float': 'left',
+						'margin-left': '10px',
+					},
+				},
+				state: {
+					defaultState: {
+						style: {
+							'opacity': '0.0',
+						},
+						fn: UI.functions.deactivate,
+					},
+					states: [
+						{name: 'user-management-state', args: {
+							preFn: UI.functions.activate,
+							style: {
+								'opacity': '1.0',
+							},
+						}},
+						{name: 'user-management-new-user-state', args: 'default'},
+						{name: 'user-management-settings-state', args: 'default'},
+					],
+				},
 				children: [
 					Components.scrollList('pi-mp-project-group-list', {
+						title: 'Projects',
+						search: {
 
+						},
+						appearance: {
+							style: {
+								'width': '200px',
+								'float': 'left',
+							},
+						},
+						state: {
+							states: [
+								{name: 'project-state', args: {
+									preFn: function (_this) {
+										// reset current_project_profile
+										Context.set('current_project_profile', {});
+
+										// activate
+										_this.model().css({
+											'display': 'block',
+											'opacity': '1.0',
+										});
+
+										// 1. remove current children
+										Object.keys(_this.children).forEach(function (childId) {
+											UI.removeComponent(childId);
+										});
+
+										_this.children = {};
+
+										// promise to fetch data and update Context
+										var permissionData = {
+											current_client: Context.get('current_client'),
+											current_role: Context.get('current_role'),
+										};
+										$.when(getdata('context_projects', permissionData, function (data) {
+											// update Context
+											Context.update(data);
+										})).done(function () {
+											// data is a list of user objects with relevant details
+											var projects = Context.get('clients', Context.get('current_client'), 'projects');
+											Object.keys(projects).map(function (projectId) {
+												var projectPrototype = projects[projectId];
+												var projectButton = UI.createComponent('project-button-{id}'.format({id: projectId}), {
+													root: _this.id,
+													template: UI.templates.button,
+													appearance: {
+														html: '{name}'.format({name: projectPrototype.name}),
+														classes: ['border-bottom'],
+														style: {
+															'width': '100%',
+														},
+													},
+													bindings: [
+														{name: 'click', fn: function (_this) {
+															if (Context.get('current_project_profile', 'id') !== projectId) {
+																_this.triggerState();
+															}
+														}},
+													],
+													state: {
+														stateMap: 'project-project-state',
+														svitches: [
+															{stateName: 'project-project-state', fn: function (_this) {
+																Context.set('current_project_profile', projectPrototype);
+															}}
+														],
+													},
+												});
+
+												// render
+												_this.children[projectButton.id] = projectButton;
+												projectButton.render();
+											});
+
+											// fade loading icon
+											_this.parent().loadingIcon().model().fadeOut();
+										});
+									}
+								}},
+							],
+						},
 					}),
 					UI.createComponent('pi-mp-project-info'),
 					UI.createComponent('pi-mp-project-card'),
