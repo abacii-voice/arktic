@@ -15,12 +15,12 @@ Context.setFn(getdata('context', {}, function (data) {
 	}
 
 	// debug and construction
-	// $.when(new Promise (function (resolve, reject) {
-	// 	Context.set('current_client', 'TestProductionClient');
-	// 	Context.set('current_role', 'moderator')
-	// })).done(function () {
-	// 	UI.changeState('user-management-state');
-	// });
+	$.when(new Promise (function (resolve, reject) {
+		Context.set('current_client', 'TestContractClient');
+		Context.set('current_role', 'admin')
+	})).done(function () {
+		UI.changeState('project-state');
+	});
 }));
 
 // 2. Define global states
@@ -61,6 +61,8 @@ UI.createGlobalStates('client-state', [
 	// projects
 	'project-state',
 	'project-project-state',
+	'project-new-project-state',
+	'project-project-settings-state',
 ]);
 
 // 3. Define component tree
@@ -375,8 +377,6 @@ UI.createApp('hook', [
 									},
 								}},
 								{name: 'user-management-user-state', args: 'default'},
-								{name: 'user-management-settings-state', args: 'default'},
-								{name: 'user-management-new-user-state', args: 'default'},
 							],
 						},
 					}),
@@ -389,6 +389,11 @@ UI.createApp('hook', [
 								'margin-left': '10px',
 								'float': 'left',
 							}
+						},
+						state: {
+							states: [
+								// TODO
+							],
 						},
 						children: [
 							UI.createComponent('umi-pp-uc-control-panel', {
@@ -1279,6 +1284,8 @@ UI.createApp('hook', [
 					}),
 				],
 			}),
+			// TODO
+			UI.createComponent('umi-user-settings-panel'),
 		],
 	}),
 	UI.createComponent('project-interface', {
@@ -1330,6 +1337,9 @@ UI.createApp('hook', [
 								'padding-top': '10px',
 							},
 						},
+						state: {
+							stateMap: 'project-state',
+						},
 						children: [
 							UI.createComponent('pi-plb-icon', {
 								template: UI.template('span', 'glyphicon glyphicon-list'),
@@ -1352,6 +1362,9 @@ UI.createApp('hook', [
 								'padding-top': '10px',
 							},
 						},
+						state: {
+							stateMap: 'project-project-settings-state',
+						},
 						children: [
 							UI.createComponent('pi-sb-icon', {
 								template: UI.template('span', 'glyphicon glyphicon-cog'),
@@ -1373,6 +1386,9 @@ UI.createApp('hook', [
 								'height': '40px',
 								'padding-top': '10px',
 							},
+						},
+						state: {
+							stateMap: 'project-new-project-state',
 						},
 						children: [
 							UI.createComponent('pi-npb-icon', {
@@ -1452,7 +1468,7 @@ UI.createApp('hook', [
 											current_client: Context.get('current_client'),
 											current_role: Context.get('current_role'),
 										};
-										$.when(getdata('context_projects', permissionData, function (data) {
+										$.when(getdata('context', permissionData, function (data) {
 											// update Context
 											Context.update(data);
 										})).done(function () {
@@ -1500,7 +1516,45 @@ UI.createApp('hook', [
 							],
 						},
 					}),
-					UI.createComponent('pi-mp-project-info'),
+					UI.createComponent('pi-mp-project-info', {
+						template: UI.template('div', 'ie show relative border border-radius'),
+						appearance: {
+							style: {
+								'height': '100%',
+								'width': 'calc(100% - 210px)',
+								'margin-left': '10px',
+								'float': 'left',
+								'border-style': 'dotted',
+							}
+						},
+						children: [
+							UI.createComponent('umi-pp-ui-title', {
+								template: UI.template('h3', 'ie show centred'),
+								appearance: {
+									html: 'Project details',
+								}
+							}),
+						],
+						state: {
+							defaultState: {
+								style: {
+									'opacity': '0.0',
+								},
+								fn: UI.functions.deactivate,
+							},
+							states: [
+								{name: 'project-state', args: {
+									preFn: UI.functions.activate,
+									style: {
+										'opacity': '1.0',
+									},
+								}},
+								{name: 'project-project-state', args: 'default'},
+								{name: 'project-project-settings-state', args: 'default'},
+								{name: 'project-new-project-state', args: 'default'},
+							],
+						},
+					}),
 					UI.createComponent('pi-mp-project-card'),
 				],
 			}),
@@ -1533,6 +1587,7 @@ UI.createApp('hook', [
 				'role-state': 'next',
 				'control-state': 'default',
 				'user-management-state': 'default',
+				'project-state': 'default',
 			},
 		},
 		content: [
