@@ -30,6 +30,7 @@ class Client(models.Model):
 		client_data.update(self.role_data(permission))
 
 		if permission.check_client(self):
+
 			# projects
 			client_data.update(self.project_data(permission))
 

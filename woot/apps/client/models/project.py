@@ -24,6 +24,11 @@ class ProjectGroup(models.Model):
 	completion_percentage = models.FloatField(default=0.0)
 	redundancy_percentage = models.FloatField(default=0.0)
 
+	# Methods
+	# data
+	def data(self, permission):
+		pass
+
 class Project(models.Model):
 
 	### Connections
@@ -42,5 +47,5 @@ class Project(models.Model):
 
 	### Methods
 	# data
-	def data(self):
+	def data(self, permission):
 		pass
