@@ -32,11 +32,6 @@ UI.createGlobalStates('client-state', [
 
 	// work interface states
 	'interface-state',
-	'upload-state',
-	'upload-state-audio',
-	'upload-date-state',
-	'upload-relfile-drop-state',
-	'upload-audio-drop-state',
 
 	// ### interfaces
 	'message-state',
@@ -62,7 +57,15 @@ UI.createGlobalStates('client-state', [
 	'project-state',
 	'project-project-state',
 	'project-new-project-state',
+	'project-settings-state',
 	'project-project-settings-state',
+
+	// upload
+	'upload-state',
+	'upload-state-audio',
+	'upload-date-state',
+	'upload-relfile-drop-state',
+	'upload-audio-drop-state',
 ]);
 
 // 3. Define component tree
@@ -1284,8 +1287,9 @@ UI.createApp('hook', [
 					}),
 				],
 			}),
-			// TODO
-			UI.createComponent('umi-user-settings-panel'),
+			UI.createComponent('umi-user-settings-panel', {
+				// TODO
+			}),
 		],
 	}),
 	UI.createComponent('project-interface', {
@@ -1363,7 +1367,7 @@ UI.createApp('hook', [
 							},
 						},
 						state: {
-							stateMap: 'project-project-settings-state',
+							stateMap: 'project-settings-state',
 						},
 						children: [
 							UI.createComponent('pi-sb-icon', {
@@ -1421,14 +1425,14 @@ UI.createApp('hook', [
 						fn: UI.functions.deactivate,
 					},
 					states: [
-						{name: 'user-management-state', args: {
+						{name: 'project-state', args: {
 							preFn: UI.functions.activate,
 							style: {
 								'opacity': '1.0',
 							},
 						}},
-						{name: 'user-management-new-user-state', args: 'default'},
-						{name: 'user-management-settings-state', args: 'default'},
+						{name: 'project-new-project-state', args: 'default'},
+						{name: 'project-settings-state', args: 'default'},
 					],
 				},
 				children: [
@@ -1550,7 +1554,7 @@ UI.createApp('hook', [
 									},
 								}},
 								{name: 'project-project-state', args: 'default'},
-								{name: 'project-project-settings-state', args: 'default'},
+								{name: 'project-settings-state', args: 'default'},
 								{name: 'project-new-project-state', args: 'default'},
 							],
 						},
@@ -1558,8 +1562,136 @@ UI.createApp('hook', [
 					UI.createComponent('pi-mp-project-card'),
 				],
 			}),
-			UI.createComponent('pi-mp-project-settings-panel'),
-			UI.createComponent('pi-mp-new-project-panel'),
+			UI.createComponent('pi-project-settings-panel'),
+			UI.createComponent('pi-new-project-panel', {
+				template: UI.template('div', 'ie relative'),
+				appearance: {
+					style: {
+						'width': '240px',
+						'height': '100%',
+						'margin-left': '10px',
+						'float': 'left',
+					},
+				},
+				state: {
+					defaultState: {
+						style: {
+							'opacity': '0.0',
+						},
+						fn: UI.functions.deactivate,
+					},
+					states: [
+						{name: 'project-state', args: 'default'},
+						{name: 'project-new-project-state', args: {
+							preFn: UI.functions.activate,
+							style: {
+								'opacity': '1.0',
+							},
+						}},
+						{name: 'project-settings-state', args: 'default'},
+					],
+				},
+				children: [
+					UI.createComponent('pi-npp-title', {
+						template: UI.template('h3', 'ie show relative'),
+						appearance: {
+							style: {
+								'height': '30px',
+							},
+							html: `New project`,
+						},
+					}),
+					UI.createComponent('pi-npp-client-subtitle', {
+						template: UI.template('span', 'ie show relative'),
+						appearance: {
+							style: {
+								'font-size': '14px',
+								'margin-bottom': '15px',
+							},
+						},
+						state: {
+							states: [
+								{name: 'project-new-project-state', args: {
+									preFn: function (_this) {
+										_this.model().html(Context.get('current_client'));
+									}
+								}}
+							],
+						},
+					}),
+					Components.searchFilterField('pi-npp-project-search', {
+						show: 'show',
+						placeholder: 'Project name',
+					}),
+					Components.searchFilterField('pi-npp-project-deadline', {
+						show: 'show',
+						placeholder: 'Project deadline',
+					}),
+					UI.createComponent('pi-npp-new-part-selector', {
+						template: UI.template('div', 'ie show relative'),
+						appearance: {
+							style: {
+								'width': '100%',
+								'height': '50px',
+							},
+						},
+						children: [
+							UI.createComponent('pi-npp-nps-new-part-button', {
+								template: UI.templates.button,
+								appearance: {
+									style: {
+										'transform': 'none',
+										'left': '0px',
+										'height': '40px',
+										'width': 'calc(50% - 5px)',
+										'float': 'left',
+										'padding-top': '8px',
+									},
+									classes: ['border', 'border-radius', 'relative'],
+									html: 'New part',
+								},
+							}),
+							UI.createComponent('pi-npp-nps-existing-part-button', {
+								template: UI.templates.button,
+								appearance: {
+									style: {
+										'transform': 'none',
+										'left': '0px',
+										'height': '40px',
+										'width': 'calc(50% - 5px)',
+										'float': 'left',
+										'margin-left': '10px',
+										'padding-top': '8px',
+									},
+									classes: ['border', 'border-radius', 'relative'],
+									html: 'Existing part',
+								},
+							}),
+						],
+					}),
+					Components.searchFilterField('pi-npp-project-part-search', {
+						show: 'show',
+						placeholder: 'Part name',
+					}),
+					UI.createComponent('pi-npp-confirm-button', {
+						template: UI.templates.button,
+						appearance: {
+							classes: ['border border-radius'],
+							style: {
+								'transform': 'none',
+								'left': '0px',
+								'height': '40px',
+								'padding-top': '10px',
+							},
+							html: 'Continue',
+						},
+					}),
+				],
+			}),
+			UI.createComponent('pi-mp-project-upload-panel', {
+				// template: UI.template('div', 'ie panel centred-vertically'),
+
+			}),
 		],
 	}),
 	UI.createComponent('rule-interface', {
