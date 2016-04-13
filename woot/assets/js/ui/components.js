@@ -1,6 +1,10 @@
 // These components are specific to the use case of the current arktic website, but they are
 // semi-generalised constructs for repeated use.
 
+// IDEAS:
+// 1. Point at components to hi-jack for use as autocomplete containers, filters, date-pickers.
+// 		Local formatting takes care of sizes and stuff.
+
 var Components = {
 	breadcrumbs: function (id, args) {
 		// displays position in heirarchy
@@ -98,6 +102,7 @@ var Components = {
 			// eg. ".." -> function () {} - search for single words
 			// "worker" -> filter by workers
 		var show = args.show !== undefined ? args.show : '';
+		var placeholder = args.placeholder !== undefined ? args.placeholder : 'Search or filter...';
 
 		var container =	UI.createComponent(id, {
 			template: UI.template('input', 'ie input relative'),
@@ -108,7 +113,7 @@ var Components = {
 				},
 				classes: [show],
 				properties: {
-					'placeholder': 'Search or filter...',
+					'placeholder': placeholder,
 				},
 			},
 			bindings: args.bindings,
