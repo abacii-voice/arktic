@@ -20,6 +20,7 @@ Context.setFn(getdata('context', {}, function (data) {
 		Context.set('current_role', 'admin')
 	})).done(function () {
 		UI.changeState('project-state');
+		UI.changeState('project-new-project-state');
 	});
 }));
 
@@ -57,6 +58,7 @@ UI.createGlobalStates('client-state', [
 	'project-state',
 	'project-project-state',
 	'project-new-project-state',
+	'project-upload-state',
 	'project-settings-state',
 	'project-project-settings-state',
 
@@ -1393,6 +1395,18 @@ UI.createApp('hook', [
 						},
 						state: {
 							stateMap: 'project-new-project-state',
+							states: [
+								{name: 'project-state', args: {
+									preFn: function (_this) {
+										var isContract = Context.get('clients', Context.get('current_client')).is_contract;
+										if (isContract) {
+											_this.model().css({'display': 'block'});
+										} else {
+											_this.model().css({'display': 'none'});
+										}
+									}
+								}},
+							],
 						},
 						children: [
 							UI.createComponent('pi-npb-icon', {
@@ -1589,6 +1603,7 @@ UI.createApp('hook', [
 							},
 						}},
 						{name: 'project-settings-state', args: 'default'},
+						{name: 'project-upload-state', args: 'default'},
 					],
 				},
 				children: [
@@ -1650,6 +1665,29 @@ UI.createApp('hook', [
 									classes: ['border', 'border-radius', 'relative'],
 									html: 'New part',
 								},
+								state: {
+									defaultState: {
+										preFn: function (_this) {
+											_this.model().css({'border-color': '#fff', 'color': '#fff'});
+											_this.model().attr('active', 'true');
+										},
+									},
+									states: [
+										{name: 'project-new-project-state', args: 'default'},
+									],
+								},
+								bindings: [
+									{name: 'click', fn: function (_this) {
+										// make border and text white
+										_this.model().css({'border-color': '#fff', 'color': '#fff'});
+										_this.model().attr('active', 'true');
+
+										// make other button normal
+										var otherButton = UI.getComponent('pi-npp-nps-existing-part-button');
+										otherButton.model().css({'border-color': '#ccc', 'color': '#ccc'});
+										otherButton.model().attr('active', 'false');
+									}},
+								],
 							}),
 							UI.createComponent('pi-npp-nps-existing-part-button', {
 								template: UI.templates.button,
@@ -1666,6 +1704,29 @@ UI.createApp('hook', [
 									classes: ['border', 'border-radius', 'relative'],
 									html: 'Existing part',
 								},
+								state: {
+									defaultState: {
+										preFn: function (_this) {
+											_this.model().css({'border-color': '#ccc', 'color': '#ccc'});
+											_this.model().attr('active', 'false');
+										},
+									},
+									states: [
+										{name: 'project-new-project-state', args: 'default'},
+									],
+								},
+								bindings: [
+									{name: 'click', fn: function (_this) {
+										// make border and text white
+										_this.model().css({'border-color': '#fff', 'color': '#fff'});
+										_this.model().attr('active', 'true');
+
+										// make other button normal
+										var otherButton = UI.getComponent('pi-npp-nps-new-part-button');
+										otherButton.model().css({'border-color': '#ccc', 'color': '#ccc'});
+										otherButton.model().attr('active', 'false');
+									}},
+								],
 							}),
 						],
 					}),
@@ -1685,6 +1746,56 @@ UI.createApp('hook', [
 							},
 							html: 'Continue',
 						},
+						state: {
+							stateMap: 'project-upload-state',
+						},
+						bindings: [
+							{name: 'click', fn: function (_this) {
+								// check for errors
+								var noProblems = true;
+
+								var projectNameField = UI.getComponent('pi-npp-project-search');
+								var projectName = projectNameField.model().val();
+								if (projectName !== '') {
+									projectNameField.model().removeClass('error');
+								} else {
+									projectNameField.model().addClass('error');
+									noProblems = false;
+								}
+
+								var projectDeadlineField = UI.getComponent('pi-npp-project-deadline');
+								projectDeadline = projectDeadlineField.model().val();
+								if (projectDeadline !== '') {
+									projectDeadlineField.model().removeClass('error');
+								} else {
+									projectDeadlineField.model().addClass('error');
+									noProblems = false;
+								}
+
+								var newPart = UI.getComponent('pi-npp-nps-new-part-button').model().attr('active') === 'true';
+
+								var partNameField = UI.getComponent('pi-npp-project-part-search');
+								var partName = partNameField.model().val();
+								if (partName !== '') {
+									partNameField.model().removeClass('error');
+								} else {
+									partNameField.model().addClass('error');
+									noProblems = false;
+								}
+
+								if (noProblems) {
+									var projectPrototype = {
+										name: projectName,
+										deadline: projectDeadline,
+										new_part: newPart,
+										part_name: partName,
+									}
+
+									Context.set('project_prototype', projectPrototype);
+									_this.triggerState();
+								}
+							}}
+						],
 					}),
 				],
 			}),
