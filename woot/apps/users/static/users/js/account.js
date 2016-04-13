@@ -18,9 +18,18 @@ Context.setFn(getdata('context', {}, function (data) {
 	$.when(new Promise (function (resolve, reject) {
 		Context.set('current_client', 'TestContractClient');
 		Context.set('current_role', 'admin')
+		var projectPrototype = {
+			name: 'TestProject',
+			deadline: '1970/1/1',
+			new_part: true,
+			part_name: 'NewTestPart',
+		}
+
+		Context.set('project_prototype', projectPrototype);
+
 	})).done(function () {
 		UI.changeState('project-state');
-		UI.changeState('project-new-project-state');
+		UI.changeState('project-upload-state');
 	});
 }));
 
@@ -1446,6 +1455,7 @@ UI.createApp('hook', [
 							},
 						}},
 						{name: 'project-new-project-state', args: 'default'},
+						{name: 'project-upload-state', args: 'default'},
 						{name: 'project-settings-state', args: 'default'},
 					],
 				},
@@ -1766,6 +1776,7 @@ UI.createApp('hook', [
 								var projectDeadlineField = UI.getComponent('pi-npp-project-deadline');
 								projectDeadline = projectDeadlineField.model().val();
 								if (projectDeadline !== '') {
+									// TODO: validate with moment.
 									projectDeadlineField.model().removeClass('error');
 								} else {
 									projectDeadlineField.model().addClass('error');
@@ -1799,9 +1810,171 @@ UI.createApp('hook', [
 					}),
 				],
 			}),
-			UI.createComponent('pi-mp-project-upload-panel', {
-				// template: UI.template('div', 'ie panel centred-vertically'),
-
+			UI.createComponent('pi-project-upload-panel', {
+				template: UI.template('div', 'ie relative show'),
+				appearance: {
+					style: {
+						'width': 'calc(100% - 60px)',
+						'height': '100%',
+						'margin-left': '10px',
+						'float': 'left',
+					},
+				},
+				children: [
+					UI.createComponent('pi-pup-left-panel', {
+						template: UI.template('div', 'ie relative show'),
+						appearance: {
+							style: {
+								'width': 'calc(50% - 5px)',
+								'height': '100%',
+								'float': 'left',
+							},
+						},
+						children: [
+							UI.createComponent('pi-pup-lp-summary', {
+								template: UI.template('div', 'ie relative show'),
+								appearance: {
+									style: {
+										'width': '100%',
+										'height': '130px',
+									},
+								},
+								children: [
+									UI.createComponent('pi-pup-lp-s-name', {
+										template: UI.template('h3', 'ie show relative'),
+										appearance: {
+											style: {
+												'height': '30px',
+											},
+										},
+										state: {
+											states: [
+												{name: 'project-upload-state', args: {
+													preFn: function (_this) {
+														var projectPrototypeName = Context.get('project_prototype', 'name');
+														_this.model().html('New project: {name}'.format({name: projectPrototypeName}));
+													},
+												}}
+											],
+										},
+									}),
+									UI.createComponent('pi-pup-lp-s-client', {
+										template: UI.template('span', 'ie show relative'),
+										appearance: {
+											style: {
+												'font-size': '14px',
+												'margin-bottom': '15px',
+											},
+										},
+										state: {
+											states: [
+												{name: 'project-upload-state', args: {
+													preFn: function (_this) {
+														_this.model().html(Context.get('current_client'));
+													}
+												}}
+											],
+										},
+									}),
+									UI.createComponent('pi-pup-lp-s-deadline-part-caption', {
+										template: UI.template('div', 'ie show relative border border-radius'),
+										appearance: {
+											style: {
+												'height': '60px',
+												'width': 'calc(100% - 70px)',
+												'float': 'left',
+											},
+										},
+									}),
+									UI.createComponent('pi-pup-lp-s-edit-button', {
+										template: UI.templates.button,
+										appearance: {
+											style: {
+												'height': '60px',
+												'width': '60px',
+												'transform': 'none',
+												'left': '0px',
+												'float': 'left',
+												'margin-left': '10px',
+												'padding-top': '18px',
+											},
+											classes: ['relative border border-radius'],
+											html: 'Edit',
+										},
+									}),
+								],
+							}),
+							UI.createComponent('pi-pup-lp-relfile-wrapper', {
+								template: UI.template('div', 'ie show relative'),
+								appearance: {
+									style: {
+										'width': '100%',
+										'height': 'calc(100% - 130px)',
+									},
+								},
+								children: [
+									UI.createComponent('pi-pup-lp-rw-dropzone', {
+										template: UI.template('div', 'ie show relative border border-radius'),
+										appearance: {
+											style: {
+												'height': '100%',
+												'width': '100%',
+												'border-style': 'dotted',
+											},
+										},
+									}),
+								],
+							}),
+						]
+					}),
+					UI.createComponent('pi-pup-right-panel', {
+						template: UI.template('div', 'ie relative show'),
+						appearance: {
+							style: {
+								'width': 'calc(50% - 5px)',
+								'height': '100%',
+								'float': 'left',
+								'margin-left': '10px',
+							},
+						},
+						children: [
+							UI.createComponent('pi-pup-rp-audio-wrapper', {
+								template: UI.template('div', 'ie show relative'),
+								appearance: {
+									style: {
+										'width': '100%',
+										'height': 'calc(100% - 50px)',
+									},
+								},
+								children: [
+									UI.createComponent('pi-pup-lp-aw-dropzone', {
+										template: UI.template('div', 'ie show relative border border-radius'),
+										appearance: {
+											style: {
+												'height': '100%',
+												'width': '100%',
+												'border-style': 'dotted',
+											},
+										},
+									}),
+								],
+							}),
+							UI.createComponent('pi-pup-rp-confirm-button', {
+								template: UI.templates.button,
+								appearance: {
+									classes: ['border border-radius'],
+									style: {
+										'width': '100%',
+										'height': '40px',
+										'padding-top': '10px',
+										'margin-top': '10px',
+									},
+									html: 'Confirm and upload'
+								},
+							}),
+						],
+					}),
+				],
 			}),
 		],
 	}),
