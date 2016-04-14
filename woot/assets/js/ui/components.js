@@ -117,6 +117,7 @@ var Components = {
 				},
 			},
 			bindings: args.bindings,
+			state: args.state,
 		});
 
 		return container;
