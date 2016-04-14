@@ -1647,10 +1647,28 @@ UI.createApp('hook', [
 					Components.searchFilterField('pi-npp-project-search', {
 						show: 'show',
 						placeholder: 'Project name',
+						state: {
+							states: [
+								{name: 'project-new-project-state', args: {
+									preFn: function (_this) {
+										_this.model().val('');
+									}
+								}},
+							],
+						},
 					}),
 					Components.searchFilterField('pi-npp-project-deadline', {
 						show: 'show',
 						placeholder: 'Project deadline',
+						state: {
+							states: [
+								{name: 'project-new-project-state', args: {
+									preFn: function (_this) {
+										_this.model().val('');
+									}
+								}},
+							],
+						},
 					}),
 					UI.createComponent('pi-npp-new-part-selector', {
 						template: UI.template('div', 'ie show relative'),
@@ -1743,6 +1761,15 @@ UI.createApp('hook', [
 					Components.searchFilterField('pi-npp-project-part-search', {
 						show: 'show',
 						placeholder: 'Part name',
+						state: {
+							states: [
+								{name: 'project-new-project-state', args: {
+									preFn: function (_this) {
+										_this.model().val('');
+									}
+								}},
+							],
+						},
 					}),
 					UI.createComponent('pi-npp-confirm-button', {
 						template: UI.templates.button,
@@ -1885,6 +1912,111 @@ UI.createApp('hook', [
 												'float': 'left',
 											},
 										},
+										children: [
+											UI.createComponent('pi-pup-lp-s-dpc-deadline', {
+												template: UI.template('div', 'ie show relative border-right'),
+												appearance: {
+													style: {
+														'height': '100%',
+														'width': '100px',
+														'float': 'left',
+													},
+												},
+												children: [
+													UI.createComponent('pi-pup-lp-s-dpc-d-title', {
+														template: UI.template('h3', 'ie show centred-horizontally'),
+														appearance: {
+															html: 'Deadline',
+															style: {
+																'margin-top': '5px',
+															},
+														},
+													}),
+													UI.createComponent('pi-pup-lp-s-dpc-d-content', {
+														template: UI.template('span', 'ie show centred-horizontally'),
+														appearance: {
+															style: {
+																'margin-top': '30px',
+																'font-size': '14px',
+															},
+														},
+														state: {
+															states: [
+																{name: 'project-upload-state', args: {
+																	preFn: function (_this) {
+																		var deadline = Context.get('project_prototype', 'deadline');
+																		_this.model().html(deadline);
+																	},
+																}},
+															],
+														},
+													}),
+												],
+											}),
+											UI.createComponent('pi-pup-lp-s-dpc-part', {
+												template: UI.template('div', 'ie show relative border-right'),
+												appearance: {
+													style: {
+														'height': '100%',
+														'width': '100px',
+														'float': 'left',
+													},
+												},
+												children: [
+													UI.createComponent('pi-pup-lp-s-dpc-p-title', {
+														template: UI.template('h3', 'ie show centred-horizontally'),
+														appearance: {
+															html: 'Part',
+															style: {
+																'margin-top': '5px',
+															},
+														},
+													}),
+													UI.createComponent('pi-pup-lp-s-dpc-p-content', {
+														template: UI.template('span', 'ie show centred-horizontally'),
+														appearance: {
+															style: {
+																'margin-top': '30px',
+																'font-size': '14px',
+															},
+														},
+														state: {
+															states: [
+																{name: 'project-upload-state', args: {
+																	preFn: function (_this) {
+																		var partName = Context.get('project_prototype', 'part_name');
+																		_this.model().html(partName);
+																	},
+																}},
+															],
+														},
+													}),
+												],
+											}),
+											UI.createComponent('pi-pup-lp-s-dpc-caption', {
+												template: UI.template('div', 'ie show relative'),
+												appearance: {
+													style: {
+														'height': '100%',
+														'width': 'calc(100% - 200px)',
+														'float': 'left',
+													},
+												},
+												children: [
+													UI.createComponent('pi-pup-lp-s-dpc-c-title', {
+														template: UI.template('p', 'ie show centred-horizontally'),
+														appearance: {
+															html: 'Duplicate audio files and captions will be overwritten.',
+															style: {
+																'margin-top': '5px',
+																'font-size': '13px',
+																'width': '90%',
+															},
+														},
+													}),
+												],
+											}),
+										],
 									}),
 									UI.createComponent('pi-pup-lp-s-edit-button', {
 										template: UI.templates.button,
@@ -1901,6 +2033,31 @@ UI.createApp('hook', [
 											classes: ['relative border border-radius'],
 											html: 'Edit',
 										},
+										state: {
+											stateMap: 'project-new-project-state',
+										},
+										bindings: [
+											{name: 'click', fn: function (_this) {
+
+												_this.triggerState();
+
+												// a bit of a hack.
+												UI.getComponent('pi-npp-project-search').model().val(Context.get('project_prototype', 'name'));
+												UI.getComponent('pi-npp-project-deadline').model().val(Context.get('project_prototype', 'deadline'));
+
+												var newPart = Context.get('project_prototype', 'new_part');
+												var newActive = newPart ? 'true' : 'false';
+												var newColor = newPart ? '#fff' : '#ccc';
+												var existingActive = newPart ? 'false' : 'true';
+												var existingColor = newPart ? '#ccc' : '#fff';
+												UI.getComponent('pi-npp-nps-new-part-button').model().css({'border-color': newColor, 'color': newColor});
+												UI.getComponent('pi-npp-nps-new-part-button').model().attr('active', newActive);
+												UI.getComponent('pi-npp-nps-new-part-button').model().css({'border-color': existingColor, 'color': existingColor});
+												UI.getComponent('pi-npp-nps-new-part-button').model().attr('active', existingActive);
+
+												UI.getComponent('pi-npp-project-part-search').model().val(Context.get('project_prototype', 'part_name'));
+											}},
+										],
 									}),
 								],
 							}),
@@ -1914,7 +2071,7 @@ UI.createApp('hook', [
 								},
 								children: [
 									UI.createComponent('pi-pup-lp-rw-dropzone', {
-										template: UI.template('div', 'ie show relative border border-radius'),
+										template: UI.template('div', 'ie relative border border-radius dz-wrapper'),
 										appearance: {
 											style: {
 												'height': '100%',
@@ -1922,6 +2079,256 @@ UI.createApp('hook', [
 												'border-style': 'dotted',
 											},
 										},
+										state: {
+											states: [
+												{name: 'project-upload-state', args: {
+													preFn: function (_this) {
+														// make visible
+														// _this.model().css({'display': 'block'});
+
+														// make dropzone
+														_this.model().dropzone({
+															url: '/upload-relfile',
+															maxFiles: 1,
+															acceptedFiles: '.csv',
+															paramName: 'relfile-input',
+															createImageThumbnails: false,
+															accept: function (file, done) {
+																// try reading file
+																var reader = new FileReader();
+																reader.onload = function(e) {
+																	var contents = e.target.result;
+																	// contents is a string. I can do what I want.
+																	// 1. trigger rel-file-drop-state
+																	_this.triggerState();
+
+																	// 2. parse contents of file and display in rel-file-filelist
+																	var lines = contents.split('\n');
+																	var headerLine = lines.shift();
+
+																	// add lines to Context
+																	var relfileLineObjects = lines.map(function (line) {
+																		var keys = line.split(',');
+																		return {filename: basename(keys[0]), utterance: keys[1]}
+																	}).filter(function (relfileLineObject) {
+																		return relfileLineObject.filename !== ''; //filter directories
+																	});
+
+																	Context.set('current_relfile_lines', relfileLineObjects);
+
+																	// get filelist object
+																	var filelist = UI.getComponent('rel-file-filelist');
+
+																	// header
+																	var headerKeys = headerLine.split(',');
+																	var headerRow = UI.createComponent('relfile-header-row', {
+																		root: filelist.id,
+																		template: `<tr style='{style}' class='{classes}'>{html}</tr>`,
+																		appearance: {
+																			style: {
+
+																			},
+																			html: headerKeys.map(function (key) {
+																				return '<th>{key}</th>'.format({key: key});
+																			}).join(''),
+																		},
+																	});
+																	filelist.children.push(headerRow);
+																	headerRow.render();
+
+																	// rest of lines
+																	lines.map(function (line, index) { // map to table rows
+																		if (line !== '') {
+																			var values = line.split(',');
+																			var row = UI.createComponent('relfile-header-row-{index}'.format({index: index}), {
+																				root: filelist.id,
+																				template: `<tr style='{style}' class='{classes}'>{html}</tr>`,
+																				appearance: {
+																					html: values.map(function (value) {
+																						return `<td title='{title}'>{value}</td>`.format({value: basename(value).trunc(20), title: value});
+																					}).join(''),
+																				},
+																			});
+																			filelist.children.push(row);
+																			row.render();
+																		}
+																	});
+																};
+																reader.readAsText(file);
+															},
+														});
+													},
+												}},
+											],
+										},
+										children: [
+											UI.createComponent('pi-pup-lp-rw-dz-drag', {
+												template: UI.template('span', 'ie show centred-horizontally'),
+												appearance: {
+													html: 'Drag and drop or click to upload',
+													style: {
+														'width': '100%',
+														'top': '50px',
+													},
+												},
+											}),
+											UI.createComponent('pi-pup-lp-rw-dz-csv', {
+												template: UI.template('span', 'ie show centred-horizontally'),
+												appearance: {
+													html: '.csv file of the form:',
+													style: {
+														'width': '100%',
+														'top': '75px',
+													},
+												},
+											}),
+											UI.createComponent('pi-pup-lp-rw-dz-table', {
+												template: UI.template('table'),
+												appearance: {
+													style: {
+														'position': 'relative',
+														'top': '120px',
+														'width': '80%',
+														'text-align': 'left',
+														'left': '50%',
+														'transform': 'translateX(-50%)',
+														'border-spacing': '10px',
+														'border-collapse': 'collapse',
+													},
+												},
+												children: [
+													UI.createComponent('pi-pup-lp-rw-dz-table-head', {
+														template: UI.template('thead'),
+														children: [
+															UI.createComponent('pi-pup-lp-rw-dz-t-header', {
+																template: UI.template('tr'),
+																appearance: {
+																	style: {
+																		'border-bottom': '1px solid #ccc',
+																		'height': '40px',
+																	},
+																},
+																children: [
+																	UI.createComponent('pi-pup-lp-rw-dz-th-file-name', {
+																		template: UI.template('th'),
+																		appearance: {
+																			html: 'filename',
+																			style: {
+																				'width': '50%',
+																			},
+																		},
+																	}),
+																	UI.createComponent('pi-pup-lp-rw-dz-t-h-caption', {
+																		template: UI.template('th'),
+																		appearance: {
+																			html: 'caption',
+																			style: {
+																				'width': '50%',
+																			},
+																		},
+																	}),
+																],
+															}),
+														],
+													}),
+													UI.createComponent('pi-pup-lp-rw-dz-table-body', {
+														template: UI.template('tbody'),
+														children: [
+															UI.createComponent('pi-pup-lp-rw-dz-tb-row1', {
+																template: UI.template('tr'),
+																appearance: {
+																	style: {
+																		'border-bottom': '1px solid #ccc',
+																		'height': '40px',
+																	},
+																},
+																children: [
+																	UI.createComponent('pi-pup-lp-rw-dz-tb-r1-file-name', {
+																		template: UI.template('td'),
+																		appearance: {
+																			html: 'demo-file_1.wav',
+																			style: {
+																				'width': '50%',
+																			},
+																		},
+																	}),
+																	UI.createComponent('pi-pup-lp-rw-dz-tb-r1-caption', {
+																		template: UI.template('td'),
+																		appearance: {
+																			html: `I'd like to speak to...`,
+																			style: {
+																				'width': '50%',
+																			},
+																		},
+																	}),
+																],
+															}),
+															UI.createComponent('pi-pup-lp-rw-dz-tb-row2', {
+																template: UI.template('tr'),
+																appearance: {
+																	style: {
+																		'border-bottom': '1px solid #ccc',
+																		'height': '40px',
+																	},
+																},
+																children: [
+																	UI.createComponent('pi-pup-lp-rw-dz-tb-r2-file-name', {
+																		template: UI.template('td'),
+																		appearance: {
+																			html: 'demo-file_2.wav',
+																			style: {
+																				'width': '50%',
+																			},
+																		},
+																	}),
+																	UI.createComponent('pi-pup-lp-rw-dz-tb-r2-caption', {
+																		template: UI.template('td'),
+																		appearance: {
+																			html: 'advisor',
+																			style: {
+																				'width': '50%',
+																			},
+																		},
+																	}),
+																],
+															}),
+														],
+													}),
+												],
+											}),
+										],
+									}),
+
+									Components.scrollList('pi-pup-lp-rw-file-list', {
+										content: [
+											UI.createComponent('pi-pup-lp-rw-fl-summary', {
+												template: UI.template('div', 'ie show relative border border-radius'),
+												appearance: {
+													style: {
+														'width': '100%',
+														'height': '40px',
+														'padding-top': '10px',
+														'padding-left': '10px',
+													},
+												},
+												children: [
+													UI.createComponent('pi-pup-lp-rw-fl-summary-display', {
+														template: UI.template('span', 'ie show'),
+													}),
+												],
+											}),
+											UI.createComponent('pi-pup-lp-rw-fl-list', {
+												template: UI.template('div', 'ie show relative'),
+												appearance: {
+													style: {
+														'width': '100%',
+													},
+												},
+												children: [
+													
+												],
+											}),
+										],
 									}),
 								],
 							}),
@@ -1969,7 +2376,7 @@ UI.createApp('hook', [
 										'padding-top': '10px',
 										'margin-top': '10px',
 									},
-									html: 'Confirm and upload'
+									html: 'Confirm and upload',
 								},
 							}),
 						],
