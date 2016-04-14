@@ -2053,8 +2053,8 @@ UI.createApp('hook', [
 												var existingColor = newPart ? '#ccc' : '#fff';
 												UI.getComponent('pi-npp-nps-new-part-button').model().css({'border-color': newColor, 'color': newColor});
 												UI.getComponent('pi-npp-nps-new-part-button').model().attr('active', newActive);
-												UI.getComponent('pi-npp-nps-new-part-button').model().css({'border-color': existingColor, 'color': existingColor});
-												UI.getComponent('pi-npp-nps-new-part-button').model().attr('active', existingActive);
+												UI.getComponent('pi-npp-nps-existing-part-button').model().css({'border-color': existingColor, 'color': existingColor});
+												UI.getComponent('pi-npp-nps-existing-part-button').model().attr('active', existingActive);
 
 												UI.getComponent('pi-npp-project-part-search').model().val(Context.get('project_prototype', 'part_name'));
 											}},
@@ -2488,7 +2488,7 @@ UI.createApp('hook', [
 										},
 									}),
 									Components.scrollList('pi-pup-lp-aw-audio-file-list', {
-										
+
 									}),
 								],
 							}),
