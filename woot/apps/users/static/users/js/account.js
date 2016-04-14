@@ -68,6 +68,7 @@ UI.createGlobalStates('client-state', [
 	'project-project-state',
 	'project-new-project-state',
 	'project-upload-state',
+	'project-upload-relfile-state',
 	'project-settings-state',
 	'project-project-settings-state',
 
@@ -2080,11 +2081,15 @@ UI.createApp('hook', [
 											},
 										},
 										state: {
+											stateMap: 'project-upload-relfile-state',
+											defaultState: {
+												fn: UI.functions.deactivate,
+											},
 											states: [
 												{name: 'project-upload-state', args: {
 													preFn: function (_this) {
 														// make visible
-														// _this.model().css({'display': 'block'});
+														_this.model().css({'display': 'block'});
 
 														// make dropzone
 														_this.model().dropzone({
@@ -2099,66 +2104,29 @@ UI.createApp('hook', [
 																reader.onload = function(e) {
 																	var contents = e.target.result;
 																	// contents is a string. I can do what I want.
-																	// 1. trigger rel-file-drop-state
-																	_this.triggerState();
-
-																	// 2. parse contents of file and display in rel-file-filelist
+																	// 1. parse contents of file and display in rel-file-filelist
 																	var lines = contents.split('\n');
 																	var headerLine = lines.shift();
 
-																	// add lines to Context
+																	// 2. add lines to Context
 																	var relfileLineObjects = lines.map(function (line) {
 																		var keys = line.split(',');
-																		return {filename: basename(keys[0]), utterance: keys[1]}
+																		return {filename: basename(keys[0]), caption: keys[1]}
 																	}).filter(function (relfileLineObject) {
 																		return relfileLineObject.filename !== ''; //filter directories
 																	});
 
 																	Context.set('current_relfile_lines', relfileLineObjects);
 
-																	// get filelist object
-																	var filelist = UI.getComponent('rel-file-filelist');
-
-																	// header
-																	var headerKeys = headerLine.split(',');
-																	var headerRow = UI.createComponent('relfile-header-row', {
-																		root: filelist.id,
-																		template: `<tr style='{style}' class='{classes}'>{html}</tr>`,
-																		appearance: {
-																			style: {
-
-																			},
-																			html: headerKeys.map(function (key) {
-																				return '<th>{key}</th>'.format({key: key});
-																			}).join(''),
-																		},
-																	});
-																	filelist.children.push(headerRow);
-																	headerRow.render();
-
-																	// rest of lines
-																	lines.map(function (line, index) { // map to table rows
-																		if (line !== '') {
-																			var values = line.split(',');
-																			var row = UI.createComponent('relfile-header-row-{index}'.format({index: index}), {
-																				root: filelist.id,
-																				template: `<tr style='{style}' class='{classes}'>{html}</tr>`,
-																				appearance: {
-																					html: values.map(function (value) {
-																						return `<td title='{title}'>{value}</td>`.format({value: basename(value).trunc(20), title: value});
-																					}).join(''),
-																				},
-																			});
-																			filelist.children.push(row);
-																			row.render();
-																		}
-																	});
+																	// 3. trigger
+																	_this.triggerState();
 																};
 																reader.readAsText(file);
 															},
 														});
 													},
 												}},
+												{name: 'project-upload-relfile-state', args: 'default'},
 											],
 										},
 										children: [
@@ -2300,6 +2268,17 @@ UI.createApp('hook', [
 									}),
 
 									Components.scrollList('pi-pup-lp-rw-file-list', {
+										state: {
+											defaultState: {
+												fn: UI.functions.deactivate,
+											},
+											states: [
+												{name: 'project-upload-state', args: 'default'},
+												{name: 'project-upload-relfile-state', args: {
+													preFn: UI.functions.activate,
+												}},
+											],
+										},
 										content: [
 											UI.createComponent('pi-pup-lp-rw-fl-summary', {
 												template: UI.template('div', 'ie show relative border border-radius'),
@@ -2318,14 +2297,105 @@ UI.createApp('hook', [
 												],
 											}),
 											UI.createComponent('pi-pup-lp-rw-fl-list', {
-												template: UI.template('div', 'ie show relative'),
+												template: UI.template('table'),
 												appearance: {
 													style: {
 														'width': '100%',
+														'position': 'relative',
+														'top': '10px',
+														'text-align': 'left',
 													},
 												},
 												children: [
-													
+													UI.createComponent('pi-pup-lp-rw-fl-list-header', {
+														template: UI.template('thead'),
+														children: [
+															UI.createComponent('pi-pup-lp-rw-fl-list-header-row', {
+																template: UI.template('tr'),
+																children: [
+																	UI.createComponent('pi-pup-lp-rw-fl-lhr-file-name', {
+																		template: UI.template('th'),
+																		appearance: {
+																			html: 'Audio file name',
+																			style: {
+																				'width': '50%',
+																				'height': '40px',
+																				'border-right': '1px solid #ccc',
+																				'border-bottom': '1px solid #ccc',
+																			},
+																		},
+																	}),
+																	UI.createComponent('pi-pup-lp-rw-fl-lhr-caption', {
+																		template: UI.template('th'),
+																		appearance: {
+																			html: 'Caption',
+																			style: {
+																				'width': '50%',
+																				'height': '40px',
+																				'padding-left': '10px',
+																				'border-bottom': '1px solid #ccc',
+																			},
+																		},
+																	}),
+																],
+															}),
+														],
+													}),
+													UI.createComponent('pi-pup-lp-rw-fl-list-body', {
+														template: UI.template('tbody'),
+														state: {
+															states: [
+																{name: 'project-upload-state', args: {
+																	preFn: function (_this) {
+																		// remove old lines
+																		Object.keys(_this.children).forEach(function (childId) {
+																			UI.removeComponent(childId);
+																		});
+
+																		// clear children
+																		_this.children = {};
+
+																		// add data as lines
+																		Context.get('current_relfile_lines').forEach(function (line, index) {
+
+																			// create row object
+																			var row = UI.createComponent('pi-pup-lp-rw-fl-lb-row-{index}'.format({index: index}), {
+																				template: UI.template('tr'),
+																				children: [
+																					UI.createComponent('pi-pup-lp-rw-fl-lb-row-{index}-file-name'.format({index: index}), {
+																						template: UI.template('th'),
+																						appearance: {
+																							html: line.filename,
+																							style: {
+																								'width': '50%',
+																								'height': '40px',
+																								'border-right': '1px solid #ccc',
+																								'border-bottom': '1px solid #ccc',
+																							},
+																						},
+																					}),
+																					UI.createComponent('pi-pup-lp-rw-fl-lb-row-{index}-file-name'.format({index: index}), {
+																						template: UI.template('th'),
+																						appearance: {
+																							html: line.caption,
+																							style: {
+																								'width': '50%',
+																								'height': '40px',
+																								'border-bottom': '1px solid #ccc',
+																							},
+																						},
+																					}),
+																				],
+																			});
+
+																			_this.children[row.id] = row;
+																			row.render();
+																		});
+																	},
+																}},
+															],
+														},
+													}),
 												],
 											}),
 										],
