@@ -2078,6 +2078,7 @@ UI.createApp('hook', [
 												'height': '100%',
 												'width': '100%',
 												'border-style': 'dotted',
+												'user-select': 'none',
 											},
 										},
 										state: {
@@ -2116,7 +2117,34 @@ UI.createApp('hook', [
 																		return relfileLineObject.filename !== ''; //filter directories
 																	});
 
-																	Context.set('current_relfile_lines', relfileLineObjects);
+																	if (Context.store.current_upload === undefined) {
+																		Context.store.current_upload = {};
+																	}
+																	Context.store.current_upload.relfile = {};
+																	Context.store.current_upload.relfile.lines = relfileLineObjects;
+
+																	// 1. find number of unique audio file names
+																	var audioSet = {};
+																	relfileLineObjects.forEach(function (line) {
+																		if (audioSet.hasOwnProperty(line.filename)) {
+																			audioSet[line.filename]++;
+																		} else {
+																			audioSet[line.filename] = 1;
+																		}
+																	});
+
+																	var total = relfileLineObjects.length;
+																	var unique = Object.keys(audioSet).length;
+																	var duplicates = 0;
+																	Object.keys(audioSet).forEach(function (key) {
+																		if (audioSet[key] > 1) {
+																			duplicates += audioSet[key] - 1;
+																		}
+																	});
+
+																	Context.store.current_upload.relfile.total = total;
+																	Context.store.current_upload.relfile.unique = unique;
+																	Context.store.current_upload.relfile.duplicates = duplicates;
 
 																	// 3. trigger
 																	_this.triggerState();
@@ -2137,6 +2165,8 @@ UI.createApp('hook', [
 													style: {
 														'width': '100%',
 														'top': '50px',
+														'user-select': 'none',
+														'pointer-events': 'none',
 													},
 												},
 											}),
@@ -2147,6 +2177,8 @@ UI.createApp('hook', [
 													style: {
 														'width': '100%',
 														'top': '75px',
+														'user-select': 'none',
+														'pointer-events': 'none',
 													},
 												},
 											}),
@@ -2162,6 +2194,7 @@ UI.createApp('hook', [
 														'transform': 'translateX(-50%)',
 														'border-spacing': '10px',
 														'border-collapse': 'collapse',
+														'pointer-events': 'none',
 													},
 												},
 												children: [
@@ -2266,7 +2299,6 @@ UI.createApp('hook', [
 											}),
 										],
 									}),
-
 									Components.scrollList('pi-pup-lp-rw-file-list', {
 										state: {
 											defaultState: {
@@ -2293,6 +2325,20 @@ UI.createApp('hook', [
 												children: [
 													UI.createComponent('pi-pup-lp-rw-fl-summary-display', {
 														template: UI.template('span', 'ie show'),
+														state: {
+															states: [
+																{name: 'project-upload-relfile-state', args: {
+																	preFn: function (_this) {
+																		// get relfile data
+																		var total = Context.get('current_upload', 'relfile', 'total');
+																		var unique = Context.get('current_upload', 'relfile', 'unique');
+																		var duplicates = Context.get('current_upload', 'relfile', 'duplicates');
+
+																		_this.model().html('{total} total audio files, {unique} unique, {duplicates} duplicates'.format({total: total, unique: unique, duplicates: duplicates}));
+																	}
+																}},
+															],
+														},
 													}),
 												],
 											}),
@@ -2320,7 +2366,6 @@ UI.createApp('hook', [
 																			style: {
 																				'width': '50%',
 																				'height': '40px',
-																				'border-right': '1px solid #ccc',
 																				'border-bottom': '1px solid #ccc',
 																			},
 																		},
@@ -2332,7 +2377,6 @@ UI.createApp('hook', [
 																			style: {
 																				'width': '50%',
 																				'height': '40px',
-																				'padding-left': '10px',
 																				'border-bottom': '1px solid #ccc',
 																			},
 																		},
@@ -2345,7 +2389,7 @@ UI.createApp('hook', [
 														template: UI.template('tbody'),
 														state: {
 															states: [
-																{name: 'project-upload-state', args: {
+																{name: 'project-upload-relfile-state', args: {
 																	preFn: function (_this) {
 																		// remove old lines
 																		Object.keys(_this.children).forEach(function (childId) {
@@ -2356,32 +2400,41 @@ UI.createApp('hook', [
 																		_this.children = {};
 
 																		// add data as lines
-																		Context.get('current_relfile_lines').forEach(function (line, index) {
+																		Context.get('current_upload', 'relfile', 'lines').forEach(function (line, index) {
+
+																			var filename = line.filename.length > 20 ? line.filename.substr(0,15).concat('... .wav') : line.filename;
+																			var caption = line.caption.length > 20 ? line.caption.substr(0,20).concat('...') : line.caption;
 
 																			// create row object
 																			var row = UI.createComponent('pi-pup-lp-rw-fl-lb-row-{index}'.format({index: index}), {
+																				root: _this.id,
 																				template: UI.template('tr'),
 																				children: [
 																					UI.createComponent('pi-pup-lp-rw-fl-lb-row-{index}-file-name'.format({index: index}), {
-																						template: UI.template('th'),
+																						template: UI.template('td'),
 																						appearance: {
-																							html: line.filename,
+																							html: filename,
 																							style: {
 																								'width': '50%',
 																								'height': '40px',
-																								'border-right': '1px solid #ccc',
 																								'border-bottom': '1px solid #ccc',
+																							},
+																							properties: {
+																								'title': line.filename,
 																							},
 																						},
 																					}),
-																					UI.createComponent('pi-pup-lp-rw-fl-lb-row-{index}-file-name'.format({index: index}), {
-																						template: UI.template('th'),
+																					UI.createComponent('pi-pup-lp-rw-fl-lb-row-{index}-caption'.format({index: index}), {
+																						template: UI.template('td'),
 																						appearance: {
-																							html: line.caption,
+																							html: caption,
 																							style: {
 																								'width': '50%',
 																								'height': '40px',
 																								'border-bottom': '1px solid #ccc',
+																							},
+																							properties: {
+																								'title': line.caption,
 																							},
 																						},
 																					}),
