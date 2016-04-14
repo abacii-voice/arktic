@@ -2487,6 +2487,9 @@ UI.createApp('hook', [
 											},
 										},
 									}),
+									Components.scrollList('pi-pup-lp-aw-audio-file-list', {
+										
+									}),
 								],
 							}),
 							UI.createComponent('pi-pup-rp-confirm-button', {
