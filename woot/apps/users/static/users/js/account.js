@@ -2549,7 +2549,7 @@ UI.createApp('hook', [
 									},
 								},
 								children: [
-									UI.createComponent('pi-pup-lp-aw-dropzone', {
+									UI.createComponent('pi-pup-rp-aw-dropzone', {
 										template: UI.template('div', 'ie show relative border border-radius dz-wrapper'),
 										appearance: {
 											style: {
@@ -2653,7 +2653,7 @@ UI.createApp('hook', [
 											],
 										},
 										children: [
-											UI.createComponent('pi-pup-lp-aw-dz-audio', {
+											UI.createComponent('pi-pup-rp-aw-dz-audio', {
 												template: UI.template('h3', 'ie show centred-horizontally'),
 												appearance: {
 													html: 'Audio zip archive',
@@ -2665,7 +2665,7 @@ UI.createApp('hook', [
 													},
 												},
 											}),
-											UI.createComponent('pi-pup-lp-aw-dz-drag', {
+											UI.createComponent('pi-pup-rp-aw-dz-drag', {
 												template: UI.template('span', 'ie show centred-horizontally'),
 												appearance: {
 													html: 'Drag and drop or click to upload',
@@ -2677,7 +2677,7 @@ UI.createApp('hook', [
 													},
 												},
 											}),
-											UI.createComponent('pi-pup-lp-aw-dz-archive', {
+											UI.createComponent('pi-pup-rp-aw-dz-archive', {
 												template: UI.template('span', 'ie show centred-horizontally'),
 												appearance: {
 													html: '.zip file of the form:',
@@ -2689,7 +2689,7 @@ UI.createApp('hook', [
 													},
 												},
 											}),
-											UI.createComponent('pi-pup-lp-aw-dz-img', {
+											UI.createComponent('pi-pup-rp-aw-dz-img', {
 												template: UI.template('img'),
 												appearance: {
 													properties: {
@@ -2705,7 +2705,7 @@ UI.createApp('hook', [
 													},
 												},
 											}),
-											UI.createComponent('pi-pup-lp-aw-dz-file1', {
+											UI.createComponent('pi-pup-rp-aw-dz-file1', {
 												template: UI.template('span', 'ie show'),
 												appearance: {
 													html: 'demo-file_1.wav',
@@ -2715,7 +2715,7 @@ UI.createApp('hook', [
 													},
 												},
 											}),
-											UI.createComponent('pi-pup-lp-aw-dz-file2', {
+											UI.createComponent('pi-pup-rp-aw-dz-file2', {
 												template: UI.template('span', 'ie show'),
 												appearance: {
 													html: 'demo-file_2.wav',
@@ -2727,7 +2727,7 @@ UI.createApp('hook', [
 											}),
 										],
 									}),
-									Components.scrollList('pi-pup-lp-aw-audio-file-list', {
+									Components.scrollList('pi-pup-rp-aw-audio-file-list', {
 										state: {
 											defaultState: {
 												fn: UI.functions.deactivate,
@@ -2741,7 +2741,7 @@ UI.createApp('hook', [
 											],
 										},
 										content: [
-											UI.createComponent('pi-pup-lp-aw-afl-summary', {
+											UI.createComponent('pi-pup-rp-aw-afl-summary', {
 												template: UI.template('div', 'ie show relative border border-radius'),
 												appearance: {
 													style: {
@@ -2753,7 +2753,7 @@ UI.createApp('hook', [
 													},
 												},
 												children: [
-													UI.createComponent('pi-pup-lp-aw-afl-summary-display', {
+													UI.createComponent('pi-pup-rp-aw-afl-summary-display', {
 														template: UI.template('span', 'ie show'),
 														state: {
 															states: [
@@ -2772,7 +2772,7 @@ UI.createApp('hook', [
 													}),
 												],
 											}),
-											UI.createComponent('pi-pup-lp-aw-afl-reset-button', {
+											UI.createComponent('pi-pup-rp-aw-afl-reset-button', {
 												template: UI.templates.button,
 												appearance: {
 													classes: ['border', 'border-radius', 'relative'],
@@ -2799,7 +2799,7 @@ UI.createApp('hook', [
 													}},
 												],
 											}),
-											UI.createComponent('pi-pup-lp-aw-afl-list', {
+											UI.createComponent('pi-pup-rp-aw-afl-list', {
 												template: UI.template('table'),
 												appearance: {
 													style: {
@@ -2810,29 +2810,18 @@ UI.createApp('hook', [
 													},
 												},
 												children: [
-													UI.createComponent('pi-pup-lp-aw-afl-list-header', {
+													UI.createComponent('pi-pup-rp-aw-afl-list-header', {
 														template: UI.template('thead'),
 														children: [
-															UI.createComponent('pi-pup-lp-aw-afl-list-header-row', {
+															UI.createComponent('pi-pup-rp-aw-afl-list-header-row', {
 																template: UI.template('tr'),
 																children: [
-																	UI.createComponent('pi-pup-lp-aw-afl-lhr-file-name', {
+																	UI.createComponent('pi-pup-rp-aw-afl-lhr-file-name', {
 																		template: UI.template('th'),
 																		appearance: {
 																			html: 'Audio file name',
 																			style: {
-																				'width': '50%',
-																				'height': '40px',
-																				'border-bottom': '1px solid #ccc',
-																			},
-																		},
-																	}),
-																	UI.createComponent('pi-pup-lp-aw-afl-lhr-caption', {
-																		template: UI.template('th'),
-																		appearance: {
-																			html: 'Caption',
-																			style: {
-																				'width': '50%',
+																				'width': '100%',
 																				'height': '40px',
 																				'border-bottom': '1px solid #ccc',
 																			},
@@ -2842,11 +2831,11 @@ UI.createApp('hook', [
 															}),
 														],
 													}),
-													UI.createComponent('pi-pup-lp-rw-fl-list-body', {
+													UI.createComponent('pi-pup-rp-aw-afl-list-body', {
 														template: UI.template('tbody'),
 														state: {
 															states: [
-																{name: 'project-upload-relfile-state', args: {
+																{name: 'project-upload-audio-state', args: {
 																	preFn: function (_this) {
 																		// remove old lines
 																		Object.keys(_this.children).forEach(function (childId) {
@@ -2859,15 +2848,14 @@ UI.createApp('hook', [
 																		// add data as lines
 																		Context.get('current_upload.audio.lines').forEach(function (line, index) {
 
-																			var filename = line.filename.length > 20 ? line.filename.substr(0,15).concat('... .wav') : line.filename;
-																			var caption = line.caption.length > 20 ? line.caption.substr(0,20).concat('...') : line.caption;
+																			var filename = line.filename.length > 40 ? line.filename.substr(0,15).concat('... .wav') : line.filename;
 
 																			// create row object
-																			var row = UI.createComponent('pi-pup-lp-rw-fl-lb-row-{index}'.format({index: index}), {
+																			var row = UI.createComponent('pi-pup-rp-aw-afl-lb-row-{index}'.format({index: index}), {
 																				root: _this.id,
 																				template: UI.template('tr'),
 																				children: [
-																					UI.createComponent('pi-pup-lp-rw-fl-lb-row-{index}-file-name'.format({index: index}), {
+																					UI.createComponent('pi-pup-rp-aw-afl-lb-row-{index}-file-name'.format({index: index}), {
 																						template: UI.template('td'),
 																						appearance: {
 																							html: filename,
