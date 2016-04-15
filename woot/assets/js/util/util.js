@@ -104,9 +104,12 @@ String.prototype.trunc = function(n, useWordBoundary) {
 };
 
 // gives filename without directories
-function basename(str) {
-	var base = new String(str).substring(str.lastIndexOf('/') + 1);
-	return base;
+function basename(path) {
+	return path.replace(/.*\//, '');
+}
+
+function dirname(path) {
+	return path.match(/.*\//);
 }
 
 // alphabetical sort
