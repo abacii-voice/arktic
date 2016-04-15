@@ -1898,7 +1898,7 @@ UI.createApp('hook', [
 											states: [
 												{name: 'project-upload-state', args: {
 													preFn: function (_this) {
-														var projectPrototypeName = Context.get('project_prototype.name');
+														var projectPrototypeName = Context.get('current_upload.project.name');
 														_this.model().html('New project: {name}'.format({name: projectPrototypeName}));
 													},
 												}}
@@ -1965,7 +1965,6 @@ UI.createApp('hook', [
 																{name: 'project-upload-state', args: {
 																	preFn: function (_this) {
 																		var deadline = Context.get('current_upload.project.deadline');
-																		console.log(deadline);
 																		_this.model().html(deadline);
 																	},
 																}},
@@ -2147,8 +2146,22 @@ UI.createApp('hook', [
 																var unique = Object.keys(audioSet).length;
 																var duplicates = 0;
 																Object.keys(audioSet).forEach(function (key) {
+																	var matchingLines = relfileLineObjects.filter(function (line) {
+																		return line.filename === key;
+																	});
 																	if (audioSet[key] > 1) {
 																		duplicates += audioSet[key] - 1;
+																		matchingLines.forEach(function (line, index) {
+																			if (index === matchingLines.length - 1) {
+																				line.is_duplicate = false;
+																			} else {
+																				line.is_duplicate = true;	
+																			}
+																		})
+																	} else {
+																		matchingLines.forEach(function (line) {
+																			line.is_duplicate = false;
+																		})
 																	}
 																});
 																
@@ -2396,6 +2409,7 @@ UI.createApp('hook', [
 													{name: 'click', fn: function (_this) {
 														// remove context variables
 														Context.set('current_upload.relfile', {});
+														_this.parent().parent().parent().model().find('.dz-error-message').css({'display': 'none'});
 														_this.triggerState();
 													}},
 												],
@@ -2546,51 +2560,96 @@ UI.createApp('hook', [
 										},
 										state: {
 											stateMap: 'project-upload-audio-state',
-											states: [
-												{name: 'project-upload-state', args: {
-													preFn: function (_this) {
-														// make visible
-														_this.model().css({'display': 'block'});
+											defaultState: {
+												preFn: function (_this) {
+													// make visible
+													_this.model().css({'display': 'block'});
 
-														// make dropzone
-														_this.model().dropzone({
-															url: '/upload-audio',
-															maxFiles: 1,
-															acceptedFiles: '.zip',
-															paramName: 'audio-input',
-															createImageThumbnails: false,
-															accept: function (file, done) {
-																// try reading file
-																var reader = new FileReader();
-																var zip = new JSZip();
-																reader.onload = function(e) {
-																	var contents = e.target.result;
-																	zip.load(contents);
+													// make dropzone
+													_this.model().dropzone({
+														url: '/upload-audio',
+														maxFiles: 1,
+														acceptedFiles: '.zip',
+														paramName: 'audio-input',
+														createImageThumbnails: false,
+														accept: function (file, done) {
+															// try reading file
+															var reader = new FileReader();
+															var zip = new JSZip();
+															reader.onload = function(e) {
+																var contents = e.target.result;
+																zip.load(contents);
 
-																	// extract list of files and cut off directory name
-																	var filenames = [];
-																	var dirname;
-																	Object.keys(zip.files).forEach(function (key) {
-																		if (!zip.files[key].dir) {
-																			filenames.push(basename(key));
-																		}
+																// extract list of files and cut off directory name
+																var filenames = [];
+																var dirname;
+																Object.keys(zip.files).forEach(function (key) {
+																	if (!zip.files[key].dir) {
+																		filenames.push(basename(key));
+																	} else {
+																		dirname = key;
+																	}
+																});
+																
+																// find number of unique audio file names
+																var audioSet = {};
+																filenames.forEach(function (filename) {
+																	if (audioSet.hasOwnProperty(filename)) {
+																		audioSet[filename]++;
+																	} else {
+																		audioSet[filename] = 1;
+																	}
+																});
+																
+																// count numbers and assign duplicates
+																var audioObjects = filenames.map(function (filename) {
+																	return {filename: filename};
+																});
+																var total = filenames.length;
+																var unique = Object.keys(audioSet).length;
+																var duplicates = 0;
+																Object.keys(audioSet).forEach(function (key) {
+																	var matchingLines = audioObjects.filter(function (audioObject) {
+																		return audioObject.filename === key;
 																	});
+																	if (audioSet[key] > 1) {
+																		duplicates += audioSet[key] - 1;
+																		matchingLines.forEach(function (line, index) {
+																			if (index === matchingLines.length - 1) {
+																				line.is_duplicate = false;
+																			} else {
+																				line.is_duplicate = true;	
+																			}
+																		})  
+																	} else {
+																		matchingLines.forEach(function (line) {
+																			line.is_duplicate = false;
+																		})
+																	}
+																});
 
-																	Context.set('current_upload.audio', {
-																		'files': zip.files,
-																		'lines': filenames,
-																		'total': filenames.length,
-																		'unique': 0,
-																		'duplicates': 0,
-																	}); 
-																	_this.triggerState();
-																}
+																Context.set('current_upload.audio', {
+																	'files': zip.files,
+																	'lines': audioObjects,
+																	'total': total,
+																	'unique': unique,
+																	'duplicates': duplicates,
+																	'dir': dirname,
+																}); 
+																_this.triggerState();
+															}
 
-																reader.readAsBinaryString(file);
-															},
-														});
-													},
+															reader.readAsBinaryString(file);
+														},
+													});
+												},
+											},
+											states: [
+												{name: 'project-upload-state', args: 'default'},
+												{name: 'project-upload-audio-state', args: {
+													fn: UI.functions.deactivate,
 												}},
+												{name: 'project-upload-audio-reset-state', args: 'default'},
 											],
 										},
 										children: [
@@ -2675,9 +2734,10 @@ UI.createApp('hook', [
 											},
 											states: [
 												{name: 'project-upload-state', args: 'default'},
-												{name: 'project-upload-relfile-state', args: {
+												{name: 'project-upload-audio-state', args: {
 													preFn: UI.functions.activate,
 												}},
+												{name: 'project-upload-audio-reset-state', args: 'default'},
 											],
 										},
 										content: [
@@ -2728,12 +2788,13 @@ UI.createApp('hook', [
 													html: 'Reset',
 												},
 												state: {
-													stateMap: 'project-upload-state',
+													stateMap: 'project-upload-audio-reset-state',
 												},
 												bindings: [
 													{name: 'click', fn: function (_this) {
 														// remove context variables
 														Context.set('current_upload.audio', {});
+														_this.parent().parent().parent().model().find('.dz-error-message').css({'display': 'none'});
 														_this.triggerState();
 													}},
 												],
