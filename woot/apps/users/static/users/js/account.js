@@ -2794,6 +2794,8 @@ UI.createApp('hook', [
 													{name: 'click', fn: function (_this) {
 														// remove context variables
 														Context.set('current_upload.audio', {});
+														
+														// omg hack because I do not control the dropzone package.
 														_this.parent().parent().parent().model().find('.dz-error-message').css({'display': 'none'});
 														_this.triggerState();
 													}},
