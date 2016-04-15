@@ -69,6 +69,9 @@ UI.createGlobalStates('client-state', [
 	'project-new-project-state',
 	'project-upload-state',
 	'project-upload-relfile-state',
+	'project-upload-relfile-reset-state',
+	'project-upload-audio-state',
+	'project-upload-audio-reset-state',
 	'project-settings-state',
 	'project-project-settings-state',
 
@@ -1848,6 +1851,22 @@ UI.createApp('hook', [
 						'float': 'left',
 					},
 				},
+				state: {
+					defaultState: {
+						fn: UI.functions.deactivate,
+					},
+					states: [
+						{name: 'project-state', args: 'default'},
+						{name: 'project-upload-state', args: {
+							preFn: UI.functions.activate,
+							style: {
+								'opacity': '1.0',
+							},
+						}},
+						{name: 'project-settings-state', args: 'default'},
+						{name: 'project-new-project-state', args: 'default'},
+					],
+				},
 				children: [
 					UI.createComponent('pi-pup-left-panel', {
 						template: UI.template('div', 'ie relative show'),
@@ -2084,87 +2103,100 @@ UI.createApp('hook', [
 										state: {
 											stateMap: 'project-upload-relfile-state',
 											defaultState: {
-												fn: UI.functions.deactivate,
+												preFn: function (_this) {
+													// make visible
+													_this.model().css({'display': 'block'});
+
+													// make dropzone
+													_this.model().dropzone({
+														url: '/upload-relfile',
+														maxFiles: 1,
+														acceptedFiles: '.csv',
+														paramName: 'relfile-input',
+														createImageThumbnails: false,
+														accept: function (file, done) {
+															// try reading file
+															var reader = new FileReader();
+															reader.onload = function(e) {
+																var contents = e.target.result;
+																// contents is a string. I can do what I want.
+																// 1. parse contents of file and display in rel-file-filelist
+																var lines = contents.split('\n');
+																var headerLine = lines.shift();
+
+																// 2. add lines to Context
+																var relfileLineObjects = lines.map(function (line) {
+																	var keys = line.split(',');
+																	return {filename: basename(keys[0]), caption: keys[1]}
+																}).filter(function (relfileLineObject) {
+																	return relfileLineObject.filename !== ''; //filter directories
+																});
+
+																if (Context.store.current_upload === undefined) {
+																	Context.store.current_upload = {};
+																}
+																Context.store.current_upload.relfile = {};
+																Context.store.current_upload.relfile.lines = relfileLineObjects;
+
+																// 1. find number of unique audio file names
+																var audioSet = {};
+																relfileLineObjects.forEach(function (line) {
+																	if (audioSet.hasOwnProperty(line.filename)) {
+																		audioSet[line.filename]++;
+																	} else {
+																		audioSet[line.filename] = 1;
+																	}
+																});
+
+																var total = relfileLineObjects.length;
+																var unique = Object.keys(audioSet).length;
+																var duplicates = 0;
+																Object.keys(audioSet).forEach(function (key) {
+																	if (audioSet[key] > 1) {
+																		duplicates += audioSet[key] - 1;
+																	}
+																});
+
+																Context.store.current_upload.relfile.total = total;
+																Context.store.current_upload.relfile.unique = unique;
+																Context.store.current_upload.relfile.duplicates = duplicates;
+
+																// 3. trigger
+																_this.triggerState();
+															};
+															reader.readAsText(file);
+														},
+													});
+												},
 											},
 											states: [
-												{name: 'project-upload-state', args: {
-													preFn: function (_this) {
-														// make visible
-														_this.model().css({'display': 'block'});
-
-														// make dropzone
-														_this.model().dropzone({
-															url: '/upload-relfile',
-															maxFiles: 1,
-															acceptedFiles: '.csv',
-															paramName: 'relfile-input',
-															createImageThumbnails: false,
-															accept: function (file, done) {
-																// try reading file
-																var reader = new FileReader();
-																reader.onload = function(e) {
-																	var contents = e.target.result;
-																	// contents is a string. I can do what I want.
-																	// 1. parse contents of file and display in rel-file-filelist
-																	var lines = contents.split('\n');
-																	var headerLine = lines.shift();
-
-																	// 2. add lines to Context
-																	var relfileLineObjects = lines.map(function (line) {
-																		var keys = line.split(',');
-																		return {filename: basename(keys[0]), caption: keys[1]}
-																	}).filter(function (relfileLineObject) {
-																		return relfileLineObject.filename !== ''; //filter directories
-																	});
-
-																	if (Context.store.current_upload === undefined) {
-																		Context.store.current_upload = {};
-																	}
-																	Context.store.current_upload.relfile = {};
-																	Context.store.current_upload.relfile.lines = relfileLineObjects;
-
-																	// 1. find number of unique audio file names
-																	var audioSet = {};
-																	relfileLineObjects.forEach(function (line) {
-																		if (audioSet.hasOwnProperty(line.filename)) {
-																			audioSet[line.filename]++;
-																		} else {
-																			audioSet[line.filename] = 1;
-																		}
-																	});
-
-																	var total = relfileLineObjects.length;
-																	var unique = Object.keys(audioSet).length;
-																	var duplicates = 0;
-																	Object.keys(audioSet).forEach(function (key) {
-																		if (audioSet[key] > 1) {
-																			duplicates += audioSet[key] - 1;
-																		}
-																	});
-
-																	Context.store.current_upload.relfile.total = total;
-																	Context.store.current_upload.relfile.unique = unique;
-																	Context.store.current_upload.relfile.duplicates = duplicates;
-
-																	// 3. trigger
-																	_this.triggerState();
-																};
-																reader.readAsText(file);
-															},
-														});
-													},
+												{name: 'project-upload-state', args: 'default'},
+												{name: 'project-upload-relfile-state', args: {
+													fn: UI.functions.deactivate,
 												}},
-												{name: 'project-upload-relfile-state', args: 'default'},
+												{name: 'project-upload-relfile-reset-state', args: 'default'},
 											],
 										},
 										children: [
+											UI.createComponent('pi-pup-lp-rw-dz-relfile', {
+												template: UI.template('h3', 'ie show centred-horizontally'),
+												appearance: {
+													html: 'Relfile',
+													style: {
+														'width': '100%',
+														'top': '40px',
+														'user-select': 'none',
+														'pointer-events': 'none',
+													},
+												},
+											}),
 											UI.createComponent('pi-pup-lp-rw-dz-drag', {
 												template: UI.template('span', 'ie show centred-horizontally'),
 												appearance: {
 													html: 'Drag and drop or click to upload',
 													style: {
 														'width': '100%',
-														'top': '50px',
+														'top': '70px',
 														'user-select': 'none',
 														'pointer-events': 'none',
 													},
@@ -2176,7 +2208,7 @@ UI.createApp('hook', [
 													html: '.csv file of the form:',
 													style: {
 														'width': '100%',
-														'top': '75px',
+														'top': '95px',
 														'user-select': 'none',
 														'pointer-events': 'none',
 													},
@@ -2187,7 +2219,7 @@ UI.createApp('hook', [
 												appearance: {
 													style: {
 														'position': 'relative',
-														'top': '120px',
+														'top': '140px',
 														'width': '80%',
 														'text-align': 'left',
 														'left': '50%',
@@ -2309,6 +2341,7 @@ UI.createApp('hook', [
 												{name: 'project-upload-relfile-state', args: {
 													preFn: UI.functions.activate,
 												}},
+												{name: 'project-upload-relfile-reset-state', args: 'default'},
 											],
 										},
 										content: [
@@ -2316,10 +2349,11 @@ UI.createApp('hook', [
 												template: UI.template('div', 'ie show relative border border-radius'),
 												appearance: {
 													style: {
-														'width': '100%',
+														'width': 'calc(100% - 90px)',
 														'height': '40px',
 														'padding-top': '10px',
 														'padding-left': '10px',
+														'float': 'left',
 													},
 												},
 												children: [
@@ -2334,12 +2368,38 @@ UI.createApp('hook', [
 																		var unique = Context.get('current_upload', 'relfile', 'unique');
 																		var duplicates = Context.get('current_upload', 'relfile', 'duplicates');
 
-																		_this.model().html('{total} total audio files, {unique} unique, {duplicates} duplicates'.format({total: total, unique: unique, duplicates: duplicates}));
+																		_this.model().html('{total} total, {unique} unique, {duplicates} duplicates'.format({total: total, unique: unique, duplicates: duplicates}));
 																	}
 																}},
 															],
 														},
 													}),
+												],
+											}),
+											UI.createComponent('pi-pup-lp-rw-fl-reset-button', {
+												template: UI.templates.button,
+												appearance: {
+													classes: ['border', 'border-radius', 'relative'],
+													style: {
+														'height': '40px',
+														'width': '80px',
+														'padding-top': '10px',
+														'float': 'left',
+														'margin-left': '10px',
+														'transform': 'none',
+														'left': '0px',
+													},
+													html: 'Reset',
+												},
+												state: {
+													stateMap: 'project-upload-relfile-reset-state',
+												},
+												bindings: [
+													{name: 'click', fn: function (_this) {
+														// remove context variables
+														Context.store.current_upload.relfile = {};
+														_this.triggerState();
+													}},
 												],
 											}),
 											UI.createComponent('pi-pup-lp-rw-fl-list', {
@@ -2420,7 +2480,7 @@ UI.createApp('hook', [
 																								'border-bottom': '1px solid #ccc',
 																							},
 																							properties: {
-																								'title': line.filename,
+																								'title': line.filename !== filename ? line.filename : '',
 																							},
 																						},
 																					}),
@@ -2434,7 +2494,7 @@ UI.createApp('hook', [
 																								'border-bottom': '1px solid #ccc',
 																							},
 																							properties: {
-																								'title': line.caption,
+																								'title': line.caption !== caption ? line.caption : '',
 																							},
 																						},
 																					}),
@@ -2478,7 +2538,7 @@ UI.createApp('hook', [
 								},
 								children: [
 									UI.createComponent('pi-pup-lp-aw-dropzone', {
-										template: UI.template('div', 'ie show relative border border-radius'),
+										template: UI.template('div', 'ie show relative border border-radius dz-wrapper'),
 										appearance: {
 											style: {
 												'height': '100%',
@@ -2486,9 +2546,298 @@ UI.createApp('hook', [
 												'border-style': 'dotted',
 											},
 										},
+										state: {
+											stateMap: 'project-upload-audio-state',
+											states: [
+												{name: 'project-upload-state', args: {
+													preFn: function (_this) {
+														// make visible
+														_this.model().css({'display': 'block'});
+
+														// make dropzone
+														_this.model().dropzone({
+															url: '/upload-audio',
+															maxFiles: 1,
+															acceptedFiles: '.zip',
+															paramName: 'audio-input',
+															createImageThumbnails: false,
+															accept: function (file, done) {
+																// try reading file
+																var reader = new FileReader();
+																var zip = new JSZip();
+																reader.onload = function(e) {
+																	var contents = e.target.result;
+																	zip.load(contents);
+
+																	// extract list of files and cut off directory name
+																	var filenames = [];
+																	Object.keys(zip.files).forEach(function (key) {
+																		if (!zip.files[key].dir) {
+																			filenames.push(basename(key));
+																		}
+																	});
+
+																	if (Context.store.current_upload === undefined) {
+																		Context.store.current_upload = {};
+																	}
+																	Context.store.current_upload.audio = {
+																		'lines': filenames,
+																		'total': filenames.length,
+																		'unique': 0,
+																		'duplicates': 0,
+																	};
+
+																	_this.triggerState();
+																}
+
+																reader.readAsBinaryString(file);
+															},
+														});
+													},
+												}},
+											],
+										},
+										children: [
+											UI.createComponent('pi-pup-lp-aw-dz-audio', {
+												template: UI.template('h3', 'ie show centred-horizontally'),
+												appearance: {
+													html: 'Audio zip archive',
+													style: {
+														'width': '100%',
+														'top': '40px',
+														'user-select': 'none',
+														'pointer-events': 'none',
+													},
+												},
+											}),
+											UI.createComponent('pi-pup-lp-aw-dz-drag', {
+												template: UI.template('span', 'ie show centred-horizontally'),
+												appearance: {
+													html: 'Drag and drop or click to upload',
+													style: {
+														'width': '100%',
+														'top': '70px',
+														'user-select': 'none',
+														'pointer-events': 'none',
+													},
+												},
+											}),
+											UI.createComponent('pi-pup-lp-aw-dz-archive', {
+												template: UI.template('span', 'ie show centred-horizontally'),
+												appearance: {
+													html: '.zip file of the form:',
+													style: {
+														'width': '100%',
+														'top': '95px',
+														'user-select': 'none',
+														'pointer-events': 'none',
+													},
+												},
+											}),
+											UI.createComponent('pi-pup-lp-aw-dz-img', {
+												template: UI.template('img'),
+												appearance: {
+													properties: {
+														'src': '/static/img/folder-icon-comp.png',
+													},
+													style: {
+														'position': 'absolute',
+														'width': '120px',
+														'height': '160px',
+														'top': '140px',
+														'left': '150px',
+														'pointer-events': 'none',
+													},
+												},
+											}),
+											UI.createComponent('pi-pup-lp-aw-dz-file1', {
+												template: UI.template('span', 'ie show'),
+												appearance: {
+													html: 'demo-file_1.wav',
+													style: {
+														'top': '201px',
+														'left': '210px',
+													},
+												},
+											}),
+											UI.createComponent('pi-pup-lp-aw-dz-file2', {
+												template: UI.template('span', 'ie show'),
+												appearance: {
+													html: 'demo-file_2.wav',
+													style: {
+														'top': '233px',
+														'left': '210px',
+													},
+												},
+											}),
+										],
 									}),
 									Components.scrollList('pi-pup-lp-aw-audio-file-list', {
+										state: {
+											defaultState: {
+												fn: UI.functions.deactivate,
+											},
+											states: [
+												{name: 'project-upload-state', args: 'default'},
+												{name: 'project-upload-relfile-state', args: {
+													preFn: UI.functions.activate,
+												}},
+											],
+										},
+										content: [
+											UI.createComponent('pi-pup-lp-aw-afl-summary', {
+												template: UI.template('div', 'ie show relative border border-radius'),
+												appearance: {
+													style: {
+														'width': 'calc(100% - 90px)',
+														'height': '40px',
+														'padding-top': '10px',
+														'padding-left': '10px',
+														'float': 'left',
+													},
+												},
+												children: [
+													UI.createComponent('pi-pup-lp-aw-afl-summary-display', {
+														template: UI.template('span', 'ie show'),
+														state: {
+															states: [
+																{name: 'project-upload-audio-state', args: {
+																	preFn: function (_this) {
+																		// get relfile data
+																		var total = Context.get('current_upload', 'audio', 'total');
+																		var unique = Context.get('current_upload', 'audio', 'unique');
+																		var duplicates = Context.get('current_upload', 'audio', 'duplicates');
 
+																		_this.model().html('{total} total, {unique} unique, {duplicates} duplicates'.format({total: total, unique: unique, duplicates: duplicates}));
+																	}
+																}},
+															],
+														},
+													}),
+												],
+											}),
+											UI.createComponent('pi-pup-lp-aw-afl-reset-button', {
+												template: UI.templates.button,
+												appearance: {
+													classes: ['border', 'border-radius', 'relative'],
+													style: {
+														'height': '40px',
+														'width': '80px',
+														'padding-top': '10px',
+														'float': 'left',
+														'margin-left': '10px',
+														'transform': 'none',
+														'left': '0px',
+													},
+													html: 'Reset',
+												},
+												state: {
+													stateMap: 'project-upload-state',
+												},
+												bindings: [
+													{name: 'click', fn: function (_this) {
+														// remove context variables
+														Context.store.current_upload.audio = {};
+														_this.triggerState();
+													}},
+												],
+											}),
+											UI.createComponent('pi-pup-lp-aw-afl-list', {
+												template: UI.template('table'),
+												appearance: {
+													style: {
+														'width': '100%',
+														'position': 'relative',
+														'top': '10px',
+														'text-align': 'left',
+													},
+												},
+												children: [
+													UI.createComponent('pi-pup-lp-aw-afl-list-header', {
+														template: UI.template('thead'),
+														children: [
+															UI.createComponent('pi-pup-lp-aw-afl-list-header-row', {
+																template: UI.template('tr'),
+																children: [
+																	UI.createComponent('pi-pup-lp-aw-afl-lhr-file-name', {
+																		template: UI.template('th'),
+																		appearance: {
+																			html: 'Audio file name',
+																			style: {
+																				'width': '50%',
+																				'height': '40px',
+																				'border-bottom': '1px solid #ccc',
+																			},
+																		},
+																	}),
+																	UI.createComponent('pi-pup-lp-aw-afl-lhr-caption', {
+																		template: UI.template('th'),
+																		appearance: {
+																			html: 'Caption',
+																			style: {
+																				'width': '50%',
+																				'height': '40px',
+																				'border-bottom': '1px solid #ccc',
+																			},
+																		},
+																	}),
+																],
+															}),
+														],
+													}),
+													UI.createComponent('pi-pup-lp-rw-fl-list-body', {
+														template: UI.template('tbody'),
+														state: {
+															states: [
+																{name: 'project-upload-relfile-state', args: {
+																	preFn: function (_this) {
+																		// remove old lines
+																		Object.keys(_this.children).forEach(function (childId) {
+																			UI.removeComponent(childId);
+																		});
+
+																		// clear children
+																		_this.children = {};
+
+																		// add data as lines
+																		Context.get('current_upload', 'audio', 'lines').forEach(function (line, index) {
+
+																			var filename = line.filename.length > 20 ? line.filename.substr(0,15).concat('... .wav') : line.filename;
+																			var caption = line.caption.length > 20 ? line.caption.substr(0,20).concat('...') : line.caption;
+
+																			// create row object
+																			var row = UI.createComponent('pi-pup-lp-rw-fl-lb-row-{index}'.format({index: index}), {
+																				root: _this.id,
+																				template: UI.template('tr'),
+																				children: [
+																					UI.createComponent('pi-pup-lp-rw-fl-lb-row-{index}-file-name'.format({index: index}), {
+																						template: UI.template('td'),
+																						appearance: {
+																							html: filename,
+																							style: {
+																								'width': '100%',
+																								'height': '40px',
+																								'border-bottom': '1px solid #ccc',
+																							},
+																							properties: {
+																								'title': line.filename !== filename ? line.filename : '',
+																							},
+																						},
+																					}),
+																				],
+																			});
+
+																			_this.children[row.id] = row;
+																			row.render();
+																		});
+																	},
+																}},
+															],
+														},
+													}),
+												],
+											}),
+										],
 									}),
 								],
 							}),
