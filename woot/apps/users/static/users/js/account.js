@@ -1411,7 +1411,7 @@ UI.createApp('hook', [
 							states: [
 								{name: 'project-state', args: {
 									preFn: function (_this) {
-										var isContract = Context.get('clients', Context.get('current_client')).is_contract;
+										var isContract = Context.get('clients.{client}.is_contract'.format({client: Context.get('current_client')}));
 										if (isContract) {
 											_this.model().css({'display': 'block'});
 										} else {
@@ -1964,7 +1964,8 @@ UI.createApp('hook', [
 															states: [
 																{name: 'project-upload-state', args: {
 																	preFn: function (_this) {
-																		var deadline = Context.get('project_prototype.deadline');
+																		var deadline = Context.get('current_upload.project.deadline');
+																		console.log(deadline);
 																		_this.model().html(deadline);
 																	},
 																}},
@@ -2004,7 +2005,7 @@ UI.createApp('hook', [
 															states: [
 																{name: 'project-upload-state', args: {
 																	preFn: function (_this) {
-																		var partName = Context.get('project_prototype.part_name');
+																		var partName = Context.get('current_upload.project.part_name');
 																		_this.model().html(partName);
 																	},
 																}},
@@ -2062,10 +2063,10 @@ UI.createApp('hook', [
 												_this.triggerState();
 
 												// a bit of a hack.
-												UI.getComponent('pi-npp-project-search').model().val(Context.get('project_prototype.name'));
-												UI.getComponent('pi-npp-project-deadline').model().val(Context.get('project_prototype.deadline'));
+												UI.getComponent('pi-npp-project-search').model().val(Context.get('current_upload.project.name'));
+												UI.getComponent('pi-npp-project-deadline').model().val(Context.get('current_upload.project.deadline'));
 
-												var newPart = Context.get('project_prototype.new_part');
+												var newPart = Context.get('current_upload.project.new_part');
 												var newActive = newPart ? 'true' : 'false';
 												var newColor = newPart ? '#fff' : '#ccc';
 												var existingActive = newPart ? 'false' : 'true';
@@ -2075,7 +2076,7 @@ UI.createApp('hook', [
 												UI.getComponent('pi-npp-nps-existing-part-button').model().css({'border-color': existingColor, 'color': existingColor});
 												UI.getComponent('pi-npp-nps-existing-part-button').model().attr('active', existingActive);
 
-												UI.getComponent('pi-npp-project-part-search').model().val(Context.get('project_prototype.part_name'));
+												UI.getComponent('pi-npp-project-part-search').model().val(Context.get('current_upload.project.part_name'));
 											}},
 										],
 									}),
@@ -2568,6 +2569,7 @@ UI.createApp('hook', [
 
 																	// extract list of files and cut off directory name
 																	var filenames = [];
+																	var dirname;
 																	Object.keys(zip.files).forEach(function (key) {
 																		if (!zip.files[key].dir) {
 																			filenames.push(basename(key));
