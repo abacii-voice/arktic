@@ -2818,12 +2818,23 @@ UI.createApp('hook', [
 															UI.createComponent('pi-pup-rp-aw-afl-list-header-row', {
 																template: UI.template('tr'),
 																children: [
+																	UI.createComponent('pi-pup-rp-aw-afl-lhr-index', {
+																		template: UI.template('th'),
+																		appearance: {
+																			html: '#',
+																			style: {
+																				'width': '10%',
+																				'height': '40px',
+																				'border-bottom': '1px solid #ccc',
+																			},
+																		},
+																	}),
 																	UI.createComponent('pi-pup-rp-aw-afl-lhr-file-name', {
 																		template: UI.template('th'),
 																		appearance: {
 																			html: 'Audio file name',
 																			style: {
-																				'width': '100%',
+																				'width': '90%',
 																				'height': '40px',
 																				'border-bottom': '1px solid #ccc',
 																			},
@@ -2848,21 +2859,54 @@ UI.createApp('hook', [
 																		_this.children = {};
 
 																		// add data as lines
+																		var relfileLines = Context.get('current_upload.relfile.lines');
 																		Context.get('current_upload.audio.lines').forEach(function (line, index) {
 
+																			// determine properties
 																			var filename = line.filename.length > 40 ? line.filename.substr(0,15).concat('... .wav') : line.filename;
+																			var presentInRelfile = true; // true even if there is no relfile
+																			if (relfileLines.length !== 0) {
+																				presentInRelfile = relfileLines.filter(function (line) {
+																					return line.filename === filename;
+																				}).length > 0;
+																			}
+																			var isDuplicate = line.is_duplicate;
+																			
+																			// define styling
+																			var style = {};
+																			if (isDuplicate) {
+																				style['background-color'] = '#AA9F39';	
+																			}
+																			
+																			if (!presentInRelfile) {
+																				style['background-color'] = '#AA5039';
+																			}
 
 																			// create row object
 																			var row = UI.createComponent('pi-pup-rp-aw-afl-lb-row-{index}'.format({index: index}), {
 																				root: _this.id,
 																				template: UI.template('tr'),
+																				appearance: {
+																					style: style,	
+																				},
 																				children: [
+																					UI.createComponent('pi-pup-rp-aw-afl-lb-row-{index}-index'.format({index: index}), {
+																						template: UI.template('td'),
+																						appearance: {
+																							html: index,
+																							style: {
+																								'width': '10%',
+																								'height': '40px',
+																								'border-bottom': '1px solid #ccc',
+																							},
+																						},
+																					}),
 																					UI.createComponent('pi-pup-rp-aw-afl-lb-row-{index}-file-name'.format({index: index}), {
 																						template: UI.template('td'),
 																						appearance: {
 																							html: filename,
 																							style: {
-																								'width': '100%',
+																								'width': '90%',
 																								'height': '40px',
 																								'border-bottom': '1px solid #ccc',
 																							},
