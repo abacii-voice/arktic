@@ -711,12 +711,12 @@ var Context = {
 	// The variable extracted from the server API call. All parsing of its meaning is done by the specific
 	// UI script for each page.
 	store: {},
-	get: function () {
+	get: function (path) {
 		// based on a string of parameters, access a value or other sub-structure from store.
+		path = path.split('.');
 		sub = this.store;
-		var i;
-		for (i=0; i<arguments.length; i++) {
-			sub = sub[arguments[i]];
+		for (i=0; i<path.length; i++) {
+			sub = sub[path[i]];
 			if (sub === undefined) {
 				break;
 			}
@@ -724,17 +724,30 @@ var Context = {
 		return sub !== undefined ? sub : '';
 	},
 
-	set: function (key, value) {
-		Context.store[key] = value;
+	set: function (path, value) {
+		path = path.split('.');
+		sub = this.store;
+		for (i=0; i<path.length; i++) {
+			if (i+1 === path.length) {
+				sub[path[i]] = value;	
+			} else {
+				if (sub[path[i]] === undefined) {
+					sub[path[i]] = {};
+				}
+			}
+			sub = sub[path[i]];
+		}
 	},
 
-	del: function () {
+	del: function (path) {
+		path = path.split('.');
 		sub = this.store;
-		var i;
-		for (i=0; i<arguments.length; i++) {
-			sub = sub[arguments[i]];
+		for (i=0; i<path.length; i++) {
+			if (i+1 === path.length) {
+				delete sub[path[i]];
+			}
+			sub = sub[path[i]];
 		}
-		delete sub;
 	},
 
 	// REGISTRY

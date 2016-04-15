@@ -25,7 +25,7 @@ Context.setFn(getdata('context', {}, function (data) {
 			part_name: 'NewTestPart',
 		}
 
-		Context.set('project_prototype', projectPrototype);
+		Context.set('current_upload.project', projectPrototype);
 
 	})).done(function () {
 		UI.changeState('project-state');
@@ -1505,7 +1505,7 @@ UI.createApp('hook', [
 											Context.update(data);
 										})).done(function () {
 											// data is a list of user objects with relevant details
-											var projects = Context.get('clients', Context.get('current_client'), 'projects');
+											var projects = Context.get('clients.{client}.projects'.format({client: Context.get('current_client')}));
 											Object.keys(projects).map(function (projectId) {
 												var projectPrototype = projects[projectId];
 												var projectButton = UI.createComponent('project-button-{id}'.format({id: projectId}), {
@@ -1520,7 +1520,7 @@ UI.createApp('hook', [
 													},
 													bindings: [
 														{name: 'click', fn: function (_this) {
-															if (Context.get('current_project_profile', 'id') !== projectId) {
+															if (Context.get('current_project_profile.id') !== projectId) {
 																_this.triggerState();
 															}
 														}},
@@ -1832,8 +1832,8 @@ UI.createApp('hook', [
 										new_part: newPart,
 										part_name: partName,
 									}
-
-									Context.set('project_prototype', projectPrototype);
+									
+									Context.set('current_upload.project', projectPrototype);
 									_this.triggerState();
 								}
 							}}
@@ -1898,7 +1898,7 @@ UI.createApp('hook', [
 											states: [
 												{name: 'project-upload-state', args: {
 													preFn: function (_this) {
-														var projectPrototypeName = Context.get('project_prototype', 'name');
+														var projectPrototypeName = Context.get('project_prototype.name');
 														_this.model().html('New project: {name}'.format({name: projectPrototypeName}));
 													},
 												}}
@@ -1964,7 +1964,7 @@ UI.createApp('hook', [
 															states: [
 																{name: 'project-upload-state', args: {
 																	preFn: function (_this) {
-																		var deadline = Context.get('project_prototype', 'deadline');
+																		var deadline = Context.get('project_prototype.deadline');
 																		_this.model().html(deadline);
 																	},
 																}},
@@ -2004,7 +2004,7 @@ UI.createApp('hook', [
 															states: [
 																{name: 'project-upload-state', args: {
 																	preFn: function (_this) {
-																		var partName = Context.get('project_prototype', 'part_name');
+																		var partName = Context.get('project_prototype.part_name');
 																		_this.model().html(partName);
 																	},
 																}},
@@ -2062,10 +2062,10 @@ UI.createApp('hook', [
 												_this.triggerState();
 
 												// a bit of a hack.
-												UI.getComponent('pi-npp-project-search').model().val(Context.get('project_prototype', 'name'));
-												UI.getComponent('pi-npp-project-deadline').model().val(Context.get('project_prototype', 'deadline'));
+												UI.getComponent('pi-npp-project-search').model().val(Context.get('project_prototype.name'));
+												UI.getComponent('pi-npp-project-deadline').model().val(Context.get('project_prototype.deadline'));
 
-												var newPart = Context.get('project_prototype', 'new_part');
+												var newPart = Context.get('project_prototype.new_part');
 												var newActive = newPart ? 'true' : 'false';
 												var newColor = newPart ? '#fff' : '#ccc';
 												var existingActive = newPart ? 'false' : 'true';
@@ -2075,7 +2075,7 @@ UI.createApp('hook', [
 												UI.getComponent('pi-npp-nps-existing-part-button').model().css({'border-color': existingColor, 'color': existingColor});
 												UI.getComponent('pi-npp-nps-existing-part-button').model().attr('active', existingActive);
 
-												UI.getComponent('pi-npp-project-part-search').model().val(Context.get('project_prototype', 'part_name'));
+												UI.getComponent('pi-npp-project-part-search').model().val(Context.get('project_prototype.part_name'));
 											}},
 										],
 									}),
@@ -2132,12 +2132,6 @@ UI.createApp('hook', [
 																	return relfileLineObject.filename !== ''; //filter directories
 																});
 
-																if (Context.store.current_upload === undefined) {
-																	Context.store.current_upload = {};
-																}
-																Context.store.current_upload.relfile = {};
-																Context.store.current_upload.relfile.lines = relfileLineObjects;
-
 																// 1. find number of unique audio file names
 																var audioSet = {};
 																relfileLineObjects.forEach(function (line) {
@@ -2156,10 +2150,13 @@ UI.createApp('hook', [
 																		duplicates += audioSet[key] - 1;
 																	}
 																});
-
-																Context.store.current_upload.relfile.total = total;
-																Context.store.current_upload.relfile.unique = unique;
-																Context.store.current_upload.relfile.duplicates = duplicates;
+																
+																Context.set('current_upload.relfile', {
+																	lines: relfileLineObjects,
+																	total: total,
+																	unique: unique,
+																	duplicates: duplicates,
+																});
 
 																// 3. trigger
 																_this.triggerState();
@@ -2364,9 +2361,9 @@ UI.createApp('hook', [
 																{name: 'project-upload-relfile-state', args: {
 																	preFn: function (_this) {
 																		// get relfile data
-																		var total = Context.get('current_upload', 'relfile', 'total');
-																		var unique = Context.get('current_upload', 'relfile', 'unique');
-																		var duplicates = Context.get('current_upload', 'relfile', 'duplicates');
+																		var total = Context.get('current_upload.relfile.total');
+																		var unique = Context.get('current_upload.relfile.unique');
+																		var duplicates = Context.get('current_upload.relfile.duplicates');
 
 																		_this.model().html('{total} total, {unique} unique, {duplicates} duplicates'.format({total: total, unique: unique, duplicates: duplicates}));
 																	}
@@ -2397,7 +2394,7 @@ UI.createApp('hook', [
 												bindings: [
 													{name: 'click', fn: function (_this) {
 														// remove context variables
-														Context.store.current_upload.relfile = {};
+														Context.set('current_upload.relfile', {});
 														_this.triggerState();
 													}},
 												],
@@ -2460,7 +2457,7 @@ UI.createApp('hook', [
 																		_this.children = {};
 
 																		// add data as lines
-																		Context.get('current_upload', 'relfile', 'lines').forEach(function (line, index) {
+																		Context.get('current_upload.relfile.lines').forEach(function (line, index) {
 
 																			var filename = line.filename.length > 20 ? line.filename.substr(0,15).concat('... .wav') : line.filename;
 																			var caption = line.caption.length > 20 ? line.caption.substr(0,20).concat('...') : line.caption;
@@ -2577,16 +2574,13 @@ UI.createApp('hook', [
 																		}
 																	});
 
-																	if (Context.store.current_upload === undefined) {
-																		Context.store.current_upload = {};
-																	}
-																	Context.store.current_upload.audio = {
+																	Context.set('current_upload.audio', {
+																		'files': zip.files,
 																		'lines': filenames,
 																		'total': filenames.length,
 																		'unique': 0,
 																		'duplicates': 0,
-																	};
-
+																	}); 
 																	_this.triggerState();
 																}
 
@@ -2704,9 +2698,9 @@ UI.createApp('hook', [
 																{name: 'project-upload-audio-state', args: {
 																	preFn: function (_this) {
 																		// get relfile data
-																		var total = Context.get('current_upload', 'audio', 'total');
-																		var unique = Context.get('current_upload', 'audio', 'unique');
-																		var duplicates = Context.get('current_upload', 'audio', 'duplicates');
+																		var total = Context.get('current_upload.audio.total');
+																		var unique = Context.get('current_upload.audio.unique');
+																		var duplicates = Context.get('current_upload.audio.duplicates');
 
 																		_this.model().html('{total} total, {unique} unique, {duplicates} duplicates'.format({total: total, unique: unique, duplicates: duplicates}));
 																	}
@@ -2737,7 +2731,7 @@ UI.createApp('hook', [
 												bindings: [
 													{name: 'click', fn: function (_this) {
 														// remove context variables
-														Context.store.current_upload.audio = {};
+														Context.set('current_upload.audio', {});
 														_this.triggerState();
 													}},
 												],
@@ -2800,7 +2794,7 @@ UI.createApp('hook', [
 																		_this.children = {};
 
 																		// add data as lines
-																		Context.get('current_upload', 'audio', 'lines').forEach(function (line, index) {
+																		Context.get('current_upload.audio.lines').forEach(function (line, index) {
 
 																			var filename = line.filename.length > 20 ? line.filename.substr(0,15).concat('... .wav') : line.filename;
 																			var caption = line.caption.length > 20 ? line.caption.substr(0,20).concat('...') : line.caption;
@@ -2974,7 +2968,7 @@ UI.createApp('hook', [
 								_this.parent().loadingIcon().model().fadeOut();
 
 								// 2. map data from context to new children and render
-								var data = Context.get('clients', Context.get('current_client'), 'roles');
+								var data = Context.get('clients.{client}.roles'.format({client: Context.get('current_client')}));
 								data.forEach(function (roleName) {
 									var child = UI.createComponent('rs-{name}-button'.format({name: roleName}), {
 										root: _this.id,
@@ -2984,7 +2978,7 @@ UI.createApp('hook', [
 												'opacity': '0.0',
 											},
 											classes: ['show'],
-											html: Context.get('role_display', roleName),
+											html: Context.get('role_display.{role_name}'.format({role_name: roleName})),
 										},
 										state: {
 											svitches: [
@@ -2997,7 +2991,7 @@ UI.createApp('hook', [
 										bindings: [
 											{name: 'click', fn: function (_this) {
 												_this.triggerState();
-											}}
+											}},
 										],
 									});
 
@@ -3072,7 +3066,7 @@ UI.createApp('hook', [
 							states: [
 								{name: 'control-state', args: {
 									preFn: function (_this) {
-										var client = Context.get('clients', Context.get('current_client'));
+										var client = Context.get('clients.{client}'.format({client: Context.get('current_client')}));
 										var role = Context.get('current_role');
 										if (role === 'admin' && client.is_contract) {
 											_this.model().css('display', 'block');
@@ -3141,7 +3135,7 @@ UI.createApp('hook', [
 							svitches: [
 								{stateName: 'user-management-state', fn: function (_this) {
 									// clear users
-									Context.store['clients'][Context.get('current_client')]['users'] = {};
+									Context.set('clients.{client}.users'.format({client: Context.get('current_client')}), {});
 								}}
 							],
 						},
