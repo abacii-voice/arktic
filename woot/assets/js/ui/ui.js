@@ -729,7 +729,7 @@ var Context = {
 		sub = this.store;
 		for (i=0; i<path.length; i++) {
 			if (i+1 === path.length) {
-				sub[path[i]] = value;	
+				sub[path[i]] = value;
 			} else {
 				if (sub[path[i]] === undefined) {
 					sub[path[i]] = {};
@@ -779,29 +779,25 @@ var Context = {
 			Object.keys(Context.registry).map(function (registryId) {
 				var component = UI.getComponent(registryId);
 				var path = Context.registry[registryId];
-				component.registryResponse(component, Context.get.apply(Context, path()));
+				component.registryResponse(component, Context.get(path()));
 			});
 		});
 	},
 
 	// include new data in context
 	update: function (data) {
-		$.extend(true, Context.store, data);
+		$.extend(true, this.store, data);
 	},
 
 	updateUser: function (id, role, status) {
 		// 1. update in current_user_profile
-		if (Context.get('current_user_profile', 'roles', role) === '') {
-			Context.store.current_user_profile.roles[role] = {status: status};
-		} else {
-			Context.store.current_user_profile.roles[role].status = status;
-		}
+		this.set('current_user_profile.roles.{role}.status'.format({role: role}), status);
 
 		// 2. update in clients
-		if (Context.get('clients', Context.get('current_client'), 'users', id, 'roles', role) === '') {
-			Context.store.clients[Context.get('current_client')].users[id].roles[role] = {status: status};
-		} else {
-			Context.store.clients[Context.get('current_client')].users[id].roles[role].status = status;
-		}
+		this.set('clients.{client}.users.{user}.roles.{role}.status'.format({
+			client: Context.get('current_client'),
+			user: id,
+			role: role,
+		}), status);
 	}
 }
