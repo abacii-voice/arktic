@@ -1,5 +1,6 @@
 // call command
 function command (name, data, callback) {
+	console.log(name, data);
 	var ajax_params = {
 		type: 'post',
 		data: data,
