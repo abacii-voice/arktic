@@ -2431,12 +2431,23 @@ UI.createApp('hook', [
 															UI.createComponent('pi-pup-lp-rw-fl-list-header-row', {
 																template: UI.template('tr'),
 																children: [
+																	UI.createComponent('pi-pup-lp-rw-fl-lhr-index', {
+																		template: UI.template('th'),
+																		appearance: {
+																			html: '#',
+																			style: {
+																				'width': '10%',
+																				'height': '40px',
+																				'border-bottom': '1px solid #ccc',
+																			},
+																		},
+																	}),
 																	UI.createComponent('pi-pup-lp-rw-fl-lhr-file-name', {
 																		template: UI.template('th'),
 																		appearance: {
 																			html: 'Audio file name',
 																			style: {
-																				'width': '50%',
+																				'width': '40%',
 																				'height': '40px',
 																				'border-bottom': '1px solid #ccc',
 																			},
@@ -2447,7 +2458,7 @@ UI.createApp('hook', [
 																		appearance: {
 																			html: 'Caption',
 																			style: {
-																				'width': '50%',
+																				'width': '40%',
 																				'height': '40px',
 																				'border-bottom': '1px solid #ccc',
 																			},
@@ -2472,22 +2483,58 @@ UI.createApp('hook', [
 																		_this.children = {};
 
 																		// add data as lines
+																		var audioLines = Context.get('current_upload.audio.lines');
 																		Context.get('current_upload.relfile.lines').forEach(function (line, index) {
 
 																			var filename = line.filename.length > 20 ? line.filename.substr(0,15).concat('... .wav') : line.filename;
 																			var caption = line.caption.length > 20 ? line.caption.substr(0,20).concat('...') : line.caption;
+																			line.index = index;
+																			
+																			var presentInAudio = true; // true even if there is no relfile
+																			if (audioLines.length !== 0) {
+																				presentInAudio = audioLines.filter(function (audioLine) {
+																					return line.filename === audioLine.filename;
+																				}).length > 0;
+																			}
+																			
+																			// define styling
+																			var style = {};
+																			if (line.is_duplicate) {
+																				style['color'] = '#AA9F39';	
+																			}
+																			
+																			if (!presentInAudio) {
+																				style['color'] = '#AA5039';
+																			}
 
 																			// create row object
 																			var row = UI.createComponent('pi-pup-lp-rw-fl-lb-row-{index}'.format({index: index}), {
 																				root: _this.id,
 																				template: UI.template('tr'),
+																				appearance: {
+																					style: style,
+																					properties: {
+																						'index': index,
+																					},
+																				},
 																				children: [
+																					UI.createComponent('pi-pup-lp-rw-fl-lb-row-{index}-index'.format({index: index}), {
+																						template: UI.template('td'),
+																						appearance: {
+																							html: index,
+																							style: {
+																								'width': '10%',
+																								'height': '40px',
+																								'border-bottom': '1px solid #ccc',
+																							},
+																						},
+																					}),
 																					UI.createComponent('pi-pup-lp-rw-fl-lb-row-{index}-file-name'.format({index: index}), {
 																						template: UI.template('td'),
 																						appearance: {
 																							html: filename,
 																							style: {
-																								'width': '50%',
+																								'width': '40%',
 																								'height': '40px',
 																								'border-bottom': '1px solid #ccc',
 																							},
@@ -2501,7 +2548,7 @@ UI.createApp('hook', [
 																						appearance: {
 																							html: caption,
 																							style: {
-																								'width': '50%',
+																								'width': '40%',
 																								'height': '40px',
 																								'border-bottom': '1px solid #ccc',
 																							},
@@ -2515,6 +2562,23 @@ UI.createApp('hook', [
 
 																			_this.children[row.id] = row;
 																			row.render();
+																		});
+																	},
+																}},
+																{name: 'project-upload-audio-state', args: {
+																	preFn: function (_this) {
+																		// reconcile list of audio files in Context.
+																		var audioFileList = Context.get('current_upload.audio.lines');
+																		var relfileFileList = Context.get('current_upload.relfile.lines');
+																		
+																		// the priority here is updating the 'color' property of each row based on it's participation in each list.
+																		relfileFileList.forEach(function (line) {
+																			// if line.filename is not in audioFileList, change color to red
+																			if (audioFileList.filter(function (audioLine) {
+																				return audioLine.filename === line.filename;
+																			}).length === 0) {
+																				_this.model().children('[index={index}]'.format({index: line.index})).css({'color': '#AA5039'});
+																			}
 																		});
 																	},
 																}},
@@ -2864,10 +2928,12 @@ UI.createApp('hook', [
 
 																			// determine properties
 																			var filename = line.filename.length > 40 ? line.filename.substr(0,15).concat('... .wav') : line.filename;
+																			line.index = index;
+																			
 																			var presentInRelfile = true; // true even if there is no relfile
 																			if (relfileLines.length !== 0) {
-																				presentInRelfile = relfileLines.filter(function (line) {
-																					return line.filename === filename;
+																				presentInRelfile = relfileLines.filter(function (relfileLine) {
+																					return line.filename === relfileLine.filename;
 																				}).length > 0;
 																			}
 																			var isDuplicate = line.is_duplicate;
@@ -2875,11 +2941,11 @@ UI.createApp('hook', [
 																			// define styling
 																			var style = {};
 																			if (isDuplicate) {
-																				style['background-color'] = '#AA9F39';	
+																				style['color'] = '#AA9F39';	
 																			}
 																			
 																			if (!presentInRelfile) {
-																				style['background-color'] = '#AA5039';
+																				style['color'] = '#AA5039';
 																			}
 
 																			// create row object
@@ -2887,7 +2953,10 @@ UI.createApp('hook', [
 																				root: _this.id,
 																				template: UI.template('tr'),
 																				appearance: {
-																					style: style,	
+																					style: style,
+																					properties: {
+																						'index': index,
+																					},
 																				},
 																				children: [
 																					UI.createComponent('pi-pup-rp-aw-afl-lb-row-{index}-index'.format({index: index}), {
@@ -2920,6 +2989,23 @@ UI.createApp('hook', [
 
 																			_this.children[row.id] = row;
 																			row.render();
+																		});
+																	},
+																}},
+																{name: 'project-upload-relfile-state', args: {
+																	preFn: function (_this) {
+																		// reconcile list of audio files in Context.
+																		var audioFileList = Context.get('current_upload.audio.lines');
+																		var relfileFileList = Context.get('current_upload.relfile.lines');
+																		
+																		// the priority here is updating the 'color' property of each row based on it's participation in each list.
+																		audioFileList.forEach(function (line) {
+																			// if line.filename is not in audioFileList, change color to red
+																			if (relfileFileList.filter(function (relfileLine) {
+																				return relfileLine.filename === line.filename;
+																			}).length === 0) {
+																				_this.model().children('[index={index}]'.format({index: line.index})).css({'color': '#AA5039'});
+																			}
 																		});
 																	},
 																}},
