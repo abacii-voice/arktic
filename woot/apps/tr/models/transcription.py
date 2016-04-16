@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.client.models.project import Project
+from apps.client.models.project import Project, Batch
 
 ### Transcription classes
 class Transcription(models.Model):
@@ -13,6 +13,7 @@ class Transcription(models.Model):
 
 	### Connections
 	project = models.ForeignKey(Project, related_name='transcriptions')
+	batch = models.ForeignKey(Batch, related_name='transcriptions')
 
 	### Properties
 	# initialisation if it exists
