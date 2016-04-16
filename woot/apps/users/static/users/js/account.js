@@ -2152,7 +2152,7 @@ UI.createApp('hook', [
 																	if (audioSet[key] > 1) {
 																		duplicates += audioSet[key] - 1;
 																		matchingLines.forEach(function (line, index) {
-																			if (index === matchingLines.length - 1) {
+																			if (index === 0) {
 																				line.is_duplicate = false;
 																			} else {
 																				line.is_duplicate = true;	
@@ -2496,6 +2496,7 @@ UI.createApp('hook', [
 																					return line.filename === audioLine.filename;
 																				}).length > 0;
 																			}
+																			line.found = presentInAudio;
 																			
 																			// define styling
 																			var style = {};
@@ -2651,7 +2652,9 @@ UI.createApp('hook', [
 																	if (!zip.files[key].dir) {
 																		filenames.push(basename(key));
 																	} else {
-																		dirname = key;
+																		if (dirname === undefined) {
+																			dirname = key;	
+																		}
 																	}
 																});
 																
@@ -2679,10 +2682,10 @@ UI.createApp('hook', [
 																	if (audioSet[key] > 1) {
 																		duplicates += audioSet[key] - 1;
 																		matchingLines.forEach(function (line, index) {
-																			if (index === matchingLines.length - 1) {
+																			if (index === 0) {
 																				line.is_duplicate = false;
 																			} else {
-																				line.is_duplicate = true;	
+																				line.is_duplicate = true;
 																			}
 																		})  
 																	} else {
@@ -2936,11 +2939,11 @@ UI.createApp('hook', [
 																					return line.filename === relfileLine.filename;
 																				}).length > 0;
 																			}
-																			var isDuplicate = line.is_duplicate;
+																			line.found = presentInRelfile;
 																			
 																			// define styling
 																			var style = {};
-																			if (isDuplicate) {
+																			if (line.is_duplicate) {
 																				style['color'] = '#AA9F39';	
 																			}
 																			
@@ -3030,6 +3033,72 @@ UI.createApp('hook', [
 									},
 									html: 'Confirm and upload',
 								},
+								bindings: [
+									{name: 'click', fn: function (_this) {
+										// get the list of audio files that are "found".
+										var foundAudioFiles = Context.get('current_upload.audio.lines').filter(function (line) {
+											return line.found;
+										});
+										
+										var audioFileList = Context.get('current_upload.audio.files');
+										var relfileFileList = Context.get('current_upload.relfile.lines')
+										
+										// failure conditions
+										var noFoundAudioFiles = foundAudioFiles.length !== 0; 
+										if (noFoundAudioFiles) {
+											// upload audio files one by one
+											var progress = 0;
+											foundAudioFiles.forEach(function (audioFile) {
+												// 1. get match from actual list of files
+												var filename = Object.keys(audioFileList).filter(function (key) {
+													return basename(key) === audioFile.filename;
+												})[0];
+												
+												var file = audioFileList[filename];
+												var arrayBuffer = file.asArrayBuffer();
+												var dataView = new DataView(arrayBuffer);
+												var blob = new Blob([dataView], {type: 'audio/wav'});
+												
+												// 2. get caption from relfile list
+												var caption = '';
+												if (relfileFileList.length !== 0) {
+													caption = relfileFileList.filter(function (line) {
+													return line.filename === audioFile.filename;
+												})[0].caption;	
+												}
+												
+												// 3. create new formdata object
+												formData = new FormData();
+												formData.encoding = 'multipart/form-data';
+												formData.append('file', blob);
+												formData.append('caption', caption);
+												formData.append('filename', audioFile.filename);
+												formData.append('current_client', Context.get('current_client'));
+												formData.append('current_role', Context.get('current_role'));
+												
+												// 4. ajax
+												// $.ajax({
+												// 	url: '/command/upload_audio/',
+												// 	data: formData,
+												// 	processData: false,
+												// 	contentType: false,
+												// 	type: 'POST',
+												// });
+												
+												command('upload_audio', formData, function (data) {
+													// update progress
+													// progress = Math.floor((audioFile.index + 1) / (foundAudioFiles.length));
+													// Context.set('current_upload.progress', progress);
+													console.log(audioFile.index);
+												});
+												
+											});
+											
+										} else {
+											// make button red 
+										}
+									}}
+								],
 							}),
 						],
 					}),
