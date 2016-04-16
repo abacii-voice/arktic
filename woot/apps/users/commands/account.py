@@ -17,10 +17,22 @@ from permission import check_request
 import json
 
 ### Commands
-def audio_upload(request):
+def upload_audio(request):
 	user, permission, verified = check_request(request)
 	if verified:
-		pass
+		# get file
+		file = request.FILES['file']
+		
+		# get metadata
+		file_name = request.POST['filename']
+		caption = request.POST['caption']
+		
+		# create new transcription
+		
+		# http://stackoverflow.com/questions/33543804/export-blob-data-to-file-in-django
+		# Maybe answers source question and blob question at the same time.
+		
+		return JsonResponse({'done': True})
 
 def create_user(request):
 	user, permission, verified = check_request(request)

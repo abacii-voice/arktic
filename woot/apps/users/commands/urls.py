@@ -30,4 +30,5 @@ urlpatterns = [
 	url(r'^create_moderation/', create_moderation),
 	url(r'^create_report/', create_report),
 	url(r'^create_issue/', create_issue),
+	url(r'^upload_audio/', upload_audio),
 ]
