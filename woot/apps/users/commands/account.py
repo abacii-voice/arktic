@@ -18,6 +18,7 @@ from permission import check_request
 import json
 import os
 from os.path import join, exists
+import datetime
 
 ### Commands
 def upload_audio(request):
@@ -25,33 +26,33 @@ def upload_audio(request):
 	if verified:
 		# get file
 		file = request.FILES['file']
-		
+
 		# get metadata
 		file_name = request.POST['filename']
 		caption = request.POST['caption']
 		client_name = request.POST['current_client']
 		project_name = request.POST['project_name']
-		
+
 		# get project
 		project = Project.objects.get()
-		
+
 		# create tmp directory for uploads
 		tmp = join(settings.SITE_ROOT, 'tmp')
 		if not exists(tmp):
 			os.mkdir(tmp)
-			
-		with open(join(tmp, file_name), 'wb') as destination:		
+
+		with open(join(tmp, file_name), 'wb') as destination:
 			for chunk in file.chunks():
 				destination.write(chunk)
-				
+
 			# create new transcription
 			transcription, transcription_created = Transcription.objects.get_or_create(
-				
+
 			)
-		
+
 		# http://stackoverflow.com/questions/33543804/export-blob-data-to-file-in-django
 		# Maybe answers source question and blob question at the same time.
-		
+
 		return JsonResponse({'done': True})
 
 def create_user(request):
@@ -100,6 +101,32 @@ def create_user(request):
 			new_user.send_verification_email()
 
 			return JsonResponse(new_user.data(permission))
+
+def create_project(request):
+	user, permission, verified = check_request(request)
+	if verified:
+		project_data = {
+			'current_client': request.POST['current_client'],
+			'project_name': request.POST['name'],
+			'batch_deadline': request.POST['batch_deadline'],
+			'new_batch': request.POST['new_batch'],
+			'batch_name': request.POST['batch_name'],
+		}
+
+		# 0. get client
+		client = Client.objects.get(name=project_data['current_client'])
+
+		# 1. get or create project
+		project, project_created = client.contract_projects.get_or_create(name=project_data['project_name'])
+
+		# 2. create batch
+		if project_data['new_batch'] == 'true':
+			batch, batch_created = project.batches.get_or_create(name=project_data['batch_name'])
+			if batch_created:
+				batch.due_date = datetime.datetime.strptime(project_data['batch_deadline'], "%Y-%m-%d").date()
+				batch.save()
+
+		return JsonResponse({'done': True})
 
 def add_role_to_user(request):
 	user, permission, verified = check_request(request)
