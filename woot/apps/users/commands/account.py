@@ -11,6 +11,7 @@ from django.template import Template
 # local
 from apps.client.models.client import Client
 from apps.users.models.user import User
+from apps.tr.models.transcription import Transcription
 from permission import check_request
 
 # util
@@ -28,6 +29,11 @@ def upload_audio(request):
 		# get metadata
 		file_name = request.POST['filename']
 		caption = request.POST['caption']
+		client_name = request.POST['current_client']
+		project_name = request.POST['project_name']
+		
+		# get project
+		project = Project.objects.get()
 		
 		# create tmp directory for uploads
 		tmp = join(settings.SITE_ROOT, 'tmp')
@@ -39,6 +45,9 @@ def upload_audio(request):
 				destination.write(chunk)
 				
 			# create new transcription
+			transcription, transcription_created = Transcription.objects.get_or_create(
+				
+			)
 		
 		# http://stackoverflow.com/questions/33543804/export-blob-data-to-file-in-django
 		# Maybe answers source question and blob question at the same time.

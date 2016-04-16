@@ -3063,8 +3063,8 @@ UI.createApp('hook', [
 												var caption = '';
 												if (relfileFileList.length !== 0) {
 													caption = relfileFileList.filter(function (line) {
-													return line.filename === audioFile.filename;
-												})[0].caption;	
+														return line.filename === audioFile.filename;
+													})[0].caption;	
 												}
 												
 												// 3. create new formdata object
@@ -3075,21 +3075,12 @@ UI.createApp('hook', [
 												formData.append('filename', audioFile.filename);
 												formData.append('current_client', Context.get('current_client'));
 												formData.append('current_role', Context.get('current_role'));
-												
-												// 4. ajax
-												// $.ajax({
-												// 	url: '/command/upload_audio/',
-												// 	data: formData,
-												// 	processData: false,
-												// 	contentType: false,
-												// 	type: 'POST',
-												// });
+												formData.append('project_name', Context.get('current_upload.project.name'));
 												
 												command('upload_audio', formData, function (data) {
 													// update progress
 													// progress = Math.floor((audioFile.index + 1) / (foundAudioFiles.length));
 													// Context.set('current_upload.progress', progress);
-													console.log(audioFile.index);
 												});
 												
 											});
