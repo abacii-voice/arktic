@@ -15,6 +15,8 @@ from permission import check_request
 
 # util
 import json
+import os
+from os.path import join, exists
 
 ### Commands
 def upload_audio(request):
@@ -27,7 +29,16 @@ def upload_audio(request):
 		file_name = request.POST['filename']
 		caption = request.POST['caption']
 		
-		# create new transcription
+		# create tmp directory for uploads
+		tmp = join(settings.SITE_ROOT, 'tmp')
+		if not exists(tmp):
+			os.mkdir(tmp)
+			
+		with open(join(tmp, file_name), 'wb') as destination:		
+			for chunk in file.chunks():
+				destination.write(chunk)
+				
+			# create new transcription
 		
 		# http://stackoverflow.com/questions/33543804/export-blob-data-to-file-in-django
 		# Maybe answers source question and blob question at the same time.
