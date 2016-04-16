@@ -39,7 +39,7 @@ class Batch(models.Model):
 	priority_index = models.PositiveIntegerField(default=0)
 
 	# Statistics
-	due_date = models.DateTimeField(auto_now_add=False)
+	due_date = models.DateTimeField(auto_now_add=True)
 	completion_percentage = models.FloatField(default=0.0)
 	redundancy_percentage = models.FloatField(default=0.0)
 
