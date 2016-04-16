@@ -21,8 +21,8 @@ Context.setFn(getdata('context', {}, function (data) {
 		var projectPrototype = {
 			name: 'TestProject',
 			deadline: '1970/1/1',
-			new_part: true,
-			part_name: 'NewTestPart',
+			new_batch: true,
+			batch_name: 'NewTestBatch',
 		}
 
 		Context.set('current_upload.project', projectPrototype);
@@ -1674,7 +1674,7 @@ UI.createApp('hook', [
 							],
 						},
 					}),
-					UI.createComponent('pi-npp-new-part-selector', {
+					UI.createComponent('pi-npp-new-batch-selector', {
 						template: UI.template('div', 'ie show relative'),
 						appearance: {
 							style: {
@@ -1683,7 +1683,7 @@ UI.createApp('hook', [
 							},
 						},
 						children: [
-							UI.createComponent('pi-npp-nps-new-part-button', {
+							UI.createComponent('pi-npp-nps-new-batch-button', {
 								template: UI.templates.button,
 								appearance: {
 									style: {
@@ -1695,7 +1695,7 @@ UI.createApp('hook', [
 										'padding-top': '8px',
 									},
 									classes: ['border', 'border-radius', 'relative'],
-									html: 'New part',
+									html: 'New batch',
 								},
 								state: {
 									defaultState: {
@@ -1715,13 +1715,13 @@ UI.createApp('hook', [
 										_this.model().attr('active', 'true');
 
 										// make other button normal
-										var otherButton = UI.getComponent('pi-npp-nps-existing-part-button');
+										var otherButton = UI.getComponent('pi-npp-nps-existing-batch-button');
 										otherButton.model().css({'border-color': '#ccc', 'color': '#ccc'});
 										otherButton.model().attr('active', 'false');
 									}},
 								],
 							}),
-							UI.createComponent('pi-npp-nps-existing-part-button', {
+							UI.createComponent('pi-npp-nps-existing-batch-button', {
 								template: UI.templates.button,
 								appearance: {
 									style: {
@@ -1734,7 +1734,7 @@ UI.createApp('hook', [
 										'padding-top': '8px',
 									},
 									classes: ['border', 'border-radius', 'relative'],
-									html: 'Existing part',
+									html: 'Existing batch',
 								},
 								state: {
 									defaultState: {
@@ -1754,7 +1754,7 @@ UI.createApp('hook', [
 										_this.model().attr('active', 'true');
 
 										// make other button normal
-										var otherButton = UI.getComponent('pi-npp-nps-new-part-button');
+										var otherButton = UI.getComponent('pi-npp-nps-new-batch-button');
 										otherButton.model().css({'border-color': '#ccc', 'color': '#ccc'});
 										otherButton.model().attr('active', 'false');
 									}},
@@ -1762,9 +1762,9 @@ UI.createApp('hook', [
 							}),
 						],
 					}),
-					Components.searchFilterField('pi-npp-project-part-search', {
+					Components.searchFilterField('pi-npp-project-batch-search', {
 						show: 'show',
-						placeholder: 'Part name',
+						placeholder: 'Batch name',
 						state: {
 							states: [
 								{name: 'project-new-project-state', args: {
@@ -1814,14 +1814,14 @@ UI.createApp('hook', [
 									noProblems = false;
 								}
 
-								var newPart = UI.getComponent('pi-npp-nps-new-part-button').model().attr('active') === 'true';
+								var newBatch = UI.getComponent('pi-npp-nps-new-batch-button').model().attr('active') === 'true';
 
-								var partNameField = UI.getComponent('pi-npp-project-part-search');
-								var partName = partNameField.model().val();
-								if (partName !== '') {
-									partNameField.model().removeClass('error');
+								var batchNameField = UI.getComponent('pi-npp-project-batch-search');
+								var batchName = batchNameField.model().val();
+								if (batchName !== '') {
+									batchNameField.model().removeClass('error');
 								} else {
-									partNameField.model().addClass('error');
+									batchNameField.model().addClass('error');
 									noProblems = false;
 								}
 
@@ -1829,9 +1829,22 @@ UI.createApp('hook', [
 									var projectPrototype = {
 										name: projectName,
 										deadline: projectDeadline,
-										new_part: newPart,
-										part_name: partName,
+										new_batch: newBatch,
+										batch_name: batchName,
 									}
+									
+									var projectData = {
+										name: projectName,
+										deadline: projectDeadline,
+										new_batch: newBatch,
+										batch_name: batchName,
+										current_client: Context.get('current_client'),
+										current_role: Context.get('current_role'),
+									}
+									
+									command('create_project', projectData, function (data) {
+										
+									});
 									
 									Context.set('current_upload.project', projectPrototype);
 									_this.triggerState();
@@ -1923,7 +1936,7 @@ UI.createApp('hook', [
 											],
 										},
 									}),
-									UI.createComponent('pi-pup-lp-s-deadline-part-caption', {
+									UI.createComponent('pi-pup-lp-s-deadline-batch-caption', {
 										template: UI.template('div', 'ie show relative border border-radius'),
 										appearance: {
 											style: {
@@ -1973,7 +1986,7 @@ UI.createApp('hook', [
 													}),
 												],
 											}),
-											UI.createComponent('pi-pup-lp-s-dpc-part', {
+											UI.createComponent('pi-pup-lp-s-dpc-batch', {
 												template: UI.template('div', 'ie show relative border-right'),
 												appearance: {
 													style: {
@@ -1986,7 +1999,7 @@ UI.createApp('hook', [
 													UI.createComponent('pi-pup-lp-s-dpc-p-title', {
 														template: UI.template('h3', 'ie show centred-horizontally'),
 														appearance: {
-															html: 'Part',
+															html: 'Batch',
 															style: {
 																'margin-top': '5px',
 															},
@@ -2004,8 +2017,8 @@ UI.createApp('hook', [
 															states: [
 																{name: 'project-upload-state', args: {
 																	preFn: function (_this) {
-																		var partName = Context.get('current_upload.project.part_name');
-																		_this.model().html(partName);
+																		var batchName = Context.get('current_upload.project.batch_name');
+																		_this.model().html(batchName);
 																	},
 																}},
 															],
@@ -2065,17 +2078,17 @@ UI.createApp('hook', [
 												UI.getComponent('pi-npp-project-search').model().val(Context.get('current_upload.project.name'));
 												UI.getComponent('pi-npp-project-deadline').model().val(Context.get('current_upload.project.deadline'));
 
-												var newPart = Context.get('current_upload.project.new_part');
-												var newActive = newPart ? 'true' : 'false';
-												var newColor = newPart ? '#fff' : '#ccc';
-												var existingActive = newPart ? 'false' : 'true';
-												var existingColor = newPart ? '#ccc' : '#fff';
-												UI.getComponent('pi-npp-nps-new-part-button').model().css({'border-color': newColor, 'color': newColor});
-												UI.getComponent('pi-npp-nps-new-part-button').model().attr('active', newActive);
-												UI.getComponent('pi-npp-nps-existing-part-button').model().css({'border-color': existingColor, 'color': existingColor});
-												UI.getComponent('pi-npp-nps-existing-part-button').model().attr('active', existingActive);
+												var newBatch = Context.get('current_upload.project.new_batch');
+												var newActive = newBatch ? 'true' : 'false';
+												var newColor = newBatch ? '#fff' : '#ccc';
+												var existingActive = newBatch ? 'false' : 'true';
+												var existingColor = newBatch ? '#ccc' : '#fff';
+												UI.getComponent('pi-npp-nps-new-batch-button').model().css({'border-color': newColor, 'color': newColor});
+												UI.getComponent('pi-npp-nps-new-batch-button').model().attr('active', newActive);
+												UI.getComponent('pi-npp-nps-existing-batch-button').model().css({'border-color': existingColor, 'color': existingColor});
+												UI.getComponent('pi-npp-nps-existing-batch-button').model().attr('active', existingActive);
 
-												UI.getComponent('pi-npp-project-part-search').model().val(Context.get('current_upload.project.part_name'));
+												UI.getComponent('pi-npp-project-batch-search').model().val(Context.get('current_upload.project.batch_name'));
 											}},
 										],
 									}),
@@ -2572,7 +2585,7 @@ UI.createApp('hook', [
 																		var audioFileList = Context.get('current_upload.audio.lines');
 																		var relfileFileList = Context.get('current_upload.relfile.lines');
 																		
-																		// the priority here is updating the 'color' property of each row based on it's participation in each list.
+																		// the priority here is updating the 'color' property of each row based on it's batchicipation in each list.
 																		relfileFileList.forEach(function (line) {
 																			// if line.filename is not in audioFileList, change color to red
 																			if (audioFileList.filter(function (audioLine) {
@@ -3001,7 +3014,7 @@ UI.createApp('hook', [
 																		var audioFileList = Context.get('current_upload.audio.lines');
 																		var relfileFileList = Context.get('current_upload.relfile.lines');
 																		
-																		// the priority here is updating the 'color' property of each row based on it's participation in each list.
+																		// the priority here is updating the 'color' property of each row based on it's batchicipation in each list.
 																		audioFileList.forEach(function (line) {
 																			// if line.filename is not in audioFileList, change color to red
 																			if (relfileFileList.filter(function (relfileLine) {
@@ -3069,7 +3082,7 @@ UI.createApp('hook', [
 												
 												// 3. create new formdata object
 												formData = new FormData();
-												formData.encoding = 'multipart/form-data';
+												formData.encoding = 'multibatch/form-data';
 												formData.append('file', blob);
 												formData.append('caption', caption);
 												formData.append('filename', audioFile.filename);
