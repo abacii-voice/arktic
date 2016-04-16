@@ -7,11 +7,14 @@ from django.core.cache import cache
 from django.views.generic import View
 from django.conf import settings
 from django.template import Template
+from django.core.files import File
 
 # local
-from apps.client.models.client import Client
+from apps.client.models.client import Client, production_client
 from apps.users.models.user import User
 from apps.tr.models.transcription import Transcription
+from apps.tr.models.utterance import Utterance
+from apps.client.models.project import Project
 from permission import check_request
 
 # util
@@ -32,23 +35,42 @@ def upload_audio(request):
 		caption = request.POST['caption']
 		client_name = request.POST['current_client']
 		project_name = request.POST['project_name']
+		batch_name = request.POST['batch_name']
 
 		# get project
-		project = Project.objects.get()
+		client = Client.objects.get(name=client_name)
+		project = client.contract_projects.get(name=project_name) # only upload from a contract client anyway.
+		batch = project.batches.get(name=batch_name)
+
+		# create new transcription
+		transcription, transcription_created = Transcription.objects.get_or_create(
+			project=project,
+			batch=batch,
+			original_caption=caption,
+		)
 
 		# create tmp directory for uploads
 		tmp = join(settings.SITE_ROOT, 'tmp')
 		if not exists(tmp):
 			os.mkdir(tmp)
 
-		with open(join(tmp, file_name), 'wb') as destination:
+		if exists(join(tmp, file_name)):
+			os.remove(join(tmp, file_name))
+
+		with open(join(tmp, file_name), 'wb+') as destination:
 			for chunk in file.chunks():
 				destination.write(chunk)
 
-			# create new transcription
-			transcription, transcription_created = Transcription.objects.get_or_create(
-
+			# create new utterance using open file
+			utterance, utterance_created = Utterance.objects.get_or_create(
+				project=project,
+				batch=batch,
+				transcription=transcription,
+				file=File(destination),
 			)
+
+			transcription.utterance = utterance
+			transcription.save()
 
 		# http://stackoverflow.com/questions/33543804/export-blob-data-to-file-in-django
 		# Maybe answers source question and blob question at the same time.
@@ -117,13 +139,13 @@ def create_project(request):
 		client = Client.objects.get(name=project_data['current_client'])
 
 		# 1. get or create project
-		project, project_created = client.contract_projects.get_or_create(name=project_data['project_name'])
+		project, project_created = client.contract_projects.get_or_create(name=project_data['project_name'], production_client=production_client())
 
 		# 2. create batch
 		if project_data['new_batch'] == 'true':
 			batch, batch_created = project.batches.get_or_create(name=project_data['batch_name'])
 			if batch_created:
-				batch.due_date = datetime.datetime.strptime(project_data['batch_deadline'], "%Y-%m-%d").date()
+				batch.due_date = datetime.datetime.strptime(project_data['batch_deadline'], '%Y/%m/%d').date()
 				batch.save()
 
 		return JsonResponse({'done': True})

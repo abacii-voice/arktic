@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.client.models.project import Project
+from apps.client.models.project import Project, Batch
 from apps.tr.models.transcription import Transcription
 
 # util
@@ -14,7 +14,7 @@ import uuid
 def rename_audio_file(instance, file_name):
 	base = basename(file_name)
 	root, ext = base.split('.')
-	new_file_name = '{}_p-{}_f-{}-uuid-{}.{}'.format(instance.project.client.name, instance.project.name, root, instance.id, ext)
+	new_file_name = '{}_p-{}_f-{}-uuid-{}.{}'.format(instance.project.contract_client.name, instance.project.name, root, instance.id, ext)
 	return join('audio', new_file_name)
 
 class Utterance(models.Model):
@@ -25,6 +25,7 @@ class Utterance(models.Model):
 
 	### Connections
 	project = models.ForeignKey(Project, related_name='utterances')
+	batch = models.ForeignKey(Batch, related_name='utterances')
 	transcription = models.OneToOneField(Transcription, related_name='utterance')
 
 	### Properties

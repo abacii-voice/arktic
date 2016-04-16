@@ -3087,6 +3087,7 @@ UI.createApp('hook', [
 												formData.append('current_client', Context.get('current_client'));
 												formData.append('current_role', Context.get('current_role'));
 												formData.append('project_name', Context.get('current_upload.project.name'));
+												formData.append('batch_name', Context.get('current_upload.project.batch_name'));
 
 												command('upload_audio', formData, function (data) {
 													// update progress
