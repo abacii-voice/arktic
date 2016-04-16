@@ -123,3 +123,7 @@ class Client(models.Model):
 		moderator_with_least_subordinates = min(moderators, key=lambda m: m.subordinates.count())
 
 		return moderator_with_least_subordinates
+
+# hack methods until system exists
+def production_client():
+	return Client.objects.get(name='TestProductionClient')
