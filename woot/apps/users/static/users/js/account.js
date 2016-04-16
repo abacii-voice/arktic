@@ -1804,13 +1804,13 @@ UI.createApp('hook', [
 									noProblems = false;
 								}
 
-								var projectDeadlineField = UI.getComponent('pi-npp-project-deadline');
-								projectDeadline = projectDeadlineField.model().val();
-								if (projectDeadline !== '') {
+								var batchDeadlineField = UI.getComponent('pi-npp-project-deadline');
+								batchDeadline = batchDeadlineField.model().val();
+								if (batchDeadline !== '') {
 									// TODO: validate with moment.
-									projectDeadlineField.model().removeClass('error');
+									batchDeadlineField.model().removeClass('error');
 								} else {
-									projectDeadlineField.model().addClass('error');
+									batchDeadlineField.model().addClass('error');
 									noProblems = false;
 								}
 
@@ -1828,24 +1828,22 @@ UI.createApp('hook', [
 								if (noProblems) {
 									var projectPrototype = {
 										name: projectName,
-										deadline: projectDeadline,
+										batch_deadline: batchDeadline,
 										new_batch: newBatch,
 										batch_name: batchName,
 									}
-									
+
 									var projectData = {
 										name: projectName,
-										deadline: projectDeadline,
+										batch_deadline: batchDeadline,
 										new_batch: newBatch,
 										batch_name: batchName,
 										current_client: Context.get('current_client'),
 										current_role: Context.get('current_role'),
 									}
-									
-									command('create_project', projectData, function (data) {
-										
-									});
-									
+
+									command('create_project', projectData, function (data) {});
+
 									Context.set('current_upload.project', projectPrototype);
 									_this.triggerState();
 								}
@@ -2168,7 +2166,7 @@ UI.createApp('hook', [
 																			if (index === 0) {
 																				line.is_duplicate = false;
 																			} else {
-																				line.is_duplicate = true;	
+																				line.is_duplicate = true;
 																			}
 																		})
 																	} else {
@@ -2177,7 +2175,7 @@ UI.createApp('hook', [
 																		})
 																	}
 																});
-																
+
 																Context.set('current_upload.relfile', {
 																	lines: relfileLineObjects,
 																	total: total,
@@ -2502,7 +2500,7 @@ UI.createApp('hook', [
 																			var filename = line.filename.length > 20 ? line.filename.substr(0,15).concat('... .wav') : line.filename;
 																			var caption = line.caption.length > 20 ? line.caption.substr(0,20).concat('...') : line.caption;
 																			line.index = index;
-																			
+
 																			var presentInAudio = true; // true even if there is no relfile
 																			if (audioLines.length !== 0) {
 																				presentInAudio = audioLines.filter(function (audioLine) {
@@ -2510,13 +2508,13 @@ UI.createApp('hook', [
 																				}).length > 0;
 																			}
 																			line.found = presentInAudio;
-																			
+
 																			// define styling
 																			var style = {};
 																			if (line.is_duplicate) {
-																				style['color'] = '#AA9F39';	
+																				style['color'] = '#AA9F39';
 																			}
-																			
+
 																			if (!presentInAudio) {
 																				style['color'] = '#AA5039';
 																			}
@@ -2584,7 +2582,7 @@ UI.createApp('hook', [
 																		// reconcile list of audio files in Context.
 																		var audioFileList = Context.get('current_upload.audio.lines');
 																		var relfileFileList = Context.get('current_upload.relfile.lines');
-																		
+
 																		// the priority here is updating the 'color' property of each row based on it's batchicipation in each list.
 																		relfileFileList.forEach(function (line) {
 																			// if line.filename is not in audioFileList, change color to red
@@ -2666,11 +2664,11 @@ UI.createApp('hook', [
 																		filenames.push(basename(key));
 																	} else {
 																		if (dirname === undefined) {
-																			dirname = key;	
+																			dirname = key;
 																		}
 																	}
 																});
-																
+
 																// find number of unique audio file names
 																var audioSet = {};
 																filenames.forEach(function (filename) {
@@ -2680,7 +2678,7 @@ UI.createApp('hook', [
 																		audioSet[filename] = 1;
 																	}
 																});
-																
+
 																// count numbers and assign duplicates
 																var audioObjects = filenames.map(function (filename) {
 																	return {filename: filename};
@@ -2700,7 +2698,7 @@ UI.createApp('hook', [
 																			} else {
 																				line.is_duplicate = true;
 																			}
-																		})  
+																		})
 																	} else {
 																		matchingLines.forEach(function (line) {
 																			line.is_duplicate = false;
@@ -2715,7 +2713,7 @@ UI.createApp('hook', [
 																	'unique': unique,
 																	'duplicates': duplicates,
 																	'dir': dirname,
-																}); 
+																});
 																_this.triggerState();
 															}
 
@@ -2874,7 +2872,7 @@ UI.createApp('hook', [
 													{name: 'click', fn: function (_this) {
 														// remove context variables
 														Context.set('current_upload.audio', {});
-														
+
 														// omg hack because I do not control the dropzone package.
 														_this.parent().parent().parent().model().find('.dz-error-message').css({'display': 'none'});
 														_this.triggerState();
@@ -2945,7 +2943,7 @@ UI.createApp('hook', [
 																			// determine properties
 																			var filename = line.filename.length > 40 ? line.filename.substr(0,15).concat('... .wav') : line.filename;
 																			line.index = index;
-																			
+
 																			var presentInRelfile = true; // true even if there is no relfile
 																			if (relfileLines.length !== 0) {
 																				presentInRelfile = relfileLines.filter(function (relfileLine) {
@@ -2953,13 +2951,13 @@ UI.createApp('hook', [
 																				}).length > 0;
 																			}
 																			line.found = presentInRelfile;
-																			
+
 																			// define styling
 																			var style = {};
 																			if (line.is_duplicate) {
-																				style['color'] = '#AA9F39';	
+																				style['color'] = '#AA9F39';
 																			}
-																			
+
 																			if (!presentInRelfile) {
 																				style['color'] = '#AA5039';
 																			}
@@ -3013,7 +3011,7 @@ UI.createApp('hook', [
 																		// reconcile list of audio files in Context.
 																		var audioFileList = Context.get('current_upload.audio.lines');
 																		var relfileFileList = Context.get('current_upload.relfile.lines');
-																		
+
 																		// the priority here is updating the 'color' property of each row based on it's batchicipation in each list.
 																		audioFileList.forEach(function (line) {
 																			// if line.filename is not in audioFileList, change color to red
@@ -3052,12 +3050,12 @@ UI.createApp('hook', [
 										var foundAudioFiles = Context.get('current_upload.audio.lines').filter(function (line) {
 											return line.found;
 										});
-										
+
 										var audioFileList = Context.get('current_upload.audio.files');
 										var relfileFileList = Context.get('current_upload.relfile.lines')
-										
+
 										// failure conditions
-										var noFoundAudioFiles = foundAudioFiles.length !== 0; 
+										var noFoundAudioFiles = foundAudioFiles.length !== 0;
 										if (noFoundAudioFiles) {
 											// upload audio files one by one
 											var progress = 0;
@@ -3066,20 +3064,20 @@ UI.createApp('hook', [
 												var filename = Object.keys(audioFileList).filter(function (key) {
 													return basename(key) === audioFile.filename;
 												})[0];
-												
+
 												var file = audioFileList[filename];
 												var arrayBuffer = file.asArrayBuffer();
 												var dataView = new DataView(arrayBuffer);
 												var blob = new Blob([dataView], {type: 'audio/wav'});
-												
+
 												// 2. get caption from relfile list
 												var caption = '';
 												if (relfileFileList.length !== 0) {
 													caption = relfileFileList.filter(function (line) {
 														return line.filename === audioFile.filename;
-													})[0].caption;	
+													})[0].caption;
 												}
-												
+
 												// 3. create new formdata object
 												formData = new FormData();
 												formData.encoding = 'multibatch/form-data';
@@ -3089,17 +3087,17 @@ UI.createApp('hook', [
 												formData.append('current_client', Context.get('current_client'));
 												formData.append('current_role', Context.get('current_role'));
 												formData.append('project_name', Context.get('current_upload.project.name'));
-												
+
 												command('upload_audio', formData, function (data) {
 													// update progress
 													// progress = Math.floor((audioFile.index + 1) / (foundAudioFiles.length));
 													// Context.set('current_upload.progress', progress);
 												});
-												
+
 											});
-											
+
 										} else {
-											// make button red 
+											// make button red
 										}
 									}}
 								],
