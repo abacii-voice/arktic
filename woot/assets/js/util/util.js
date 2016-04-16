@@ -1,11 +1,11 @@
 // call command
-function command (name, data, callback) {
-	console.log(name, data);
+function command (name, data, callback, args) {
+	args = args !== undefined ? args : {};
 	var ajax_params = {
 		type: 'post',
 		data: data,
-		processData: false,
-		contentType: false,
+		processData: args.processData !== undefined ? args.processData : true,
+		contentType: args.contentType !== undefined ? args.contentType : 'application/x-www-form-urlencoded',
 		url:'/command/{name}/'.format({name: name}),
 		success: function (data, textStatus, XMLHttpRequest) {
 			callback(data);

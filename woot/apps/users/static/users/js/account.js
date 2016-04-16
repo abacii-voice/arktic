@@ -318,7 +318,7 @@ UI.createApp('hook', [
 											Context.update(data);
 										})).done(function () {
 											// data is a list of user objects with relevant details
-											var users = Context.get('clients', Context.get('current_client'), 'users');
+											var users = Context.get('clients.{client}.users'.format({client: Context.get('current_client')}));
 											Object.keys(users).map(function (userId) {
 												var userPrototype = users[userId];
 												var userButton = UI.createComponent('user-button-{id}'.format({id: userId}), {
@@ -436,8 +436,8 @@ UI.createApp('hook', [
 											states: [
 												{name: 'user-management-user-state', args: {
 													preFn: function (_this) {
-														var userFirstName = Context.get('current_user_profile', 'first_name');
-														var userLastName = Context.get('current_user_profile', 'last_name');
+														var userFirstName = Context.get('current_user_profile.first_name');
+														var userLastName = Context.get('current_user_profile.last_name');
 														_this.model().html('{first_name} {last_name}'.format({first_name: userFirstName, last_name: userLastName}));
 													}
 												}}
@@ -455,7 +455,7 @@ UI.createApp('hook', [
 											states: [
 												{name: 'user-management-user-state', args: {
 													preFn: function (_this) {
-														var userEmail = Context.get('current_user_profile', 'email');
+														var userEmail = Context.get('current_user_profile.email');
 														_this.model().html(userEmail);
 													}
 												}}
@@ -494,7 +494,7 @@ UI.createApp('hook', [
 											states: [
 												{name: 'user-management-user-state', args: {
 													preFn: function (_this) {
-														if (!(Context.get('current_role') === 'admin' && Context.get('clients', Context.get('current_client')).is_production)) {
+														if (!(Context.get('current_role') === 'admin' && Context.get('clients.{client}.is_production'.format({client: Context.get('current_client')})))) {
 															_this.model().css({'display': 'none'});
 														} else {
 															_this.model().css({'display': 'block'});
@@ -663,7 +663,7 @@ UI.createApp('hook', [
 													states: [
 														{name: 'user-management-user-state', args: {
 															preFn: function (_this) {
-																var isProduction = Context.get('clients', Context.get('current_client')).is_production;
+																var isProduction = Context.get('clients.{client}.is_production'.format({client: Context.get('current_client')}));
 																if (isProduction) {
 																	_this.model().css({'display': 'block'});
 																} else {
@@ -1024,7 +1024,7 @@ UI.createApp('hook', [
 							states: [
 								{name: 'user-management-new-user-state', args: {
 									preFn: function (_this) {
-										if (Context.get('clients', Context.get('current_client'), 'is_contract')) {
+										if (Context.get('clients.{client}.is_contract'.format({client: Context.get('current_client')}))) {
 											_this.model().css({'display': 'none'});
 										} else {
 											_this.model().css({'display': 'block'});
@@ -3092,6 +3092,9 @@ UI.createApp('hook', [
 													// update progress
 													// progress = Math.floor((audioFile.index + 1) / (foundAudioFiles.length));
 													// Context.set('current_upload.progress', progress);
+												}, {
+													processData: false,
+													contentType: false,
 												});
 
 											});
@@ -3142,7 +3145,7 @@ UI.createApp('hook', [
 				loadingIcon: true,
 				registry: {
 					path: function () {
-						return ['clients'];
+						return 'clients';
 					},
 					fn: function (_this, data) {
 						// create buttons from Context and remove loading icon
