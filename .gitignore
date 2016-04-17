@@ -63,3 +63,4 @@ target/
 node_modules/
 woot/static/
 tmp/
+*.wav
