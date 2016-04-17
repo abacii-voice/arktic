@@ -53,35 +53,69 @@ def upload_audio(request):
 			transcription.caption = caption
 			transcription.save()
 
-		# create tmp directory for uploads
-		tmp = join(settings.SITE_ROOT, 'tmp')
-		if not exists(tmp):
-			os.mkdir(tmp)
+			# create tmp directory for uploads
+			tmp = join(settings.SITE_ROOT, 'tmp')
+			if not exists(tmp):
+				os.mkdir(tmp)
 
-		if exists(join(tmp, file_name)):
-			os.remove(join(tmp, file_name))
+			if exists(join(tmp, file_name)):
+				os.remove(join(tmp, file_name))
 
-		with open(join(tmp, file_name), 'wb+') as destination:
-			for chunk in file.chunks():
-				destination.write(chunk)
+			with open(join(tmp, file_name), 'wb+') as destination:
+				for chunk in file.chunks():
+					destination.write(chunk)
 
-		# let file close, then reopen
-		with open(join(tmp, file_name), 'rb') as destination:
-			# create new utterance using open file
-			utterance, utterance_created = Utterance.objects.get_or_create(
-				project=project,
-				batch=batch,
-				transcription=transcription,
-				file=File(destination),
-			)
+			# let file close, then reopen
+			with open(join(tmp, file_name), 'rb') as destination:
+				# create new utterance using open file
+				utterance, utterance_created = Utterance.objects.get_or_create(
+					project=project,
+					batch=batch,
+					transcription=transcription,
+					file=File(destination),
+				)
 
-			transcription.utterance = utterance
-			transcription.save()
+				transcription.utterance = utterance
+				transcription.save()
 
-		# http://stackoverflow.com/questions/33543804/export-blob-data-to-file-in-django
-		# Maybe answers source question and blob question at the same time.
+			# http://stackoverflow.com/questions/33543804/export-blob-data-to-file-in-django
+			# Maybe answers source question and blob question at the same time.
 
-		return JsonResponse({'done': True})
+			return JsonResponse({'done': True})
+
+		else:
+			return JsonResponse({'done': False})
+
+def create_upload(request):
+	user, permission, verified = check_request(request)
+	if verified:
+		upload_data = {
+			'current_client': request.POST['current_client'],
+			'project_name': request.POST['current_client'],
+			'batch_name': request.POST['current_client'],
+			'archive_name': request.POST['archive_name'],
+			'relfile_name': request.POST['relfile_name'],
+			'shards': request.POST.getlist('shards'),
+		}
+
+		# create upload objects
+		client = Client.objects.get(name=upload_data['current_client'])
+		project = client.contract_projects.get(name=upload_data['project_name'])
+		batch = project.batches.get(name=upload_data['batch_name'])
+
+		upload, upload_created = batch.uploads.get_or_create(project=project, archive_name=upload_data['archive_name'], relfile_name=upload_data['relfile_name'])
+
+		if upload_created:
+			upload.total_shards = len(upload_data['shards'])
+			upload.save()
+
+			for shard_filename in upload_data['shards']:
+				shard, shard_created = upload.shards.get_or_create(project=project, batch=batch, filename=shard_filename)
+
+			return JsonResponse({'done': True})
+
+		else:
+			return JsonResponse({'done': False})
 
 def create_user(request):
 	user, permission, verified = check_request(request)
