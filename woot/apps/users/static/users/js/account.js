@@ -2126,6 +2126,7 @@ UI.createApp('hook', [
 														paramName: 'relfile-input',
 														createImageThumbnails: false,
 														accept: function (file, done) {
+															console.log(file)
 															// try reading file
 															var reader = new FileReader();
 															reader.onload = function(e) {
@@ -2182,6 +2183,21 @@ UI.createApp('hook', [
 																	unique: unique,
 																	duplicates: duplicates,
 																});
+
+																// create upload object
+																var uploadData = {
+																	'current_client': Context.get('current_client'),
+																	'current_role': Context.get('current_role'),
+																	'project_name': Context.get('current_upload.project.name'),
+																	'batch_name': Context.get('current_role.project.batch_name')
+																	'archive_name': '',
+																	'relfile_name': file.name,
+																	'shards': relfileLineObjects.map(function (line) {
+																		return line.filename;
+																	}),
+																};
+
+																command('create_upload', uploadData, function (data) {});
 
 																// 3. trigger
 																_this.triggerState();
@@ -2714,6 +2730,22 @@ UI.createApp('hook', [
 																	'duplicates': duplicates,
 																	'dir': dirname,
 																});
+
+																// create upload object
+																var uploadData = {
+																	'current_client': Context.get('current_client'),
+																	'current_role': Context.get('current_role'),
+																	'project_name': Context.get('current_upload.project.name'),
+																	'batch_name': Context.get('current_role.project.batch_name')
+																	'archive_name': file.name,
+																	'relfile_name': '',
+																	'shards': audioObjects.map(function (line) {
+																		return line.filename,
+																	}),
+																};
+
+																command('create_upload', uploadData, function (data) {});
+
 																_this.triggerState();
 															}
 
@@ -3055,8 +3087,8 @@ UI.createApp('hook', [
 										var relfileFileList = Context.get('current_upload.relfile.lines')
 
 										// failure conditions
-										var noFoundAudioFiles = foundAudioFiles.length !== 0;
-										if (noFoundAudioFiles) {
+										var noFoundAudioFiles = foundAudioFiles.length === 0;
+										if (!noFoundAudioFiles) {
 											// upload audio files one by one
 											var progress = 0;
 											foundAudioFiles.forEach(function (audioFile) {
