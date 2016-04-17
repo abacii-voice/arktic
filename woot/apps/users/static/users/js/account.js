@@ -2192,7 +2192,7 @@ UI.createApp('hook', [
 																	'batch_name': Context.get('current_role.project.batch_name')
 																	'archive_name': '',
 																	'relfile_name': file.name,
-																	'shards': relfileLineObjects.map(function (line) {
+																	'fragments': relfileLineObjects.map(function (line) {
 																		return line.filename;
 																	}),
 																};
@@ -2739,7 +2739,7 @@ UI.createApp('hook', [
 																	'batch_name': Context.get('current_role.project.batch_name')
 																	'archive_name': file.name,
 																	'relfile_name': '',
-																	'shards': audioObjects.map(function (line) {
+																	'fragments': audioObjects.map(function (line) {
 																		return line.filename,
 																	}),
 																};

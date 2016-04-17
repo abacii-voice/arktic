@@ -95,7 +95,7 @@ def create_upload(request):
 			'batch_name': request.POST['current_client'],
 			'archive_name': request.POST['archive_name'],
 			'relfile_name': request.POST['relfile_name'],
-			'shards': request.POST.getlist('shards'),
+			'fragments': request.POST.getlist('fragments'),
 		}
 
 		# create upload objects
@@ -106,11 +106,11 @@ def create_upload(request):
 		upload, upload_created = batch.uploads.get_or_create(project=project, archive_name=upload_data['archive_name'], relfile_name=upload_data['relfile_name'])
 
 		if upload_created:
-			upload.total_shards = len(upload_data['shards'])
+			upload.total_fragments = len(upload_data['fragments'])
 			upload.save()
 
-			for shard_filename in upload_data['shards']:
-				shard, shard_created = upload.shards.get_or_create(project=project, batch=batch, filename=shard_filename)
+			for fragment_filename in upload_data['fragments']:
+				fragment, fragment_created = upload.fragments.get_or_create(project=project, batch=batch, filename=fragment_filename)
 
 			return JsonResponse({'done': True})
 
