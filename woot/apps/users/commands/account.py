@@ -46,8 +46,12 @@ def upload_audio(request):
 		transcription, transcription_created = Transcription.objects.get_or_create(
 			project=project,
 			batch=batch,
-			original_caption=caption,
+			filename=file_name,
 		)
+
+		if transcription_created:
+			transcription.caption = caption
+			transcription.save()
 
 		# create tmp directory for uploads
 		tmp = join(settings.SITE_ROOT, 'tmp')
@@ -61,6 +65,8 @@ def upload_audio(request):
 			for chunk in file.chunks():
 				destination.write(chunk)
 
+		# let file close, then reopen
+		with open(join(tmp, file_name), 'rb') as destination:
 			# create new utterance using open file
 			utterance, utterance_created = Utterance.objects.get_or_create(
 				project=project,

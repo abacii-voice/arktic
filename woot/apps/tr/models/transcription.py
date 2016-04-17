@@ -20,6 +20,9 @@ class Transcription(models.Model):
 	original_caption = models.CharField(max_length=255, default='')
 	date_created = models.DateTimeField(auto_now_add=True)
 
+	# unique identifier
+	filename = models.CharField(max_length=255)
+
 	# requests and flags
 	requests = models.PositiveIntegerField(default=0)
 	request_allowance = models.PositiveIntegerField(default=1)
