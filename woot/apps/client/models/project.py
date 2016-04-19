@@ -25,7 +25,7 @@ class Project(models.Model):
 	# Methods
 	# data
 	def data(self, permission):
-		pass
+		return {}
 
 class Batch(models.Model):
 
@@ -39,14 +39,14 @@ class Batch(models.Model):
 	priority_index = models.PositiveIntegerField(default=0)
 
 	# Statistics
-	due_date = models.DateTimeField(auto_now_add=True)
+	deadline = models.DateTimeField(auto_now_add=True)
 	completion_percentage = models.FloatField(default=0.0)
 	redundancy_percentage = models.FloatField(default=0.0)
 
 	### Methods
 	# data
 	def data(self, permission):
-		pass
+		return {}
 
 class Upload(models.Model):
 	'''
@@ -56,7 +56,6 @@ class Upload(models.Model):
 	'''
 
 	### Connections
-	project = models.ForeignKey(Project, related_name='uploads')
 	batch = models.ForeignKey(Batch, related_name='uploads')
 
 	### Properties
