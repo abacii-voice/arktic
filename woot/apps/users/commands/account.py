@@ -8,14 +8,14 @@ from django.views.generic import View
 from django.conf import settings
 from django.template import Template
 from django.core.files import File
-from django.db.models import Count
+from django.db.models import Count, F
 
 # local
 from apps.client.models.client import Client, production_client
 from apps.users.models.user import User
 from apps.tr.models.transcription import Transcription
 from apps.tr.models.utterance import Utterance
-from apps.client.models.project import Project
+from apps.client.models.project import Project, Upload
 from permission import check_request
 
 # util
@@ -37,11 +37,14 @@ def upload_audio(request):
 		client_name = request.POST['current_client']
 		project_name = request.POST['project_name']
 		batch_name = request.POST['batch_name']
+		archive_name = request.POST['archive_name']
+		relfile_name = request.POST['relfile_name']
 
 		# get project
 		client = Client.objects.get(name=client_name)
 		project = client.contract_projects.get(name=project_name) # only upload from a contract client anyway.
 		batch = project.batches.get(name=batch_name)
+		upload = batch.uploads.get(archive_name=archive_name, relfile_name=relfile_name)
 
 		# create new transcription
 		transcription, transcription_created = Transcription.objects.get_or_create(
@@ -53,6 +56,11 @@ def upload_audio(request):
 		if transcription_created:
 			transcription.caption = caption
 			transcription.save()
+
+			# mark fragment as reconciled
+			fragment, fragment_created = upload.fragments.get_or_create(filename=file_name)
+			fragment.is_reconciled = True
+			fragment.save()
 
 			# create tmp directory for uploads
 			tmp = join(settings.SITE_ROOT, 'tmp')
@@ -80,13 +88,15 @@ def upload_audio(request):
 				transcription.utterance = utterance
 				transcription.save()
 
+			# remove tmp file
+			os.remove(join(tmp, file_name))
+
 			# http://stackoverflow.com/questions/33543804/export-blob-data-to-file-in-django
 			# Maybe answers source question and blob question at the same time.
 
-			return JsonResponse({'done': True})
-
+			return JsonResponse({'created': True})
 		else:
-			return JsonResponse({'done': False})
+			return JsonResponse({'created': False})
 
 def create_upload(request):
 	user, permission, verified = check_request(request)
@@ -98,7 +108,7 @@ def create_upload(request):
 		batch_name = request.POST['batch_name']
 		archive_name = request.POST['archive_name']
 		relfile_name = request.POST['relfile_name']
-		fragments = request.POST.getlist('fragments')
+		fragments = request.POST.getlist('fragments[]')
 
 		# create upload object
 		client = Client.objects.get(name=current_client)

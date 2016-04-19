@@ -72,6 +72,7 @@ UI.createGlobalStates('client-state', [
 	'project-upload-relfile-reset-state',
 	'project-upload-audio-state',
 	'project-upload-audio-reset-state',
+	'project-upload-progress-state',
 	'project-settings-state',
 	'project-project-settings-state',
 
@@ -1852,6 +1853,33 @@ UI.createApp('hook', [
 					}),
 				],
 			}),
+			UI.createComponent('pi-incomplete-upload-panel', {
+				template: UI.template('div', 'ie relative'),
+				appearance: {
+					style: {
+						'width': '400px',
+						'height': '100%',
+						'margin-left': '10px',
+						'float': 'left',
+					},
+				},
+				state: {
+					defaultState: {
+						fn: UI.functions.deactivate,
+					},
+					states: [
+						{name: 'project-state', args: 'default'},
+						{name: 'project-new-project-state', args: {
+							preFn: function (_this) {
+								// 1. find incomplete uploads. if they exist, show this panel.
+								
+							},
+						}},
+						{name: 'project-settings-state', args: 'default'},
+						{name: 'project-upload-state', args: 'default'},
+					],
+				},
+			}),
 			UI.createComponent('pi-project-upload-panel', {
 				template: UI.template('div', 'ie relative show'),
 				appearance: {
@@ -1870,9 +1898,6 @@ UI.createApp('hook', [
 						{name: 'project-state', args: 'default'},
 						{name: 'project-upload-state', args: {
 							preFn: UI.functions.activate,
-							style: {
-								'opacity': '1.0',
-							},
 						}},
 						{name: 'project-settings-state', args: 'default'},
 						{name: 'project-new-project-state', args: 'default'},
@@ -2066,6 +2091,11 @@ UI.createApp('hook', [
 										},
 										state: {
 											stateMap: 'project-new-project-state',
+											states: [
+												{name: 'project-upload-progress-state', args: {
+													fn: UI.functions.deactivate,
+												}},
+											],
 										},
 										bindings: [
 											{name: 'click', fn: function (_this) {
@@ -2088,6 +2118,77 @@ UI.createApp('hook', [
 
 												UI.getComponent('pi-npp-project-batch-search').model().val(Context.get('current_upload.project.batch_name'));
 											}},
+										],
+									}),
+								],
+							}),
+							UI.createComponent('pi-pup-lp-upload-progress', {
+								template: UI.template('div', 'ie show relative'),
+								appearance: {
+									style: {
+										'width': 'calc(100% - 70px)',
+										'height': '40px',
+									},
+								},
+								state: {
+									states: [
+										{name: 'project-upload-state', args: {
+											fn: UI.functions.deactivate,
+										}},
+										{name: 'project-upload-progress-state', args: {
+											preFn: UI.functions.activate,
+										}},
+									],
+								},
+								children: [
+									UI.createComponent('pi-pup-lp-up-progress-bar', {
+										template: UI.template('div', 'ie show relative'),
+										appearance: {
+											style: {
+												'width': 'calc(100%)',
+												'height': '40px',
+											},
+										},
+										children: [
+											UI.createComponent('pi-pup-lp-up-pb-bar', {
+												template: UI.template('div', 'ie show relative border border-radius'),
+												appearance: {
+													style: {
+														'width': 'calc(100% - 90px)',
+														'height': '40px',
+														'float': 'left',
+													},
+												},
+												children: [
+													UI.createComponent('pi-pup-lp-up-pbb-background', {
+														template: UI.template('div', 'ie show relative'),
+														appearance: {
+															style: {
+																'width': '0px',
+																'height': '40px',
+																'background-color': '#ccc',
+															},
+														},
+													}),
+												],
+											}),
+											UI.createComponent('pi-pup-lp-up-pb-counter', {
+												template: UI.template('div', 'ie show relative border border-radius'),
+												appearance: {
+													style: {
+														'width': '80px',
+														'height': '40px',
+														'float': 'left',
+														'margin-left': '10px',
+														'padding-top': '10px',
+													},
+												},
+												children: [
+													UI.createComponent('pi-pup-lp-up-pbc-span', {
+														template: UI.template('span', 'ie show centred-horizontally'),
+													})
+												],
+											}),
 										],
 									}),
 								],
@@ -2184,6 +2285,8 @@ UI.createApp('hook', [
 																		unique: unique,
 																		duplicates: duplicates,
 																	});
+
+																	Context.set('current_upload.progress', '0');
 
 																	// create upload object
 																	var uploadData = {
@@ -2392,6 +2495,9 @@ UI.createApp('hook', [
 													preFn: UI.functions.activate,
 												}},
 												{name: 'project-upload-relfile-reset-state', args: 'default'},
+												{name: 'project-upload-progress-state', args: {
+													fn: UI.functions.deactivate,
+												}},
 											],
 										},
 										content: [
@@ -2745,6 +2851,8 @@ UI.createApp('hook', [
 																		dir: dirname,
 																	});
 
+																	Context.set('current_upload.progress', '0');
+
 																	// create upload object
 																	var uploadData = {
 																		'current_client': Context.get('current_client'),
@@ -2873,6 +2981,9 @@ UI.createApp('hook', [
 													preFn: UI.functions.activate,
 												}},
 												{name: 'project-upload-audio-reset-state', args: 'default'},
+												{name: 'project-upload-progress-state', args: {
+													fn: UI.functions.deactivate,
+												}},
 											],
 										},
 										content: [
@@ -3101,6 +3212,14 @@ UI.createApp('hook', [
 									},
 									html: 'Confirm and upload',
 								},
+								state: {
+									stateMap: 'project-upload-progress-state',
+									states: [
+										{name: 'project-upload-progress-state', args: {
+											fn: UI.functions.deactivate,
+										}},
+									],
+								},
 								bindings: [
 									{name: 'click', fn: function (_this) {
 										// get the list of audio files that are "found".
@@ -3108,14 +3227,18 @@ UI.createApp('hook', [
 											return line.found;
 										});
 
+										// if there is an unfinished upload, filter by the remaining fragments to be uploaded.
+
 										var audioFileList = Context.get('current_upload.audio.files');
 										var relfileFileList = Context.get('current_upload.relfile.lines')
 
 										// failure conditions
 										var noFoundAudioFiles = foundAudioFiles.length === 0;
 										if (!noFoundAudioFiles) {
+											// trigger state
+											_this.triggerState();
+
 											// upload audio files one by one
-											var progress = 0;
 											foundAudioFiles.forEach(function (audioFile) {
 												// 1. get match from actual list of files
 												var filename = Object.keys(audioFileList).filter(function (key) {
@@ -3145,16 +3268,29 @@ UI.createApp('hook', [
 												formData.append('current_role', Context.get('current_role'));
 												formData.append('project_name', Context.get('current_upload.project.name'));
 												formData.append('batch_name', Context.get('current_upload.project.batch_name'));
+												formData.append('archive_name', Context.get('current_upload.audio.name'));
+												formData.append('relfile_name', Context.get('current_upload.relfile.name'));
 
 												command('upload_audio', formData, function (data) {
 													// update progress
-													// progress = Math.floor((audioFile.index + 1) / (foundAudioFiles.length));
-													// Context.set('current_upload.progress', progress);
+													var progress = Context.get('current_upload.progress');
+													var current_progress = Math.floor(parseFloat(progress) + 100.0 / foundAudioFiles.length);
+													Context.set('current_upload.progress', current_progress);
+
+													// set indicators
+													var bar = UI.getComponent('pi-pup-lp-up-pbb-background');
+													var span = UI.getComponent('pi-pup-lp-up-pbc-span');
+													bar.model().css({'width': '{width}px'.format({width: current_progress * parseInt(bar.parent().model().css('width')) / 100})});
+													span.model().html('{percentage}%'.format({percentage: current_progress}));
+
+													// end condition
+													if (current_progress === 100) {
+														Context.set('current_upload.done', true);
+													}
 												}, {
 													processData: false,
 													contentType: false,
 												});
-
 											});
 
 										} else {
