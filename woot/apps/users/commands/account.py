@@ -8,6 +8,7 @@ from django.views.generic import View
 from django.conf import settings
 from django.template import Template
 from django.core.files import File
+from django.db.models import Count
 
 # local
 from apps.client.models.client import Client, production_client
@@ -75,6 +76,7 @@ def upload_audio(request):
 					file=File(destination),
 				)
 
+				utterance.process()
 				transcription.utterance = utterance
 				transcription.save()
 
@@ -89,46 +91,69 @@ def upload_audio(request):
 def create_upload(request):
 	user, permission, verified = check_request(request)
 	if verified:
-		upload_data = {
-			'current_client': request.POST['current_client'],
-			'project_name': request.POST['current_client'],
-			'batch_name': request.POST['current_client'],
-			'archive_name': request.POST['archive_name'],
-			'relfile_name': request.POST['relfile_name'],
-			'fragments': request.POST.getlist('fragments'),
-		}
 
-		# create upload objects
-		client = Client.objects.get(name=upload_data['current_client'])
-		project = client.contract_projects.get(name=upload_data['project_name'])
-		batch = project.batches.get(name=upload_data['batch_name'])
+		# get data
+		current_client = request.POST['current_client']
+		project_name = request.POST['project_name']
+		batch_name = request.POST['batch_name']
+		archive_name = request.POST['archive_name']
+		relfile_name = request.POST['relfile_name']
+		fragments = request.POST.getlist('fragments')
 
-		upload, upload_created = batch.uploads.get_or_create(project=project, archive_name=upload_data['archive_name'], relfile_name=upload_data['relfile_name'])
+		# create upload object
+		client = Client.objects.get(name=current_client)
+		project = client.contract_projects.get(name=project_name)
+		batch = project.batches.get(name=batch_name)
+
+		# determine if another upload exists with the same details
+		upload, upload_created = None, False
+
+		# relfile_name
+		if archive_name == '':
+			upload, upload_created = batch.uploads.get_or_create(relfile_name=relfile_name)
+
+		# archive_name
+		elif relfile_name == '':
+			upload, upload_created = batch.uploads.get_or_create(archive_name=archive_name)
+
+		# neither
+		else:
+			if batch.uploads.filter(relfile_name=relfile_name).exists():
+				upload = batch.uploads.get(relfile_name=relfile_name)
+				upload.archive_name = archive_name
+				upload.save()
+				upload_created = False
+
+			elif batch.uploads.filter(archive_name=archive_name).exists():
+				upload = batch.uploads.get(archive_name=archive_name)
+				upload.relfile_name = relfile_name
+				upload.save()
+				upload_created = False
 
 		if upload_created:
-			upload.total_fragments = len(upload_data['fragments'])
+			upload.total_fragments = len(fragments)
 			upload.save()
 
-			for fragment_filename in upload_data['fragments']:
+			for fragment_filename in fragments:
 				fragment, fragment_created = upload.fragments.get_or_create(project=project, batch=batch, filename=fragment_filename)
 
-			return JsonResponse({'done': True})
+			return JsonResponse({'created': True})
 
 		else:
-			return JsonResponse({'done': False})
+			return JsonResponse({'created': False})
 
 def create_user(request):
 	user, permission, verified = check_request(request)
 	if verified:
-		user_data = {
-			'current_client': request.POST['current_client'],
-			'first_name': request.POST['first_name'],
-			'last_name': request.POST['last_name'],
-			'email': request.POST['email'],
-			'roles_admin': request.POST['roles_admin'],
-			'roles_moderator': request.POST['roles_moderator'],
-			'roles_worker': request.POST['roles_worker'],
-		}
+
+		# get data
+		current_client = request.POST['current_client']
+		first_name = request.POST['first_name']
+		last_name = request.POST['last_name']
+		email = request.POST['email']
+		roles_admin = request.POST['roles_admin']
+		roles_moderator = request.POST['roles_moderator']
+		roles_worker = request.POST['roles_worker']
 
 		# 0. get client
 		client = Client.objects.get(name=user_data['current_client'])
@@ -167,25 +192,25 @@ def create_user(request):
 def create_project(request):
 	user, permission, verified = check_request(request)
 	if verified:
-		project_data = {
-			'current_client': request.POST['current_client'],
-			'project_name': request.POST['name'],
-			'batch_deadline': request.POST['batch_deadline'],
-			'new_batch': request.POST['new_batch'],
-			'batch_name': request.POST['batch_name'],
-		}
+
+		# get data
+		current_client = request.POST['current_client']
+		project_name = request.POST['name']
+		batch_deadline = request.POST['batch_deadline']
+		new_batch = request.POST['new_batch']
+		batch_name = request.POST['batch_name']
 
 		# 0. get client
-		client = Client.objects.get(name=project_data['current_client'])
+		client = Client.objects.get(name=current_client)
 
 		# 1. get or create project
-		project, project_created = client.contract_projects.get_or_create(name=project_data['project_name'], production_client=production_client())
+		project, project_created = client.contract_projects.get_or_create(name=project_name, production_client=production_client())
 
 		# 2. create batch
-		if project_data['new_batch'] == 'true':
-			batch, batch_created = project.batches.get_or_create(name=project_data['batch_name'])
+		if new_batch == 'true':
+			batch, batch_created = project.batches.get_or_create(name=batch_name)
 			if batch_created:
-				batch.due_date = datetime.datetime.strptime(project_data['batch_deadline'], '%Y/%m/%d').date()
+				batch.deadline = datetime.datetime.strptime(batch_deadline, '%Y/%m/%d').date()
 				batch.save()
 
 		return JsonResponse({'done': True})
@@ -193,19 +218,17 @@ def create_project(request):
 def add_role_to_user(request):
 	user, permission, verified = check_request(request)
 	if verified and permission.is_productionadmin:
+
 		# get data
-		role_data = {
-			'id': request.POST['user_id'],
-			'client': request.POST['current_client'],
-			'type': request.POST['role_type'],
-		}
+		user_id = request.POST['id']
+		current_client = request.POST['client']
+		role_type = request.POST['type']
 
 		# create role
-		client = Client.objects.get(name=role_data['client'])
+		client = Client.objects.get(name=current_client)
 		if permission.check_client(client):
-			user = User.objects.get(id=role_data['id'])
+			user = User.objects.get(id=user_id)
 
-			role_type = role_data['type']
 			if role_type == 'admin':
 				if client.is_production:
 					user.create_productionadmin(client)
@@ -231,15 +254,13 @@ def enable_role(request):
 	user, permission, verified = check_request(request)
 	if verified:
 		# get user role be enabled
-		role_data = {
-			'id': request.POST['user_id'],
-			'client': request.POST['current_client'],
-			'type': request.POST['role_type'],
-		}
+		user_id = request.POST['id']
+		current_client = request.POST['client']
+		role_type = request.POST['type']
 
 		if permission.is_productionadmin or permission.is_contractadmin:
-			user = User.objects.get(id=role_data['id'])
-			role = user.get_role(role_data['client'], role_data['type'])
+			user = User.objects.get(id=user_id)
+			role = user.get_role(current_client, role_type)
 			if role is not None:
 				role.status = 'enabled'
 				role.save()
@@ -250,15 +271,13 @@ def disable_role(request):
 	user, permission, verified = check_request(request)
 	if verified:
 		# get user role be disabled
-		role_data = {
-			'id': request.POST['user_id'],
-			'client': request.POST['current_client'],
-			'type': request.POST['role_type'],
-		}
+		user_id = request.POST['id']
+		current_client = request.POST['client']
+		role_type = request.POST['type']
 
 		if permission.is_productionadmin or permission.is_contractadmin:
-			user = User.objects.get(id=role_data['id'])
-			role = user.get_role(role_data['client'], role_data['type'])
+			user = User.objects.get(id=user_id)
+			role = user.get_role(current_client, role_type)
 			if role is not None:
 				role.status = 'disabled'
 				role.save()

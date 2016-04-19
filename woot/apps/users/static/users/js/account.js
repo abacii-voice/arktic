@@ -20,7 +20,7 @@ Context.setFn(getdata('context', {}, function (data) {
 		Context.set('current_role', 'admin')
 		var projectPrototype = {
 			name: 'TestProject',
-			deadline: '1970/1/1',
+			batch_deadline: '1970/1/1',
 			new_batch: true,
 			batch_name: 'NewTestBatch',
 		}
@@ -1627,7 +1627,7 @@ UI.createApp('hook', [
 							style: {
 								'height': '30px',
 							},
-							html: `New project`,
+							html: `New upload`,
 						},
 					}),
 					UI.createComponent('pi-npp-client-subtitle', {
@@ -1661,9 +1661,9 @@ UI.createApp('hook', [
 							],
 						},
 					}),
-					Components.searchFilterField('pi-npp-project-deadline', {
+					Components.searchFilterField('pi-npp-batch-deadline', {
 						show: 'show',
-						placeholder: 'Project deadline',
+						placeholder: 'Batch deadline',
 						state: {
 							states: [
 								{name: 'project-new-project-state', args: {
@@ -1804,7 +1804,7 @@ UI.createApp('hook', [
 									noProblems = false;
 								}
 
-								var batchDeadlineField = UI.getComponent('pi-npp-project-deadline');
+								var batchDeadlineField = UI.getComponent('pi-npp-batch-deadline');
 								batchDeadline = batchDeadlineField.model().val();
 								if (batchDeadline !== '') {
 									// TODO: validate with moment.
@@ -1910,7 +1910,7 @@ UI.createApp('hook', [
 												{name: 'project-upload-state', args: {
 													preFn: function (_this) {
 														var projectPrototypeName = Context.get('current_upload.project.name');
-														_this.model().html('New project: {name}'.format({name: projectPrototypeName}));
+														_this.model().html('New upload: {name}'.format({name: projectPrototypeName}));
 													},
 												}}
 											],
@@ -1975,7 +1975,7 @@ UI.createApp('hook', [
 															states: [
 																{name: 'project-upload-state', args: {
 																	preFn: function (_this) {
-																		var deadline = Context.get('current_upload.project.deadline');
+																		var deadline = Context.get('current_upload.project.batch_deadline');
 																		_this.model().html(deadline);
 																	},
 																}},
@@ -2074,7 +2074,7 @@ UI.createApp('hook', [
 
 												// a bit of a hack.
 												UI.getComponent('pi-npp-project-search').model().val(Context.get('current_upload.project.name'));
-												UI.getComponent('pi-npp-project-deadline').model().val(Context.get('current_upload.project.deadline'));
+												UI.getComponent('pi-npp-batch-deadline').model().val(Context.get('current_upload.project.batch_deadline'));
 
 												var newBatch = Context.get('current_upload.project.new_batch');
 												var newActive = newBatch ? 'true' : 'false';
@@ -2115,96 +2115,100 @@ UI.createApp('hook', [
 											stateMap: 'project-upload-relfile-state',
 											defaultState: {
 												preFn: function (_this) {
-													// make visible
-													_this.model().css({'display': 'block'});
+													if (Context.get('current_upload.relfile.lines') === '') {
+														// make visible
+														_this.model().css({'display': 'block'});
 
-													// make dropzone
-													_this.model().dropzone({
-														url: '/upload-relfile',
-														maxFiles: 1,
-														acceptedFiles: '.csv',
-														paramName: 'relfile-input',
-														createImageThumbnails: false,
-														accept: function (file, done) {
-															console.log(file)
-															// try reading file
-															var reader = new FileReader();
-															reader.onload = function(e) {
-																var contents = e.target.result;
-																// contents is a string. I can do what I want.
-																// 1. parse contents of file and display in rel-file-filelist
-																var lines = contents.split('\n');
-																var headerLine = lines.shift();
+														// make dropzone
+														_this.model().dropzone({
+															url: '/upload-relfile',
+															maxFiles: 1,
+															acceptedFiles: '.csv',
+															paramName: 'relfile-input',
+															createImageThumbnails: false,
+															accept: function (file, done) {
+																// try reading file
+																var reader = new FileReader();
+																reader.onload = function(e) {
+																	var contents = e.target.result;
+																	// contents is a string. I can do what I want.
+																	// 1. parse contents of file and display in rel-file-filelist
+																	var lines = contents.split('\n');
+																	var headerLine = lines.shift();
 
-																// 2. add lines to Context
-																var relfileLineObjects = lines.map(function (line) {
-																	var keys = line.split(',');
-																	return {filename: basename(keys[0]), caption: keys[1]}
-																}).filter(function (relfileLineObject) {
-																	return relfileLineObject.filename !== ''; //filter directories
-																});
-
-																// 1. find number of unique audio file names
-																var audioSet = {};
-																relfileLineObjects.forEach(function (line) {
-																	if (audioSet.hasOwnProperty(line.filename)) {
-																		audioSet[line.filename]++;
-																	} else {
-																		audioSet[line.filename] = 1;
-																	}
-																});
-
-																var total = relfileLineObjects.length;
-																var unique = Object.keys(audioSet).length;
-																var duplicates = 0;
-																Object.keys(audioSet).forEach(function (key) {
-																	var matchingLines = relfileLineObjects.filter(function (line) {
-																		return line.filename === key;
+																	// 2. add lines to Context
+																	var relfileLineObjects = lines.map(function (line) {
+																		var keys = line.split(',');
+																		return {filename: basename(keys[0]), caption: keys[1]}
+																	}).filter(function (relfileLineObject) {
+																		return relfileLineObject.filename !== ''; //filter directories
 																	});
-																	if (audioSet[key] > 1) {
-																		duplicates += audioSet[key] - 1;
-																		matchingLines.forEach(function (line, index) {
-																			if (index === 0) {
+
+																	// 1. find number of unique audio file names
+																	var audioSet = {};
+																	relfileLineObjects.forEach(function (line) {
+																		if (audioSet.hasOwnProperty(line.filename)) {
+																			audioSet[line.filename]++;
+																		} else {
+																			audioSet[line.filename] = 1;
+																		}
+																	});
+
+																	var total = relfileLineObjects.length;
+																	var unique = Object.keys(audioSet).length;
+																	var duplicates = 0;
+																	Object.keys(audioSet).forEach(function (key) {
+																		var matchingLines = relfileLineObjects.filter(function (line) {
+																			return line.filename === key;
+																		});
+																		if (audioSet[key] > 1) {
+																			duplicates += audioSet[key] - 1;
+																			matchingLines.forEach(function (line, index) {
+																				if (index === 0) {
+																					line.is_duplicate = false;
+																				} else {
+																					line.is_duplicate = true;
+																				}
+																			})
+																		} else {
+																			matchingLines.forEach(function (line) {
 																				line.is_duplicate = false;
-																			} else {
-																				line.is_duplicate = true;
-																			}
-																		})
-																	} else {
-																		matchingLines.forEach(function (line) {
-																			line.is_duplicate = false;
-																		})
-																	}
-																});
+																			})
+																		}
+																	});
 
-																Context.set('current_upload.relfile', {
-																	lines: relfileLineObjects,
-																	total: total,
-																	unique: unique,
-																	duplicates: duplicates,
-																});
+																	Context.set('current_upload.relfile', {
+																		name: file.name,
+																		lines: relfileLineObjects,
+																		total: total,
+																		unique: unique,
+																		duplicates: duplicates,
+																	});
 
-																// create upload object
-																var uploadData = {
-																	'current_client': Context.get('current_client'),
-																	'current_role': Context.get('current_role'),
-																	'project_name': Context.get('current_upload.project.name'),
-																	'batch_name': Context.get('current_role.project.batch_name')
-																	'archive_name': '',
-																	'relfile_name': file.name,
-																	'fragments': relfileLineObjects.map(function (line) {
-																		return line.filename;
-																	}),
+																	// create upload object
+																	var uploadData = {
+																		'current_client': Context.get('current_client'),
+																		'current_role': Context.get('current_role'),
+																		'project_name': Context.get('current_upload.project.name'),
+																		'batch_name': Context.get('current_upload.project.batch_name'),
+																		'archive_name': Context.get('current_upload.audio.name'),
+																		'relfile_name': file.name,
+																		'fragments': relfileLineObjects.map(function (line) {
+																			return line.filename;
+																		}),
+																	};
+
+																	command('create_upload', uploadData, function (data) {});
+
+																	// 3. trigger
+																	_this.triggerState();
 																};
-
-																command('create_upload', uploadData, function (data) {});
-
-																// 3. trigger
-																_this.triggerState();
-															};
-															reader.readAsText(file);
-														},
-													});
+																reader.readAsText(file);
+															},
+														});
+													} else {
+														_this.model().css({'display': 'none'});
+													}
 												},
 											},
 											states: [
@@ -2375,7 +2379,15 @@ UI.createApp('hook', [
 												fn: UI.functions.deactivate,
 											},
 											states: [
-												{name: 'project-upload-state', args: 'default'},
+												{name: 'project-upload-state', args: {
+													preFn: function (_this) {
+														if (Context.get('current_upload.relfile') !== '') {
+															_this.model().css({'display': 'block'});
+														} else {
+															_this.model().css({'display': 'none'});
+														}
+													}
+												}},
 												{name: 'project-upload-relfile-state', args: {
 													preFn: UI.functions.activate,
 												}},
@@ -2654,104 +2666,109 @@ UI.createApp('hook', [
 											stateMap: 'project-upload-audio-state',
 											defaultState: {
 												preFn: function (_this) {
-													// make visible
-													_this.model().css({'display': 'block'});
+													if (Context.get('current_upload.audio.lines') === '') {
+														// make visible
+														_this.model().css({'display': 'block'});
 
-													// make dropzone
-													_this.model().dropzone({
-														url: '/upload-audio',
-														maxFiles: 1,
-														acceptedFiles: '.zip',
-														paramName: 'audio-input',
-														createImageThumbnails: false,
-														accept: function (file, done) {
-															// try reading file
-															var reader = new FileReader();
-															var zip = new JSZip();
-															reader.onload = function(e) {
-																var contents = e.target.result;
-																zip.load(contents);
+														// make dropzone
+														_this.model().dropzone({
+															url: '/upload-audio',
+															maxFiles: 1,
+															acceptedFiles: '.zip',
+															paramName: 'audio-input',
+															createImageThumbnails: false,
+															accept: function (file, done) {
+																// try reading file
+																var reader = new FileReader();
+																var zip = new JSZip();
+																reader.onload = function(e) {
+																	var contents = e.target.result;
+																	zip.load(contents);
 
-																// extract list of files and cut off directory name
-																var filenames = [];
-																var dirname;
-																Object.keys(zip.files).forEach(function (key) {
-																	if (!zip.files[key].dir) {
-																		filenames.push(basename(key));
-																	} else {
-																		if (dirname === undefined) {
-																			dirname = key;
-																		}
-																	}
-																});
-
-																// find number of unique audio file names
-																var audioSet = {};
-																filenames.forEach(function (filename) {
-																	if (audioSet.hasOwnProperty(filename)) {
-																		audioSet[filename]++;
-																	} else {
-																		audioSet[filename] = 1;
-																	}
-																});
-
-																// count numbers and assign duplicates
-																var audioObjects = filenames.map(function (filename) {
-																	return {filename: filename};
-																});
-																var total = filenames.length;
-																var unique = Object.keys(audioSet).length;
-																var duplicates = 0;
-																Object.keys(audioSet).forEach(function (key) {
-																	var matchingLines = audioObjects.filter(function (audioObject) {
-																		return audioObject.filename === key;
-																	});
-																	if (audioSet[key] > 1) {
-																		duplicates += audioSet[key] - 1;
-																		matchingLines.forEach(function (line, index) {
-																			if (index === 0) {
-																				line.is_duplicate = false;
-																			} else {
-																				line.is_duplicate = true;
+																	// extract list of files and cut off directory name
+																	var filenames = [];
+																	var dirname;
+																	Object.keys(zip.files).forEach(function (key) {
+																		if (!zip.files[key].dir) {
+																			filenames.push(basename(key));
+																		} else {
+																			if (dirname === undefined) {
+																				dirname = key;
 																			}
-																		})
-																	} else {
-																		matchingLines.forEach(function (line) {
-																			line.is_duplicate = false;
-																		})
-																	}
-																});
+																		}
+																	});
 
-																Context.set('current_upload.audio', {
-																	'files': zip.files,
-																	'lines': audioObjects,
-																	'total': total,
-																	'unique': unique,
-																	'duplicates': duplicates,
-																	'dir': dirname,
-																});
+																	// find number of unique audio file names
+																	var audioSet = {};
+																	filenames.forEach(function (filename) {
+																		if (audioSet.hasOwnProperty(filename)) {
+																			audioSet[filename]++;
+																		} else {
+																			audioSet[filename] = 1;
+																		}
+																	});
 
-																// create upload object
-																var uploadData = {
-																	'current_client': Context.get('current_client'),
-																	'current_role': Context.get('current_role'),
-																	'project_name': Context.get('current_upload.project.name'),
-																	'batch_name': Context.get('current_role.project.batch_name')
-																	'archive_name': file.name,
-																	'relfile_name': '',
-																	'fragments': audioObjects.map(function (line) {
-																		return line.filename,
-																	}),
-																};
+																	// count numbers and assign duplicates
+																	var audioObjects = filenames.map(function (filename) {
+																		return {filename: filename};
+																	});
+																	var total = filenames.length;
+																	var unique = Object.keys(audioSet).length;
+																	var duplicates = 0;
+																	Object.keys(audioSet).forEach(function (key) {
+																		var matchingLines = audioObjects.filter(function (audioObject) {
+																			return audioObject.filename === key;
+																		});
+																		if (audioSet[key] > 1) {
+																			duplicates += audioSet[key] - 1;
+																			matchingLines.forEach(function (line, index) {
+																				if (index === 0) {
+																					line.is_duplicate = false;
+																				} else {
+																					line.is_duplicate = true;
+																				}
+																			})
+																		} else {
+																			matchingLines.forEach(function (line) {
+																				line.is_duplicate = false;
+																			})
+																		}
+																	});
 
-																command('create_upload', uploadData, function (data) {});
+																	Context.set('current_upload.audio', {
+																		name: file.name,
+																		files: zip.files,
+																		lines: audioObjects,
+																		total: total,
+																		unique: unique,
+																		duplicates: duplicates,
+																		dir: dirname,
+																	});
 
-																_this.triggerState();
-															}
+																	// create upload object
+																	var uploadData = {
+																		'current_client': Context.get('current_client'),
+																		'current_role': Context.get('current_role'),
+																		'project_name': Context.get('current_upload.project.name'),
+																		'batch_name': Context.get('current_upload.project.batch_name'),
+																		'archive_name': file.name,
+																		'relfile_name': Context.get('current_upload.relfile.name'),
+																		'fragments': audioObjects.map(function (line) {
+																			return line.filename;
+																		}),
+																	};
 
-															reader.readAsBinaryString(file);
-														},
-													});
+																	command('create_upload', uploadData, function (data) {});
+
+																	_this.triggerState();
+																}
+
+																reader.readAsBinaryString(file);
+															},
+														});
+													} else {
+														_this.model().css({'display': 'none'});
+													}
 												},
 											},
 											states: [
@@ -2843,7 +2860,15 @@ UI.createApp('hook', [
 												fn: UI.functions.deactivate,
 											},
 											states: [
-												{name: 'project-upload-state', args: 'default'},
+												{name: 'project-upload-state', args: {
+													preFn: function (_this) {
+														if (Context.get('current_upload.audio') !== '') {
+															_this.model().css({'display': 'block'});
+														} else {
+															_this.model().css({'display': 'none'});
+														}
+													}
+												}},
 												{name: 'project-upload-audio-state', args: {
 													preFn: UI.functions.activate,
 												}},
