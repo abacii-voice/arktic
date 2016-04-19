@@ -230,9 +230,9 @@ def add_role_to_user(request):
 	if verified and permission.is_productionadmin:
 
 		# get data
-		user_id = request.POST['id']
-		current_client = request.POST['client']
-		role_type = request.POST['type']
+		user_id = request.POST['user_id']
+		current_client = request.POST['current_client']
+		role_type = request.POST['role_type']
 
 		# create role
 		client = Client.objects.get(name=current_client)
@@ -264,9 +264,9 @@ def enable_role(request):
 	user, permission, verified = check_request(request)
 	if verified:
 		# get user role be enabled
-		user_id = request.POST['id']
-		current_client = request.POST['client']
-		role_type = request.POST['type']
+		user_id = request.POST['user_id']
+		current_client = request.POST['current_client']
+		role_type = request.POST['role_type']
 
 		if permission.is_productionadmin or permission.is_contractadmin:
 			user = User.objects.get(id=user_id)
@@ -281,9 +281,9 @@ def disable_role(request):
 	user, permission, verified = check_request(request)
 	if verified:
 		# get user role be disabled
-		user_id = request.POST['id']
-		current_client = request.POST['client']
-		role_type = request.POST['type']
+		user_id = request.POST['user_id']
+		current_client = request.POST['current_client']
+		role_type = request.POST['role_type']
 
 		if permission.is_productionadmin or permission.is_contractadmin:
 			user = User.objects.get(id=user_id)

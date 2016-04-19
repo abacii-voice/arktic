@@ -1872,7 +1872,7 @@ UI.createApp('hook', [
 						{name: 'project-new-project-state', args: {
 							preFn: function (_this) {
 								// 1. find incomplete uploads. if they exist, show this panel.
-								
+
 							},
 						}},
 						{name: 'project-settings-state', args: 'default'},
