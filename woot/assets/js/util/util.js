@@ -1,8 +1,11 @@
 // call command
-function command (name, data, callback) {
+function command (name, data, callback, args) {
+	args = args !== undefined ? args : {};
 	var ajax_params = {
 		type: 'post',
 		data: data,
+		processData: args.processData !== undefined ? args.processData : true,
+		contentType: args.contentType !== undefined ? args.contentType : 'application/x-www-form-urlencoded',
 		url:'/command/{name}/'.format({name: name}),
 		success: function (data, textStatus, XMLHttpRequest) {
 			callback(data);
@@ -104,7 +107,28 @@ String.prototype.trunc = function(n, useWordBoundary) {
 };
 
 // gives filename without directories
-function basename(str) {
-	var base = new String(str).substring(str.lastIndexOf('/') + 1);
-	return base;
+function basename(path) {
+	return path.replace(/.*\//, '');
+}
+
+function dirname(path) {
+	return path.match(/.*\//);
+}
+
+// alphabetical sort
+function alphaSort(key) {
+	return function (a,b) {
+		if (key !== undefined) {
+			a = a[key];
+			b = b[key];
+		}
+
+		if (a>b) {
+			return 1;
+		} else if (a<b) {
+			return -1;
+		} else {
+			return 0;
+		}
+	}
 }

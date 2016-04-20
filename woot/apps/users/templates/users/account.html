@@ -14,12 +14,11 @@
 
 {# NAV #}
 {% block nav_home_redirect %}
-	<a href='/account/'>Arktic</a>
+	<a href='/account/' class='nav-link'>Arktic</a>
 {% endblock %}
-{% block context_nav_left %}{% endblock %}
-{% block context_nav_right %}{% endblock %}
-{% block context_account_logout %}
-<p class='navbar-text navbar-right'>Signed in as {{ user.email }}, <a href='/logout/' class='navbar-link'>logout</a></p>
+{% block nav_left %}{% endblock %}
+{% block nav_right %}
+<p>Signed in as {{ user.email }}, <a href='/logout/' class='nav-link'>logout</a></p>
 {% endblock %}
 
 {# CONTENT #}

@@ -1,0 +1,11 @@
+Some common themes that I see:
+
+1. Boxes full of buttons or text with some title and subtitle or whatever.
+2. A list of things to be scrolled, maybe a lot, with a search/filter function, or not.
+3. Subclassing components that I use a lot is sorely needed.
+
+Component
+|_ ScrollList
+|_ RoleIndicator
+|_ SearchField
+|_ 
