@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.client.models.project import Project
+from apps.client.models.project import Project, Batch
 
 ### Transcription classes
 class Transcription(models.Model):
@@ -13,11 +13,15 @@ class Transcription(models.Model):
 
 	### Connections
 	project = models.ForeignKey(Project, related_name='transcriptions')
+	batch = models.ForeignKey(Batch, related_name='transcriptions')
 
 	### Properties
 	# initialisation if it exists
 	original_caption = models.CharField(max_length=255, default='')
 	date_created = models.DateTimeField(auto_now_add=True)
+
+	# unique identifier
+	filename = models.CharField(max_length=255)
 
 	# requests and flags
 	requests = models.PositiveIntegerField(default=0)

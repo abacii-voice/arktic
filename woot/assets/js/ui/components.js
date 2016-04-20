@@ -174,7 +174,7 @@ var Components = {
 
 							if (!indicator.isBasic) {
 								var roleData = {
-									'user_id': Context.get('current_user_profile', 'id'),
+									'user_id': Context.get('current_user_profile.id'),
 									'current_client': Context.get('current_client'),
 									'current_role': Context.get('current_role'),
 									'role_type': args.label,
@@ -187,7 +187,7 @@ var Components = {
 									command('add_role_to_user', roleData, function () {});
 								}
 
-								Context.updateUser(Context.get('current_user_profile', 'id'), args.label, indicator.status);
+								Context.updateUser(Context.get('current_user_profile.id'), args.label, indicator.status);
 							}
 						}}
 					],
@@ -207,7 +207,7 @@ var Components = {
 					},
 					registry: {
 						path: function () {
-							return ['role_display', args.label];
+							return 'role_display.{role}'.format({role: args.label});
 						},
 						fn: function (_this, data) {
 							_this.model().html(data); // set button title
@@ -225,7 +225,7 @@ var Components = {
 					{name: 'user-management-user-state', args: {
 						preFn: function (_this) {
 							if (!_this.isBasic) {
-								var status = Context.get('current_user_profile', 'roles', args.label, 'status');
+								var status = Context.get('current_user_profile.roles.{role}.status'.format({role: args.label}));
 								status = status !== '' ? status : 'add';
 								_this.set(status);
 							}
