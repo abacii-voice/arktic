@@ -20,9 +20,9 @@ Context.setFn(getdata('context', {}, function (data) {
 		Context.set('current_role', 'admin')
 		var projectPrototype = {
 			name: 'TestProject',
-			deadline: '1970/1/1',
-			new_part: true,
-			part_name: 'NewTestPart',
+			batch_deadline: '1970/1/1',
+			new_batch: true,
+			batch_name: 'NewTestBatch',
 		}
 
 		Context.set('current_upload.project', projectPrototype);
@@ -72,6 +72,7 @@ UI.createGlobalStates('client-state', [
 	'project-upload-relfile-reset-state',
 	'project-upload-audio-state',
 	'project-upload-audio-reset-state',
+	'project-upload-progress-state',
 	'project-settings-state',
 	'project-project-settings-state',
 
@@ -318,7 +319,7 @@ UI.createApp('hook', [
 											Context.update(data);
 										})).done(function () {
 											// data is a list of user objects with relevant details
-											var users = Context.get('clients', Context.get('current_client'), 'users');
+											var users = Context.get('clients.{client}.users'.format({client: Context.get('current_client')}));
 											Object.keys(users).map(function (userId) {
 												var userPrototype = users[userId];
 												var userButton = UI.createComponent('user-button-{id}'.format({id: userId}), {
@@ -436,8 +437,8 @@ UI.createApp('hook', [
 											states: [
 												{name: 'user-management-user-state', args: {
 													preFn: function (_this) {
-														var userFirstName = Context.get('current_user_profile', 'first_name');
-														var userLastName = Context.get('current_user_profile', 'last_name');
+														var userFirstName = Context.get('current_user_profile.first_name');
+														var userLastName = Context.get('current_user_profile.last_name');
 														_this.model().html('{first_name} {last_name}'.format({first_name: userFirstName, last_name: userLastName}));
 													}
 												}}
@@ -455,7 +456,7 @@ UI.createApp('hook', [
 											states: [
 												{name: 'user-management-user-state', args: {
 													preFn: function (_this) {
-														var userEmail = Context.get('current_user_profile', 'email');
+														var userEmail = Context.get('current_user_profile.email');
 														_this.model().html(userEmail);
 													}
 												}}
@@ -494,7 +495,7 @@ UI.createApp('hook', [
 											states: [
 												{name: 'user-management-user-state', args: {
 													preFn: function (_this) {
-														if (!(Context.get('current_role') === 'admin' && Context.get('clients', Context.get('current_client')).is_production)) {
+														if (!(Context.get('current_role') === 'admin' && Context.get('clients.{client}.is_production'.format({client: Context.get('current_client')})))) {
 															_this.model().css({'display': 'none'});
 														} else {
 															_this.model().css({'display': 'block'});
@@ -663,7 +664,7 @@ UI.createApp('hook', [
 													states: [
 														{name: 'user-management-user-state', args: {
 															preFn: function (_this) {
-																var isProduction = Context.get('clients', Context.get('current_client')).is_production;
+																var isProduction = Context.get('clients.{client}.is_production'.format({client: Context.get('current_client')}));
 																if (isProduction) {
 																	_this.model().css({'display': 'block'});
 																} else {
@@ -1024,7 +1025,7 @@ UI.createApp('hook', [
 							states: [
 								{name: 'user-management-new-user-state', args: {
 									preFn: function (_this) {
-										if (Context.get('clients', Context.get('current_client'), 'is_contract')) {
+										if (Context.get('clients.{client}.is_contract'.format({client: Context.get('current_client')}))) {
 											_this.model().css({'display': 'none'});
 										} else {
 											_this.model().css({'display': 'block'});
@@ -1627,7 +1628,7 @@ UI.createApp('hook', [
 							style: {
 								'height': '30px',
 							},
-							html: `New project`,
+							html: `New upload`,
 						},
 					}),
 					UI.createComponent('pi-npp-client-subtitle', {
@@ -1661,9 +1662,9 @@ UI.createApp('hook', [
 							],
 						},
 					}),
-					Components.searchFilterField('pi-npp-project-deadline', {
+					Components.searchFilterField('pi-npp-project-batch-search', {
 						show: 'show',
-						placeholder: 'Project deadline',
+						placeholder: 'Batch name',
 						state: {
 							states: [
 								{name: 'project-new-project-state', args: {
@@ -1674,97 +1675,9 @@ UI.createApp('hook', [
 							],
 						},
 					}),
-					UI.createComponent('pi-npp-new-part-selector', {
-						template: UI.template('div', 'ie show relative'),
-						appearance: {
-							style: {
-								'width': '100%',
-								'height': '50px',
-							},
-						},
-						children: [
-							UI.createComponent('pi-npp-nps-new-part-button', {
-								template: UI.templates.button,
-								appearance: {
-									style: {
-										'transform': 'none',
-										'left': '0px',
-										'height': '40px',
-										'width': 'calc(50% - 5px)',
-										'float': 'left',
-										'padding-top': '8px',
-									},
-									classes: ['border', 'border-radius', 'relative'],
-									html: 'New part',
-								},
-								state: {
-									defaultState: {
-										preFn: function (_this) {
-											_this.model().css({'border-color': '#fff', 'color': '#fff'});
-											_this.model().attr('active', 'true');
-										},
-									},
-									states: [
-										{name: 'project-new-project-state', args: 'default'},
-									],
-								},
-								bindings: [
-									{name: 'click', fn: function (_this) {
-										// make border and text white
-										_this.model().css({'border-color': '#fff', 'color': '#fff'});
-										_this.model().attr('active', 'true');
-
-										// make other button normal
-										var otherButton = UI.getComponent('pi-npp-nps-existing-part-button');
-										otherButton.model().css({'border-color': '#ccc', 'color': '#ccc'});
-										otherButton.model().attr('active', 'false');
-									}},
-								],
-							}),
-							UI.createComponent('pi-npp-nps-existing-part-button', {
-								template: UI.templates.button,
-								appearance: {
-									style: {
-										'transform': 'none',
-										'left': '0px',
-										'height': '40px',
-										'width': 'calc(50% - 5px)',
-										'float': 'left',
-										'margin-left': '10px',
-										'padding-top': '8px',
-									},
-									classes: ['border', 'border-radius', 'relative'],
-									html: 'Existing part',
-								},
-								state: {
-									defaultState: {
-										preFn: function (_this) {
-											_this.model().css({'border-color': '#ccc', 'color': '#ccc'});
-											_this.model().attr('active', 'false');
-										},
-									},
-									states: [
-										{name: 'project-new-project-state', args: 'default'},
-									],
-								},
-								bindings: [
-									{name: 'click', fn: function (_this) {
-										// make border and text white
-										_this.model().css({'border-color': '#fff', 'color': '#fff'});
-										_this.model().attr('active', 'true');
-
-										// make other button normal
-										var otherButton = UI.getComponent('pi-npp-nps-new-part-button');
-										otherButton.model().css({'border-color': '#ccc', 'color': '#ccc'});
-										otherButton.model().attr('active', 'false');
-									}},
-								],
-							}),
-						],
-					}),
-					Components.searchFilterField('pi-npp-project-part-search', {
+					Components.searchFilterField('pi-npp-batch-deadline', {
 						show: 'show',
-						placeholder: 'Part name',
+						placeholder: 'Batch deadline',
 						state: {
 							states: [
 								{name: 'project-new-project-state', args: {
@@ -1804,40 +1717,219 @@ UI.createApp('hook', [
 									noProblems = false;
 								}
 
-								var projectDeadlineField = UI.getComponent('pi-npp-project-deadline');
-								projectDeadline = projectDeadlineField.model().val();
-								if (projectDeadline !== '') {
+								var batchDeadlineField = UI.getComponent('pi-npp-batch-deadline');
+								batchDeadline = batchDeadlineField.model().val();
+								if (batchDeadline !== '') {
 									// TODO: validate with moment.
-									projectDeadlineField.model().removeClass('error');
+									batchDeadlineField.model().removeClass('error');
 								} else {
-									projectDeadlineField.model().addClass('error');
+									batchDeadlineField.model().addClass('error');
 									noProblems = false;
 								}
 
-								var newPart = UI.getComponent('pi-npp-nps-new-part-button').model().attr('active') === 'true';
-
-								var partNameField = UI.getComponent('pi-npp-project-part-search');
-								var partName = partNameField.model().val();
-								if (partName !== '') {
-									partNameField.model().removeClass('error');
+								var batchNameField = UI.getComponent('pi-npp-project-batch-search');
+								var batchName = batchNameField.model().val();
+								if (batchName !== '') {
+									batchNameField.model().removeClass('error');
 								} else {
-									partNameField.model().addClass('error');
+									batchNameField.model().addClass('error');
 									noProblems = false;
 								}
 
 								if (noProblems) {
 									var projectPrototype = {
 										name: projectName,
-										deadline: projectDeadline,
-										new_part: newPart,
-										part_name: partName,
+										batch_deadline: batchDeadline,
+										batch_name: batchName,
 									}
-									
+
+									var projectData = {
+										name: projectName,
+										batch_deadline: batchDeadline,
+										batch_name: batchName,
+										current_client: Context.get('current_client'),
+										current_role: Context.get('current_role'),
+									}
+
+									command('create_project', projectData, function (data) {});
+
 									Context.set('current_upload.project', projectPrototype);
 									_this.triggerState();
 								}
 							}}
 						],
+					}),
+				],
+			}),
+			UI.createComponent('pi-incomplete-upload-panel', {
+				template: UI.template('div', 'ie relative'),
+				appearance: {
+					style: {
+						'width': '400px',
+						'height': '100%',
+						'margin-left': '10px',
+						'float': 'left',
+					},
+				},
+				state: {
+					defaultState: {
+						fn: UI.functions.deactivate,
+					},
+					states: [
+						{name: 'project-state', args: 'default'},
+						{name: 'project-new-project-state', args: {
+							preFn: function (_this) {
+								// 1. find incomplete uploads. if they exist, show this panel.
+								var projects = 'clients.{client}.projects'.format({
+									client: Context.get('current_client'),
+								});
+								var contextProjects = Context.get(projects);
+								if (contextProjects !== '') {
+									var active = false;
+									Object.keys(contextProjects).forEach(function (projectName) {
+										var batches = '{projects}.{project}.batches'.format({
+											projects: projects,
+											project: projectName,
+										});
+										var contextBatches = Context.get(batches);
+										if (contextBatches !== '') {
+											Context.get(batches).forEach(function (batch) {
+												if (batch.uploads.length !== 0) {
+													active = true;
+												}
+											});
+										}
+									});
+
+									if (active) {
+										_this.model().css({'display': 'block'});
+									} else {
+										_this.model().css({'display': 'none'});
+									}
+
+								} else {
+									_this.model().css({'display': 'none'});
+								}
+							},
+						}},
+						{name: 'project-settings-state', args: 'default'},
+						{name: 'project-upload-state', args: 'default'},
+					],
+				},
+				children: [
+					Components.scrollList('pi-iup-upload-list', {
+						title: 'Incomplete uploads',
+						state: {
+							states: [
+								{name: 'project-new-project-state', args: {
+									preFn: function (_this) {
+										// remove previous children
+										Object.keys(_this.children).forEach(function (childId) {
+											UI.removeComponent(childId);
+										});
+
+										_this.children = {};
+
+										// get new children
+										var projects = 'clients.{client}.projects'.format({
+											client: Context.get('current_client'),
+										});
+										var contextProjects = Context.get(projects);
+										var incompleteUploads = [];
+										if (contextProjects !== '') {
+											Object.keys(contextProjects).forEach(function (projectName) {
+												var batches = '{projects}.{project}.batches'.format({
+													projects: projects,
+													project: projectName,
+												});
+												var contextBatches = Context.get(batches);
+												if (contextBatches !== '') {
+													Context.get(batches).forEach(function (batch) {
+														batch.uploads.forEach(function (upload) {
+															upload.project = projectName;
+															upload.deadline = batch.deadline;
+															upload.name = batch.name;
+															incompleteUploads.push(upload);
+														});
+													});
+												}
+											});
+										}
+
+										incompleteUploads.forEach(function (incompleteUpload, index) {
+											var incompleteUploadButton = UI.createComponent('pi-iup-ul-button-{index}'.format({index: index}), {
+												root: _this.id,
+												template: UI.templates.button,
+												appearance: {
+													style: {
+														'width': '100%',
+														'height': '80px',
+													},
+													classes: ['border', 'border-radius'],
+												},
+												state: {
+													stateMap: 'project-upload-state',
+												},
+												children: [
+													UI.createComponent('pi-iup-ul-b{index}-relfile-name'.format({index: index}), {
+														template: UI.template('span', 'ie show'),
+														appearance: {
+															style: {
+																'left': '10px',
+																'top': '12px',
+																'font-size': '15px',
+															},
+															html: 'Relfile name: {name}'.format({name: incompleteUpload.relfile_name}),
+														},
+													}),
+													UI.createComponent('pi-iup-ul-b{index}-archive-name'.format({index: index}), {
+														template: UI.template('span', 'ie show'),
+														appearance: {
+															style: {
+																'left': '10px',
+																'bottom': '12px',
+																'font-size': '15px',
+															},
+															html: 'Archive name: {name}'.format({name: incompleteUpload.archive_name}),
+														},
+													}),
+													UI.createComponent('pi-iup-ul-b{index}-percentage'.format({index: index}), {
+														template: UI.template('span', 'ie show centred-vertically'),
+														appearance: {
+															style: {
+																'right': '20px',
+																'font-size': '18px',
+															},
+															html: '{percentage}%'.format({percentage: incompleteUpload.completion_percentage}),
+														},
+													}),
+												],
+												bindings: [
+													{name: 'click', fn: function (_this) {
+														// set current upload details to match those of incompleteUpload
+														Context.set('current_upload', {
+															progress: '{percentage}'.format({percentage: incompleteUpload.completion_percentage}),
+															remaining_fragments: incompleteUpload.remaining_fragments,
+															project: {
+																name: incompleteUpload.project,
+																batch_deadline: incompleteUpload.deadline,
+																batch_name: incompleteUpload.name,
+															},
+														});
+
+														// trigger state
+														_this.triggerState();
+													}},
+												],
+											});
+
+											_this.children[incompleteUploadButton.id] = incompleteUploadButton;
+											incompleteUploadButton.render();
+										});
+									}
+								}},
+							],
+						},
 					}),
 				],
 			}),
@@ -1859,9 +1951,6 @@ UI.createApp('hook', [
 						{name: 'project-state', args: 'default'},
 						{name: 'project-upload-state', args: {
 							preFn: UI.functions.activate,
-							style: {
-								'opacity': '1.0',
-							},
 						}},
 						{name: 'project-settings-state', args: 'default'},
 						{name: 'project-new-project-state', args: 'default'},
@@ -1899,7 +1988,7 @@ UI.createApp('hook', [
 												{name: 'project-upload-state', args: {
 													preFn: function (_this) {
 														var projectPrototypeName = Context.get('current_upload.project.name');
-														_this.model().html('New project: {name}'.format({name: projectPrototypeName}));
+														_this.model().html('New upload: {name}'.format({name: projectPrototypeName}));
 													},
 												}}
 											],
@@ -1923,7 +2012,7 @@ UI.createApp('hook', [
 											],
 										},
 									}),
-									UI.createComponent('pi-pup-lp-s-deadline-part-caption', {
+									UI.createComponent('pi-pup-lp-s-deadline-batch-caption', {
 										template: UI.template('div', 'ie show relative border border-radius'),
 										appearance: {
 											style: {
@@ -1964,7 +2053,7 @@ UI.createApp('hook', [
 															states: [
 																{name: 'project-upload-state', args: {
 																	preFn: function (_this) {
-																		var deadline = Context.get('current_upload.project.deadline');
+																		var deadline = Context.get('current_upload.project.batch_deadline');
 																		_this.model().html(deadline);
 																	},
 																}},
@@ -1973,7 +2062,7 @@ UI.createApp('hook', [
 													}),
 												],
 											}),
-											UI.createComponent('pi-pup-lp-s-dpc-part', {
+											UI.createComponent('pi-pup-lp-s-dpc-batch', {
 												template: UI.template('div', 'ie show relative border-right'),
 												appearance: {
 													style: {
@@ -1986,7 +2075,7 @@ UI.createApp('hook', [
 													UI.createComponent('pi-pup-lp-s-dpc-p-title', {
 														template: UI.template('h3', 'ie show centred-horizontally'),
 														appearance: {
-															html: 'Part',
+															html: 'Batch',
 															style: {
 																'margin-top': '5px',
 															},
@@ -2004,8 +2093,8 @@ UI.createApp('hook', [
 															states: [
 																{name: 'project-upload-state', args: {
 																	preFn: function (_this) {
-																		var partName = Context.get('current_upload.project.part_name');
-																		_this.model().html(partName);
+																		var batchName = Context.get('current_upload.project.batch_name');
+																		_this.model().html(batchName);
 																	},
 																}},
 															],
@@ -2055,6 +2144,11 @@ UI.createApp('hook', [
 										},
 										state: {
 											stateMap: 'project-new-project-state',
+											states: [
+												{name: 'project-upload-progress-state', args: {
+													fn: UI.functions.deactivate,
+												}},
+											],
 										},
 										bindings: [
 											{name: 'click', fn: function (_this) {
@@ -2063,20 +2157,80 @@ UI.createApp('hook', [
 
 												// a bit of a hack.
 												UI.getComponent('pi-npp-project-search').model().val(Context.get('current_upload.project.name'));
-												UI.getComponent('pi-npp-project-deadline').model().val(Context.get('current_upload.project.deadline'));
-
-												var newPart = Context.get('current_upload.project.new_part');
-												var newActive = newPart ? 'true' : 'false';
-												var newColor = newPart ? '#fff' : '#ccc';
-												var existingActive = newPart ? 'false' : 'true';
-												var existingColor = newPart ? '#ccc' : '#fff';
-												UI.getComponent('pi-npp-nps-new-part-button').model().css({'border-color': newColor, 'color': newColor});
-												UI.getComponent('pi-npp-nps-new-part-button').model().attr('active', newActive);
-												UI.getComponent('pi-npp-nps-existing-part-button').model().css({'border-color': existingColor, 'color': existingColor});
-												UI.getComponent('pi-npp-nps-existing-part-button').model().attr('active', existingActive);
-
-												UI.getComponent('pi-npp-project-part-search').model().val(Context.get('current_upload.project.part_name'));
+												UI.getComponent('pi-npp-batch-deadline').model().val(Context.get('current_upload.project.batch_deadline'));
+												UI.getComponent('pi-npp-project-batch-search').model().val(Context.get('current_upload.project.batch_name'));
 											}},
+										],
+									}),
+								],
+							}),
+							UI.createComponent('pi-pup-lp-upload-progress', {
+								template: UI.template('div', 'ie show relative'),
+								appearance: {
+									style: {
+										'width': 'calc(100% - 70px)',
+										'height': '40px',
+									},
+								},
+								state: {
+									states: [
+										{name: 'project-upload-state', args: {
+											fn: UI.functions.deactivate,
+										}},
+										{name: 'project-upload-progress-state', args: {
+											preFn: UI.functions.activate,
+										}},
+									],
+								},
+								children: [
+									UI.createComponent('pi-pup-lp-up-progress-bar', {
+										template: UI.template('div', 'ie show relative'),
+										appearance: {
+											style: {
+												'width': 'calc(100%)',
+												'height': '40px',
+											},
+										},
+										children: [
+											UI.createComponent('pi-pup-lp-up-pb-bar', {
+												template: UI.template('div', 'ie show relative border border-radius'),
+												appearance: {
+													style: {
+														'width': 'calc(100% - 90px)',
+														'height': '40px',
+														'float': 'left',
+													},
+												},
+												children: [
+													UI.createComponent('pi-pup-lp-up-pbb-background', {
+														template: UI.template('div', 'ie show relative'),
+														appearance: {
+															style: {
+																'width': '0px',
+																'height': '40px',
+																'background-color': '#ccc',
+															},
+														},
+													}),
+												],
+											}),
+											UI.createComponent('pi-pup-lp-up-pb-counter', {
+												template: UI.template('div', 'ie show relative border border-radius'),
+												appearance: {
+													style: {
+														'width': '80px',
+														'height': '40px',
+														'float': 'left',
+														'margin-left': '10px',
+														'padding-top': '10px',
+													},
+												},
+												children: [
+													UI.createComponent('pi-pup-lp-up-pbc-span', {
+														template: UI.template('span', 'ie show centred-horizontally'),
+													})
+												],
+											}),
 										],
 									}),
 								],
@@ -2104,80 +2258,104 @@ UI.createApp('hook', [
 											stateMap: 'project-upload-relfile-state',
 											defaultState: {
 												preFn: function (_this) {
-													// make visible
-													_this.model().css({'display': 'block'});
+													if (Context.get('current_upload.relfile.lines') === '') {
+														// make visible
+														_this.model().css({'display': 'block'});
 
-													// make dropzone
-													_this.model().dropzone({
-														url: '/upload-relfile',
-														maxFiles: 1,
-														acceptedFiles: '.csv',
-														paramName: 'relfile-input',
-														createImageThumbnails: false,
-														accept: function (file, done) {
-															// try reading file
-															var reader = new FileReader();
-															reader.onload = function(e) {
-																var contents = e.target.result;
-																// contents is a string. I can do what I want.
-																// 1. parse contents of file and display in rel-file-filelist
-																var lines = contents.split('\n');
-																var headerLine = lines.shift();
+														// make dropzone
+														_this.model().dropzone({
+															url: '/upload-relfile',
+															maxFiles: 1,
+															acceptedFiles: '.csv',
+															paramName: 'relfile-input',
+															createImageThumbnails: false,
+															accept: function (file, done) {
+																// try reading file
+																var reader = new FileReader();
+																reader.onload = function(e) {
+																	var contents = e.target.result;
+																	// contents is a string. I can do what I want.
+																	// 1. parse contents of file and display in rel-file-filelist
+																	var lines = contents.split('\n');
+																	var headerLine = lines.shift();
 
-																// 2. add lines to Context
-																var relfileLineObjects = lines.map(function (line) {
-																	var keys = line.split(',');
-																	return {filename: basename(keys[0]), caption: keys[1]}
-																}).filter(function (relfileLineObject) {
-																	return relfileLineObject.filename !== ''; //filter directories
-																});
-
-																// 1. find number of unique audio file names
-																var audioSet = {};
-																relfileLineObjects.forEach(function (line) {
-																	if (audioSet.hasOwnProperty(line.filename)) {
-																		audioSet[line.filename]++;
-																	} else {
-																		audioSet[line.filename] = 1;
-																	}
-																});
-
-																var total = relfileLineObjects.length;
-																var unique = Object.keys(audioSet).length;
-																var duplicates = 0;
-																Object.keys(audioSet).forEach(function (key) {
-																	var matchingLines = relfileLineObjects.filter(function (line) {
-																		return line.filename === key;
+																	// 2. add lines to Context
+																	var relfileLineObjects = lines.map(function (line) {
+																		var keys = line.split(',');
+																		return {filename: basename(keys[0]), caption: keys[1]}
+																	}).filter(function (relfileLineObject) {
+																		return relfileLineObject.filename !== ''; //filter directories
 																	});
-																	if (audioSet[key] > 1) {
-																		duplicates += audioSet[key] - 1;
-																		matchingLines.forEach(function (line, index) {
-																			if (index === 0) {
-																				line.is_duplicate = false;
-																			} else {
-																				line.is_duplicate = true;	
-																			}
-																		})
-																	} else {
-																		matchingLines.forEach(function (line) {
-																			line.is_duplicate = false;
-																		})
-																	}
-																});
-																
-																Context.set('current_upload.relfile', {
-																	lines: relfileLineObjects,
-																	total: total,
-																	unique: unique,
-																	duplicates: duplicates,
-																});
 
-																// 3. trigger
-																_this.triggerState();
-															};
-															reader.readAsText(file);
-														},
-													});
+																	// 1. find number of unique audio file names
+																	var audioSet = {};
+																	relfileLineObjects.forEach(function (line) {
+																		if (audioSet.hasOwnProperty(line.filename)) {
+																			audioSet[line.filename]++;
+																		} else {
+																			audioSet[line.filename] = 1;
+																		}
+																	});
+
+																	var total = relfileLineObjects.length;
+																	var unique = Object.keys(audioSet).length;
+																	var duplicates = 0;
+																	Object.keys(audioSet).forEach(function (key) {
+																		var matchingLines = relfileLineObjects.filter(function (line) {
+																			return line.filename === key;
+																		});
+																		if (audioSet[key] > 1) {
+																			duplicates += audioSet[key] - 1;
+																			matchingLines.forEach(function (line, index) {
+																				if (index === 0) {
+																					line.is_duplicate = false;
+																				} else {
+																					line.is_duplicate = true;
+																				}
+																			})
+																		} else {
+																			matchingLines.forEach(function (line) {
+																				line.is_duplicate = false;
+																			})
+																		}
+																	});
+
+																	Context.set('current_upload.relfile', {
+																		name: file.name,
+																		lines: relfileLineObjects,
+																		total: total,
+																		unique: unique,
+																		duplicates: duplicates,
+																	});
+
+																	if (Context.get('current_upload.progress') === '100' || Context.get('current_upload.progress') === '') {
+																		Context.set('current_upload.progress', '0');
+																	}
+
+																	// create upload object
+																	var uploadData = {
+																		'current_client': Context.get('current_client'),
+																		'current_role': Context.get('current_role'),
+																		'project_name': Context.get('current_upload.project.name'),
+																		'batch_name': Context.get('current_upload.project.batch_name'),
+																		'archive_name': Context.get('current_upload.audio.name'),
+																		'relfile_name': file.name,
+																		'fragments': relfileLineObjects.map(function (line) {
+																			return line.filename;
+																		}),
+																	};
+
+																	command('create_upload', uploadData, function (data) {});
+
+																	// 3. trigger
+																	_this.triggerState();
+																};
+																reader.readAsText(file);
+															},
+														});
+													} else {
+														_this.model().css({'display': 'none'});
+													}
 												},
 											},
 											states: [
@@ -2348,11 +2526,22 @@ UI.createApp('hook', [
 												fn: UI.functions.deactivate,
 											},
 											states: [
-												{name: 'project-upload-state', args: 'default'},
+												{name: 'project-upload-state', args: {
+													preFn: function (_this) {
+														if (Context.get('current_upload.relfile') !== '') {
+															_this.model().css({'display': 'block'});
+														} else {
+															_this.model().css({'display': 'none'});
+														}
+													}
+												}},
 												{name: 'project-upload-relfile-state', args: {
 													preFn: UI.functions.activate,
 												}},
 												{name: 'project-upload-relfile-reset-state', args: 'default'},
+												{name: 'project-upload-progress-state', args: {
+													fn: UI.functions.deactivate,
+												}},
 											],
 										},
 										content: [
@@ -2489,7 +2678,7 @@ UI.createApp('hook', [
 																			var filename = line.filename.length > 20 ? line.filename.substr(0,15).concat('... .wav') : line.filename;
 																			var caption = line.caption.length > 20 ? line.caption.substr(0,20).concat('...') : line.caption;
 																			line.index = index;
-																			
+
 																			var presentInAudio = true; // true even if there is no relfile
 																			if (audioLines.length !== 0) {
 																				presentInAudio = audioLines.filter(function (audioLine) {
@@ -2497,13 +2686,13 @@ UI.createApp('hook', [
 																				}).length > 0;
 																			}
 																			line.found = presentInAudio;
-																			
+
 																			// define styling
 																			var style = {};
 																			if (line.is_duplicate) {
-																				style['color'] = '#AA9F39';	
+																				style['color'] = '#AA9F39';
 																			}
-																			
+
 																			if (!presentInAudio) {
 																				style['color'] = '#AA5039';
 																			}
@@ -2571,8 +2760,8 @@ UI.createApp('hook', [
 																		// reconcile list of audio files in Context.
 																		var audioFileList = Context.get('current_upload.audio.lines');
 																		var relfileFileList = Context.get('current_upload.relfile.lines');
-																		
-																		// the priority here is updating the 'color' property of each row based on it's participation in each list.
+
+																		// the priority here is updating the 'color' property of each row based on it's batchicipation in each list.
 																		relfileFileList.forEach(function (line) {
 																			// if line.filename is not in audioFileList, change color to red
 																			if (audioFileList.filter(function (audioLine) {
@@ -2627,88 +2816,113 @@ UI.createApp('hook', [
 											stateMap: 'project-upload-audio-state',
 											defaultState: {
 												preFn: function (_this) {
-													// make visible
-													_this.model().css({'display': 'block'});
+													if (Context.get('current_upload.audio.lines') === '') {
+														// make visible
+														_this.model().css({'display': 'block'});
 
-													// make dropzone
-													_this.model().dropzone({
-														url: '/upload-audio',
-														maxFiles: 1,
-														acceptedFiles: '.zip',
-														paramName: 'audio-input',
-														createImageThumbnails: false,
-														accept: function (file, done) {
-															// try reading file
-															var reader = new FileReader();
-															var zip = new JSZip();
-															reader.onload = function(e) {
-																var contents = e.target.result;
-																zip.load(contents);
+														// make dropzone
+														_this.model().dropzone({
+															url: '/upload-audio',
+															maxFiles: 1,
+															acceptedFiles: '.zip',
+															paramName: 'audio-input',
+															createImageThumbnails: false,
+															accept: function (file, done) {
+																// try reading file
+																var reader = new FileReader();
+																var zip = new JSZip();
+																reader.onload = function(e) {
+																	var contents = e.target.result;
+																	zip.load(contents);
 
-																// extract list of files and cut off directory name
-																var filenames = [];
-																var dirname;
-																Object.keys(zip.files).forEach(function (key) {
-																	if (!zip.files[key].dir) {
-																		filenames.push(basename(key));
-																	} else {
-																		if (dirname === undefined) {
-																			dirname = key;	
-																		}
-																	}
-																});
-																
-																// find number of unique audio file names
-																var audioSet = {};
-																filenames.forEach(function (filename) {
-																	if (audioSet.hasOwnProperty(filename)) {
-																		audioSet[filename]++;
-																	} else {
-																		audioSet[filename] = 1;
-																	}
-																});
-																
-																// count numbers and assign duplicates
-																var audioObjects = filenames.map(function (filename) {
-																	return {filename: filename};
-																});
-																var total = filenames.length;
-																var unique = Object.keys(audioSet).length;
-																var duplicates = 0;
-																Object.keys(audioSet).forEach(function (key) {
-																	var matchingLines = audioObjects.filter(function (audioObject) {
-																		return audioObject.filename === key;
-																	});
-																	if (audioSet[key] > 1) {
-																		duplicates += audioSet[key] - 1;
-																		matchingLines.forEach(function (line, index) {
-																			if (index === 0) {
-																				line.is_duplicate = false;
-																			} else {
-																				line.is_duplicate = true;
+																	// extract list of files and cut off directory name
+																	var filenames = [];
+																	var dirname;
+																	Object.keys(zip.files).forEach(function (key) {
+																		if (!zip.files[key].dir) {
+																			filenames.push(basename(key));
+																		} else {
+																			if (dirname === undefined) {
+																				dirname = key;
 																			}
-																		})  
-																	} else {
-																		matchingLines.forEach(function (line) {
-																			line.is_duplicate = false;
-																		})
+																		}
+																	});
+
+																	// find number of unique audio file names
+																	var audioSet = {};
+																	filenames.forEach(function (filename) {
+																		if (audioSet.hasOwnProperty(filename)) {
+																			audioSet[filename]++;
+																		} else {
+																			audioSet[filename] = 1;
+																		}
+																	});
+
+																	// count numbers and assign duplicates
+																	var audioObjects = filenames.map(function (filename) {
+																		return {filename: filename};
+																	});
+																	var total = filenames.length;
+																	var unique = Object.keys(audioSet).length;
+																	var duplicates = 0;
+																	Object.keys(audioSet).forEach(function (key) {
+																		var matchingLines = audioObjects.filter(function (audioObject) {
+																			return audioObject.filename === key;
+																		});
+																		if (audioSet[key] > 1) {
+																			duplicates += audioSet[key] - 1;
+																			matchingLines.forEach(function (line, index) {
+																				if (index === 0) {
+																					line.is_duplicate = false;
+																				} else {
+																					line.is_duplicate = true;
+																				}
+																			})
+																		} else {
+																			matchingLines.forEach(function (line) {
+																				line.is_duplicate = false;
+																			})
+																		}
+																	});
+
+																	Context.set('current_upload.audio', {
+																		name: file.name,
+																		files: zip.files,
+																		lines: audioObjects,
+																		total: total,
+																		unique: unique,
+																		duplicates: duplicates,
+																		dir: dirname,
+																	});
+
+																	if (Context.get('current_upload.progress') === '100' || Context.get('current_upload.progress') === '') {
+																		Context.set('current_upload.progress', '0');
 																	}
-																});
 
-																Context.set('current_upload.audio', {
-																	'files': zip.files,
-																	'lines': audioObjects,
-																	'total': total,
-																	'unique': unique,
-																	'duplicates': duplicates,
-																	'dir': dirname,
-																}); 
-																_this.triggerState();
-															}
+																	// create upload object
+																	var uploadData = {
+																		'current_client': Context.get('current_client'),
+																		'current_role': Context.get('current_role'),
+																		'project_name': Context.get('current_upload.project.name'),
+																		'batch_name': Context.get('current_upload.project.batch_name'),
+																		'archive_name': file.name,
+																		'relfile_name': Context.get('current_upload.relfile.name'),
+																		'fragments': audioObjects.map(function (line) {
+																			return line.filename;
+																		}),
+																	};
 
-															reader.readAsBinaryString(file);
-														},
-													});
+																	command('create_upload', uploadData, function (data) {});
+
+																	_this.triggerState();
+																}
+
+																reader.readAsBinaryString(file);
+															},
+														});
+													} else {
+														_this.model().css({'display': 'none'});
+													}
 												},
 											},
 											states: [
@@ -2800,11 +3014,22 @@ UI.createApp('hook', [
 												fn: UI.functions.deactivate,
 											},
 											states: [
-												{name: 'project-upload-state', args: 'default'},
+												{name: 'project-upload-state', args: {
+													preFn: function (_this) {
+														if (Context.get('current_upload.audio') !== '') {
+															_this.model().css({'display': 'block'});
+														} else {
+															_this.model().css({'display': 'none'});
+														}
+													}
+												}},
 												{name: 'project-upload-audio-state', args: {
 													preFn: UI.functions.activate,
 												}},
 												{name: 'project-upload-audio-reset-state', args: 'default'},
+												{name: 'project-upload-progress-state', args: {
+													fn: UI.functions.deactivate,
+												}},
 											],
 										},
 										content: [
@@ -2861,7 +3086,7 @@ UI.createApp('hook', [
 													{name: 'click', fn: function (_this) {
 														// remove context variables
 														Context.set('current_upload.audio', {});
-														
+
 														// omg hack because I do not control the dropzone package.
 														_this.parent().parent().parent().model().find('.dz-error-message').css({'display': 'none'});
 														_this.triggerState();
@@ -2932,7 +3157,7 @@ UI.createApp('hook', [
 																			// determine properties
 																			var filename = line.filename.length > 40 ? line.filename.substr(0,15).concat('... .wav') : line.filename;
 																			line.index = index;
-																			
+
 																			var presentInRelfile = true; // true even if there is no relfile
 																			if (relfileLines.length !== 0) {
 																				presentInRelfile = relfileLines.filter(function (relfileLine) {
@@ -2940,13 +3165,13 @@ UI.createApp('hook', [
 																				}).length > 0;
 																			}
 																			line.found = presentInRelfile;
-																			
+
 																			// define styling
 																			var style = {};
 																			if (line.is_duplicate) {
-																				style['color'] = '#AA9F39';	
+																				style['color'] = '#AA9F39';
 																			}
-																			
+
 																			if (!presentInRelfile) {
 																				style['color'] = '#AA5039';
 																			}
@@ -3000,8 +3225,8 @@ UI.createApp('hook', [
 																		// reconcile list of audio files in Context.
 																		var audioFileList = Context.get('current_upload.audio.lines');
 																		var relfileFileList = Context.get('current_upload.relfile.lines');
-																		
-																		// the priority here is updating the 'color' property of each row based on it's participation in each list.
+
+																		// the priority here is updating the 'color' property of each row based on it's batchicipation in each list.
 																		audioFileList.forEach(function (line) {
 																			// if line.filename is not in audioFileList, change color to red
 																			if (relfileFileList.filter(function (relfileLine) {
@@ -3033,60 +3258,95 @@ UI.createApp('hook', [
 									},
 									html: 'Confirm and upload',
 								},
+								state: {
+									stateMap: 'project-upload-progress-state',
+									states: [
+										{name: 'project-upload-progress-state', args: {
+											fn: UI.functions.deactivate,
+										}},
+									],
+								},
 								bindings: [
 									{name: 'click', fn: function (_this) {
 										// get the list of audio files that are "found".
 										var foundAudioFiles = Context.get('current_upload.audio.lines').filter(function (line) {
 											return line.found;
 										});
-										
+
+										// if there is an unfinished upload, filter by the remaining fragments to be uploaded.
+										var remainingFragments = Context.get('current_upload.remaining_fragments');
+										if (remainingFragments !== '') {
+											foundAudioFiles = foundAudioFiles.filter(function (audioFile) {
+												return remainingFragments.indexOf(audioFile.filename) !== -1;
+											});
+										}
+
 										var audioFileList = Context.get('current_upload.audio.files');
 										var relfileFileList = Context.get('current_upload.relfile.lines')
-										
+
 										// failure conditions
-										var noFoundAudioFiles = foundAudioFiles.length !== 0; 
-										if (noFoundAudioFiles) {
+										var noFoundAudioFiles = foundAudioFiles.length === 0;
+										if (!noFoundAudioFiles) {
+											// trigger state
+											_this.triggerState();
+
 											// upload audio files one by one
-											var progress = 0;
 											foundAudioFiles.forEach(function (audioFile) {
 												// 1. get match from actual list of files
 												var filename = Object.keys(audioFileList).filter(function (key) {
 													return basename(key) === audioFile.filename;
 												})[0];
-												
+
 												var file = audioFileList[filename];
 												var arrayBuffer = file.asArrayBuffer();
 												var dataView = new DataView(arrayBuffer);
 												var blob = new Blob([dataView], {type: 'audio/wav'});
-												
+
 												// 2. get caption from relfile list
 												var caption = '';
 												if (relfileFileList.length !== 0) {
 													caption = relfileFileList.filter(function (line) {
 														return line.filename === audioFile.filename;
-													})[0].caption;	
+													})[0].caption;
 												}
-												
+
 												// 3. create new formdata object
 												formData = new FormData();
-												formData.encoding = 'multipart/form-data';
+												formData.encoding = 'multibatch/form-data';
 												formData.append('file', blob);
 												formData.append('caption', caption);
 												formData.append('filename', audioFile.filename);
 												formData.append('current_client', Context.get('current_client'));
 												formData.append('current_role', Context.get('current_role'));
 												formData.append('project_name', Context.get('current_upload.project.name'));
-												
+												formData.append('batch_name', Context.get('current_upload.project.batch_name'));
+												formData.append('archive_name', Context.get('current_upload.audio.name'));
+												formData.append('relfile_name', Context.get('current_upload.relfile.name'));
+
 												command('upload_audio', formData, function (data) {
 													// update progress
-													// progress = Math.floor((audioFile.index + 1) / (foundAudioFiles.length));
-													// Context.set('current_upload.progress', progress);
+													var progress = Context.get('current_upload.progress');
+													var current_progress = Math.floor(parseFloat(progress) + 100.0 / foundAudioFiles.length);
+													Context.set('current_upload.progress', current_progress);
+
+													// set indicators
+													var bar = UI.getComponent('pi-pup-lp-up-pbb-background');
+													var span = UI.getComponent('pi-pup-lp-up-pbc-span');
+													bar.model().css({'width': '{width}px'.format({width: current_progress * parseInt(bar.parent().model().css('width')) / 100})});
+													span.model().html('{percentage}%'.format({percentage: current_progress}));
+
+													// end condition
+													if (current_progress === 100) {
+														Context.set('current_upload.done', true);
+													}
+												}, {
+													processData: false,
+													contentType: false,
 												});
-												
 											});
-											
+
 										} else {
-											// make button red 
+											// make button red
 										}
 									}}
 								],
@@ -3131,7 +3391,7 @@ UI.createApp('hook', [
 				loadingIcon: true,
 				registry: {
 					path: function () {
-						return ['clients'];
+						return 'clients';
 					},
 					fn: function (_this, data) {
 						// create buttons from Context and remove loading icon
