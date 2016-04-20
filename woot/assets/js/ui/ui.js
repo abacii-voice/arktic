@@ -48,7 +48,7 @@ var UI = {
 			var componentSvitchPromise = new Promise(function (resolve, reject) {
 				UI.svitches[stateName].filter(function (svitch) {
 					return svitch.component.id === trigger;
-				}).map(function (svitch) {
+				}).forEach(function (svitch) {
 					svitch.fn(svitch.component);
 				});
 			});
@@ -120,95 +120,271 @@ var UI = {
 		// 	children: [],
 		// })
 
-		// id
-		this.id = id;
-
-		// root
-		this.root = args.root;
-
-		// template
-		this.template = args.template !== undefined ? args.template : UI.templates.div;
-
-		// appearance
-		if (args.appearance !== undefined) {
-			this.properties = args.appearance.properties; // e.g. default value for input
-			this.html = args.appearance.html;
-			this.classes = args.appearance.classes; // Default state classes
-			this.style = args.appearance.style;
-		}
-		this.stateClasses = []; // Can be added by states
-		this.stateStyle = {};
-
-		// state
-		// if states have been defined for the component
-		if (args.state !== undefined) {
-			// get state
-			this.getState = function (stateName) {
-				return this.states.filter(function (state) {
-					return state.name === stateName;
-				})[0];
-			}
-
-			// default state
-			this.defaultState = args.state.defaultState !== undefined ? args.state.defaultState : {}; // args
-
-			// states
-			if (args.state.states !== undefined) {
-				this.states = args.state.states.map(function (state) {
-					return UI.createState(this, state.name, state.args);
-				}, this);
-
-				this.state = this.getState(UI.globalState);
-				if (this.state !== undefined) {
-					this.stateClasses = this.state.classes !== undefined ? this.state.classes : [];
-					this.stateStyle = this.state.style !== undefined ? this.state.style : {};
-				}
-			}
-
-			// svitches
-			if (args.state.svitches !== undefined) {
-				this.svitches = args.state.svitches.map(function (svitch) {
-					return UI.createSvitch(this, svitch.stateName, svitch.fn);
-				}, this);
-			}
-
-			// state map
-			if (args.state.stateMap !== undefined) {
-				if (typeof args.state.stateMap === 'string') {
-					this.stateMap = {};
-					UI.globalStates.map(function (globalState) {
-						this.stateMap[globalState] = args.state.stateMap;
-					}, this);
-				} else {
-					this.stateMap = args.state.stateMap;
-				}
-			}
-		}
-
-		// registry
-		if (args.registry !== undefined) {
-			// vars
-			this.registryPath = args.registry.path; // a function that generates an array of args
-			this.registryResponse = args.registry.fn;
-
-			// register
-			Context.register(this.id, this.registryPath);
-		}
-
-		// bindings
-		this.bindings = args.bindings !== undefined ? args.bindings : [];
-
-		// children
-		this.children = args.children !== undefined ? args.children : [];
-
 		///////////////
 		// METHODS
+		// update
+		this.setId = function (id) {
+			var currentId = this.id;
+			var model = this.model();
+			this.id = id !== undefined ? id : currentId;
+
+			// handle any changes
+			if (this.id !== currentId && this.rendered) {
+				// 1. change model id
+				model.attr('id', this.id);
+
+				// 2. swap key in UI.components object
+				UI.components[this.id] = UI.components[currentId];
+				delete UI.components[currentId];
+
+				// 3. remove old from parent children
+				delete this.parent().children[currentId];
+			}
+		}
+
+		this.setRoot = function (root) {
+			var currentRoot = this.root !== undefined ? this.root : 'hook';
+			this.root = root !== undefined ? root : currentRoot;
+
+			if (this.rendered && this.root !== currentRoot) {
+				var newRoot = $('#{id}'.format({id: this.root}));
+				this.model().appendTo(newRoot);
+				UI.getComponent(this.root).children[this.id] = this;
+			}
+		}
+
+		this.setAfter = function (after) {
+			var currentAfter;
+			if (this.rendered) {
+				// find previous child
+
+			} else {
+
+			}
+		}
+
+		this.setTemplate = function (template) {
+			var currentTemplate = this.template !== undefined ? this.template : UI.templates.div;
+			this.template = template !== undefined ? template : currentTemplate;
+		}
+
+		this.setAppearance = function (appearance) {
+			var currentProperties = this.properties !== undefined ? this.properties : {};
+			var currentClasses = this.classes !== undefined ? this.classes : [];
+			var currentStyle = this.style !== undefined ? this.style : {};
+
+			if (appearance !== undefined) {
+				this.properties = appearance.properties !== undefined ? appearance.properties : currentProperties;
+				this.html = appearance.html !== undefined ? appearance.html : this.html;
+				this.classes = appearance.classes !== undefined ? appearance.classes : currentClasses;
+				this.style = appearance.style !== undefined ? appearance.style : currentStyle;
+
+				if (this.rendered) {
+					// model
+					var model = this.model();
+
+					// properties
+					var _this = this;
+					Object.keys(this.properties).forEach(function (property) {
+						model.attr(property, _this.properties[property]);
+					});
+
+					// html
+					model.html(this.html);
+
+					// classes
+					if (_this.classes !== undefined) {
+						// remove current classes that are not the new classes variable
+						currentClasses.filter(function (className) {
+							return _this.classes.indexOf(className) === -1;
+						}).forEach(function (className) {
+							model.removeClass(className);
+						});
+
+						// add new classes
+						_this.classes.forEach(function (className) {
+							model.addClass(className);
+						});
+					}
+
+					// style
+					model.css(this.style);
+				}
+			}
+		}
+
+		this.getState = function (stateName) {
+			return this.states().filter(function (state) {
+				return state.name === stateName;
+			})[0];
+		};
+
+		this.setState = function (argsState) {
+			if (argsState !== undefined) {
+				// default state
+				var currentDefaultState = this.defaultState !== undefined ? this.defaultState : {};
+				this.defaultState = argsState.defaultState !== undefined ? argsState.defaultState : currentDefaultState;
+
+				// states
+				this.addStates(argsState.states);
+
+				// svitches
+				this.addSvitches(argsState.svitches);
+
+				// state map
+				this.addStateMap(argsState.stateMap);
+			}
+		}
+
+		this.addStates = function (states) {
+			if (states !== undefined) {
+				states.forEach(this.addState, this);
+
+				if (this.state === undefined) {
+					this.state = this.getState(UI.globalState);
+					if (this.state !== undefined) {
+						this.stateClasses = this.state.classes !== undefined ? this.state.classes : [];
+						this.stateStyle = this.state.style !== undefined ? this.state.style : {};
+					}
+				}
+			}
+		}
+
+		this.addState = function (statePrototype) {
+			// add as new state
+			UI.createState(this, statePrototype.name, statePrototype.args);
+		}
+
+		this.states = function () {
+			var _this = this;
+			return UI.allStates().filter(function (state) {
+				return state.component.id === _this.id;
+			});
+		}
+
+		this.addSvitches = function (svitches) {
+			if (svitches !== undefined) {
+				svitches.forEach(this.addSvitch, this);
+			}
+		}
+
+		this.addSvitch = function (svitchPrototype) {
+			// add as new svitch
+			UI.createSvitch(this, svitchPrototype.stateName, svitchPrototype.fn);
+		}
+
+		this.svitches = function () {
+			var _this = this;
+			return UI.allSvitches().filter(function (svitch) {
+				return svitch.component.id === _this.id;
+			});
+		}
+
+		this.addStateMap = function (stateMap) {
+			this.stateMap = this.stateMap !== undefined ? this.stateMap : {};
+
+			if (stateMap !== undefined) {
+				if (typeof stateMap === 'string') {
+					UI.globalStates.forEach(function (globalState) {
+						this.stateMap[globalState] = stateMap;
+					}, this);
+				} else {
+					Object.keys(stateMap).forEach(function (stateName) {
+						this.stateMap[stateName] = stateMap[stateName];
+					}, this);
+				}
+			}
+		}
+
+		this.setRegistry = function (registry) {
+			if (registry !== undefined) {
+				// vars
+				this.registryPath = registry.path; // a function that generates an array of args
+				this.registryResponse = registry.fn;
+
+				// register
+				Context.register(this.id, this.registryPath);
+			}
+		}
+
+		this.setBindings = function (bindings) {
+			this.bindings = this.bindings !== undefined ? this.bindings : {};
+			if (bindings !== undefined) {
+				bindings.forEach(function (binding) {
+					// 1. determine if binding with the same name is in the current array
+					this.bindings[binding.name] = {fn: binding.fn};
+					if (binding.fn2 !== undefined) {
+						this.bindings[binding.name].fn2 = binding.fn2;
+					}
+
+					// 2. if rendered, add to model
+					if (this.rendered) {
+						var _this = this;
+						if (binding.fn2 !== undefined) {
+							this.model().on(binding.name, function () {
+								binding.fn(_this);
+							}, function () {
+								binding.fn2(_this);
+							});
+						} else {
+							this.model().on(binding.name, function () {
+								binding.fn(_this);
+							});
+						}
+					}
+				}, this);
+			}
+		}
+
+		this.setChildren = function (children) {
+			this.children = this.children !== undefined ? this.children : {};
+			if (children !== undefined) {
+				children.forEach(function (child) {
+					this.children[child.id] = child;
+
+					if (this.rendered) {
+						child.root = this.id;
+						this.renderChild(child.id);
+					}
+				}, this);
+			}
+		}
+
+		this.update = function (args) {
+			// id, root, after, template
+			this.setId(args.id);
+			this.setRoot(args.root);
+			this.setAfter(args.after);
+			this.setTemplate(args.template);
+
+			// appearance
+			this.setAppearance(args.appearance);
+
+			// state
+			this.setState(args.state);
+
+			// registry
+			this.setRegistry(args.registry);
+
+			// bindings
+			this.setBindings(args.bindings);
+
+			// children
+			this.setChildren(args.children);
+		}
+
 		// model
 		this.model = function () {
 			return $('#{id}'.format({id: this.id}));
 		}
 
 		// render
+		this.renderChild = function (childId) {
+			var child = this.children[childId];
+			child.root = this.id;
+			child.render();
+		}
+
 		this.render = function () {
 			// 1. root
 			var root = $('#{id}'.format({id: this.root}));
@@ -235,27 +411,37 @@ var UI = {
 
 			// 4. Add classes and style of initial state
 			var model = this.model();
-			this.stateClasses.map(function (stateClass) {
-				model.addClass(stateClass);
-			});
-			model.css(this.stateStyle);
+			if (this.state !== undefined) {
+				this.stateClasses.forEach(function (stateClass) {
+					model.addClass(stateClass);
+				});
+				model.css(this.stateStyle);
+			}
 
 			// 5. render children
-			this.children.map(this.renderChild, this);
+			Object.keys(this.children).forEach(this.renderChild, this);
 
 			// 6. add bindings
 			var _this = this;
-			this.bindings.map(function (binding) {
-				model.on(binding.name, function () {
-					binding.fn(_this);
-				});
-			});
-		}
+			Object.keys(this.bindings).forEach(function (bindingName) {
+				var fn = _this.bindings[bindingName].fn;
+				var fn2 = _this.bindings[bindingName].fn2;
 
-		// render child
-		this.renderChild = function (child) {
-			child.root = this.id;
-			child.render();
+				if (fn2 !== undefined) {
+					model.on(bindingName, function () {
+						fn(_this);
+					}, function () {
+						fn2(_this);
+					});
+				} else {
+					model.on(bindingName, function () {
+						fn(_this);
+					});
+				}
+			});
+
+			// 7. set rendered
+			this.rendered = true;
 		}
 
 		// parent
@@ -325,6 +511,10 @@ var UI = {
 			UI.changeState(this.mapState(UI.globalState), this.id);
 		}
 
+		// initialise
+		this.id = id;
+		this.rendered = false; // establish whether or not the component has been rendered to the DOM.
+		this.update(args);
 	},
 
 	// component factory
@@ -340,18 +530,17 @@ var UI = {
 		Context.remove(component.id);
 
 		// remove all bindings
-		component.bindings.map(function (binding) {
-			var _this = this;
-			component.model().off(binding.name);
+		Object.keys(component.bindings).forEach(function (bindingName) {
+			component.model().off(bindingName);
 		}, component);
+
+		// remove children recursively
+		Object.keys(component.children).forEach(function (childId) {
+			UI.removeComponent(childId);
+		});
 
 		// remove model from DOM
 		component.model().remove();
-
-		// remove children recursively
-		component.children.map(function (child) {
-			UI.removeComponent(child.id);
-		});
 
 		// remove component from components
 		delete this.components[id];
@@ -379,6 +568,16 @@ var UI = {
 	// States grouped by name
 	states: {},
 
+	allStates: function () {
+		var stateArray = [];
+		this.globalStates.forEach(function (globalState) {
+			this.states[globalState].forEach(function (state) {
+				stateArray.push(state);
+			}, this);
+		}, this);
+		return stateArray;
+	},
+
 	// Basic state definition
 	state: function (component, name, args) {
 		this.component = component;
@@ -400,6 +599,7 @@ var UI = {
 		} else {
 			state = new this.state(component, name, args);
 		}
+		state.index = this.states[name].length - 1; // able to find state again
 		this.states[name].push(state);
 		return state;
 	},
@@ -409,6 +609,16 @@ var UI = {
 	// Svitches are specific actions that must be carried out before a particular state change, such as a server API call.
 	// A svitch can be used to access its component or state or be filtered by state name
 	svitches: {},
+
+	allSvitches: function () {
+		var svitchArray = [];
+		this.globalStates.forEach(function (globalState) {
+			this.svitches[globalState].forEach(function (svitch) {
+				svitchArray.push(svitch);
+			}, this);
+		}, this);
+		return svitchArray;
+	},
 
 	// Svitch definition
 	svitch: function (component, stateName, fn) {
@@ -456,7 +666,7 @@ var UI = {
 			</div>
 		`,
 		loadingIcon: `
-			<div id='{id}' class='ie loading-icon {classes}'>
+			<div id='{id}' class='ie loading-icon centred {classes}' style='{style}'>
 				<img src='/static/img/loading-icon.gif' />
 			</div>
 		`,
@@ -501,27 +711,43 @@ var Context = {
 	// The variable extracted from the server API call. All parsing of its meaning is done by the specific
 	// UI script for each page.
 	store: {},
-	get: function () {
+	get: function (path) {
 		// based on a string of parameters, access a value or other sub-structure from store.
+		path = path.split('.');
 		sub = this.store;
-		var i;
-		for (i=0; i<arguments.length; i++) {
-			sub = sub[arguments[i]];
+		for (i=0; i<path.length; i++) {
+			sub = sub[path[i]];
+			if (sub === undefined) {
+				break;
+			}
 		}
-		return sub;
+		return sub !== undefined ? sub : '';
 	},
 
-	set: function (key, value) {
-		Context.store[key] = value;
+	set: function (path, value) {
+		path = path.split('.');
+		sub = this.store;
+		for (i=0; i<path.length; i++) {
+			if (i+1 === path.length) {
+				sub[path[i]] = value;
+			} else {
+				if (sub[path[i]] === undefined) {
+					sub[path[i]] = {};
+				}
+			}
+			sub = sub[path[i]];
+		}
 	},
 
-	del: function () {
+	del: function (path) {
+		path = path.split('.');
 		sub = this.store;
-		var i;
-		for (i=0; i<arguments.length; i++) {
-			sub = sub[arguments[i]];
+		for (i=0; i<path.length; i++) {
+			if (i+1 === path.length) {
+				delete sub[path[i]];
+			}
+			sub = sub[path[i]];
 		}
-		delete sub;
 	},
 
 	// REGISTRY
@@ -553,13 +779,25 @@ var Context = {
 			Object.keys(Context.registry).map(function (registryId) {
 				var component = UI.getComponent(registryId);
 				var path = Context.registry[registryId];
-				component.registryResponse(component, Context.get.apply(Context, path()));
+				component.registryResponse(component, Context.get(path()));
 			});
 		});
 	},
 
 	// include new data in context
 	update: function (data) {
-		$.extend(true, Context.store, data);
+		$.extend(true, this.store, data);
+	},
+
+	updateUser: function (id, role, status) {
+		// 1. update in current_user_profile
+		this.set('current_user_profile.roles.{role}.status'.format({role: role}), status);
+
+		// 2. update in clients
+		this.set('clients.{client}.users.{user}.roles.{role}.status'.format({
+			client: Context.get('current_client'),
+			user: id,
+			role: role,
+		}), status);
 	}
 }
