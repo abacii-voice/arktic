@@ -1872,13 +1872,47 @@ UI.createApp('hook', [
 						{name: 'project-new-project-state', args: {
 							preFn: function (_this) {
 								// 1. find incomplete uploads. if they exist, show this panel.
+								var projects = 'clients.{client}.projects'.format({
+									client: Context.get('current_client'),
+								});
+								var contextProjects = Context.get(projects);
+								if (contextProjects !== '') {
+									var active = false;
+									Object.keys(contextProjects).forEach(function (projectName) {
+										var batches = '{projects}.{project}.batches'.format({
+											projects: projects,
+											project: projectName,
+										});
+										var contextBatches = Context.get(batches);
+										if (contextBatches !== '') {
+											Context.get(batches).forEach(function (batch) {
+												if (batch.uploads.length !== 0) {
+													active = true;
+												}
+											});
+										}
+									});
 
+									if (active) {
+										_this.model().css({'display': 'block'});
+									} else {
+										_this.model().css({'display': 'none'});
+									}
+
+								} else {
+									_this.model().css({'display': 'none'});
+								}
 							},
 						}},
 						{name: 'project-settings-state', args: 'default'},
 						{name: 'project-upload-state', args: 'default'},
 					],
 				},
+				children: [
+					Components.scrollList('pi-iup-upload-list', {
+
+					});
+				],
 			}),
 			UI.createComponent('pi-project-upload-panel', {
 				template: UI.template('div', 'ie relative show'),
