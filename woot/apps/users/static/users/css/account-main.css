@@ -215,7 +215,6 @@ Dropzone
 	position: absolute;
 	height: 300px;
 	width: 400px;
-	top: 235px;
 	text-align: center;
 	border: 2px dotted #ccc;
 	border-radius: 4px;
@@ -235,11 +234,11 @@ Dropzone
 
 .dz-error-message {
 	position: absolute;
-	top: 250px;
+	bottom: 10px;
 	left: 50%;
 	transform: translateX(-50%);
 	width: 100%;
-	color: #FD4F00;
+	color: #6B3300;
 	pointer-events: none;
 }
 
@@ -269,6 +268,7 @@ Tables
 #rel-file-filelist th {
 	width: 200px;
 	box-sizing: border-box;
+	text-align: left;
 	padding: 8px;
 	color: #ccc;
 }
@@ -296,6 +296,10 @@ Tables
 	width: 70%;
 	top: 100px;
 	pointer-events: none;
+}
+
+table {
+  border-collapse: collapse;
 }
 
 .dropzone-demo-table tr {

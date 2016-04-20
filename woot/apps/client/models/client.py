@@ -30,6 +30,7 @@ class Client(models.Model):
 		client_data.update(self.role_data(permission))
 
 		if permission.check_client(self):
+
 			# projects
 			client_data.update(self.project_data(permission))
 
@@ -44,14 +45,10 @@ class Client(models.Model):
 	# roles
 	def basic_data(self, permission):
 		basic_data = {
-			'name': self.name
+			'name': self.name,
+			'is_production': self.is_production,
+			'is_contract': self.is_contract,
 		}
-
-		if permission.is_productionadmin or permission.is_contractadmin:
-			basic_data.update({
-				'is_production': self.is_production,
-				'is_contract': self.is_contract,
-			})
 
 		return basic_data
 
@@ -84,7 +81,7 @@ class Client(models.Model):
 
 		roles = self.roles.filter(user=permission.user)
 		role_data.update({
-			'roles': [role.get_type() for role in roles],
+			'roles': [role.get_type() for role in roles.order_by('type')],
 		})
 
 		return role_data
@@ -96,7 +93,7 @@ class Client(models.Model):
 		if permission.is_productionadmin or permission.is_contractadmin:
 			user_data.update({
 				'users': {
-					str(user.id): user.data(permission) for user in self.users.all()
+					str(user.id): user.data(permission) for user in self.users.order_by('last_name')
 				}
 			})
 
@@ -112,7 +109,7 @@ class Client(models.Model):
 	def rule_data(self, permission):
 		rule_data = {
 			'rules': {
-				rule.name: rule.data(permission) for rule in self.rules.all()
+				rule.name: rule.data(permission) for rule in self.rules.order_by('number')
 			}
 		}
 
@@ -126,3 +123,7 @@ class Client(models.Model):
 		moderator_with_least_subordinates = min(moderators, key=lambda m: m.subordinates.count())
 
 		return moderator_with_least_subordinates
+
+# hack methods until system exists
+def production_client():
+	return Client.objects.get(name='TestProductionClient')

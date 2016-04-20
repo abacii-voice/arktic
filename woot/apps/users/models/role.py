@@ -18,9 +18,7 @@ class Role(models.Model):
 	type = models.CharField(max_length=255)
 
 	# status
-	is_new = models.BooleanField(default=True)
-	is_approved = models.BooleanField(default=True)
-	is_enabled = models.BooleanField(default=False)
+	status = models.CharField(max_length=255, default='pending') # shows the stage of becoming a full user.
 
 	### Methods
 	# data
@@ -31,10 +29,8 @@ class Role(models.Model):
 
 		elif permission.is_contractadmin or permission.is_productionadmin:
 			role_data = {
-				'is_new': self.is_new,
-				'is_approved': self.is_approved,
-				'is_enabled': self.is_enabled,
-				'performances': self.performance_data(),
+				'status': self.status,
+				'thresholds': self.threshold_data(),
 			}
 
 			return role_data
@@ -45,14 +41,14 @@ class Role(models.Model):
 		else:
 			return self.type
 
-	def performance_data(self):
+	def threshold_data(self):
 		pass
 
-class Performance(models.Model):
+class Threshold(models.Model):
 
 	### Connections
-	role = models.ForeignKey(Role, related_name='performances')
-	project = models.ForeignKey(Project, related_name='performances')
+	role = models.ForeignKey(Role, related_name='thresholds')
+	project = models.ForeignKey(Project, related_name='thresholds')
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)

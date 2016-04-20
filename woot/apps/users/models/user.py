@@ -58,22 +58,26 @@ class User(AbstractBaseUser, PermissionsMixin):
 		send_mail(
 			'Arktic account verification for {}'.format(self.email), # subject
 			'Follow the link below to verify your email:', # text message
-			'', # from email: not sure yet
+			'no-reply@arktic.com', # from email: not sure yet
 			[self.email], # recipient list
-			'html-message' # html message: needs rendering and stuff
+			html_message='Click <a href="http://localhost:8000/verify/{}/{}/">the link</a>'.format(self.id, self.activation_key) # html message: needs rendering and stuff
 		)
 
 		# 3. toggle activation_email_sent
-		pass
+		self.activation_email_sent = True
+		self.save()
 
-	def verify_email(self, activation_key):
-		if self.activation_key == activation_key:
+	def verify(self, activation_key):
+		if self.activation_key == activation_key and not self.is_activated:
+			# reset activation
 			self.is_activated = True
 			self.activation_key = ''
 			self.save()
+
+			# return to confirm
 			return True
 		else:
-			return False
+			return False # change to False when testing is done
 
 	# roles
 	def create_productionadmin(self, production_client):
@@ -165,7 +169,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 		if permission.is_contractadmin or permission.is_productionadmin:
 			role_data.update({
 				'roles': {
-					role.get_type(): role.data(permission) for role in self.roles.filter(client=permission.role.client)
+					role.get_type(): role.data(permission) for role in self.roles.filter(client=permission.role.client).order_by('type')
 				}
 			})
 
@@ -175,7 +179,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 	def client_data(self, permission):
 		client_data = {
 			'clients': {
-				client.name: client.data(permission) for client in self.clients.all()
+				client.name: client.data(permission) for client in self.clients.order_by('name')
 			}
 		}
 		return client_data
