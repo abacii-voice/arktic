@@ -207,7 +207,6 @@ def create_project(request):
 		current_client = request.POST['current_client']
 		project_name = request.POST['name']
 		batch_deadline = request.POST['batch_deadline']
-		new_batch = request.POST['new_batch']
 		batch_name = request.POST['batch_name']
 
 		# 0. get client
@@ -217,11 +216,10 @@ def create_project(request):
 		project, project_created = client.contract_projects.get_or_create(name=project_name, production_client=production_client())
 
 		# 2. create batch
-		if new_batch == 'true':
-			batch, batch_created = project.batches.get_or_create(name=batch_name)
-			if batch_created:
-				batch.deadline = datetime.datetime.strptime(batch_deadline, '%Y/%m/%d').date()
-				batch.save()
+		batch, batch_created = project.batches.get_or_create(name=batch_name)
+		if batch_created:
+			batch.deadline = datetime.datetime.strptime(batch_deadline, '%Y/%m/%d').date()
+			batch.save()
 
 		return JsonResponse({'done': True})
 
