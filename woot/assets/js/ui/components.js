@@ -109,7 +109,9 @@ var Components = {
 			appearance: {
 				style: {
 					'width': '100%',
+					'height': '40px',
 					'margin-bottom': '10px',
+					'padding-left': '10px',
 				},
 				classes: [show],
 				properties: {
@@ -121,6 +123,19 @@ var Components = {
 		});
 
 		return container;
+	},
+
+	audioPlayer: function (id, args) {
+		var player = UI.createComponent(id, {
+			template: UI.template('div', 'ie show relative border border-radius'),
+			appearance: {
+				style: {
+					'width': '100%',
+					'height': '90px',
+				},
+			}
+		});
+		return player;
 	},
 
 	roleIndicator: function (id, args) {

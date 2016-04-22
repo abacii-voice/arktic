@@ -16,20 +16,10 @@ Context.setFn(getdata('context', {}, function (data) {
 
 	// debug and construction
 	$.when(new Promise (function (resolve, reject) {
-		Context.set('current_client', 'TestContractClient');
-		Context.set('current_role', 'admin')
-		var projectPrototype = {
-			name: 'TestProject',
-			batch_deadline: '1970/1/1',
-			new_batch: true,
-			batch_name: 'NewTestBatch',
-		}
-
-		Context.set('current_upload.project', projectPrototype);
-
+		Context.set('current_client', 'TestProductionClient');
+		Context.set('current_role', 'worker');
 	})).done(function () {
-		UI.changeState('project-state');
-		UI.changeState('project-upload-state');
+		UI.changeState('transcription-state');
 	});
 }));
 
@@ -41,7 +31,7 @@ UI.createGlobalStates('client-state', [
 	'control-state',
 
 	// work interface states
-	'interface-state',
+	'transcription-state',
 
 	// ### interfaces
 	'message-state',
@@ -117,8 +107,217 @@ UI.createApp('hook', [
 
 	// interfaces
 	UI.createComponent('transcription-interface', {
+		template: UI.template('div', 'ie panel centred-vertically'),
+		appearance: {
+			style: {
+				'left': '60px',
+				'overflow': 'hidden',
+			},
+		},
+		state: {
+			defaultState: {
+				style: {
+					'opacity': '0.0',
+				},
+				fn: UI.functions.deactivate,
+			},
+			states: [
+				{name: 'role-state', args: 'default'},
+				{name: 'upload-state', args: 'default'},
+				{name: 'control-state', args: 'default'},
+				{name: 'transcription-state', args: {
+					preFn: UI.functions.activate,
+					style: {
+						'opacity': '1.0',
+					}
+				}},
+			]
+		},
 		children: [
+			UI.createComponent('ti-count-panel', {
+				template: UI.template('div', 'ie show relative'),
+				appearance: {
+					style: {
+						'width': '100px',
+						'height': '100%',
+						'float': 'left',
+					},
+				},
+				children: [
+					UI.createComponent('ti-cp-count-button', {
+						template: UI.templates.button,
+						appearance: {
+							style: {
+								'height': '90px',
+								'width': '90px',
+								'transform': 'none',
+								'left': '0px',
+								'margin-bottom': '10px',
+							},
+							classes: ['border border-radius relative'],
+						},
+					}),
+					UI.createComponent('ti-cp-count-list-left', {
+						template: UI.template('div', 'ie show relative'),
+						appearance: {
+							style: {
+								'width': 'calc(50% - 5px)',
+								'height': 'calc(100% - 100px)',
+								'float': 'left',
+							},
+						},
+					}),
+					UI.createComponent('ti-cp-count-list-right', {
+						template: UI.template('div', 'ie show relative'),
+						appearance: {
+							style: {
+								'width': 'calc(50% - 5px)',
+								'height': 'calc(100% - 100px)',
+								'float': 'left',
+							},
+						},
+					}),
+				],
+			}),
+			UI.createComponent('ti-control-panel', {
+				template: UI.template('div', 'ie show relative'),
+				appearance: {
+					style: {
+						'width': '50px',
+						'height': '100%',
+						'float': 'left',
+					},
+				},
+				children: [
+					UI.createComponent('ti-cp-back-button', {
+						template: UI.templates.button,
+						appearance: {
+							style: {
+								'width': '40px',
+								'height': '40px',
+								'transform': 'none',
+								'left': '0px',
+								'margin-bottom': '10px',
+							},
+							classes: ['border border-radius relative'],
+						},
+					}),
+					UI.createComponent('ti-cp-forward-button', {
+						template: UI.templates.button,
+						appearance: {
+							style: {
+								'width': '40px',
+								'height': '40px',
+								'transform': 'none',
+								'left': '0px',
+								'margin-bottom': '10px',
+							},
+							classes: ['border border-radius relative'],
+						},
+					}),
+					UI.createComponent('ti-cp-done-button', {
+						template: UI.templates.button,
+						appearance: {
+							style: {
+								'width': '40px',
+								'height': '40px',
+								'transform': 'none',
+								'left': '0px',
+							},
+							classes: ['border border-radius relative'],
+						},
+					}),
+				],
+			}),
+			UI.createComponent('ti-search-panel', {
+				template: UI.template('div', 'ie show relative'),
+				appearance: {
+					style: {
+						'width': '300px',
+						'height': '100%',
+						'float': 'left',
+					},
+				},
+				children: [
+					Components.scrollList('ti-sp-search-field', {
+						search: {},
+						appearance: {
+							style: {
+								'width': '290px',
+							},
+						},
+					}),
+				],
+			}),
+			UI.createComponent('ti-interface-panel', {
+				template: UI.template('div', 'ie show relative'),
+				appearance: {
+					style: {
+						'width': 'calc(100% - 450px)',
+						'height': '100%',
+						'float': 'left',
+					},
+				},
+				children: [
+					UI.createComponent('ti-ip-top-panel', {
+						template: UI.template('div', 'ie show relative'),
+						appearance: {
+							style: {
+								'width': '100%',
+								'height': '150px',
+							},
+						},
+						children: [
+							UI.createComponent('ti-ip-tp-tokens-wrapper', {
+								// This is basically a horizontal scroll-wrapper for the tokens
+								template: UI.template('div', 'ie show relative border border-radius'),
+								appearance: {
+									style: {
+										'width': '100%',
+										'height': '40px',
+										'margin-bottom': '10px',
+										'overflow': 'hidden',
+									},
+								},
+								children: [
+									UI.createComponent('ti-ip-tp-tw-scroll', {
+										template: UI.template('div', 'ie show'),
+										appearance: {
+											style: {
+												'height': '100%',
+												'white-space': 'nowrap',
+												'overflow-x': 'scroll',
+												'padding-top': '10px',
+												'padding-left': '10px',
+											},
+											html: 'asdasd ;sdksjfjsd ,asdasd ;sdksjfjsdasdasd ;sdksjfjsdkasdasd ;sdksjfjsdkasdasd ;sdksjfjsdkasdasd ;sdksjfjsdasdasd ;sdksjfjsd',
+										},
+									}),
+								],
+							}),
+							Components.audioPlayer('ti-ip-tp-player', {
 
+							}),
+						],
+					}),
+					UI.createComponent('ti-ip-bottom-panel', {
+						template: UI.template('div', 'ie show relative'),
+						appearance: {
+							style: {
+								'width': '100%',
+								'height': 'calc(100% - 150px)',
+							},
+						},
+						children: [
+							UI.createComponent('ti-cp-bp-original-caption-container', {
+
+							}),
+							UI.createComponent('ti-cp-bp-modified-caption'),
+							UI.createComponent('ti-cp-bp-flags'),
+						],
+					}),
+				],
+			}),
 		],
 	}),
 	UI.createComponent('user-management-interface', {
@@ -3383,6 +3582,7 @@ UI.createApp('hook', [
 				'control-state': 'default',
 				'user-management-state': 'default',
 				'project-state': 'default',
+				'transcription-state': 'default',
 			},
 		},
 		content: [
@@ -3523,7 +3723,7 @@ UI.createApp('hook', [
 				'client-state': 'default',
 				'role-state': 'default',
 				'control-state': 'active',
-				'interface-state': 'next',
+				'transcription-state': 'next',
 				'user-management-state': 'next',
 				'project-state': 'next',
 			},
@@ -3551,7 +3751,7 @@ UI.createApp('hook', [
 									},
 								}},
 							],
-							stateMap: 'interface-state',
+							stateMap: 'transcription-state',
 						},
 						bindings: [
 							{name: 'click', fn: function (_this) {
