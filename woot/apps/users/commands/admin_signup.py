@@ -11,16 +11,16 @@ from django.template import Template
 # local
 from apps.client.models.client import Client
 from apps.users.models.user import User
-from permission import check_request
+from permission import process_request
 
 # util
 import json
 
 ### Commands
 def check_client(request):
-	if check_request(request):
+	if process_request(request):
 		pass
 
 def register_client(request):
-	if check_request(request):
+	if process_request(request):
 		pass

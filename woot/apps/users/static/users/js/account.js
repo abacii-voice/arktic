@@ -339,28 +339,28 @@ UI.createApp('hook', [
 											'current_role': Context.get('current_role'),
 											'number': '10',
 										};
-										command('load_audio_data', audioData, function (data) {
-											// returns a dictionary of transcription ids
-											Context.set('transcriptions', data);
-
-											Object.keys(data).forEach(function (transcriptionId) {
-												var transcriptionPrototype = data[transcriptionId];
-
-												// create new audio element
-												var audioElement = UI.createComponent('ti-cp-ab-audio-element-{id}'.format({id: transcriptionId}), {
-													root: _this.id,
-													template: UI.template('audio'),
-													appearance: {
-														properties: {
-															'src': transcriptionPrototype.source,
-														},
-													},
-												});
-												_this.children[audioElement.id] = audioElement;
-												audioElement.render();
-
-											});
-										});
+										// command('load_audio_data', audioData, function (data) {
+										// 	// returns a dictionary of transcription ids
+										// 	Context.set('transcriptions', data);
+										//
+										// 	Object.keys(data).forEach(function (transcriptionId) {
+										// 		var transcriptionPrototype = data[transcriptionId];
+										//
+										// 		// create new audio element
+										// 		var audioElement = UI.createComponent('ti-cp-ab-audio-element-{id}'.format({id: transcriptionId}), {
+										// 			root: _this.id,
+										// 			template: UI.template('audio'),
+										// 			appearance: {
+										// 				properties: {
+										// 					'src': transcriptionPrototype.source,
+										// 				},
+										// 			},
+										// 		});
+										// 		_this.children[audioElement.id] = audioElement;
+										// 		audioElement.render();
+										//
+										// 	});
+										// });
 									},
 								}},
 							],

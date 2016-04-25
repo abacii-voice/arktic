@@ -13,7 +13,7 @@ from apps.client.models.client import Client
 from apps.users.models.user import User
 from apps.tr.models.rule import RuleInstance
 from apps.users.models.message import Message
-from permission import check_request
+from permission import process_request
 
 # util
 import json
@@ -21,7 +21,7 @@ import json
 ### Data
 # account
 def context(request):
-	user, permission, verified = check_request(request)
+	user, permission, data, verified = process_request(request)
 	if verified:
 		# initialise data
 		context_data = {}
@@ -62,7 +62,7 @@ def context(request):
 		return JsonResponse(context_data)
 
 def load_attachment(request):
-	user, permission, verified = check_request(request)
+	user, permission, data, verified = process_request(request)
 	if verified:
 		# return audio file url or rule reference
 		# data type
