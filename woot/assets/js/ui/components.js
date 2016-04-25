@@ -131,9 +131,74 @@ var Components = {
 			appearance: {
 				style: {
 					'width': '100%',
-					'height': '90px',
+					'height': '70px',
 				},
-			}
+			},
+			children: [
+				UI.createComponent('{id}-white-back'.format({id: id}), {
+					template: UI.templates.button,
+					appearance: {
+						classes: ['border'],
+						style: {
+							'position': 'absolute',
+							'height': '50px',
+							'width': '110px',
+							'border-radius': '25px',
+							'transform': 'translateY(-50%)',
+							'top': '50%',
+							'left': '8px',
+						},
+					},
+				}),
+				UI.createComponent('{id}-red-back'.format({id: id}), {
+					template: UI.templates.button,
+					appearance: {
+						classes: ['border'],
+						style: {
+							'position': 'absolute',
+							'height': '50px',
+							'width': '80px',
+							'border-radius': '25px',
+							'transform': 'translateY(-50%)',
+							'top': '50%',
+							'left': '8px',
+						},
+					},
+				}),
+				UI.createComponent('{id}-play-button'.format({id: id}), {
+					template: UI.templates.button,
+					appearance: {
+						classes: ['border'],
+						style: {
+							'height': '50px',
+							'width': '50px',
+							'left': '8px',
+							'top': '50%',
+							'transform': 'translateY(-50%)',
+							'border-radius': '25px',
+						},
+					},
+					children: [
+						UI.createComponent('{id}-pb-playing'.format({id: id}), {
+							template: UI.template('span', 'glyphicon glyphicon-play'),
+						}),
+						UI.createComponent('{id}-pb-paused'.format({id: id}), {
+							template: UI.template('span', 'glyphicon glyphicon-pause glyphicon-hidden'),
+						}),
+					],
+				}),
+				UI.createComponent('{id}-track'.format({id: id}), {
+					template: UI.template('div', 'ie show'),
+					appearance: {
+						style: {
+							'height': '100%',
+							'width': 'calc(100% - 128px)',
+							'left': '128px',
+							'top': '0px',
+						},
+					},
+				}),
+			],
 		});
 		return player;
 	},
