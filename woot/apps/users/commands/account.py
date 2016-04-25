@@ -25,6 +25,11 @@ from os.path import join, exists
 import datetime
 
 ### Commands
+def load_audio_data(request):
+	user, permission, verified = check_request(request)
+	if verified:
+		pass
+
 def upload_audio(request):
 	user, permission, verified = check_request(request)
 	if verified:
