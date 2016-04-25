@@ -699,8 +699,7 @@ var UI = {
 			_this.triggerState();
 		},
 	},
-
-}
+};
 
 // CONTEXT: This is the context definition. It is a local storage of the relevant variables from
 // the server used to display the interface. It should make direct calls to the server API to gather data.
@@ -711,8 +710,9 @@ var Context = {
 	// The variable extracted from the server API call. All parsing of its meaning is done by the specific
 	// UI script for each page.
 	store: {},
+
+	// based on a string of parameters, access a value or other sub-structure from store.
 	get: function (path) {
-		// based on a string of parameters, access a value or other sub-structure from store.
 		path = path.split('.');
 		sub = this.store;
 		for (i=0; i<path.length; i++) {
@@ -724,6 +724,7 @@ var Context = {
 		return sub !== undefined ? sub : '';
 	},
 
+	// insert into Context and trigger registry entries
 	set: function (path, value) {
 		path = path.split('.');
 		sub = this.store;
@@ -737,8 +738,12 @@ var Context = {
 			}
 			sub = sub[path[i]];
 		}
+
+		// find registry entries at or below this path
+
 	},
 
+	// remove from Context variable
 	del: function (path) {
 		path = path.split('.');
 		sub = this.store;
@@ -750,43 +755,134 @@ var Context = {
 		}
 	},
 
-	// REGISTRY
-	// register elements that are requesting data and notify them of its arrival in the context variable.
-	registry: {},
-	// e.g.
-	// registry: {
-	// 	'element-id-1':['args','that','lead','to','data'],
-	// }
-
-	register: function (componentId, componentPath) {
-		this.registry[componentId] = componentPath;
-	},
-
-	remove: function (componentId) {
-		delete this.registry[componentId];
-	},
-
-	// define update function for context along with triggers and anything else.
-	fn: undefined, // this must be a valid promise
-	setFn: function (fn) {
-		this.fn = fn;
-	},
-
-	// A custom function can be defined to update the store and even trigger a state based on the result.
-	load: function () {
-		$.when(this.fn).done(function () {
-			// call back to every component that has registered
-			Object.keys(Context.registry).map(function (registryId) {
-				var component = UI.getComponent(registryId);
-				var path = Context.registry[registryId];
-				component.registryResponse(component, Context.get(path()));
-			});
+	// load a path from the server
+	load: function (path) {
+		// loads data from the server using the given path
+		Context.getdata(path, {}, function (data) {
+			// the data is then inserted into the same path in Context.
+			Context.set(path, data);
 		});
 	},
 
-	load: function (path) {
-		// loads data from the server using the given path
+	// DATA METHODS
+	// get and set data on the server
+	getdata: function (path, data, callback) {
+		// fetch data from the context url
+		var ajax_params = {
+			type: 'post',
+			data: Context.ajaxdata(data),
+			url:'/data/context/{path}'.format({path: path}),
+			success: function (data, textStatus, XMLHttpRequest) {
+				callback(data);
+			},
+			error: function (xhr, ajaxOptions, thrownError) {
+				if (xhr.status === 404 || xhr.status === 0) {
+					Context.getdata(path, data, callback);
+				}
+			}
+		};
 
-		// the data is then inserted into the same path in Context.
+		return $.ajax(ajax_params); // this is a promise
+	},
+
+	// call command
+	command: function (name, data, callback, args) {
+		args = args !== undefined ? args : {};
+		var ajax_params = {
+			type: 'post',
+			data: Context.ajaxdata(data),
+			processData: args.processData !== undefined ? args.processData : true,
+			contentType: args.contentType !== undefined ? args.contentType : 'application/x-www-form-urlencoded',
+			url:'/command/{name}/'.format({name: name}),
+			success: function (data, textStatus, XMLHttpRequest) {
+				callback(data);
+			},
+			error: function (xhr, ajaxOptions, thrownError) {
+				if (xhr.status === 404 || xhr.status === 0) {
+					command(name, data, callback);
+				}
+			}
+		};
+
+		return $.ajax(ajax_params); // this is a promise
+	},
+
+	// register action
+	action: function (name, data) {
+		var ajax_params = {
+			type: 'post',
+			data: Context.ajaxdata(data),
+			url:'/action/{name}/'.format({name: name}),
+			success: function (data, textStatus, XMLHttpRequest) {},
+			error: function (xhr, ajaxOptions, thrownError) {
+				if (xhr.status === 404 || xhr.status === 0) {
+					action(name, data);
+				}
+			}
+		};
+
+		return $.ajax(ajax_params); // this is a promise
 	}
-}
+
+	// format data with the necessary permission variables
+	ajaxdata: function (data) {
+		var ajaxdata = {
+			'client': Context.get('active.client'),
+			'role': Context.get('active.role'),
+		};
+
+		data.update(ajaxdata);
+		return data;
+	},
+};
+
+// REGISTRY
+// register elements that are requesting data and notify them of its arrival in the context variable.
+var Registry = {
+	// this is a copy of the Context.store variable with functions instead of data
+	store: {},
+
+	get: function (path) {
+		// based on a string of parameters, access a value or other sub-structure from store.
+		path = path.split('.');
+		sub = Registry.store;
+		for (i=0; i<path.length; i++) {
+			sub = sub[path[i]];
+			if (sub === undefined) {
+				break;
+			}
+		}
+		var result = sub !== undefined ? sub : {};
+		return Object.keys(result).filter(function (idTest) {
+			return idTest.substring(0,2) === 'id';
+		}).map(function (id) {
+			return result[id];
+		});
+	},
+
+	set: function (path, value) {
+		path = path.split('.');
+		sub = Registry.store;
+		for (i=0; i<path.length; i++) {
+			if (i+1 === path.length) {
+				sub['id:{id}'.format({id: path[i]})] = value;
+			} else {
+				if (sub[path[i]] === undefined) {
+					sub[path[i]] = {};
+				}
+			}
+			sub = sub[path[i]];
+		}
+	},
+
+	del: function (path) {
+		path = path.split('.');
+		sub = Registry.store;
+		for (i=0; i<path.length; i++) {
+			if (i+1 === path.length) {
+				delete sub[path[i]];
+			}
+			sub = sub[path[i]];
+		}
+	},
+};
