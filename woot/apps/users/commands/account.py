@@ -16,7 +16,7 @@ from apps.users.models.user import User
 from apps.tr.models.transcription import Transcription
 from apps.tr.models.utterance import Utterance
 from apps.client.models.project import Project, Upload
-from permission import check_request
+from permission import process_request
 
 # util
 import json
@@ -26,12 +26,12 @@ import datetime
 
 ### Commands
 def load_audio_data(request):
-	user, permission, verified = check_request(request)
+	user, permission, data, verified = process_request(request)
 	if verified:
 		pass
 
 def upload_audio(request):
-	user, permission, verified = check_request(request)
+	user, permission, data, verified = process_request(request)
 	if verified:
 		# get file
 		file = request.FILES['file']
@@ -104,7 +104,7 @@ def upload_audio(request):
 			return JsonResponse({'created': False})
 
 def create_upload(request):
-	user, permission, verified = check_request(request)
+	user, permission, data, verified = process_request(request)
 	if verified:
 
 		# get data
@@ -158,7 +158,7 @@ def create_upload(request):
 			return JsonResponse({'created': False})
 
 def create_user(request):
-	user, permission, verified = check_request(request)
+	user, permission, data, verified = process_request(request)
 	if verified:
 
 		# get data
@@ -205,7 +205,7 @@ def create_user(request):
 			return JsonResponse(new_user.data(permission))
 
 def create_project(request):
-	user, permission, verified = check_request(request)
+	user, permission, data, verified = process_request(request)
 	if verified:
 
 		# get data
@@ -229,7 +229,7 @@ def create_project(request):
 		return JsonResponse({'done': True})
 
 def add_role_to_user(request):
-	user, permission, verified = check_request(request)
+	user, permission, data, verified = process_request(request)
 	if verified and permission.is_productionadmin:
 
 		# get data
@@ -258,13 +258,13 @@ def add_role_to_user(request):
 		return JsonResponse({'done': True})
 
 def modify_user(request):
-	user, permission, verified = check_request(request)
+	user, permission, data, verified = process_request(request)
 	if verified:
 		# get data
 		return JsonResponse({'done': True})
 
 def enable_role(request):
-	user, permission, verified = check_request(request)
+	user, permission, data, verified = process_request(request)
 	if verified:
 		# get user role be enabled
 		user_id = request.POST['user_id']
@@ -281,7 +281,7 @@ def enable_role(request):
 		return JsonResponse({'done': True})
 
 def disable_role(request):
-	user, permission, verified = check_request(request)
+	user, permission, data, verified = process_request(request)
 	if verified:
 		# get user role be disabled
 		user_id = request.POST['user_id']
@@ -298,36 +298,36 @@ def disable_role(request):
 		return JsonResponse({'done': True})
 
 def create_message(request):
-	user, permission, verified = check_request(request)
+	user, permission, data, verified = process_request(request)
 	if verified:
 		pass
 
 def create_rule(request):
-	user, permission, verified = check_request(request)
+	user, permission, data, verified = process_request(request)
 	if verified:
 		pass
 
 def modify_rule(request):
-	user, permission, verified = check_request(request)
+	user, permission, data, verified = process_request(request)
 	if verified:
 		pass
 
 def create_caption(request):
-	user, permission, verified = check_request(request)
+	user, permission, data, verified = process_request(request)
 	if verified:
 		pass
 
 def create_moderation(request):
-	user, permission, verified = check_request(request)
+	user, permission, data, verified = process_request(request)
 	if verified:
 		pass
 
 def create_report(request):
-	user, permission, verified = check_request(request)
+	user, permission, data, verified = process_request(request)
 	if verified:
 		pass
 
 def create_issue(request):
-	user, permission, verified = check_request(request)
+	user, permission, data, verified = process_request(request)
 	if verified:
 		pass
