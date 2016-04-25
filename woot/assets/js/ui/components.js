@@ -267,7 +267,7 @@ var Components = {
 									command('add_role_to_user', roleData, function () {});
 								}
 
-								Context.updateUser(Context.get('current_user_profile.id'), args.label, indicator.status);
+								Shortcuts.updateUser(Context.get('current_user_profile.id'), args.label, indicator.status);
 							}
 						}}
 					],

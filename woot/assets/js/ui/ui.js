@@ -784,20 +784,9 @@ var Context = {
 		});
 	},
 
-	// include new data in context
-	update: function (data) {
-		$.extend(true, this.store, data);
-	},
+	load: function (path) {
+		// loads data from the server using the given path
 
-	updateUser: function (id, role, status) {
-		// 1. update in current_user_profile
-		this.set('current_user_profile.roles.{role}.status'.format({role: role}), status);
-
-		// 2. update in clients
-		this.set('clients.{client}.users.{user}.roles.{role}.status'.format({
-			client: Context.get('current_client'),
-			user: id,
-			role: role,
-		}), status);
+		// the data is then inserted into the same path in Context.
 	}
 }
