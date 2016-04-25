@@ -11,6 +11,7 @@ class Role(models.Model):
 	### Connections
 	supervisor = models.ForeignKey('self', related_name='subordinates', null=True)
 	client = models.ForeignKey(Client, related_name='roles')
+	project_override = models.ForeignKey(Project, related_name='assigned_workers', null=True)
 	user = models.ForeignKey(User, related_name='roles')
 
 	### Properties
@@ -23,17 +24,22 @@ class Role(models.Model):
 	### Methods
 	# data
 	def data(self, permission):
-		if permission.is_basic:
-			# only give type
-			return self.type
+		role_data = {
+			'type': self.get_type(),
+		}
 
-		elif permission.is_contractadmin or permission.is_productionadmin:
-			role_data = {
+		if permission.is_contractadmin or permission.is_productionadmin:
+			role_data.update({
 				'status': self.status,
 				'thresholds': self.threshold_data(),
-			}
+			})
 
-			return role_data
+		if ((permission.is_productionadmin and self.get_type()=='worker') or permission.user == self.user) and self.project_override is not None:
+			role_data.update({
+				'project_override': self.project_override.name,
+			})
+
+		return role_data
 
 	def get_type(self):
 		if self.type == 'contractadmin' or self.type == 'productionadmin':
