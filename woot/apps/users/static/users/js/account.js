@@ -284,19 +284,30 @@ UI.createApp('hook', [
 										template: UI.template('div', 'ie show'),
 										appearance: {
 											style: {
-												'height': '100%',
-												'white-space': 'nowrap',
+												'height': 'calc(100% + 20px)',
+												'width': '100%',
 												'overflow-x': 'scroll',
-												'padding-top': '10px',
-												'padding-left': '10px',
 											},
-											html: 'asdasd ;sdksjfjsd ,asdasd ;sdksjfjsdasdasd ;sdksjfjsdkasdasd ;sdksjfjsdkasdasd ;sdksjfjsdkasdasd ;sdksjfjsdasdasd ;sdksjfjsd',
 										},
+										children: [
+											UI.createComponent('ti-ip-tp-tws-tokens', {
+												template: UI.template('div', 'ie show'),
+												appearance: {
+													style: {
+														'height': '100%',
+														'white-space': 'nowrap',
+														'padding-top': '10px',
+														'padding-left': '10px',
+														'padding-right': '10px',
+													},
+												},
+											}),
+										],
 									}),
 								],
 							}),
 							Components.audioPlayer('ti-ip-tp-player', {
-
+								
 							}),
 						],
 					}),
