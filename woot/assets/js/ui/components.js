@@ -260,11 +260,11 @@ var Components = {
 									'role_type': args.label,
 								};
 								if (indicator.status === 'enabled') {
-									command('enable_role', roleData, function () {});
+									Context.command('enable_role', roleData, function () {});
 								} else if (indicator.status === 'disabled') {
-									command('disable_role', roleData, function () {});
+									Context.command('disable_role', roleData, function () {});
 								} else if (indicator.status === 'pending') {
-									command('add_role_to_user', roleData, function () {});
+									Context.command('add_role_to_user', roleData, function () {});
 								}
 
 								Shortcuts.updateUser(Context.get('current_user_profile.id'), args.label, indicator.status);

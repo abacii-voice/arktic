@@ -538,6 +538,9 @@ UI.createApp('hook', [
 								'float': 'left',
 							},
 						},
+						registry: {
+
+						},
 						state: {
 							states: [
 								{name: 'user-management-state', args: {
@@ -559,10 +562,6 @@ UI.createApp('hook', [
 										_this.children = {};
 
 										// promise to fetch data and update Context
-										var permissionData = {
-											current_client: Context.get('current_client'),
-											current_role: Context.get('current_role'),
-										};
 										$.when(getdata('context', permissionData, function (data) {
 											// update Context
 											Context.update(data);
@@ -1342,8 +1341,6 @@ UI.createApp('hook', [
 								if (noProblems) {
 									// submit user
 									var userData = {
-										'current_client': Context.get('current_client'),
-										'current_role': Context.get('current_role'),
 										'first_name': firstName.model().val(),
 										'last_name': lastName.model().val(),
 										'email': email.model().val(),
@@ -1364,7 +1361,7 @@ UI.createApp('hook', [
 									_this.triggerState();
 
 									// call add_user command
-									command('create_user', userData, function (userPrototype) {
+									Context.command('create_user', userData, function (userPrototype) {
 										// set user email
 										var toEmail = UI.getComponent('umi-uc-to-email');
 										toEmail.model().html(userPrototype.email);
@@ -1996,11 +1993,9 @@ UI.createApp('hook', [
 										name: projectName,
 										batch_deadline: batchDeadline,
 										batch_name: batchName,
-										current_client: Context.get('current_client'),
-										current_role: Context.get('current_role'),
 									}
 
-									command('create_project', projectData, function (data) {});
+									Context.command('create_project', projectData, function (data) {});
 
 									Context.set('current_upload.project', projectPrototype);
 									_this.triggerState();
@@ -2583,8 +2578,6 @@ UI.createApp('hook', [
 
 																	// create upload object
 																	var uploadData = {
-																		'current_client': Context.get('current_client'),
-																		'current_role': Context.get('current_role'),
 																		'project_name': Context.get('current_upload.project.name'),
 																		'batch_name': Context.get('current_upload.project.batch_name'),
 																		'archive_name': Context.get('current_upload.audio.name'),
@@ -2594,7 +2587,7 @@ UI.createApp('hook', [
 																		}),
 																	};
 
-																	command('create_upload', uploadData, function (data) {});
+																	Context.command('create_upload', uploadData, function (data) {});
 
 																	// 3. trigger
 																	_this.triggerState();
@@ -3150,8 +3143,6 @@ UI.createApp('hook', [
 
 																	// create upload object
 																	var uploadData = {
-																		'current_client': Context.get('current_client'),
-																		'current_role': Context.get('current_role'),
 																		'project_name': Context.get('current_upload.project.name'),
 																		'batch_name': Context.get('current_upload.project.batch_name'),
 																		'archive_name': file.name,
@@ -3161,7 +3152,7 @@ UI.createApp('hook', [
 																		}),
 																	};
 
-																	command('create_upload', uploadData, function (data) {});
+																	Context.command('create_upload', uploadData, function (data) {});
 
 																	_this.triggerState();
 																}
@@ -3565,14 +3556,12 @@ UI.createApp('hook', [
 												formData.append('file', blob);
 												formData.append('caption', caption);
 												formData.append('filename', audioFile.filename);
-												formData.append('current_client', Context.get('current_client'));
-												formData.append('current_role', Context.get('current_role'));
 												formData.append('project_name', Context.get('current_upload.project.name'));
 												formData.append('batch_name', Context.get('current_upload.project.batch_name'));
 												formData.append('archive_name', Context.get('current_upload.audio.name'));
 												formData.append('relfile_name', Context.get('current_upload.relfile.name'));
 
-												command('upload_audio', formData, function (data) {
+												Context.command('upload_audio', formData, function (data) {
 													// update progress
 													var progress = Context.get('current_upload.progress');
 													var current_progress = Math.floor(parseFloat(progress) + 100.0 / foundAudioFiles.length);
