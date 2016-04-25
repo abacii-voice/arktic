@@ -43,8 +43,8 @@ def process_request(request):
 
 	# 2. get user and role_type
 	user = request.user
-	client_name = request.POST['active']['client'] if 'active' in request.POST else ''
-	role_type = request.POST['active']['role'] if 'active' in request.POST else ''
+	client_name = data['active']['client'] if 'active' in data else ''
+	role_type = data['active']['role'] if 'active' in data else ''
 	role = user.get_role(client_name, role_type)
 
 	# 3. get permission
