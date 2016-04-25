@@ -23,6 +23,11 @@ import json
 def context(request):
 	user, permission, data, verified = process_request(request)
 	if verified:
+
+		# NEED TO PARSE PATH
+		path = 'clients.TestClient.name' # for example
+		
+
 		# initialise data
 		context_data = {}
 

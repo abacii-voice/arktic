@@ -8,6 +8,6 @@ from apps.users.data.views import *
 
 ### Data
 urlpatterns = [
-	url(r'^context/$', context),
+	url(r'^context/(?P<path>.+)$', context),
 	url(r'^us_data/$', us_data),
 ]
