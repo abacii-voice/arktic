@@ -298,12 +298,10 @@ var UI = {
 
 		this.setRegistry = function (registry) {
 			if (registry !== undefined) {
-				// vars
-				this.registryPath = registry.path; // a function that generates an array of args
-				this.registryResponse = registry.fn;
-
 				// register
-				Context.register(this.id, this.registryPath);
+				Object.keys(registry).forEach(function (path) {
+					Registry.set(path, registry[path]);
+				});
 			}
 		}
 
@@ -526,8 +524,8 @@ var UI = {
 
 	removeComponent: function (id) {
 		var component = this.getComponent(id);
-		// remove from Context registry
-		Context.remove(component.id);
+		// remove from registry
+		Registry.del(component.id);
 
 		// remove all bindings
 		Object.keys(component.bindings).forEach(function (bindingName) {
@@ -740,7 +738,10 @@ var Context = {
 		}
 
 		// find registry entries at or below this path
-
+		var ids = Registry.get(path);
+		Object.keys(ids).forEach(function (id) {
+			ids[id](UI.getComponent(id));
+		});
 	},
 
 	// remove from Context variable
@@ -822,7 +823,7 @@ var Context = {
 		};
 
 		return $.ajax(ajax_params); // this is a promise
-	}
+	},
 
 	// format data with the necessary permission variables
 	ajaxdata: function (data) {
@@ -831,7 +832,7 @@ var Context = {
 			'role': Context.get('active.role'),
 		};
 
-		data.update(ajaxdata);
+		$.extend(true, data, ajaxdata);
 		return data;
 	},
 };
@@ -875,14 +876,7 @@ var Registry = {
 		}
 	},
 
-	del: function (path) {
-		path = path.split('.');
-		sub = Registry.store;
-		for (i=0; i<path.length; i++) {
-			if (i+1 === path.length) {
-				delete sub[path[i]];
-			}
-			sub = sub[path[i]];
-		}
+	del: function (id) {
+
 	},
 };
