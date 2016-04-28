@@ -1,22 +1,11 @@
-# apps.users.commands.urls
-
 # django
 from django.conf.urls import patterns, include, url
 
 # local
-from apps.users.commands.admin_signup import *
-from apps.users.commands.user_signup import *
-from apps.users.commands.account import *
+from apps.tr.requests.commands.account import *
 
 ### Command entry points
 urlpatterns = [
-	# admin signup
-	url(r'^check_client/', check_client),
-	url(r'^register_client/', register_client),
-
-	# user signup
-	url(r'^verify/', verify),
-
 	# account
 	url(r'^create_user/', create_user), # name, email
 	url(r'^create_project/', create_project), # name, email
