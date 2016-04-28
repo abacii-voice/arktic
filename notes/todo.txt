@@ -1,0 +1,7 @@
+Backend overhaul:
+
+1. Separate user signup, login, etc. into User views.
+	a. Fix urls
+	b. Fix verification process
+
+2. Fix static files and global urls

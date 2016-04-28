@@ -1,5 +1,3 @@
-# apps.users.commands.views
-
 # django
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -11,12 +9,11 @@ from django.core.files import File
 from django.db.models import Count, F
 
 # local
-from apps.client.models.client import Client, production_client
-from apps.users.models.user import User
-from apps.tr.models.transcription import Transcription
-from apps.tr.models.utterance import Utterance
-from apps.client.models.project import Project, Upload
-from permission import process_request
+from apps.tr.models.client.client import Client
+from apps.tr.models.client.project import Project, Upload
+from apps.tr.models.transcription.transcription import Transcription
+from apps.tr.models.transcription.utterance import Utterance
+from apps.tr.permissions import process_request
 
 # util
 import json

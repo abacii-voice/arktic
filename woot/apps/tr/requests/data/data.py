@@ -1,5 +1,3 @@
-# apps.users.data.views
-
 # django
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -9,11 +7,8 @@ from django.conf import settings
 from django.template import Template
 
 # local
-from apps.client.models.client import Client
-from apps.users.models.user import User
-from apps.tr.models.rule import RuleInstance
-from apps.users.models.message import Message
-from permission import process_request
+from apps.tr.models.client.client import Client
+from apps.tr.permissions import process_request
 
 # util
 import json
@@ -26,7 +21,7 @@ def context(request):
 
 		# NEED TO PARSE PATH
 		path = 'clients.TestClient.name' # for example
-		
+
 
 		# initialise data
 		context_data = {}
@@ -73,20 +68,3 @@ def load_attachment(request):
 		# data type
 		# data content
 		pass
-
-# User signup
-def us_data(request):
-	if request.method == 'POST':
-		# no permission required
-
-		# get initial data
-		initial_data = {
-			'user_id': request.POST['user_id'],
-			'activation_key': request.POST['activation_key'],
-		}
-
-		# compile user data
-		user = User.objects.get(id=initial_data['user_id'])
-		user_data = user.basic_data()
-
-		return JsonResponse(user_data)
