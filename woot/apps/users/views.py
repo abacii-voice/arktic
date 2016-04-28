@@ -45,7 +45,7 @@ class UserSignupView(View):
 		else:
 			return render(request, 'users/user-signup.html', user_data)
 
-def verify(request):
+def verify(request, **kwargs):
 	if request.method == 'POST':
 
 		# get user data
@@ -73,6 +73,15 @@ def verify(request):
 
 		# return token response
 		return JsonResponse({'done': True})
+
+	elif request.method == 'GET':
+		user_key = kwargs['user']
+		activation_key = kwargs['key']
+
+		# user
+		user = User.objects.get(id=user_key)
+		verified = user.verify_email(activation_key)
+		return render(request, 'users/verified.html', {'verified': verified})
 
 # User signup
 def us_data(request):
@@ -120,17 +129,6 @@ class LoginView(View):
 		else:
 			print('form invalid')
 			return render(request, 'users/login.html', {'bad_formatting':True})
-
-# Verify
-def verify(request, **kwargs):
-	if request.method == 'GET':
-		user_key = kwargs['user']
-		activation_key = kwargs['key']
-
-		# user
-		user = User.objects.get(id=user_key)
-		verified = user.verify_email(activation_key)
-		return render(request, 'users/verified.html', {'verified': verified})
 
 # Logout view
 def logout_view(request):
