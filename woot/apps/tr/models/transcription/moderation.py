@@ -2,9 +2,9 @@
 from django.db import models
 
 # local
-from apps.tr.models.transcription import Transcription
-from apps.tr.models.caption import Caption
-from apps.users.models.role import Role
+from apps.tr.models.transcription.transcription import Transcription
+from apps.tr.models.transcription.caption import Caption
+from apps.tr.models.role.role import Role
 
 ### Moderation classes
 class Moderation(models.Model):
@@ -16,4 +16,4 @@ class Moderation(models.Model):
 
 	### Properties
 	is_approved = models.BooleanField(default=True)
-	comment = models.TextField()
+	metadata = models.TextField(default='')

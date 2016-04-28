@@ -2,8 +2,9 @@
 from django.db import models
 
 # local
-from apps.client.models.client import Client
-from apps.tr.models.moderation import Moderation
+from apps.tr.models.client.client import Client
+from apps.tr.models.transcription.moderation import Moderation
+from apps.tr.models.role.role import Role
 
 ### Rule classes
 class Rule(models.Model):
@@ -17,7 +18,7 @@ class Rule(models.Model):
 	### Properties
 	number = models.PositiveIntegerField(default=0)
 	name = models.CharField(max_length=255)
-	description = models.TextField()
+	description = models.TextField(default='')
 
 	### Methods
 	# data
@@ -37,4 +38,5 @@ class RuleInstance(models.Model):
 
 	### Connections
 	parent = models.ForeignKey(Rule, related_name='instances')
-	moderation = models.ForeignKey(Moderation, related_name='rules_cited')
+	caption = models.ForeignKey(Caption, related_name='rules_cited')
+	role = models.ForeignKey(Role, related_name='rules_cited')

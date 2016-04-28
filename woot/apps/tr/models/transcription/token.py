@@ -2,19 +2,19 @@
 from django.db import models
 
 # local
-from apps.tr.models.dictionary import Dictionary, UserDictionary
-from apps.tr.models.caption import Caption
+from apps.tr.models.transcription.dictionary import Dictionary, UserDictionary
+from apps.tr.models.transcription.caption import Caption
 
 ### Token classes
 class Token(models.Model):
 
 	### Connections
 	dictionary = models.ForeignKey(Dictionary, related_name='tokens')
-	user_dictionary = models.ForeignKey(UserDictionary, related_name='tokens', null=True)
+	user_dictionary = models.ForeignKey(UserDictionary, related_name='tokens', null=True) # for exclusion purposes
 
 	### Properties
 	is_tag = models.BooleanField(default=False)
-	value = models.CharField(max_length=255)
+	content = models.CharField(max_length=255)
 
 class TokenInstance(models.Model):
 

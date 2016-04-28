@@ -1,2 +1,2 @@
-from apps.client.models.client import Client
-from apps.client.models.project import Project, Batch, Upload, Fragment
+from apps.tr.models.client.client import Client
+from apps.tr.models.client.project import Project, Batch, Upload, Fragment

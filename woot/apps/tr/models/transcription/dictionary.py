@@ -2,8 +2,8 @@
 from django.db import models
 
 # local
-from apps.client.models.project import Project
-from apps.users.models.role import Role
+from apps.tr.models.client.project import Project
+from apps.tr.models.role.role import Role
 
 ### Dictionary classes
 class Dictionary(models.Model):
@@ -15,6 +15,6 @@ class UserDictionary(models.Model):
 
 	### Connections
 	parent = models.ForeignKey(Dictionary, related_name='children')
-	user = models.OneToOneField(Role, related_name='dictionary')
+	role = models.ForeignKey(Role, related_name='dictionaries')
 
 	### Properties

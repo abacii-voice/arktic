@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.client.models.project import Project, Batch
+from apps.tr.models.client.project import Project, Batch
 
 ### Transcription classes
 class Transcription(models.Model):

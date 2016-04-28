@@ -1,5 +1,5 @@
-from apps.users.models.email import Email
-from apps.users.models.message import Message, Token, Attachment
-from apps.users.models.role import Role, Threshold
-from apps.users.models.stat import Stat, StatInstance
-from apps.users.models.user import User
+from apps.tr.models.role.action import Action
+from apps.tr.models.role.email import Email
+from apps.tr.models.role.message import Message, Token, Attachment
+from apps.tr.models.role.role import Role, Threshold
+from apps.tr.models.role.stat import Stat, StatInstance

@@ -24,31 +24,13 @@ class Role(models.Model):
 	### Methods
 	# data
 	def data(self, permission):
-		role_data = {
-			'type': self.get_type(),
-		}
-
-		if permission.is_contractadmin or permission.is_productionadmin:
-			role_data.update({
-				'status': self.status,
-				'thresholds': self.threshold_data(),
-			})
-
-		if ((permission.is_productionadmin and self.get_type()=='worker') or permission.user == self.user) and self.project_override is not None:
-			role_data.update({
-				'project_override': self.project_override.name,
-			})
-
-		return role_data
+		pass
 
 	def get_type(self):
 		if self.type == 'contractadmin' or self.type == 'productionadmin':
 			return 'admin'
 		else:
 			return self.type
-
-	def threshold_data(self):
-		pass
 
 class Threshold(models.Model):
 
