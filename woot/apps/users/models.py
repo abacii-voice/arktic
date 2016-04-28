@@ -8,9 +8,6 @@ from django.core.mail import send_mail
 import uuid
 from permission import Permission
 
-# local
-from apps.client.models.client import Client
-
 ### User classes
 class UserManager(BaseUserManager):
 	def create_user(self, first_name, last_name, email, password=None):
@@ -22,9 +19,6 @@ class UserManager(BaseUserManager):
 		return user
 
 class User(AbstractBaseUser, PermissionsMixin):
-
-	### Connections
-	clients = models.ManyToManyField(Client, related_name='users')
 
 	### Properties
 	# identification

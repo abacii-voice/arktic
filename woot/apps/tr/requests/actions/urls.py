@@ -2,7 +2,7 @@
 from django.conf.urls import patterns, include, url
 
 # local
-from apps.action.action import *
+from apps.tr.requests.actions.actions import *
 
 ### Actions
 urlpatterns = [
