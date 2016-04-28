@@ -1,23 +1,84 @@
-# apps.action.actions
-
 # django
-from django.conf.urls import patterns, include, url
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render, redirect
+from django.core.cache import cache
+from django.views.generic import View
+from django.conf import settings
+from django.template import Template
 
 # local
-from apps.action.action import *
 
-### Actions
-urlpatterns = [
-	url(r'^add_caption_token/', add_caption_token),
-	url(r'^add_flag/', add_flag),
-	url(r'^replay/', replay),
-	url(r'^add_word/', add_word),
-	url(r'^remove_word/', remove_word),
-	url(r'^remove_token/', remove_token),
-	url(r'^submit_caption/', submit_caption),
-	url(r'^submit_moderation/', submit_moderation),
-	url(r'^check_rule/', check_rule),
-	url(r'^add_rule/', add_rule),
-	url(r'^click_button/', click_button),
-	url(r'^submit_issue/', submit_issue),
-]
+
+### Action views
+
+def add_caption_token(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def add_flag(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def replay(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def add_word(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def remove_word(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def remove_token(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def submit_caption(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def submit_moderation(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def check_rule(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def add_rule(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def click_button(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
+
+def submit_issue(request):
+	if request.method == 'POST':
+		user = request.user
+		if user.is_authenticated():
+			pass
