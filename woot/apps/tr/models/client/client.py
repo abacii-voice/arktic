@@ -1,10 +1,14 @@
 # django
 from django.db import models
 
-# util
+# local
+from apps.users.models import User
 
 ### Client model
 class Client(models.Model):
+
+	### Connections
+	users = models.ManyToManyField(User, related_name='clients')
 
 	### Properties
 	# Identification
@@ -15,4 +19,3 @@ class Client(models.Model):
 	is_contract = models.BooleanField(default=False)
 
 	### Methods
-	

@@ -6,7 +6,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.conf import settings
 
 # local
-from apps.tr.requests.views import HomeView, AccountSPAView,
+from apps.tr.requests.views import HomeView, AccountSPAView
 from apps.users.views import UserSignupView, LoginView, logout_view
 
 urlpatterns = [

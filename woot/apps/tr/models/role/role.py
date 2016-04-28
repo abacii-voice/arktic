@@ -2,9 +2,9 @@
 from django.db import models
 
 # local
-from apps.client.models.client import Client
-from apps.client.models.project import Project
-from apps.users.models.user import User
+from apps.tr.models.client.client import Client
+from apps.tr.models.client.project import Project
+from apps.users.models import User
 
 ### Role classes
 class Role(models.Model):
