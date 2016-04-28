@@ -2,9 +2,7 @@
 from django.db import models
 
 # local
-from apps.client.models.project import Project
-
-# util
+from apps.tr.models.client.project import Project
 
 ### Grammar model
 class Grammar(models.Model):
@@ -15,8 +13,6 @@ class Grammar(models.Model):
 
 	### Connections
 	project = models.ForeignKey(Project, related_name='grammars')
-
-	# sub: transcription, audiofile
 
 	### Properties
 	metadata = models.TextField(default='')

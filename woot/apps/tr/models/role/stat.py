@@ -2,8 +2,8 @@
 from django.db import models
 
 # local
-from apps.client.models.client import Client
-from apps.users.models.role import Role
+from apps.tr.models.client.client import Client
+from apps.tr.models.role.role import Role
 
 ### Stat models
 class Stat(models.Model):

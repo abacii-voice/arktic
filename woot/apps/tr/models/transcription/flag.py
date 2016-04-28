@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.tr.models.caption import Caption
+from apps.tr.models.transcription.caption import Caption
 
 ### Flag classes
 class Flag(models.Model):
