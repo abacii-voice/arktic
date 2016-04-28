@@ -21,7 +21,7 @@ class Message(models.Model):
 	def data(self):
 		pass
 
-class Token(models.Model):
+class MessageToken(models.Model):
 
 	### Connections
 	message = models.ForeignKey(Message, related_name='tokens')

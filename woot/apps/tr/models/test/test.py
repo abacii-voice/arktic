@@ -14,8 +14,8 @@ class QualityTest(models.Model):
 class QualityTestInstance(models.Model):
 
 	### Connections
-	parent = models.ForeignKey(AutomaticQualityTest, related_name='instances')
-	caption = models.ForeignKey(Caption, related_name='automatic_tests')
+	parent = models.ForeignKey(QualityTest, related_name='instances')
+	caption = models.ForeignKey(Caption, related_name='tests')
 
 	### Properties
 	is_successful = models.BooleanField(default=True)

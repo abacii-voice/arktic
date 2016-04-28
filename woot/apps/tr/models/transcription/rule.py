@@ -3,7 +3,7 @@ from django.db import models
 
 # local
 from apps.tr.models.client.client import Client
-from apps.tr.models.transcription.moderation import Moderation
+from apps.tr.models.transcription.caption import Caption
 from apps.tr.models.role.role import Role
 
 ### Rule classes
