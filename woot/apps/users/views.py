@@ -45,6 +45,23 @@ class UserSignupView(View):
 		else:
 			return render(request, 'users/user-signup.html', user_data)
 
+# User signup
+def us_data(request):
+	if request.method == 'POST':
+		# no permission required
+
+		# get initial data
+		initial_data = {
+			'user_id': request.POST['user_id'],
+			'activation_key': request.POST['activation_key'],
+		}
+
+		# compile user data
+		user = User.objects.get(id=initial_data['user_id'])
+		user_data = user.basic_data()
+
+		return JsonResponse(user_data)
+
 def verify(request, **kwargs):
 	if request.method == 'POST':
 
@@ -73,32 +90,6 @@ def verify(request, **kwargs):
 
 		# return token response
 		return JsonResponse({'done': True})
-
-	elif request.method == 'GET':
-		user_key = kwargs['user']
-		activation_key = kwargs['key']
-
-		# user
-		user = User.objects.get(id=user_key)
-		verified = user.verify_email(activation_key)
-		return render(request, 'users/verified.html', {'verified': verified})
-
-# User signup
-def us_data(request):
-	if request.method == 'POST':
-		# no permission required
-
-		# get initial data
-		initial_data = {
-			'user_id': request.POST['user_id'],
-			'activation_key': request.POST['activation_key'],
-		}
-
-		# compile user data
-		user = User.objects.get(id=initial_data['user_id'])
-		user_data = user.basic_data()
-
-		return JsonResponse(user_data)
 
 # 4. Login view
 class LoginView(View):

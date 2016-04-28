@@ -6,7 +6,8 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.conf import settings
 
 # local
-from apps.users.views import HomeView, AdminSignupView, AccountSPAView, UserSignupView, LoginView, logout_view
+from apps.tr.requests.views import HomeView, AccountSPAView,
+from apps.users.views import UserSignupView, LoginView, logout_view
 
 urlpatterns = [
 	# i18n / l10n
@@ -35,7 +36,7 @@ This is the first thing linked from the main page. When someone wants to "sign u
 An email will be sent to their email address to verify it. A randomly generated key will be used for the link.
 '''
 urlpatterns += [
-	url(r'^register/', AdminSignupView.as_view()),
+	# url(r'^register/', AdminSignupView.as_view()),
 ]
 
 '''
@@ -87,47 +88,17 @@ urlpatterns += [
 	url(r'^logout/', logout_view),
 ]
 
-### Transcription
-'''
-1. The Transcription SPA
-
-The main transcription interface includes the following components:
-
-a. Transcription + (training, demo)
-b. Overwatch + (training, demo)
-c. Moderation + (training, demo)
-
-### main.js
-### |__ plugin.js
-
-transcription.js
-|__ transcription_training.js
-|__ transcription_demo.js
-
-overwatch.js
-|__ overwatch_training.js
-|__ overwatch_demo.js
-
-moderation.js
-|__ moderation_training.js
-|__ moderation_demo.js
-
-'''
-
-### Audio upload
-
-
 ### Actions
 urlpatterns += [
-	url(r'^action/', include('apps.action.actions')),
+	url(r'^action/', include('apps.tr.requests.actions.urls')),
 ]
 
 ### Commands
 urlpatterns += [
-	url(r'^command/', include('apps.users.commands.urls')),
+	url(r'^command/', include('apps.tr.requests.commands.urls')),
 ]
 
 ### Data
 urlpatterns += [
-	url(r'^data/', include('apps.users.data.urls'))
+	url(r'^data/', include('apps.tr.requests.data.urls'))
 ]
