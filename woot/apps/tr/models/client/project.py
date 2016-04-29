@@ -34,6 +34,8 @@ class Project(models.Model):
 			'redundancy_percentage': str(self.redundancy_percentage),
 		}
 
+		return data
+
 class Batch(models.Model):
 
 	### Connections
@@ -51,6 +53,18 @@ class Batch(models.Model):
 	redundancy_percentage = models.FloatField(default=0.0)
 
 	### Methods
+	# data
+	def data(self):
+		data = {
+			'name': self.name,
+			'description': self.description,
+			'priority_index': str(self.priority_index),
+			'deadline': str(self.deadline),
+			'completion_percentage': str(self.completion_percentage),
+			'redundancy_percentage': str(self.redundancy_percentage),
+		}
+
+		return data
 
 class Upload(models.Model):
 	'''
@@ -72,6 +86,19 @@ class Upload(models.Model):
 	is_complete = models.BooleanField(default=False)
 
 	### Methods
+	# data
+	def data(self):
+		data = {
+			'archive_name': self.archive_name,
+			'relfile_name': self.relfile_name,
+			'date_created': str(self.date_created),
+			'total_fragments': str(self.total_fragments),
+			'completed_fragments': str(self.completed_fragments),
+			'completion_percentage': str(self.completion_percentage),
+			'is_complete': self.is_complete,
+		}
+
+		return data
 
 class Fragment(models.Model):
 	'''
@@ -90,3 +117,11 @@ class Fragment(models.Model):
 	is_reconciled = models.BooleanField(default=False)
 
 	### Methods
+	# data
+	def data(self):
+		data = {
+			'filename': self.filename,
+			'is_reconciled': self.is_reconciled,
+		}
+
+		return data

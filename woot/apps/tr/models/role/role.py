@@ -23,14 +23,13 @@ class Role(models.Model):
 
 	### Methods
 	# data
-	def data(self, permission):
-		pass
+	def data(self):
+		data = {
+			'type': self.type,
+			'status': self.status,
+		}
 
-	def get_type(self):
-		if self.type == 'contractadmin' or self.type == 'productionadmin':
-			return 'admin'
-		else:
-			return self.type
+		return data
 
 class Threshold(models.Model):
 
@@ -45,3 +44,17 @@ class Threshold(models.Model):
 	moderations_done = models.PositiveIntegerField(default=0)
 	goal_percentage = models.FloatField(default=0.0)
 	reached_percentage = models.FloatField(default=0.0)
+
+	### Methods
+	# data
+	def data(self):
+		data = {
+			'date_created': str(self.date_created),
+			'transcription_threshold': str(self.transcription_threshold),
+			'transcriptions_done': str(self.transcriptions_done),
+			'moderations_done': str(self.moderations_done),
+			'goal_percentage': str(self.goal_percentage),
+			'reached_percentage': str(self.reached_percentage),
+		}
+
+		return data

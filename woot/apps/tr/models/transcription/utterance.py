@@ -36,3 +36,12 @@ class Utterance(models.Model):
 	### Methods
 	def process(self):
 		pass
+
+	# data
+	def data(self):
+		data = {
+			'id': self.id,
+			'file': self.file.url,
+		}
+
+		return data
