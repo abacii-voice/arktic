@@ -25,7 +25,7 @@ class QualityTestInstance(models.Model):
 	def data(self):
 		data = {
 			'is_successful': self.is_successful,
-			'date_created',: str(self.date_created),
+			'date_created': str(self.date_created),
 		}
 
 		return data
