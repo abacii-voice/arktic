@@ -160,7 +160,7 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='QualityTest',
+            name='QualityCheck',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=255)),
@@ -168,13 +168,13 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='QualityTestInstance',
+            name='QualityCheckInstance',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('is_successful', models.BooleanField(default=True)),
                 ('date_created', models.DateTimeField(auto_now_add=True)),
                 ('caption', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tests', to='tr.Caption')),
-                ('parent', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='instances', to='tr.QualityTest')),
+                ('parent', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='instances', to='tr.QualityCheck')),
             ],
         ),
         migrations.CreateModel(
