@@ -33,13 +33,32 @@ class User(AbstractBaseUser, PermissionsMixin):
 	activation_key = models.CharField(max_length=20) # use utils to generate unique key
 
 	# settings
-	billing_date = models.DateTimeField(auto_now_add=True)
+	billing_date = models.DateTimeField(auto_now_add=True) # this is an instance of datetime.datetime
+
+	# OMG can do this
+	# print "We are the {:%d, %b %Y}".format(today)
+	# 'We are the 22, Nov 2008'
+	# formatting: http://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior
 
 	# other
 	objects = UserManager()
 	USERNAME_FIELD = 'email'
 
 	### Methods
+	# data
+	def data(self):
+		data = {
+			'id': self.id,
+			'email': self.email,
+			'first_name': self.first_name,
+			'last_name': self.last_name,
+			'is_activated': self.is_activated,
+			'billing_date': str(self.billing_date),
+		}
+
+		return data
+
+	# str
 	def __str__(self):
 		return '{}, ({}, {})'.format(self.email, self.last_name, self.first_name)
 
@@ -72,108 +91,3 @@ class User(AbstractBaseUser, PermissionsMixin):
 			return True
 		else:
 			return False # change to False when testing is done
-
-	# roles
-	def create_productionadmin(self, production_client):
-		# test if production client is_production
-		if production_client.is_production:
-			production_admin_role, production_admin_role_created = self.roles.get_or_create(client=production_client, type='productionadmin')
-			self.clients.add(production_client)
-			self.save()
-
-			return production_admin_role
-
-	def create_contractadmin(self, contract_client):
-		# test if production client is_production
-		if contract_client.is_contract:
-			contract_admin_role, contract_admin_role_created = self.roles.get_or_create(client=contract_client, type='contractadmin')
-			self.clients.add(contract_client)
-			self.save()
-
-			return contract_admin_role
-
-	def create_moderator(self, production_client):
-		# test if production client is_production
-		if production_client.is_production:
-			moderator_role, moderator_role_created = self.roles.get_or_create(client=production_client, type='moderator')
-			self.clients.add(production_client)
-			self.save()
-
-			return moderator_role
-
-	def create_worker(self, production_client, moderator):
-		# test if production client is_production
-		if production_client.is_production:
-			# test if moderator shares the same production_client
-			if moderator.client == production_client:
-				worker_role, worker_role_created = self.roles.get_or_create(supervisor=moderator, client=production_client, type='worker')
-				self.clients.add(production_client)
-				self.save()
-
-				return worker_role
-
-	# get role
-	def get_role(self, client_name, role_type):
-		role = None
-		if role_type=='admin':
-			if client_name!='' and Client.objects.get(name=client_name).is_production:
-				role_type = 'productionadmin'
-			else:
-				role_type = 'contractadmin'
-
-		if role_type is not None and self.roles.filter(client__name=client_name, type=role_type).count():
-			role = self.roles.get(client__name=client_name, type=role_type)
-
-		return role
-
-	# get permission
-	def get_permission(self, client_name, role_type=None):
-		return Permission(self, self.get_role(client_name, role_type))
-
-	def data(self, permission):
-		user_data = {}
-
-		is_moderator_sub = permission.is_moderator and permission.role.subordinates.filter(user=self)
-		if is_moderator_sub or permission.is_contractadmin or permission.is_productionadmin:
-
-			# basic data
-			user_data.update(self.basic_data())
-
-		if permission.is_contractadmin or permission.is_productionadmin:
-
-			# roles
-			user_data.update(self.role_data(permission))
-
-		return user_data
-
-	# details - basic data that does not require permissions
-	def basic_data(self):
-		basic_data = {
-			'id': str(self.id),
-			'first_name': self.first_name,
-			'last_name': self.last_name,
-			'email': self.email,
-		}
-
-		return basic_data
-
-	def role_data(self, permission):
-		role_data = {}
-
-		if permission.is_contractadmin or permission.is_productionadmin:
-			role_data.update({
-				'roles': {
-					role.get_type(): role.data(permission) for role in self.roles.filter(client=permission.role.client).order_by('type')
-				}
-			})
-
-		return role_data
-
-	# clients - fetch data using permissions
-	def client_data(self, permission):
-		client_data = {
-			'clients': {
-				client.name: client.data(permission) for client in self.clients.order_by('name')
-			}
-		}
-		return client_data
