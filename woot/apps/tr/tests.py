@@ -7,7 +7,7 @@ from apps.tr.models.client.project import Project, Batch, Upload, Fragment
 from apps.tr.models.role.action import Action
 from apps.tr.models.role.role import Role, Threshold
 from apps.tr.models.role.stat import Stat, StatInstance
-from apps.tr.models.check.check import QualityTest, QualityTestInstance
+from apps.tr.models.check.check import QualityCheck, QualityCheckInstance
 from apps.tr.models.transcription.caption import Caption
 from apps.tr.models.transcription.dictionary import Dictionary, UserDictionary
 from apps.tr.models.transcription.flag import Flag, FlagInstance

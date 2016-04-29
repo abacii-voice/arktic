@@ -5,16 +5,16 @@ from django.db import models
 from apps.tr.models.transcription.caption import Caption
 
 ### Correction classes
-class QualityTest(models.Model):
+class QualityCheck(models.Model):
 
 	### Properties
 	name = models.CharField(max_length=255)
 	is_automatic = models.BooleanField(default=True)
 
-class QualityTestInstance(models.Model):
+class QualityCheckInstance(models.Model):
 
 	### Connections
-	parent = models.ForeignKey(QualityTest, related_name='instances')
+	parent = models.ForeignKey(QualityCheck, related_name='instances')
 	caption = models.ForeignKey(Caption, related_name='tests')
 
 	### Properties

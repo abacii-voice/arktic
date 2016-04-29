@@ -1,1 +1,1 @@
-from apps.tr.models.check.check import QualityTest, QualityTestInstance
+from apps.tr.models.check.check import QualityCheck, QualityCheckInstance
