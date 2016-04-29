@@ -16,6 +16,13 @@ class Client(models.Model):
 
 	# Type
 	is_production = models.BooleanField(default=False)
-	is_contract = models.BooleanField(default=False)
 
 	### Methods
+	# data
+	def data(self):
+		data = {
+			'name': self.name,
+			'is_production': self.is_production,
+		}
+
+		return data
