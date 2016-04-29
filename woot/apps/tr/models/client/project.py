@@ -41,8 +41,8 @@ class Project(models.Model):
 
 			# connections
 			'assigned_users': [user.id for user in self.assigned_users.all()],
-			'dictionaries': {dictionary.id: dictionary.data() for dictionary in self.dictionaries.all()}
-			'grammars': {grammar.id, grammar.data() for grammar in self.grammars.all()},
+			'dictionaries': {dictionary.id: dictionary.data() for dictionary in self.dictionaries.all()},
+			'grammars': {grammar.id: grammar.data() for grammar in self.grammars.all()},
 			'rules': {rule.id: rule.data() for rule in self.rules.all()},
 			'batches': {batch.id: batch.data() for batch in self.batches.all()},
 			'transcriptions': {transcription.id: transcription.data() for transcription in self.transcriptions.all()},
