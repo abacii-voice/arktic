@@ -24,6 +24,15 @@ class Project(models.Model):
 	redundancy_percentage = models.FloatField(default=0.0)
 
 	### Methods
+	# data
+	def data(self):
+		data = {
+			'name': self.name,
+			'description': self.description,
+			'combined_priority_index': str(self.combined_priority_index),
+			'completion_percentage': str(self.completion_percentage),
+			'redundancy_percentage': str(self.redundancy_percentage),
+		}
 
 class Batch(models.Model):
 
