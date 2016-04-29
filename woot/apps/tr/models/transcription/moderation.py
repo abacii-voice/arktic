@@ -17,3 +17,13 @@ class Moderation(models.Model):
 	### Properties
 	is_approved = models.BooleanField(default=True)
 	metadata = models.TextField(default='')
+
+	### Methods
+	# data
+	def data(self):
+		data = {
+			'is_approved': self.is_approved,
+			'metadata': self.metadata,
+		}
+
+		return data

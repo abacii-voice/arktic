@@ -19,7 +19,11 @@ class Message(models.Model):
 	### Methods
 	# data
 	def data(self):
-		pass
+		data = {
+
+		}
+
+		return data
 
 class MessageToken(models.Model):
 
@@ -33,13 +37,13 @@ class MessageToken(models.Model):
 	### Methods
 	# data
 	def data(self):
-		token_data = {
+		data = {
 			'is_token': True,
 			'index': self.index,
 			'value': self.value,
 		}
 
-		return token_data
+		return data
 
 class Attachment(models.Model):
 
@@ -55,7 +59,7 @@ class Attachment(models.Model):
 	### Methods
 	# data
 	def data(self):
-		attachment_data = {
+		data = {
 			'is_token': False,
 			'index': self.index,
 			'package_name': self.package_name,
@@ -63,4 +67,4 @@ class Attachment(models.Model):
 			'attach_pk': self.attach_pk,
 		}
 
-		return attachment_data
+		return data

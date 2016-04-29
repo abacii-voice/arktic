@@ -22,14 +22,14 @@ class Rule(models.Model):
 
 	### Methods
 	# data
-	def data(self, permission):
-		rule_data = {
-			'number': self.number,
+	def data(self):
+		data = {
+			'number': str(self.number),
 			'name': self.name,
 			'description': self.description,
 		}
 
-		return rule_data
+		return data
 
 class RuleInstance(models.Model):
 	'''

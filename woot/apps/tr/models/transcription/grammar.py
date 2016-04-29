@@ -15,6 +15,17 @@ class Grammar(models.Model):
 	project = models.ForeignKey(Project, related_name='grammars')
 
 	### Properties
-	metadata = models.TextField(default='')
 	date_created = models.DateTimeField(auto_now_add=True)
+	metadata = models.TextField(default='')
 	file = models.FileField(upload_to='grammars')
+
+	### Methods
+	# data
+	def data(self):
+		data = {
+			'date_created': str(self.date_created),
+			'metadata': self.metadata,
+			'filename': self.file.url,
+		}
+
+		return data

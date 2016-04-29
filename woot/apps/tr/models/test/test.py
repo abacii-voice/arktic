@@ -20,3 +20,12 @@ class QualityTestInstance(models.Model):
 	### Properties
 	is_successful = models.BooleanField(default=True)
 	date_created = models.DateTimeField(auto_now_add=True)
+
+	### Methods
+	def data(self):
+		data = {
+			'is_successful': self.is_successful,
+			'date_created',: str(self.date_created),
+		}
+
+		return data
