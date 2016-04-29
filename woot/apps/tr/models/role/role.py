@@ -37,7 +37,7 @@ class Role(models.Model):
 			'status': self.status,
 
 			# connections
-			'stats': {stat.parent.name, stat.data() for stat in self.stats.all()},
+			'stats': {stat.parent.name: stat.data() for stat in self.stats.all()},
 		}
 
 		return data
@@ -62,7 +62,7 @@ class Threshold(models.Model):
 	def data(self):
 		data = {
 			'role': self.role.id,
-			'index': str(self.index)
+			'index': str(self.index),
 			'date_created': str(self.date_created),
 			'transcription_threshold': str(self.transcription_threshold),
 			'transcriptions_done': str(self.transcriptions_done),
