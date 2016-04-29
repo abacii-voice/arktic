@@ -24,8 +24,6 @@ class Utterance(models.Model):
 	'''
 
 	### Connections
-	project = models.ForeignKey(Project, related_name='utterances')
-	batch = models.ForeignKey(Batch, related_name='utterances')
 	transcription = models.OneToOneField(Transcription, related_name='utterance')
 
 	### Properties

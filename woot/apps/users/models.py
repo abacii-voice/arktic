@@ -20,6 +20,9 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
 
+	### Connections
+	# sub: role
+
 	### Properties
 	# identification
 	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

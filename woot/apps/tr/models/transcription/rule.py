@@ -3,8 +3,12 @@ from django.db import models
 
 # local
 from apps.tr.models.client.client import Client
+from apps.tr.models.client.project import Project
 from apps.tr.models.transcription.caption import Caption
 from apps.tr.models.role.role import Role
+
+# util
+import uuid
 
 ### Rule classes
 class Rule(models.Model):
@@ -14,8 +18,10 @@ class Rule(models.Model):
 
 	### Connections
 	client = models.ForeignKey(Client, related_name='rules', null=True)
+	project = models.ForeignKey(Project, related_name='rules', null=True)
 
 	### Properties
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	number = models.PositiveIntegerField(default=0)
 	name = models.CharField(max_length=255)
 	description = models.TextField(default='')
