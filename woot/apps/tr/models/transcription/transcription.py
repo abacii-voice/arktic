@@ -16,9 +16,8 @@ class Transcription(models.Model):
 	batch = models.ForeignKey(Batch, related_name='transcriptions')
 
 	### Properties
-	# initialisation if it exists
-	original_caption = models.CharField(max_length=255, default='')
 	date_created = models.DateTimeField(auto_now_add=True)
+	original_caption = models.CharField(max_length=255, default='')
 
 	# unique identifier
 	filename = models.CharField(max_length=255)
@@ -29,3 +28,15 @@ class Transcription(models.Model):
 	date_last_requested = models.DateTimeField(auto_now=True)
 
 	### Methods
+	# data
+	def data(self):
+		data = {
+			'date_created': str(self.date_created),
+			'original_caption': self.original_caption,
+			'filename': self.filename,
+			'requests': str(self.requests),
+			'request_allowance': str(self.request_allowance),
+			'date_last_requested': str(self.date_last_requested),
+		}
+
+		return data

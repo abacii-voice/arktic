@@ -16,3 +16,17 @@ class Email(models.Model):
 	date_created = models.DateTimeField(auto_now_add=True)
 	text_content = models.TextField()
 	html_content = models.TextField()
+
+	### Methods
+	# data
+	def data(self):
+		data = {
+			'from': self.from_user.user.email,
+			'to': self.to_user.user.email,
+			'subject': self.subject,
+			'date_created': str(self.date_created),
+			'text_content': self.text_content,
+			'html_content': self.html_content,
+		}
+
+		return data

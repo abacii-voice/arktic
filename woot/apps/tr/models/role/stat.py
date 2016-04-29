@@ -22,5 +22,10 @@ class StatInstance(models.Model):
 	value = models.FloatField(default=0.0)
 
 	### Methods
+	# data
 	def data(self):
-		pass
+		data = {
+			'value': str(self.value),
+		}
+
+		return data

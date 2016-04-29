@@ -17,7 +17,17 @@ class Caption(models.Model):
 	role = models.ForeignKey(Role, related_name='captions')
 
 	### Properties
-	from_recogniser = models.BooleanField(default=False)
-	content = models.TextField()
-	metadata = models.TextField(default='')
 	date_created = models.DateTimeField(auto_now_add=True)
+	from_recogniser = models.BooleanField(default=False)
+	metadata = models.TextField(default='')
+
+	### Methods
+	# data
+	def data(self):
+		data = {
+			'date_created': str(self.date_created),
+			'from_recogniser': self.from_recogniser,
+			'metadata': self.metadata,
+		}
+
+		return data
