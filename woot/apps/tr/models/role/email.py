@@ -28,7 +28,7 @@ class Email(models.Model):
 			'from': self.from_user.user.email,
 			'to': self.to_user.user.email,
 			'subject': self.subject,
-			'id': self.id
+			'id': self.id,
 			'date_created': str(self.date_created),
 			'text_content': self.text_content,
 			'html_content': self.html_content,

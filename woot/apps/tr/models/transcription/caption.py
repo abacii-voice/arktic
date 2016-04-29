@@ -29,7 +29,7 @@ class Caption(models.Model):
 	# data
 	def data(self):
 		data = {
-			'id', self.id,
+			'id': self.id,
 			'date_created': str(self.date_created),
 			'from_recogniser': self.from_recogniser,
 			'metadata': self.metadata,
