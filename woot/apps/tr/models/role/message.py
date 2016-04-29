@@ -5,22 +5,33 @@ from django.db import models
 from apps.tr.models.client.client import Client
 from apps.tr.models.role.role import Role
 
+# util
+import uuid
+
 ### Message models
 class Message(models.Model):
 
 	### Connections
-	client = models.ForeignKey(Client, related_name='messages')
 	from_user = models.ForeignKey(Role, related_name='messages_from')
 	to_user = models.ForeignKey(Role, related_name='messages_to')
 
 	### Properties
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	date_created = models.DateTimeField(auto_now_add=True)
 
 	### Methods
 	# data
 	def data(self):
 		data = {
+			# basic data
+			'from_user': self.from_user.user.id,
+			'to_user': self.to_user.user.id,
+			'id': self.id,
+			'date_created': str(self.date_created),
 
+			# connections
+			'tokens': {token.index: token.data() for token in self.tokens.all()},
+			'attachments': {attachment.index: attachment.data() for attachment in self.attachments.all()},
 		}
 
 		return data

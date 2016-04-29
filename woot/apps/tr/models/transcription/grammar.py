@@ -2,7 +2,10 @@
 from django.db import models
 
 # local
-from apps.tr.models.client.project import Project
+from apps.tr.models.client.project import Project, Batch
+
+# util
+import uuid
 
 ### Grammar model
 class Grammar(models.Model):
@@ -13,8 +16,11 @@ class Grammar(models.Model):
 
 	### Connections
 	project = models.ForeignKey(Project, related_name='grammars')
+	batch = models.ForeignKey(Batch, related_name='grammars')
 
 	### Properties
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	name = models.CharField(max_length=255)
 	date_created = models.DateTimeField(auto_now_add=True)
 	metadata = models.TextField(default='')
 	file = models.FileField(upload_to='grammars')

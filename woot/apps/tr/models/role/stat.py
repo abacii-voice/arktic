@@ -15,7 +15,6 @@ class StatInstance(models.Model):
 
 	### Connections
 	parent = models.ForeignKey(Stat, related_name='instances')
-	client = models.ForeignKey(Client, related_name='stats')
 	role = models.ForeignKey(Role, related_name='stats')
 
 	### Properties

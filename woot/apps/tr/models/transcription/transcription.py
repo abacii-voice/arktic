@@ -4,6 +4,9 @@ from django.db import models
 # local
 from apps.tr.models.client.project import Project, Batch
 
+# util
+import uuid
+
 ### Transcription classes
 class Transcription(models.Model):
 	'''
@@ -17,6 +20,7 @@ class Transcription(models.Model):
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	original_caption = models.CharField(max_length=255, default='')
 
 	# unique identifier
@@ -31,12 +35,15 @@ class Transcription(models.Model):
 	# data
 	def data(self):
 		data = {
+			'batch': self.batch.id,
 			'date_created': str(self.date_created),
+			'id': self.id,
 			'original_caption': self.original_caption,
 			'filename': self.filename,
 			'requests': str(self.requests),
 			'request_allowance': str(self.request_allowance),
 			'date_last_requested': str(self.date_last_requested),
+			'utterance': self.utterance.data(),
 		}
 
 		return data
