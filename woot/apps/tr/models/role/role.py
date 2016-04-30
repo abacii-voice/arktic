@@ -42,6 +42,11 @@ class Role(models.Model):
 
 		return data
 
+	# threshold
+	def add_threshold(self, project):
+		# set index and verify moderator
+		return self.thresholds.create(project=project)
+
 class Threshold(models.Model):
 
 	### Connections

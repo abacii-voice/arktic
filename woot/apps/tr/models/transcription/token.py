@@ -29,6 +29,8 @@ class Token(models.Model):
 			'content': self.content,
 		}
 
+		return data
+
 class TokenInstance(models.Model):
 
 	### Connections
@@ -37,3 +39,13 @@ class TokenInstance(models.Model):
 
 	### Properties
 	index = models.IntegerField(default=0)
+
+	### Methods
+	# data
+	def data(self):
+		data = self.parent.data()
+		data.update({
+			'index': str(self.index),
+		})
+
+		return data

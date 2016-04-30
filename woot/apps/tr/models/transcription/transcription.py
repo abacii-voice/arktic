@@ -35,7 +35,7 @@ class Transcription(models.Model):
 	# data
 	def data(self):
 		data = {
-			'batch': self.batch.id,
+			'batch': str(self.batch.id),
 			'date_created': str(self.date_created),
 			'id': str(self.id),
 			'original_caption': self.original_caption,
@@ -44,6 +44,7 @@ class Transcription(models.Model):
 			'request_allowance': str(self.request_allowance),
 			'date_last_requested': str(self.date_last_requested),
 			'utterance': self.utterance.data(),
+			'captions': {str(caption.id): caption.data() for caption in self.captions.all()}
 		}
 
 		return data

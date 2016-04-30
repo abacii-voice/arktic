@@ -13,7 +13,6 @@ import uuid
 class Moderation(models.Model):
 
 	### Connections
-	transcription = models.ForeignKey(Transcription, related_name='moderations')
 	caption = models.ForeignKey(Caption, related_name='moderations')
 	moderator = models.ForeignKey(Role, related_name='moderations')
 
