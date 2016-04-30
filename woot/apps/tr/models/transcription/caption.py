@@ -33,6 +33,8 @@ class Caption(models.Model):
 			'date_created': str(self.date_created),
 			'from_recogniser': self.from_recogniser,
 			'metadata': self.metadata,
+			'tokens': {str(token.index): token.data() for token in self.tokens.all()},
+			'flags': {str(flag.id): flag.data() for flag in self.flags.all()},
 		}
 
 		return data

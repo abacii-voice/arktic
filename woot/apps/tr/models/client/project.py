@@ -101,7 +101,6 @@ class Upload(models.Model):
 
 	### Connections
 	batch = models.ForeignKey(Batch, related_name='uploads')
-	# sub: fragment
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)

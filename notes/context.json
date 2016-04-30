@@ -1,0 +1,105 @@
+{
+  "id": "b84376e5-f1e2-4551-9f81-7096857d29a6",
+  "is_production": true,
+  "name": "TestProductionClient",
+  "production_projects": {
+    "79e4b11f-a7ef-45cd-897e-cd0fe81fa42d": {
+      "batches": {
+        "7914f9e1-61c9-444d-9195-d26354c913f0": {
+          "completion_percentage": "0.0",
+          "date_created": "2016-04-30 17:53:28.500258+00:00",
+          "deadline": "2016-04-30 17:53:28.500337+00:00",
+          "description": "",
+          "id": "7914f9e1-61c9-444d-9195-d26354c913f0",
+          "name": "TestBatch",
+          "priority_index": "0",
+          "redundancy_percentage": "0.0",
+          "uploads": {
+            "35206960-35cd-4f0e-b942-d3bffe347699": {
+              "archive_name": "test_archive.zip",
+              "completed_fragments": "0",
+              "completion_percentage": "0.0",
+              "date_created": "2016-04-30 17:53:28.501169+00:00",
+              "fragments": {
+                "55f5aa3b-bc82-4afc-b86c-54281f23c8ef": {
+                  "filename": "test_fragment.wav",
+                  "id": "55f5aa3b-bc82-4afc-b86c-54281f23c8ef",
+                  "is_reconciled": false
+                }
+              },
+              "id": "35206960-35cd-4f0e-b942-d3bffe347699",
+              "is_complete": false,
+              "relfile_name": "test_relfile.csv",
+              "total_fragments": "0"
+            }
+          }
+        }
+      },
+      "combined_priority_index": "0",
+      "completion_percentage": "0.0",
+      "contract_client": "b1ecc180-9e48-45f4-8546-8e09a0015435",
+      "description": "",
+      "dictionaries": {
+        "8f55bcb1-a5d1-4ebc-a423-3bb049ea42d0": {
+          "name": "test_dictionary",
+          "total_tokens": "0"
+        }
+      },
+      "grammars": {},
+      "id": "79e4b11f-a7ef-45cd-897e-cd0fe81fa42d",
+      "name": "TestProject",
+      "production_client": "b84376e5-f1e2-4551-9f81-7096857d29a6",
+      "redundancy_percentage": "0.0",
+      "rules": {},
+      "transcriptions": {
+        "3e0841f0-3164-472d-8cc1-2f8347644a5e": {
+          "batch": "7914f9e1-61c9-444d-9195-d26354c913f0",
+          "captions": {
+            "b5f58a81-313c-41a9-9668-48c27c99102f": {
+              "date_created": "2016-04-30 17:53:28.522358+00:00",
+              "flags": {
+                "d05b21f7-674f-4a79-94ca-a68b47883576": {
+                  "id": "5f2298fc-9dc3-4557-8a1e-41702691fee9",
+                  "name": "unsure"
+                }
+              },
+              "from_recogniser": false,
+              "id": "b5f58a81-313c-41a9-9668-48c27c99102f",
+              "metadata": "",
+              "tokens": {
+                "0": {
+                  "content": "test_token",
+                  "id": "92513053-5433-4362-af07-894bbfe035e2",
+                  "index": "0",
+                  "is_tag": false
+                }
+              }
+            }
+          },
+          "date_created": "2016-04-30 17:53:28.518434+00:00",
+          "date_last_requested": "2016-04-30 17:53:28.520991+00:00",
+          "filename": "test_fragment.wav",
+          "id": "3e0841f0-3164-472d-8cc1-2f8347644a5e",
+          "original_caption": "",
+          "request_allowance": "1",
+          "requests": "0",
+          "utterance": {
+            "file": "/media/audio/TestContractClient_p-TestProject_f-20150806082036x10317-uuid-9df130ac-9502-4c1c-9a_8H9LcrA.wav",
+            "id": "9df130ac-9502-4c1c-9aa5-8723f2d71a07"
+          }
+        }
+      }
+    }
+  },
+  "rules": {},
+  "users": {
+    "d2a2d320-2b92-4d1e-94f8-41d11bb2ba29": {
+      "billing_date": "2016-04-30 17:53:28.502544+00:00",
+      "email": "1@1.com",
+      "first_name": "first_name_1",
+      "id": "d2a2d320-2b92-4d1e-94f8-41d11bb2ba29",
+      "is_activated": false,
+      "last_name": "last_name_1"
+    }
+  }
+}
