@@ -26,14 +26,22 @@ class Client(models.Model):
 	def data(self):
 		data = {
 			# basic data
-			'id': self.id,
+			'id': str(self.id),
 			'name': self.name,
 			'is_production': self.is_production,
 
 			# connections
-			'projects': {project.id: project.data() for project in self.projects.all()},
-			'rules': {rule.id: rule.data() for rule in self.rules.all()},
-			'users': {user.id: user.data() for user in self.users.all()},
+			'rules': {str(rule.id): rule.data() for rule in self.rules.all()},
+			'users': {str(user.id): user.data() for user in self.users.all()},
 		}
+
+		if self.is_production:
+			data.update({
+				'production_projects': {str(project.id): project.data() for project in self.production_projects.all()},
+			})
+		else:
+			data.update({
+				'contract_projects': {str(project.id): project.data() for project in self.contract_projects.all()},
+			})
 
 		return data

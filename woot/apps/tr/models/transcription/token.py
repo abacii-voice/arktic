@@ -24,7 +24,7 @@ class Token(models.Model):
 	# data
 	def data(self):
 		data = {
-			'id': self.id,
+			'id': str(self.id),
 			'is_tag': self.is_tag,
 			'content': self.content,
 		}

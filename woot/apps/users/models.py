@@ -51,7 +51,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 	# data
 	def data(self):
 		data = {
-			'id': self.id,
+			'id': str(self.id),
 			'email': self.email,
 			'first_name': self.first_name,
 			'last_name': self.last_name,
