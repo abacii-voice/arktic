@@ -38,7 +38,7 @@ class Utterance(models.Model):
 	# data
 	def data(self):
 		data = {
-			'id': self.id,
+			'id': str(self.id),
 			'file': self.file.url,
 		}
 

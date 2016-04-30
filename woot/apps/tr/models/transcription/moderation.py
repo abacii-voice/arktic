@@ -27,7 +27,7 @@ class Moderation(models.Model):
 	# data
 	def data(self):
 		data = {
-			'id': self.id,
+			'id': str(self.id),
 			'date_created': str(self.date_created),
 			'is_approved': self.is_approved,
 			'metadata': self.metadata,
