@@ -45,3 +45,24 @@ class Client(models.Model):
 			})
 
 		return data
+
+	# roles
+	def add_admin(self, user):
+		if not self.users.filter(id=user.id).exists():
+			self.users.add(user)
+		role, role_created = self.roles.get_or_create(user=user, type='admin')
+		return role
+
+	def add_moderator(self, user):
+		if self.is_production:
+			if not self.users.filter(id=user.id).exists():
+				self.users.add(user)
+			role, role_created = self.roles.get_or_create(user=user, type='moderator')
+			return role
+
+	def add_worker(self, user, moderator):
+		if self.is_production and moderator.type == 'moderator':
+			if not self.users.filter(id=user.id).exists():
+				self.users.add(user)
+			role, role_created = self.roles.get_or_create(user=user, type='admin', supervisor=moderator)
+			return role
