@@ -23,7 +23,7 @@ class Action(models.Model):
 	# data
 	def data(self):
 		data = {
-			'id': self.id,
+			'id': str(self.id),
 			'date_created': str(self.date_created),
 			'type': self.type,
 			'metadata': self.metadata,

@@ -30,9 +30,9 @@ class Project(models.Model):
 	def data(self):
 		data = {
 			# basic
-			'production_client': self.production_client.id,
-			'contract_client': self.contract_client.id,
-			'id': self.id,
+			'production_client': str(self.production_client.id),
+			'contract_client': str(self.contract_client.id),
+			'id': str(self.id),
 			'name': self.name,
 			'description': self.description,
 			'combined_priority_index': str(self.combined_priority_index),
@@ -40,13 +40,17 @@ class Project(models.Model):
 			'redundancy_percentage': str(self.redundancy_percentage),
 
 			# connections
-			'assigned_users': [user.id for user in self.assigned_users.all()],
-			'dictionaries': {dictionary.id: dictionary.data() for dictionary in self.dictionaries.all()},
-			'grammars': {grammar.id: grammar.data() for grammar in self.grammars.all()},
-			'rules': {rule.id: rule.data() for rule in self.rules.all()},
-			'batches': {batch.id: batch.data() for batch in self.batches.all()},
-			'transcriptions': {transcription.id: transcription.data() for transcription in self.transcriptions.all()},
+			'dictionaries': {str(dictionary.id): dictionary.data() for dictionary in self.dictionaries.all()},
+			'grammars': {str(grammar.id): grammar.data() for grammar in self.grammars.all()},
+			'rules': {str(rule.id): rule.data() for rule in self.rules.all()},
+			'batches': {str(batch.id): batch.data() for batch in self.batches.all()},
+			'transcriptions': {str(transcription.id): transcription.data() for transcription in self.transcriptions.all()},
 		}
+
+		if hasattr(self, 'assigned_users'):
+			data.update({
+				'assigned_users': [str(user.id) for user in self.assigned_users.all()],
+			})
 
 		return data
 
@@ -74,7 +78,7 @@ class Batch(models.Model):
 		data = {
 			# basic data
 			'date_created': str(self.date_created),
-			'id': self.id,
+			'id': str(self.id),
 			'name': self.name,
 			'description': self.description,
 			'priority_index': str(self.priority_index),
@@ -83,7 +87,7 @@ class Batch(models.Model):
 			'redundancy_percentage': str(self.redundancy_percentage),
 
 			# connections
-			'uploads': {upload.id: upload.data() for upload in self.uploads.all()},
+			'uploads': {str(upload.id): upload.data() for upload in self.uploads.all()},
 		}
 
 		return data
@@ -115,7 +119,7 @@ class Upload(models.Model):
 		data = {
 			# basic data
 			'date_created': str(self.date_created),
-			'id': self.id,
+			'id': str(self.id),
 			'archive_name': self.archive_name,
 			'relfile_name': self.relfile_name,
 			'total_fragments': str(self.total_fragments),
@@ -124,7 +128,7 @@ class Upload(models.Model):
 			'is_complete': self.is_complete,
 
 			# connections
-			'fragments': {fragment.id: fragment.data() for fragment in self.fragments.all()},
+			'fragments': {str(fragment.id): fragment.data() for fragment in self.fragments.all()},
 		}
 
 		return data
@@ -148,7 +152,7 @@ class Fragment(models.Model):
 	# data
 	def data(self):
 		data = {
-			'id': self.id,
+			'id': str(self.id),
 			'filename': self.filename,
 			'is_reconciled': self.is_reconciled,
 		}

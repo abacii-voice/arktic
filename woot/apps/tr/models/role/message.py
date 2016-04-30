@@ -26,12 +26,12 @@ class Message(models.Model):
 			# basic data
 			'from_user': self.from_user.user.id,
 			'to_user': self.to_user.user.id,
-			'id': self.id,
+			'id': str(self.id),
 			'date_created': str(self.date_created),
 
 			# connections
-			'tokens': {token.index: token.data() for token in self.tokens.all()},
-			'attachments': {attachment.index: attachment.data() for attachment in self.attachments.all()},
+			'tokens': {str(token.index): token.data() for token in self.tokens.all()},
+			'attachments': {str(attachment.index): attachment.data() for attachment in self.attachments.all()},
 		}
 
 		return data

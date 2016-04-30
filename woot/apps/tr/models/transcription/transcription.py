@@ -37,7 +37,7 @@ class Transcription(models.Model):
 		data = {
 			'batch': self.batch.id,
 			'date_created': str(self.date_created),
-			'id': self.id,
+			'id': str(self.id),
 			'original_caption': self.original_caption,
 			'filename': self.filename,
 			'requests': str(self.requests),

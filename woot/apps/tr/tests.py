@@ -23,7 +23,7 @@ import json
 
 # Create your tests here.
 class ContextTestCase(TestCase):
-	def setup(self):
+	def setUp(self):
 		# client
 		production_client = Client.objects.create(name='TestProductionClient', is_production=True)
 		contract_client = Client.objects.create(name='TestContractClient', is_production=False)
@@ -45,3 +45,7 @@ class ContextTestCase(TestCase):
 		# token, tokenInstance
 		# transcription
 		# utterance
+
+	def test_context(self):
+		production_client = Client.objects.get(name='TestProductionClient')
+		print(json.dumps(production_client.data()))
