@@ -32,6 +32,8 @@ class Client(models.Model):
 
 			# connections
 			'rules': {str(rule.id): rule.data() for rule in self.rules.all()},
+			'flags': {str(flag.id): flag.data() for flag in self.flags.all()},
+			'checks': {str(check.id): check.data() for check in self.checks.all()},
 			'users': {str(user.id): user.data() for user in self.users.all()},
 		}
 
