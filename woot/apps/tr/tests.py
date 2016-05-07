@@ -78,5 +78,5 @@ class ContextTestCase(TestCase):
 		production_client = Client.objects.get(name='TestProductionClient')
 		print(json.dumps(production_client.data(), indent=2, sort_keys=True))
 
-		contract_client = Client.objects.get(name='TestContractClient')
-		print(json.dumps(contract_client.data(), indent=2, sort_keys=True))
+		# contract_client = Client.objects.get(name='TestContractClient')
+		# print(json.dumps(contract_client.data(), indent=2, sort_keys=True))
