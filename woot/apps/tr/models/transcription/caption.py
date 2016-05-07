@@ -35,7 +35,7 @@ class Caption(models.Model):
 			'tokens': {str(token.index): token.data() for token in self.tokens.all()},
 			'flags': {str(flag.id): flag.data() for flag in self.flags.all()},
 			'rules': {str(rule.id): rule.data() for rule in self.rules_cited.all()},
-			'checks': {str(check.id): check.data() for check in self.tests.all()}
+			'checks': {str(check.id): check.data() for check in self.checks.all()}
 		}
 
 		return data
