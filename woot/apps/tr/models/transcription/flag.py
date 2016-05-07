@@ -2,6 +2,7 @@
 from django.db import models
 
 # local
+from apps.tr.models.client.client import Client
 from apps.tr.models.transcription.caption import Caption
 
 # util
@@ -9,6 +10,9 @@ import uuid
 
 ### Flag classes
 class Flag(models.Model):
+
+	### Connections
+	client = models.ForeignKey(Client, related_name='flags')
 
 	### Properties
 	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -18,6 +22,7 @@ class Flag(models.Model):
 	# data
 	def data(self):
 		data = {
+			'client': str(self.client.id),
 			'name': self.name,
 		}
 
