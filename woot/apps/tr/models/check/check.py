@@ -33,7 +33,7 @@ class QualityCheckInstance(models.Model):
 
 	### Connections
 	parent = models.ForeignKey(QualityCheck, related_name='instances')
-	caption = models.ForeignKey(Caption, related_name='tests')
+	caption = models.ForeignKey(Caption, related_name='checks')
 
 	### Properties
 	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
