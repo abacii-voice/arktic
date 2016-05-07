@@ -18,7 +18,6 @@ class Flag(models.Model):
 	# data
 	def data(self):
 		data = {
-			'id': str(self.id),
 			'name': self.name,
 		}
 
@@ -37,5 +36,8 @@ class FlagInstance(models.Model):
 	# data
 	def data(self):
 		data = self.parent.data()
+		data.update({
+			'caption': str(self.caption.id),
+		})
 
 		return data
