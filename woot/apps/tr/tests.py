@@ -79,6 +79,13 @@ class ContextTestCase(TestCase):
 		# moderation
 		moderation = moderator.moderations.create(caption=caption)
 
+		# rule
+		rule = project.rules.create(client=contract_client, name='Capital Letters', description='Use only lower case letters.')
+		rule_instance = rule.instances.create(caption=caption, role=moderator)
+
 	def test_context(self):
 		production_client = Client.objects.get(name='TestProductionClient')
 		print(json.dumps(production_client.data(), indent=2, sort_keys=True))
+
+		# contract_client = Client.objects.get(name='TestContractClient')
+		# print(json.dumps(contract_client.data(), indent=2, sort_keys=True))

@@ -30,6 +30,7 @@ class Rule(models.Model):
 	# data
 	def data(self):
 		data = {
+			'project': str(self.project.id),
 			'number': str(self.number),
 			'name': self.name,
 			'description': self.description,
@@ -46,3 +47,10 @@ class RuleInstance(models.Model):
 	parent = models.ForeignKey(Rule, related_name='instances')
 	caption = models.ForeignKey(Caption, related_name='rules_cited')
 	role = models.ForeignKey(Role, related_name='rules_cited')
+
+	### Methods
+	# data
+	def data(self):
+		data = self.parent.data()
+
+		return data

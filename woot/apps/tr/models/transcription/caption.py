@@ -29,12 +29,12 @@ class Caption(models.Model):
 	# data
 	def data(self):
 		data = {
-			'id': str(self.id),
 			'date_created': str(self.date_created),
 			'from_recogniser': self.from_recogniser,
 			'metadata': self.metadata,
 			'tokens': {str(token.index): token.data() for token in self.tokens.all()},
 			'flags': {str(flag.id): flag.data() for flag in self.flags.all()},
+			'rules': {str(rule.id): rule.data() for rule in self.rules_cited.all()},
 		}
 
 		return data
