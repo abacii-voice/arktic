@@ -37,3 +37,14 @@ class UserDictionary(models.Model):
 	role = models.ForeignKey(Role, related_name='dictionaries')
 
 	### Properties
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+	### Methods
+	# data
+	def data(self):
+		data = self.parent.data()
+		data.update({
+			'role': str(self.role.id),
+		})
+
+		return data

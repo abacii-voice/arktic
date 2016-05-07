@@ -32,7 +32,6 @@ class Role(models.Model):
 			# 'project': self.project_override_id, # DON'T KNOW YET
 			'user': self.user.id,
 			'date_created': str(self.date_created),
-			'id': str(self.id),
 			'type': self.type,
 			'status': self.status,
 

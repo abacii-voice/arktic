@@ -32,7 +32,6 @@ class Project(models.Model):
 			# basic
 			'production_client': str(self.production_client.id),
 			'contract_client': str(self.contract_client.id),
-			'id': str(self.id),
 			'name': self.name,
 			'description': self.description,
 			'combined_priority_index': str(self.combined_priority_index),
@@ -42,7 +41,6 @@ class Project(models.Model):
 			# connections
 			'dictionaries': {str(dictionary.id): dictionary.data() for dictionary in self.dictionaries.all()},
 			'grammars': {str(grammar.id): grammar.data() for grammar in self.grammars.all()},
-			'rules': {str(rule.id): rule.data() for rule in self.rules.all()},
 			'batches': {str(batch.id): batch.data() for batch in self.batches.all()},
 			'transcriptions': {str(transcription.id): transcription.data() for transcription in self.transcriptions.all()},
 		}
@@ -78,7 +76,6 @@ class Batch(models.Model):
 		data = {
 			# basic data
 			'date_created': str(self.date_created),
-			'id': str(self.id),
 			'name': self.name,
 			'description': self.description,
 			'priority_index': str(self.priority_index),
@@ -118,7 +115,6 @@ class Upload(models.Model):
 		data = {
 			# basic data
 			'date_created': str(self.date_created),
-			'id': str(self.id),
 			'archive_name': self.archive_name,
 			'relfile_name': self.relfile_name,
 			'total_fragments': str(self.total_fragments),
@@ -151,7 +147,6 @@ class Fragment(models.Model):
 	# data
 	def data(self):
 		data = {
-			'id': str(self.id),
 			'filename': self.filename,
 			'is_reconciled': self.is_reconciled,
 		}

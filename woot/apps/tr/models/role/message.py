@@ -26,7 +26,6 @@ class Message(models.Model):
 			# basic data
 			'from_user': self.from_user.user.id,
 			'to_user': self.to_user.user.id,
-			'id': str(self.id),
 			'date_created': str(self.date_created),
 
 			# connections
