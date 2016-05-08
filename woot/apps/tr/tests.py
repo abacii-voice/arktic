@@ -75,8 +75,16 @@ class ContextTestCase(TestCase):
 		rule_instance = rule.instances.create(caption=caption, role=moderator)
 
 	def test_context(self):
-		production_client = Client.objects.get(name='TestProductionClient')
-		print(json.dumps(production_client.data(), indent=2, sort_keys=True))
+		# get all data
+		# data = {
+		# 	'clients': {str(client.id): client.data() for client in Client.objects.all()},
+		# }
+		# print(json.dumps(data, indent=2, sort_keys=True))
 
-		# contract_client = Client.objects.get(name='TestContractClient')
-		# print(json.dumps(contract_client.data(), indent=2, sort_keys=True))
+		# path
+		client_id = Client.objects.get(name='TestProductionClient').id
+		project_id = Client.objects.get(name='TestProductionClient').production_projects.get().id
+		path = '{client_id}.production_projects.{project_id}.batches'.format(client_id=client_id, project_id=project_id)
+
+		# request data using path
+		
