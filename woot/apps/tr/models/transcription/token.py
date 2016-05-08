@@ -20,7 +20,7 @@ class Token(models.Model):
 
 	### Methods
 	# data
-	def data(self):
+	def data(self, path):
 		data = {
 			'is_tag': self.is_tag,
 			'content': self.content,
@@ -39,8 +39,8 @@ class TokenInstance(models.Model):
 
 	### Methods
 	# data
-	def data(self):
-		data = self.parent.data()
+	def data(self, path):
+		data = self.parent.data(path)
 		data.update({
 			'index': str(self.index),
 		})

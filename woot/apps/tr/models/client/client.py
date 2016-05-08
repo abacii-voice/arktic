@@ -38,7 +38,7 @@ class Client(models.Model):
 
 		if path.check('flags'):
 			data.update({
-				'flags': {flag.id: flag.data(path.down()) for flag in self.flag.filter(id__contains=path.get_id())},
+				'flags': {flag.id: flag.data(path.down()) for flag in self.flags.filter(id__contains=path.get_id())},
 			})
 
 		if path.check('checks'):
