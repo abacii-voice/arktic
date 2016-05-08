@@ -4,9 +4,7 @@ from django.db import models
 # local
 from apps.tr.models.client.client import Client
 from apps.tr.models.role.role import Role
-
-# util
-import uuid
+from apps.tr.idgen import idgen
 
 ### Message models
 class Message(models.Model):
@@ -16,7 +14,7 @@ class Message(models.Model):
 	to_user = models.ForeignKey(Role, related_name='messages_to')
 
 	### Properties
-	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	date_created = models.DateTimeField(auto_now_add=True)
 
 	### Methods

@@ -3,9 +3,7 @@ from django.db import models
 
 # local
 from apps.tr.models.client.project import Project, Batch
-
-# util
-import uuid
+from apps.tr.idgen import idgen
 
 ### Transcription classes
 class Transcription(models.Model):
@@ -20,7 +18,7 @@ class Transcription(models.Model):
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
-	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	original_caption = models.CharField(max_length=255, default='')
 
 	# unique identifier

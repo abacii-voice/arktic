@@ -6,6 +6,7 @@ from django.core.files import File
 from apps.users.models import User
 from apps.tr.models.client.client import Client
 from apps.tr.models.transcription.utterance import Utterance
+from apps.tr.access import Permission, access
 
 # util
 import json
@@ -79,12 +80,16 @@ class ContextTestCase(TestCase):
 		# data = {
 		# 	'clients': {str(client.id): client.data() for client in Client.objects.all()},
 		# }
-		# print(json.dumps(data, indent=2, sort_keys=True))
 
 		# path
 		client_id = Client.objects.get(name='TestProductionClient').id
 		project_id = Client.objects.get(name='TestProductionClient').production_projects.get().id
-		path = '{client_id}.production_projects.{project_id}.batches'.format(client_id=client_id, project_id=project_id)
+		path = 'clients.{client_id}.production_projects.{project_id}.batches'.format(client_id=client_id, project_id=project_id)
 
 		# request data using path
-		
+		user = User.objects.get(email='1@1.com')
+		role = user.roles.get(type='admin', client__name='TestProductionClient')
+		permission = Permission(user, role)
+
+		data = access(path, permission)
+		print(json.dumps(data, indent=2, sort_keys=True))
