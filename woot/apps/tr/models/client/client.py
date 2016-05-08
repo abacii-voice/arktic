@@ -26,7 +26,6 @@ class Client(models.Model):
 	def data(self):
 		data = {
 			# basic data
-			'id': str(self.id),
 			'name': self.name,
 			'is_production': self.is_production,
 
