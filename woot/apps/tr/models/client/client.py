@@ -22,42 +22,44 @@ class Client(models.Model):
 	### Methods
 	# data
 	def data(self, path):
-		data = {
-			# basic data
-			'name': self.name,
-			'is_production': self.is_production,
-		}
+		data = {}
+
+		if path.is_blank:
+			data.update({
+				'name': self.name,
+				'is_production': self.is_production,
+			})
 
 		# paths
 		if path.check('rules'):
 			data.update({
-				'rules': {str(rule.id): rule.data() for rule in self.rules.filter(id__contains=path.id())},
+				'rules': {rule.id: rule.data(path.down()) for rule in self.rules.filter(id__contains=path.get_id())},
 			})
 
 		if path.check('flags'):
 			data.update({
-				'flags': {str(flag.id): flag.data() for flag in self.flag.filter(id__contains=path.id())},
+				'flags': {flag.id: flag.data(path.down()) for flag in self.flag.filter(id__contains=path.get_id())},
 			})
 
 		if path.check('checks'):
 			data.update({
-				'checks': {str(check.id): check.data() for check in self.checks.filter(id__contains=path.id())},
+				'checks': {check.id: check.data(path.down()) for check in self.checks.filter(id__contains=path.get_id())},
 			})
 
 		if path.check('users'):
 			data.update({
-				'users': {str(user.id): user.data() for user in self.users.filter(id__contains=path.id())},
+				'users': {user.id: user.data(path.down()) for user in self.users.filter(id__contains=path.get_id())},
 			})
 
 		if self.is_production:
 			if path.check('production_projects'):
 				data.update({
-					'production_projects': {str(project.id): project.data(path) for project in self.production_projects.filter(id__contains=path.id())},
+					'production_projects': {project.id: project.data(path.down()) for project in self.production_projects.filter(id__contains=path.get_id())},
 				})
 		else:
 			if path.check('contract_projects'):
 				data.update({
-					'contract_projects': {str(project.id): project.data(path) for project in self.contract_projects.filter(id__contains=path.id())},
+					'contract_projects': {project.id: project.data(path.down()) for project in self.contract_projects.filter(id__contains=path.get_id())},
 				})
 
 		return data

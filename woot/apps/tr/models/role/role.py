@@ -23,7 +23,7 @@ class Role(models.Model):
 
 	### Methods
 	# data
-	def data(self):
+	def data(self, path):
 		data = {
 			# basic data
 			'supervisor': self.supervisor.id,
@@ -32,10 +32,17 @@ class Role(models.Model):
 			'date_created': str(self.date_created),
 			'type': self.type,
 			'status': self.status,
-
-			# connections
-			'stats': {stat.parent.name: stat.data() for stat in self.stats.all()},
 		}
+
+		if path.check('stats'):
+			data.update({
+				'stats': {stat.id: stat.data() for stat in self.stats.filter(id__contains=path.get_id())},
+			})
+
+		if path.check('thresholds'):
+			data.update({
+				'thresholds': {threshold.id: threshold.data() for threshold in self.thresholds.filter(id__contains=path.get_id())},
+			})
 
 		return data
 
@@ -51,7 +58,9 @@ class Threshold(models.Model):
 	role = models.ForeignKey(Role, related_name='thresholds')
 
 	### Properties
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	date_created = models.DateTimeField(auto_now_add=True)
+	is_active = models.BooleanField(default=True)
 	index = models.PositiveIntegerField(default=0)
 	transcription_threshold = models.PositiveIntegerField(default=0)
 	transcriptions_done = models.PositiveIntegerField(default=0)
@@ -65,6 +74,7 @@ class Threshold(models.Model):
 		data = {
 			'role': self.role.id,
 			'index': str(self.index),
+			'is_active': self.is_active,
 			'date_created': str(self.date_created),
 			'transcription_threshold': str(self.transcription_threshold),
 			'transcriptions_done': str(self.transcriptions_done),

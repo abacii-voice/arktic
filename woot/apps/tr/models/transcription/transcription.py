@@ -32,16 +32,22 @@ class Transcription(models.Model):
 	### Methods
 	# data
 	def data(self):
-		data = {
-			'batch': str(self.batch.id),
-			'date_created': str(self.date_created),
-			'original_caption': self.original_caption,
-			'filename': self.filename,
-			'requests': str(self.requests),
-			'request_allowance': str(self.request_allowance),
-			'date_last_requested': str(self.date_last_requested),
-			'utterance': self.utterance.data(),
-			'captions': {str(caption.id): caption.data() for caption in self.captions.all()}
-		}
+		data = {}
+		if path.is_blank:
+			data.update({
+				'batch': str(self.batch.id),
+				'date_created': str(self.date_created),
+				'original_caption': self.original_caption,
+				'filename': self.filename,
+				'requests': str(self.requests),
+				'request_allowance': str(self.request_allowance),
+				'date_last_requested': str(self.date_last_requested),
+				'utterance': self.utterance.data(),
+			})
+
+		if path.check('captions'):
+			data.update({
+				'captions': {str(caption.id): caption.data() for caption in self.captions.filter(id__contains=path.get_id())},
+			})
 
 		return data

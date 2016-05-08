@@ -26,39 +26,42 @@ class Project(models.Model):
 	### Methods
 	# data
 	def data(self, path):
-		data = {
-			'production_client': str(self.production_client.id),
-			'contract_client': str(self.contract_client.id),
-			'name': self.name,
-			'description': self.description,
-			'combined_priority_index': str(self.combined_priority_index),
-			'completion_percentage': str(self.completion_percentage),
-			'redundancy_percentage': str(self.redundancy_percentage),
-		}
+		data = {}
+
+		if path.is_blank:
+			data.update({
+				'production_client': str(self.production_client.id),
+				'contract_client': str(self.contract_client.id),
+				'name': self.name,
+				'description': self.description,
+				'combined_priority_index': str(self.combined_priority_index),
+				'completion_percentage': str(self.completion_percentage),
+				'redundancy_percentage': str(self.redundancy_percentage),
+			})
+
+			if hasattr(self, 'assigned_users'):
+				data.update({
+					'assigned_users': [user.id for user in self.assigned_users.all()],
+				})
 
 		if path.check('dictionaries'):
 			data.update({
-				'dictionaries': {str(dictionary.id): dictionary.data() for dictionary in self.dictionaries.all()},
+				'dictionaries': {dictionary.id: dictionary.data(path.down()) for dictionary in self.dictionaries.filter(id__contains=path.get_id())},
 			})
 
 		if path.check('grammars'):
 			data.update({
-				'grammars': {str(grammar.id): grammar.data() for grammar in self.grammars.all()},
+				'grammars': {grammar.id: grammar.data(path.down()) for grammar in self.grammars.filter(id__contains=path.get_id())},
 			})
 
 		if path.check('batches'):
 			data.update({
-				'batches': {str(batch.id): batch.data() for batch in self.batches.filter(id__contains=path.id())},
+				'batches': {batch.id: batch.data(path.down()) for batch in self.batches.filter(id__contains=path.get_id())},
 			})
 
 		if path.check('transcriptions'):
 			data.update({
-				'transcriptions': {str(transcription.id): transcription.data() for transcription in self.transcriptions.all()},
-			})
-
-		if hasattr(self, 'assigned_users'):
-			data.update({
-				'assigned_users': [str(user.id) for user in self.assigned_users.all()],
+				'transcriptions': {transcription.id: transcription.data(path.down()) for transcription in self.transcriptions.filter(id__contains=path.get_id())},
 			})
 
 		return data
@@ -83,20 +86,24 @@ class Batch(models.Model):
 
 	### Methods
 	# data
-	def data(self):
-		data = {
-			# basic data
-			'date_created': str(self.date_created),
-			'name': self.name,
-			'description': self.description,
-			'priority_index': str(self.priority_index),
-			'deadline': str(self.deadline),
-			'completion_percentage': str(self.completion_percentage),
-			'redundancy_percentage': str(self.redundancy_percentage),
+	def data(self, path):
+		data = {}
 
-			# connections
-			'uploads': {str(upload.id): upload.data() for upload in self.uploads.all()},
-		}
+		if path.is_blank:
+			data.update({
+				'date_created': str(self.date_created),
+				'name': self.name,
+				'description': self.description,
+				'priority_index': str(self.priority_index),
+				'deadline': str(self.deadline),
+				'completion_percentage': str(self.completion_percentage),
+				'redundancy_percentage': str(self.redundancy_percentage),
+			})
+
+		if path.check('uploads'):
+			data.update({
+				'uploads': {upload.id: upload.data(path.down()) for upload in self.uploads.filter(id__contains=path.get_id())},
+			})
 
 		return data
 
@@ -122,20 +129,24 @@ class Upload(models.Model):
 
 	### Methods
 	# data
-	def data(self):
-		data = {
-			# basic data
-			'date_created': str(self.date_created),
-			'archive_name': self.archive_name,
-			'relfile_name': self.relfile_name,
-			'total_fragments': str(self.total_fragments),
-			'completed_fragments': str(self.completed_fragments),
-			'completion_percentage': str(self.completion_percentage),
-			'is_complete': self.is_complete,
+	def data(self, path):
+		data = {}
 
-			# connections
-			'fragments': {str(fragment.id): fragment.data() for fragment in self.fragments.all()},
-		}
+		if path.is_blank:
+			data.update({
+				'date_created': str(self.date_created),
+				'archive_name': self.archive_name,
+				'relfile_name': self.relfile_name,
+				'total_fragments': str(self.total_fragments),
+				'completed_fragments': str(self.completed_fragments),
+				'completion_percentage': str(self.completion_percentage),
+				'is_complete': self.is_complete,
+			})
+
+		if path.check('fragments'):
+			data.update({
+				'fragments': {fragment.id: fragment.data(path.down()) for fragment in self.fragments.filter(id__contains=path.get_id())},
+			})
 
 		return data
 
@@ -156,7 +167,7 @@ class Fragment(models.Model):
 
 	### Methods
 	# data
-	def data(self):
+	def data(self, path):
 		data = {
 			'filename': self.filename,
 			'is_reconciled': self.is_reconciled,
