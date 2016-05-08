@@ -4,9 +4,7 @@ from django.db import models
 # local
 from apps.tr.models.transcription.dictionary import Dictionary, UserDictionary
 from apps.tr.models.transcription.caption import Caption
-
-# util
-import uuid
+from apps.tr.idgen import idgen
 
 ### Token classes
 class Token(models.Model):
@@ -16,7 +14,7 @@ class Token(models.Model):
 	user_dictionary = models.ForeignKey(UserDictionary, related_name='tokens', null=True) # for exclusion purposes
 
 	### Properties
-	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	is_tag = models.BooleanField(default=False)
 	content = models.CharField(max_length=255)
 

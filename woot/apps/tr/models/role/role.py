@@ -5,9 +5,7 @@ from django.db import models
 from apps.tr.models.client.client import Client
 from apps.tr.models.client.project import Project
 from apps.users.models import User
-
-# util
-import uuid
+from apps.tr.idgen import idgen
 
 ### Role classes
 class Role(models.Model):
@@ -19,7 +17,7 @@ class Role(models.Model):
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
-	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	type = models.CharField(max_length=255)
 	status = models.CharField(max_length=255, default='pending') # shows the stage of becoming a full user.
 

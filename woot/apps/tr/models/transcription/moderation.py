@@ -5,9 +5,7 @@ from django.db import models
 from apps.tr.models.transcription.transcription import Transcription
 from apps.tr.models.transcription.caption import Caption
 from apps.tr.models.role.role import Role
-
-# util
-import uuid
+from apps.tr.idgen import idgen
 
 ### Moderation classes
 class Moderation(models.Model):
@@ -17,7 +15,7 @@ class Moderation(models.Model):
 	moderator = models.ForeignKey(Role, related_name='moderations')
 
 	### Properties
-	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	date_created = models.DateTimeField(auto_now_add=True)
 	is_approved = models.BooleanField(default=True)
 	metadata = models.TextField(default='')

@@ -2,6 +2,7 @@
 # django
 
 # local
+from apps.tr.models.client.client import Client
 
 # util
 import collections
@@ -39,23 +40,49 @@ class Permission():
 ### Paths
 class Path():
 	def __init__(self, path):
-		self.path = path
+		self.is_done = False
+		self.is_blank = path == ''
 		self.locations = path.split('.')
-		self.active = 0
+		self.index = 0
 
-	def reconcile(self, location):
-		# if
-		pass
+	def check(self, location):
+		if self.is_blank:
+			return True
+		elif self.is_done:
+			return False
+		else:
+			if self.locations[self.index] == location:
+				self.step()
+				return True
+			else:
+				return False
 
+	def id(self):
+		if self.is_blank:
+			return ''
+		elif self.is_done:
+			return 'DONE'
+		else:
+			value = self.locations[self.index]
+			self.step()
+			return value
+
+	def step(self):
+		if not self.is_done:
+			self.index += 1
+			if self.index > len(self.locations) - 1:
+				self.is_done = True
 
 ### Access
 def access(path, permission):
 	# 1. create path
 	path = Path(path)
+	data = {}
 
-	data = {
-		'clients': 
-	}
+	if path.check('clients'):
+		data.update({
+			'clients': {str(client.id): client.data(path) for client in Client.objects.filter(id__contains=path.id())},
+		})
 
 	return data
 

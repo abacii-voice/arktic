@@ -6,9 +6,7 @@ from apps.tr.models.client.client import Client
 from apps.tr.models.client.project import Project
 from apps.tr.models.transcription.caption import Caption
 from apps.tr.models.role.role import Role
-
-# util
-import uuid
+from apps.tr.idgen import idgen
 
 ### Rule classes
 class Rule(models.Model):
@@ -21,7 +19,7 @@ class Rule(models.Model):
 	project = models.ForeignKey(Project, related_name='rules', null=True)
 
 	### Properties
-	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	number = models.PositiveIntegerField(default=0)
 	name = models.CharField(max_length=255)
 	description = models.TextField(default='')

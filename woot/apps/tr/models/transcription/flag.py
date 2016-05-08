@@ -4,9 +4,7 @@ from django.db import models
 # local
 from apps.tr.models.client.client import Client
 from apps.tr.models.transcription.caption import Caption
-
-# util
-import uuid
+from apps.tr.idgen import idgen
 
 ### Flag classes
 class Flag(models.Model):
@@ -15,7 +13,7 @@ class Flag(models.Model):
 	client = models.ForeignKey(Client, related_name='flags')
 
 	### Properties
-	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	name = models.CharField(max_length=255)
 
 	### Methods
@@ -35,7 +33,7 @@ class FlagInstance(models.Model):
 	caption = models.ForeignKey(Caption, related_name='flags')
 
 	### Properties
-	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 
 	### Methods
 	# data
