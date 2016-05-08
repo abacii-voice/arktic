@@ -19,7 +19,7 @@ class QualityCheck(models.Model):
 
 	### Methods
 	# data
-	def data(self):
+	def data(self, path):
 		data = {
 			'name': self.name,
 			'is_automatic': self.is_automatic,
@@ -39,8 +39,8 @@ class QualityCheckInstance(models.Model):
 	date_created = models.DateTimeField(auto_now_add=True)
 
 	### Methods
-	def data(self):
-		data = self.parent.data()
+	def data(self, path):
+		data = self.parent.data(path)
 		data.update({
 			'is_successful': self.is_successful,
 			'date_created': str(self.date_created),

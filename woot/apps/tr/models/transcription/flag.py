@@ -18,7 +18,7 @@ class Flag(models.Model):
 
 	### Methods
 	# data
-	def data(self):
+	def data(self, path):
 		data = {
 			'client': str(self.client.id),
 			'name': self.name,
@@ -37,8 +37,8 @@ class FlagInstance(models.Model):
 
 	### Methods
 	# data
-	def data(self):
-		data = self.parent.data()
+	def data(self, path):
+		data = self.parent.data(path)
 		data.update({
 			'caption': str(self.caption.id),
 		})
