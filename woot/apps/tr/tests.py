@@ -68,11 +68,11 @@ class ContextTestCase(TestCase):
 		moderation = moderator.moderations.create(caption=caption)
 
 		# quality
-		quality_check = contract_client.checks.create(name='automatic_capital_check')
+		quality_check = production_client.checks.create(name='automatic_capital_check')
 		quality_check_instance = quality_check.instances.create(caption=caption)
 
 		# rule
-		rule = project.rules.create(client=contract_client, name='Capital Letters', description='Use only lower case letters.')
+		rule = project.rules.create(client=production_client, name='Capital Letters', description='Use only lower case letters.')
 		rule_instance = rule.instances.create(caption=caption, role=moderator)
 
 	def test_context(self):
@@ -84,7 +84,7 @@ class ContextTestCase(TestCase):
 		# path
 		client_id = Client.objects.get(name='TestProductionClient').id
 		project_id = Client.objects.get(name='TestProductionClient').production_projects.get().id
-		path = 'clients.{client_id}.production_projects.{project_id}.batches'.format(client_id=client_id, project_id=project_id)
+		path = 'clients.{client_id}.rules'.format(client_id=client_id)
 
 		# request data using path
 		user = User.objects.get(email='1@1.com')
