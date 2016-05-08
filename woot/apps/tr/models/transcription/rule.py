@@ -28,7 +28,7 @@ class Rule(models.Model):
 	# data
 	def data(self, path):
 		data = {
-			'project': str(self.project.id),
+			'project': self.project.id,
 			'number': str(self.number),
 			'name': self.name,
 			'description': self.description,

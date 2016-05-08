@@ -20,7 +20,7 @@ class Flag(models.Model):
 	# data
 	def data(self, path):
 		data = {
-			'client': str(self.client.id),
+			'client': self.client.id,
 			'name': self.name,
 		}
 
@@ -40,7 +40,7 @@ class FlagInstance(models.Model):
 	def data(self, path):
 		data = self.parent.data(path)
 		data.update({
-			'caption': str(self.caption.id),
+			'caption': self.caption.id,
 		})
 
 		return data

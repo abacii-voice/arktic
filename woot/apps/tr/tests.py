@@ -78,7 +78,7 @@ class ContextTestCase(TestCase):
 	def test_context(self):
 		# get all data
 		# data = {
-		# 	'clients': {str(client.id): client.data() for client in Client.objects.all()},
+		# 	'clients': {client.id: client.data() for client in Client.objects.all()},
 		# }
 
 		# path

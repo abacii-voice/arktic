@@ -35,7 +35,7 @@ class Transcription(models.Model):
 		data = {}
 		if path.is_blank:
 			data.update({
-				'batch': str(self.batch.id),
+				'batch': self.batch.id,
 				'date_created': str(self.date_created),
 				'original_caption': self.original_caption,
 				'filename': self.filename,
@@ -47,7 +47,7 @@ class Transcription(models.Model):
 
 		if path.check('captions'):
 			data.update({
-				'captions': {str(caption.id): caption.data(path) for caption in self.captions.filter(id__contains=path.get_id())},
+				'captions': {caption.id: caption.data(path) for caption in self.captions.filter(id__contains=path.get_id())},
 			})
 
 		return data
