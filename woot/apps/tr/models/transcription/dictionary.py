@@ -19,7 +19,7 @@ class Dictionary(models.Model):
 
 	### Methods
 	# data
-	def data(self):
+	def data(self, path):
 		data = {
 			# basic data
 			'name': self.name,
@@ -39,7 +39,7 @@ class UserDictionary(models.Model):
 
 	### Methods
 	# data
-	def data(self):
+	def data(self, path):
 		data = self.parent.data()
 		data.update({
 			'role': str(self.role.id),

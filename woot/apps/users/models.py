@@ -49,7 +49,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 	### Methods
 	# data
-	def data(self):
+	def data(self, path):
 		data = {
 			'email': self.email,
 			'first_name': self.first_name,
