@@ -30,8 +30,8 @@ class Project(models.Model):
 
 		if path.is_blank:
 			data.update({
-				'production_client': str(self.production_client.id),
-				'contract_client': str(self.contract_client.id),
+				'production_client': self.production_client.id,
+				'contract_client': self.contract_client.id,
 				'name': self.name,
 				'description': self.description,
 				'combined_priority_index': str(self.combined_priority_index),
