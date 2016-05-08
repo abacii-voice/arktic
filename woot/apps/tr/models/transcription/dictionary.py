@@ -42,7 +42,7 @@ class UserDictionary(models.Model):
 	def data(self, path):
 		data = self.parent.data()
 		data.update({
-			'role': str(self.role.id),
+			'role': self.role.id,
 		})
 
 		return data
