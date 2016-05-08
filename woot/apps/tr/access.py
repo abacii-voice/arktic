@@ -39,39 +39,54 @@ class Permission():
 
 ### Paths
 class Path():
+	'''
+	this represents a request path and should change as parts of it are reconciled.
+
+	1. If the path is blank, any check should be True (any object should pass)
+	2. If the path is blank, the id should be ''
+
+	'''
+
 	def __init__(self, path):
+		# properties
 		self.is_done = False
+		self.just_done = False
 		self.is_blank = path == ''
-		self.locations = path.split('.')
-		self.index = 0
+		self.id = ''
 
-	def check(self, location):
-		if self.is_blank:
-			return True
-		elif self.is_done:
-			return False
-		else:
-			if self.locations[self.index] == location:
-				self.step()
-				return True
-			else:
-				return False
+		# locations
+		if not self.is_blank:
+			self.locations = collections.OrderedDict()
+			s = path.split('.')
+			for i in range(0, len(s), 2):
+				self.locations[s[i]] = s[i+1] if i+1 != len(s) else ''
 
-	def id(self):
-		if self.is_blank:
-			return ''
-		elif self.is_done:
-			return 'DONE'
-		else:
-			value = self.locations[self.index]
 			self.step()
-			return value
 
 	def step(self):
 		if not self.is_done:
-			self.index += 1
-			if self.index > len(self.locations) - 1:
-				self.is_done = True
+			if not self.is_blank:
+				self.is_done = not self.locations
+				self.just_done = self.is_done
+				if self.locations:
+					self.type, self.id = self.locations.popitem(last=False)
+		else:
+			self.type, self.id = None, 'DONE'
+
+	def check(self, location):
+		return self.type == location if not self.is_blank else True
+
+	def get_id(self):
+		value = self.id
+		self.step()
+		return value
+
+	def down(self):
+		if self.just_done:
+			self.just_done = False
+			return Path('')
+		else:
+			return self
 
 ### Access
 def access(path, permission):
@@ -81,7 +96,7 @@ def access(path, permission):
 
 	if path.check('clients'):
 		data.update({
-			'clients': {str(client.id): client.data(path) for client in Client.objects.filter(id__contains=path.id())},
+			'clients': {client.id: client.data(path.down()) for client in Client.objects.filter(id__contains=path.get_id())},
 		})
 
 	return data
