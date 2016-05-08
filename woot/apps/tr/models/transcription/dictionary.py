@@ -4,9 +4,7 @@ from django.db import models
 # local
 from apps.tr.models.client.project import Project
 from apps.tr.models.role.role import Role
-
-# util
-import uuid
+from apps.tr.idgen import idgen
 
 ### Dictionary classes
 class Dictionary(models.Model):
@@ -15,7 +13,7 @@ class Dictionary(models.Model):
 	project = models.ForeignKey(Project, related_name='dictionaries')
 
 	### Properties
-	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	name = models.CharField(max_length=255)
 	total_tokens = models.PositiveIntegerField(default=0)
 
@@ -37,7 +35,7 @@ class UserDictionary(models.Model):
 	role = models.ForeignKey(Role, related_name='dictionaries')
 
 	### Properties
-	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 
 	### Methods
 	# data

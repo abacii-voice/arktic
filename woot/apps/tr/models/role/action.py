@@ -3,9 +3,7 @@ from django.db import models
 
 # local
 from apps.tr.models.role.role import Role
-
-# util
-import uuid
+from apps.tr.idgen import idgen
 
 ### Action
 class Action(models.Model):
@@ -14,7 +12,7 @@ class Action(models.Model):
 	role = models.ForeignKey(Role, related_name='actions')
 
 	### Properties
-	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	date_created = models.DateTimeField(auto_now_add=True)
 	type = models.CharField(max_length=255)
 	metadata = models.TextField(default='')

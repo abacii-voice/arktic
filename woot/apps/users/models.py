@@ -3,9 +3,9 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
+from apps.users.idgen import idgen
 
 # util
-import uuid
 from permission import Permission
 
 ### User classes
@@ -25,7 +25,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 	### Properties
 	# identification
-	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	email = models.EmailField(max_length=255, unique=True)
 	first_name = models.CharField(max_length=255)
 	last_name = models.CharField(max_length=255)
