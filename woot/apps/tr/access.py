@@ -26,7 +26,8 @@ class Permission():
 
 		# types
 		self.is_productionadmin = self.role.type == 'admin' and self.role.client.is_production and self.role is not None
-		self.is_contractadmin = not self.is_productionadmin and self.role is not None
+		self.is_contractadmin = not self.is_productionadmin and self.role is not None and self.role.type == 'admin'
+		self.is_admin = self.is_productionadmin or self.is_contractadmin
 		self.is_moderator = self.role.type == 'moderator' and self.role is not None
 		self.is_worker = self.role.type == 'worker' and self.role is not None
 		self.is_basic = self.role is None
@@ -62,7 +63,6 @@ class Path():
 				self.locations[s[i]] = s[i+1] if i+1 != len(s) else ''
 
 			self.step()
-			print(self.is_done, self.locations)
 
 	def step(self):
 		if not self.is_blank:
@@ -74,8 +74,8 @@ class Path():
 			else:
 				self.type, self.id = None, 'DONE'
 
-	def check(self, location):
-		return self.type == location if not self.is_blank else True
+	def check(self, location, blank=True):
+		return self.type == location if not self.is_blank else blank
 
 	def get_id(self):
 		value = self.id
