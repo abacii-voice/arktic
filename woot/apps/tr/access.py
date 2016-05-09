@@ -108,3 +108,30 @@ def access(path, permission):
 	return data
 
 ### Requests
+def process_request(request):
+	# 1. process data
+	data = walk(request.POST)
+
+	# 2. get user and role_type
+	user = request.user
+	client_name = data['permission']['client'] if 'permission' in data else ''
+	role_type = data['permission']['role'] if 'permission' in data else ''
+	path = data['path']
+
+	# 3. get permission
+	permission = Permission(user, role=user.get_role(client_name, role_type))
+
+	# 4. get verification
+	verified = request.method == 'POST' and request.user.is_authenticated()
+
+	return user, path, permission, data, verified
+
+def is_dictionary(test):
+	return isinstance(test, dict)
+
+def walk(dictionary):
+	data = {}
+	for key, value in dictionary.items():
+		data[key] = walk(value) if is_dictionary(value) else value
+
+	return data
