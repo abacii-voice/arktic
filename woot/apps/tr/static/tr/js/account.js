@@ -3630,7 +3630,7 @@ UI.createApp('hook', [
 				loadingIcon: true,
 				registry: {
 					path: function () {
-						return 'clients';
+						return '';
 					},
 					fn: function (_this, data) {
 						// create buttons from Context and remove loading icon
