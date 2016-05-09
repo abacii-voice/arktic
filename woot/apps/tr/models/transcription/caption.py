@@ -25,15 +25,15 @@ class Caption(models.Model):
 
 	### Methods
 	# data
-	def data(self, path):
+	def data(self, path, permission):
 		data = {
 			'date_created': str(self.date_created),
 			'from_recogniser': self.from_recogniser,
 			'metadata': self.metadata,
-			'tokens': {str(token.index): token.data(path) for token in self.tokens.all()},
-			'flags': {flag.id: flag.data(path) for flag in self.flags.all()},
-			'rules': {rule.id: rule.data(path) for rule in self.rules_cited.all()},
-			'checks': {check.id: check.data(path) for check in self.checks.all()}
+			'tokens': {str(token.index): token.data(path, permission) for token in self.tokens.all()},
+			'flags': {flag.id: flag.data(path, permission) for flag in self.flags.all()},
+			'rules': {rule.id: rule.data(path, permission) for rule in self.rules_cited.all()},
+			'checks': {check.id: check.data(path, permission) for check in self.checks.all()}
 		}
 
 		return data

@@ -22,7 +22,7 @@ class Moderation(models.Model):
 
 	### Methods
 	# data
-	def data(self):
+	def data(self, path, permission):
 		data = {
 			'date_created': str(self.date_created),
 			'is_approved': self.is_approved,
