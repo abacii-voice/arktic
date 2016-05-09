@@ -53,21 +53,6 @@
 		<!-- jQuery -->
 		<script src='{% static "js/jquery/2.2.2/jquery.min.js" %}'></script>
 
-		<!-- general utility stuff comes before everything. -->
-		{# <script src='{% static "js/util/preventzoom.js" %}'></script>#}
-		<script src='{% static "js/util/dropzone.js" %}'></script>
-		<script src='{% static "js/util/util.js" %}'></script>
-		<script src='{% static "js/util/string-format.js" %}' onload='format.extend(String.prototype);'></script>
-		<script src='{% static "js/util/mousetrap.js" %}'></script> <!-- keyboard shortcuts -->
-		<script src='{% static "js/util/shortcuts.js" %}'></script>
-		<script src='{% static "js/util/csrf.js" %}'></script>
-		<script src='{% static "js/util/jzip.js" %}'></script>
-
-		<!-- UI -->
-		<script src='{% static "js/ui/ui.js" %}'></script>
-		<script src='{% static "js/ui/shortcuts.js" %}'></script>
-		<script src='{% static "js/ui/components.js" %}'></script>
-
 		{% block pre_main_script %}{% endblock %}
 		<script src='{% static "js/main.js" %}'></script>
 		{% block post_main_script %}{% endblock %}

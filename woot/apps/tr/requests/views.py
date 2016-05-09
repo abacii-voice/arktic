@@ -2,7 +2,6 @@
 from django.shortcuts import render
 from django.views.generic import View
 from django.http import HttpResponse, HttpResponseRedirect
-from django.contrib.auth import authenticate, login, logout
 from django.conf import settings
 
 ### TR views
@@ -52,7 +51,7 @@ class AccountSPAView(View):
 			# PSYCH! The decision about the user permissions isn't even made here! It's made by the template by
 			# simply adding or omitting components server side. What comes across in the code will
 			# just not have parts of the interface that do not pertain to the user.
-			return render(request, 'users/account.html', {'user': user})
+			return render(request, 'tr/account.html', {'user': user})
 
 		else:
 			# return to login view
