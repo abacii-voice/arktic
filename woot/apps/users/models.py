@@ -68,6 +68,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 		return data
 
+	def get_role(self, client_id, role_type):
+		possible_client = self.clients.filter(id=client_id)
+		if possible_client:
+			possible_role = possible_client[0].roles.filter(type=role_type)
+			return possible_role[0] if possible_role.count() else None
+		else:
+			return None
+
 	# str
 	def __str__(self):
 		return '{}, ({}, {})'.format(self.email, self.last_name, self.first_name)
