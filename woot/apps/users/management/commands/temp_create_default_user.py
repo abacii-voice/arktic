@@ -2,8 +2,8 @@
 from django.core.management.base import BaseCommand, CommandError
 
 # local
-from apps.client.models.client import Client
-from apps.users.models.user import User
+from apps.tr.models.client.client import Client
+from apps.users.models import User
 
 ### Command: create default user
 class Command(BaseCommand):
@@ -11,7 +11,7 @@ class Command(BaseCommand):
 	def handle(self, *args, **options):
 		# create clients
 		production_client, production_client_created = Client.objects.get_or_create(name='TestProductionClient', is_production=True)
-		contract_client, contract_client_created = Client.objects.get_or_create(name='TestContractClient', is_contract=True)
+		contract_client, contract_client_created = Client.objects.get_or_create(name='TestContractClient', is_production=False)
 
 		# details
 		user_email = 'n@a.com'
@@ -24,19 +24,19 @@ class Command(BaseCommand):
 		user.set_password(user_password)
 
 		# create roles
-		production_admin_role = user.create_productionadmin(production_client)
+		production_admin_role = production_client.add_admin(user)
 		production_admin_role.status = 'enabled'
 		production_admin_role.save()
 
-		contract_admin_role = user.create_contractadmin(contract_client)
+		contract_admin_role = contract_client.add_admin(user)
 		contract_admin_role.status = 'enabled'
 		contract_admin_role.save()
 
-		moderator_role = user.create_moderator(production_client)
+		moderator_role = production_client.add_moderator(user)
 		moderator_role.status = 'enabled'
 		moderator_role.save()
 
-		worker_role = user.create_worker(production_client, moderator_role)
+		worker_role = production_client.add_worker(user, moderator_role)
 		worker_role.status = 'enabled'
 		worker_role.save()
 
