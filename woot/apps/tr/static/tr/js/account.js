@@ -544,68 +544,68 @@ UI.createApp('hook', [
 						state: {
 							states: [
 								{name: 'user-management-state', args: {
-									preFn: function (_this) {
-										// reset current_user_profile
-										Context.set('current_user_profile', {});
-
-										// activate
-										_this.model().css({
-											'display': 'block',
-											'opacity': '1.0',
-										});
-
-										// 1. remove current children
-										Object.keys(_this.children).forEach(function (childId) {
-											UI.removeComponent(childId);
-										});
-
-										_this.children = {};
-
-										// promise to fetch data and update Context
-										$.when(getdata('context', permissionData, function (data) {
-											// update Context
-											Context.update(data);
-										})).done(function () {
-											// data is a list of user objects with relevant details
-											var users = Context.get('clients.{client}.users'.format({client: Context.get('current_client')}));
-											Object.keys(users).map(function (userId) {
-												var userPrototype = users[userId];
-												var userButton = UI.createComponent('user-button-{id}'.format({id: userId}), {
-													root: _this.id,
-													template: UI.templates.button,
-													appearance: {
-														html: '{last_name}, {first_name}'.format({first_name: userPrototype.first_name, last_name: userPrototype.last_name}),
-														classes: ['border-bottom'],
-														style: {
-															'width': '100%',
-														},
-													},
-													bindings: [
-														{name: 'click', fn: function (_this) {
-															if (Context.get('current_user_profile', 'id') !== userId) {
-																_this.triggerState();
-															}
-														}},
-													],
-													state: {
-														stateMap: 'user-management-user-state',
-														svitches: [
-															{stateName: 'user-management-user-state', fn: function (_this) {
-																Context.set('current_user_profile', userPrototype);
-															}}
-														],
-													},
-												});
-
-												// render
-												_this.children[userButton.id] = userButton;
-												userButton.render();
-											});
-
-											// fade loading icon
-											_this.parent().loadingIcon().model().fadeOut();
-										});
-									}
+								// 	preFn: function (_this) {
+								// 		// reset current_user_profile
+								// 		Context.set('current_user_profile', {});
+								//
+								// 		// activate
+								// 		_this.model().css({
+								// 			'display': 'block',
+								// 			'opacity': '1.0',
+								// 		});
+								//
+								// 		// 1. remove current children
+								// 		Object.keys(_this.children).forEach(function (childId) {
+								// 			UI.removeComponent(childId);
+								// 		});
+								//
+								// 		_this.children = {};
+								//
+								// 		// promise to fetch data and update Context
+								// 		$.when(getdata('context', permissionData, function (data) {
+								// 			// update Context
+								// 			Context.update(data);
+								// 		})).done(function () {
+								// 			// data is a list of user objects with relevant details
+								// 			var users = Context.get('clients.{client}.users'.format({client: Context.get('current_client')}));
+								// 			Object.keys(users).map(function (userId) {
+								// 				var userPrototype = users[userId];
+								// 				var userButton = UI.createComponent('user-button-{id}'.format({id: userId}), {
+								// 					root: _this.id,
+								// 					template: UI.templates.button,
+								// 					appearance: {
+								// 						html: '{last_name}, {first_name}'.format({first_name: userPrototype.first_name, last_name: userPrototype.last_name}),
+								// 						classes: ['border-bottom'],
+								// 						style: {
+								// 							'width': '100%',
+								// 						},
+								// 					},
+								// 					bindings: [
+								// 						{name: 'click', fn: function (_this) {
+								// 							if (Context.get('current_user_profile', 'id') !== userId) {
+								// 								_this.triggerState();
+								// 							}
+								// 						}},
+								// 					],
+								// 					state: {
+								// 						stateMap: 'user-management-user-state',
+								// 						svitches: [
+								// 							{stateName: 'user-management-user-state', fn: function (_this) {
+								// 								Context.set('current_user_profile', userPrototype);
+								// 							}}
+								// 						],
+								// 					},
+								// 				});
+								//
+								// 				// render
+								// 				_this.children[userButton.id] = userButton;
+								// 				userButton.render();
+								// 			});
+								//
+								// 			// fade loading icon
+								// 			_this.parent().loadingIcon().model().fadeOut();
+								// 		});
+								// 	}
 								}},
 							],
 						},
@@ -1725,72 +1725,72 @@ UI.createApp('hook', [
 						state: {
 							states: [
 								{name: 'project-state', args: {
-									preFn: function (_this) {
-										// reset current_project_profile
-										Context.set('current_project_profile', {});
-
-										// activate
-										_this.model().css({
-											'display': 'block',
-											'opacity': '1.0',
-										});
-
-										// 1. remove current children
-										Object.keys(_this.children).forEach(function (childId) {
-											UI.removeComponent(childId);
-										});
-
-										_this.children = {};
-
-										// promise to fetch data and update Context
-										var permissionData = {
-											current_client: Context.get('current_client'),
-											current_role: Context.get('current_role'),
-										};
-										$.when(getdata('context', permissionData, function (data) {
-											// update Context
-											Context.update(data);
-										})).done(function () {
-											// data is a list of user objects with relevant details
-											var projects = Context.get('clients.{client}.projects'.format({client: Context.get('current_client')}));
-											Object.keys(projects).map(function (projectId) {
-												var projectPrototype = projects[projectId];
-												var projectButton = UI.createComponent('project-button-{id}'.format({id: projectId}), {
-													root: _this.id,
-													template: UI.templates.button,
-													appearance: {
-														html: '{name}'.format({name: projectPrototype.name}),
-														classes: ['border-bottom'],
-														style: {
-															'width': '100%',
-														},
-													},
-													bindings: [
-														{name: 'click', fn: function (_this) {
-															if (Context.get('current_project_profile.id') !== projectId) {
-																_this.triggerState();
-															}
-														}},
-													],
-													state: {
-														stateMap: 'project-project-state',
-														svitches: [
-															{stateName: 'project-project-state', fn: function (_this) {
-																Context.set('current_project_profile', projectPrototype);
-															}}
-														],
-													},
-												});
-
-												// render
-												_this.children[projectButton.id] = projectButton;
-												projectButton.render();
-											});
-
-											// fade loading icon
-											_this.parent().loadingIcon().model().fadeOut();
-										});
-									}
+									// preFn: function (_this) {
+									// 	// reset current_project_profile
+									// 	Context.set('current_project_profile', {});
+									//
+									// 	// activate
+									// 	_this.model().css({
+									// 		'display': 'block',
+									// 		'opacity': '1.0',
+									// 	});
+									//
+									// 	// 1. remove current children
+									// 	Object.keys(_this.children).forEach(function (childId) {
+									// 		UI.removeComponent(childId);
+									// 	});
+									//
+									// 	_this.children = {};
+									//
+									// 	// promise to fetch data and update Context
+									// 	var permissionData = {
+									// 		current_client: Context.get('current_client'),
+									// 		current_role: Context.get('current_role'),
+									// 	};
+									// 	$.when(getdata('context', permissionData, function (data) {
+									// 		// update Context
+									// 		Context.update(data);
+									// 	})).done(function () {
+									// 		// data is a list of user objects with relevant details
+									// 		var projects = Context.get('clients.{client}.projects'.format({client: Context.get('current_client')}));
+									// 		Object.keys(projects).map(function (projectId) {
+									// 			var projectPrototype = projects[projectId];
+									// 			var projectButton = UI.createComponent('project-button-{id}'.format({id: projectId}), {
+									// 				root: _this.id,
+									// 				template: UI.templates.button,
+									// 				appearance: {
+									// 					html: '{name}'.format({name: projectPrototype.name}),
+									// 					classes: ['border-bottom'],
+									// 					style: {
+									// 						'width': '100%',
+									// 					},
+									// 				},
+									// 				bindings: [
+									// 					{name: 'click', fn: function (_this) {
+									// 						if (Context.get('current_project_profile.id') !== projectId) {
+									// 							_this.triggerState();
+									// 						}
+									// 					}},
+									// 				],
+									// 				state: {
+									// 					stateMap: 'project-project-state',
+									// 					svitches: [
+									// 						{stateName: 'project-project-state', fn: function (_this) {
+									// 							Context.set('current_project_profile', projectPrototype);
+									// 						}}
+									// 					],
+									// 				},
+									// 			});
+									//
+									// 			// render
+									// 			_this.children[projectButton.id] = projectButton;
+									// 			projectButton.render();
+									// 		});
+									//
+									// 		// fade loading icon
+									// 		_this.parent().loadingIcon().model().fadeOut();
+									// 	});
+									// }
 								}},
 							],
 						},

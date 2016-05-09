@@ -1,13 +1,15 @@
 # django
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.core.cache import cache
 from django.views.generic import View
+from django.contrib.auth import authenticate, login, logout
 from django.conf import settings
 from django.template import Template
 
 # local
 from apps.users.models import User
+from apps.users.forms import LoginForm
 
 # util
 import json

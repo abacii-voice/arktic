@@ -7,9 +7,9 @@
 
 {# CSS #}
 {% block css %}
-<link rel='stylesheet' href='{% static 'users/css/account-main.css' %}'>
-<link rel='stylesheet' href='{% static 'users/css/account-ui.css' %}'>
-<link rel='stylesheet' href='{% static 'users/css/account-elements.css' %}'>
+<link rel='stylesheet' href='{% static 'tr/css/account-main.css' %}'>
+<link rel='stylesheet' href='{% static 'tr/css/account-ui.css' %}'>
+<link rel='stylesheet' href='{% static 'tr/css/account-elements.css' %}'>
 {% endblock %}
 
 {# NAV #}
@@ -29,7 +29,23 @@
 <div id='hook'></div>
 {% endblock %}
 
-{# REACT #}
+{% block pre_main_script %}
+<!-- general utility stuff comes before everything. -->
+{# <script src='{% static "js/util/preventzoom.js" %}'></script>#}
+<script src='{% static "js/util/dropzone.js" %}'></script>
+<script src='{% static "js/util/util.js" %}'></script>
+<script src='{% static "js/util/string-format.js" %}' onload='format.extend(String.prototype);'></script>
+<script src='{% static "js/util/mousetrap.js" %}'></script> <!-- keyboard shortcuts -->
+<script src='{% static "js/util/shortcuts.js" %}'></script>
+<script src='{% static "js/util/csrf.js" %}'></script>
+<script src='{% static "js/util/jzip.js" %}'></script>
+
+<!-- UI -->
+<script src='{% static "js/ui/ui.js" %}'></script>
+<script src='{% static "js/ui/shortcuts.js" %}'></script>
+<script src='{% static "js/ui/components.js" %}'></script>
+{% endblock %}
+
 {% block post_main_script %}
-<script src="{% static 'users/js/account.js' %}"></script>
+<script src="{% static 'tr/js/account.js' %}"></script>
 {% endblock %}
