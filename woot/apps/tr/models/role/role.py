@@ -23,10 +23,10 @@ class Role(models.Model):
 
 	### Methods
 	# data
-	def data(self, path):
+	def data(self, path, permission):
 		data = {
 			# basic data
-			'supervisor': self.supervisor.id,
+			'supervisor': self.supervisor.id if self.supervisor is not None else '',
 			# 'project': self.project_override_id, # DON'T KNOW YET
 			'user': self.user.id,
 			'date_created': str(self.date_created),
@@ -43,6 +43,15 @@ class Role(models.Model):
 			data.update({
 				'thresholds': {threshold.id: threshold.data() for threshold in self.thresholds.filter(id__contains=path.get_id())},
 			})
+
+		return data
+
+	def user_data(self, path, permission):
+		data = {
+			'supervisor': self.supervisor.id if self.supervisor is not None else '',
+			'type': self.type,
+			'status': self.status,
+		}
 
 		return data
 

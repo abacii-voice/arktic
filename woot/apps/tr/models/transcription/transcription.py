@@ -31,7 +31,7 @@ class Transcription(models.Model):
 
 	### Methods
 	# data
-	def data(self, path):
+	def data(self, path, permission):
 		data = {}
 		if path.is_blank:
 			data.update({
@@ -47,7 +47,7 @@ class Transcription(models.Model):
 
 		if path.check('captions'):
 			data.update({
-				'captions': {caption.id: caption.data(path) for caption in self.captions.filter(id__contains=path.get_id())},
+				'captions': {caption.id: caption.data(path.down(), permission) for caption in self.captions.filter(id__contains=path.get_id())},
 			})
 
 		return data

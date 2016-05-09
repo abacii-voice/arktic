@@ -26,7 +26,7 @@ class Rule(models.Model):
 
 	### Methods
 	# data
-	def data(self, path):
+	def data(self, path, permission):
 		data = {
 			'project': self.project.id,
 			'number': str(self.number),
@@ -48,7 +48,7 @@ class RuleInstance(models.Model):
 
 	### Methods
 	# data
-	def data(self, path):
-		data = self.parent.data(path)
+	def data(self, path, permission):
+		data = self.parent.data(path, permission)
 
 		return data

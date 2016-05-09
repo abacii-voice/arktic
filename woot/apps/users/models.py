@@ -49,14 +49,22 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 	### Methods
 	# data
-	def data(self, path):
-		data = {
-			'email': self.email,
-			'first_name': self.first_name,
-			'last_name': self.last_name,
-			'is_activated': self.is_activated,
-			'billing_date': str(self.billing_date),
-		}
+	def data(self, path, permission):
+		data = {}
+
+		if path.is_blank:
+			data.update({
+				'email': self.email,
+				'first_name': self.first_name,
+				'last_name': self.last_name,
+				'is_activated': self.is_activated,
+				'billing_date': str(self.billing_date),
+			})
+
+		if path.check('clients'):
+			data.update({
+				'clients': {client.id: client.user_data(path.down(), permission) for client in self.clients.filter(id__contains=path.get_id())},
+			})
 
 		return data
 
