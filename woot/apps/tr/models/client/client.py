@@ -41,23 +41,23 @@ class Client(models.Model):
 				'flags': {flag.id: flag.data(path.down(), permission) for flag in self.flags.filter(id__contains=path.get_id())},
 			})
 
-		if path.check('checks'):
+		if path.check('checks') and permission.is_productionadmin:
 			data.update({
 				'checks': {check.id: check.data(path.down(), permission) for check in self.checks.filter(id__contains=path.get_id())},
 			})
 
-		if path.check('users'):
+		if path.check('users') and permission.is_admin:
 			data.update({
 				'users': {user.id: user.data(path.down(), permission) for user in self.users.filter(id__contains=path.get_id())},
 			})
 
 		if self.is_production:
-			if path.check('production_projects'):
+			if path.check('production_projects') and permission.is_productionadmin:
 				data.update({
 					'production_projects': {project.id: project.data(path.down(), permission) for project in self.production_projects.filter(id__contains=path.get_id())},
 				})
 		else:
-			if path.check('contract_projects'):
+			if path.check('contract_projects') and permission.is_contractadmin:
 				data.update({
 					'contract_projects': {project.id: project.data(path.down(), permission) for project in self.contract_projects.filter(id__contains=path.get_id())},
 				})
