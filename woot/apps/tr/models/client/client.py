@@ -21,7 +21,7 @@ class Client(models.Model):
 
 	### Methods
 	# data
-	def data(self, path):
+	def data(self, path, permission):
 		data = {}
 
 		if path.is_blank:
@@ -33,34 +33,44 @@ class Client(models.Model):
 		# paths
 		if path.check('rules'):
 			data.update({
-				'rules': {rule.id: rule.data(path.down()) for rule in self.rules.filter(id__contains=path.get_id())},
+				'rules': {rule.id: rule.data(path.down(), permission) for rule in self.rules.filter(id__contains=path.get_id())},
 			})
 
 		if path.check('flags'):
 			data.update({
-				'flags': {flag.id: flag.data(path.down()) for flag in self.flags.filter(id__contains=path.get_id())},
+				'flags': {flag.id: flag.data(path.down(), permission) for flag in self.flags.filter(id__contains=path.get_id())},
 			})
 
 		if path.check('checks'):
 			data.update({
-				'checks': {check.id: check.data(path.down()) for check in self.checks.filter(id__contains=path.get_id())},
+				'checks': {check.id: check.data(path.down(), permission) for check in self.checks.filter(id__contains=path.get_id())},
 			})
 
 		if path.check('users'):
 			data.update({
-				'users': {user.id: user.data(path.down()) for user in self.users.filter(id__contains=path.get_id())},
+				'users': {user.id: user.data(path.down(), permission) for user in self.users.filter(id__contains=path.get_id())},
 			})
 
 		if self.is_production:
 			if path.check('production_projects'):
 				data.update({
-					'production_projects': {project.id: project.data(path.down()) for project in self.production_projects.filter(id__contains=path.get_id())},
+					'production_projects': {project.id: project.data(path.down(), permission) for project in self.production_projects.filter(id__contains=path.get_id())},
 				})
 		else:
 			if path.check('contract_projects'):
 				data.update({
-					'contract_projects': {project.id: project.data(path.down()) for project in self.contract_projects.filter(id__contains=path.get_id())},
+					'contract_projects': {project.id: project.data(path.down(), permission) for project in self.contract_projects.filter(id__contains=path.get_id())},
 				})
+
+		return data
+
+	def user_data(self, path, permission):
+		data = {}
+
+		if path.check('roles'):
+			data.update({
+				'roles': {role.id: role.user_data(path, permission) for role in self.roles.filter(user=permission.user, id__contains=path.get_id())},
+			})
 
 		return data
 

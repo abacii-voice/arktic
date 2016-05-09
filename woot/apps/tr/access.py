@@ -62,23 +62,23 @@ class Path():
 				self.locations[s[i]] = s[i+1] if i+1 != len(s) else ''
 
 			self.step()
+			print(self.is_done, self.locations)
 
 	def step(self):
-		if not self.is_done:
-			if not self.is_blank:
-				self.is_done = not self.locations
-				self.just_done = self.is_done
+		if not self.is_blank:
+			if not self.is_done:
 				if self.locations:
 					self.type, self.id = self.locations.popitem(last=False)
-		else:
-			self.type, self.id = None, 'DONE'
+					self.is_done = not self.locations
+					self.just_done = self.is_done
+			else:
+				self.type, self.id = None, 'DONE'
 
 	def check(self, location):
 		return self.type == location if not self.is_blank else True
 
 	def get_id(self):
 		value = self.id
-		self.step()
 		return value
 
 	def down(self):
@@ -86,6 +86,7 @@ class Path():
 			self.just_done = False
 			return Path('')
 		else:
+			self.step()
 			return self
 
 ### Access
@@ -96,7 +97,12 @@ def access(path, permission):
 
 	if path.check('clients'):
 		data.update({
-			'clients': {client.id: client.data(path.down()) for client in Client.objects.filter(id__contains=path.get_id())},
+			'clients': {client.id: client.data(path.down(), permission) for client in Client.objects.filter(id__contains=path.get_id())},
+		})
+
+	if path.check('user'):
+		data.update({
+			'user': permission.user.data(path.down(), permission),
 		})
 
 	return data

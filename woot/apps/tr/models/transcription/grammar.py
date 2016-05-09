@@ -25,7 +25,7 @@ class Grammar(models.Model):
 
 	### Methods
 	# data
-	def data(self, path):
+	def data(self, path, permission):
 		data = {
 			'date_created': str(self.date_created),
 			'metadata': self.metadata,
