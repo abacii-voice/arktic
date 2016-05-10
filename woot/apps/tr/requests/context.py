@@ -8,11 +8,11 @@ from django.conf import settings
 from apps.tr.access import access, process_request
 
 # util
-
+import json
 
 ### Context
 def context(request, path):
 	user, permission, data, verified = process_request(request)
-	print(permission)
 	if verified:
-		return JsonResponse(access(path, permission))
+		data = access(path, permission)
+		return JsonResponse(data)

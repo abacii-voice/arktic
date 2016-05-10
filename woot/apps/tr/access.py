@@ -65,6 +65,15 @@ class Path():
 
 			self.step()
 
+	def __str__(self):
+		return 'done: {done}, just: {just}, blank: {blank}, id: {id}, locations: {locations}'.format(
+			done=self.is_done,
+			just=self.just_done,
+			blank=self.is_blank,
+			id=self.id,
+			locations=self.locations if hasattr(self, 'locations') else 'None',
+		)
+
 	def step(self):
 		if not self.is_blank:
 			if not self.is_done:

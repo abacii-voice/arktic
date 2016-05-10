@@ -76,22 +76,16 @@ class ContextTestCase(TestCase):
 		rule_instance = rule.instances.create(caption=caption, role=moderator)
 
 	def test_context(self):
-		# get all data
-		# data = {
-		# 	'clients': {client.id: client.data() for client in Client.objects.all()},
-		# }
-
 		# path
 		client_id = Client.objects.get(name='TestProductionClient').id
 		project_id = Client.objects.get(name='TestProductionClient').production_projects.get().id
 		# path = 'clients.{client_id}.production_projects.{project_id}'.format(client_id=client_id, project_id=project_id)
 		# path = 'user'
-		path = 'clients'
+		path = ''
 
 		# request data using path
 		user = User.objects.get(email='1@1.com')
-		role = user.roles.get(type='admin', client__name='TestProductionClient')
-		permission = Permission(user, role)
+		permission = Permission(user, user.get_role(client_id, 'admin'))
 
 		data = access(path, permission)
 		print(json.dumps(data, indent=2, sort_keys=True))
