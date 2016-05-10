@@ -13,4 +13,6 @@ from apps.tr.access import access, process_request
 ### Context
 def context(request, path):
 	user, permission, data, verified = process_request(request)
-	return JsonResponse({'done': True})
+	print(permission)
+	if verified:
+		return JsonResponse(access(path, permission))

@@ -101,5 +101,5 @@ urlpatterns += [
 
 ### Data
 urlpatterns += [
-	url(r'^context/(?P<path>.+)', context)
+	url(r'^context/(?P<path>.*)', context)
 ]

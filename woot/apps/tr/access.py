@@ -6,6 +6,7 @@ from apps.tr.models.client.client import Client
 
 # util
 import collections
+import json
 
 ### Permissions
 class Permission():
@@ -25,11 +26,11 @@ class Permission():
 		self.role = role
 
 		# types
-		self.is_productionadmin = self.role.type == 'admin' and self.role.client.is_production and self.role is not None
-		self.is_contractadmin = not self.is_productionadmin and self.role is not None and self.role.type == 'admin'
+		self.is_productionadmin = self.role is not None and self.role.type == 'admin' and self.role.client.is_production
+		self.is_contractadmin = self.role is not None and not self.is_productionadmin and self.role.type == 'admin'
 		self.is_admin = self.is_productionadmin or self.is_contractadmin
-		self.is_moderator = self.role.type == 'moderator' and self.role is not None
-		self.is_worker = self.role.type == 'worker' and self.role is not None
+		self.is_moderator = self.role is not None and self.role.type == 'moderator'
+		self.is_worker = self.role is not None and self.role.type == 'worker'
 		self.is_basic = self.role is None
 
 	def check_client(self, client):
@@ -110,27 +111,17 @@ def access(path, permission):
 ### Requests
 def process_request(request):
 	# 1. process data
-	data = walk(request.POST)
+	data = json.loads(request.body.decode('utf8'))
 
 	# 2. get user and role_type
 	user = request.user
-	client_name = data['permission']['client'] if 'permission' in data else ''
-	role_type = data['permission']['role'] if 'permission' in data else ''
+	client_id = data['permission']['client_id'] if 'permission' in data else ''
+	role_type = data['permission']['role_type'] if 'permission' in data else ''
 
 	# 3. get permission
-	permission = Permission(user, role=user.get_role(client_name, role_type))
+	permission = Permission(user, role=user.get_role(client_id, role_type))
 
 	# 4. get verification
 	verified = request.method == 'POST' and request.user.is_authenticated()
 
 	return user, permission, data, verified
-
-def is_dictionary(test):
-	return isinstance(test, dict)
-
-def walk(dictionary):
-	data = {}
-	for key, value in dictionary.items():
-		data[key] = walk(value) if is_dictionary(value) else value
-
-	return data
