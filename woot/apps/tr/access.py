@@ -116,7 +116,6 @@ def process_request(request):
 	user = request.user
 	client_name = data['permission']['client'] if 'permission' in data else ''
 	role_type = data['permission']['role'] if 'permission' in data else ''
-	path = data['path']
 
 	# 3. get permission
 	permission = Permission(user, role=user.get_role(client_name, role_type))
@@ -124,7 +123,7 @@ def process_request(request):
 	# 4. get verification
 	verified = request.method == 'POST' and request.user.is_authenticated()
 
-	return user, path, permission, data, verified
+	return user, permission, data, verified
 
 def is_dictionary(test):
 	return isinstance(test, dict)
