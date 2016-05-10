@@ -6,7 +6,7 @@ from django.core.files import File
 from apps.users.models import User
 from apps.tr.models.client.client import Client
 from apps.tr.models.transcription.utterance import Utterance
-from apps.tr.idgen import Permission, access
+from apps.tr.access import Permission, access
 
 # util
 import json
@@ -86,11 +86,11 @@ class ContextTestCase(TestCase):
 		project_id = Client.objects.get(name='TestProductionClient').production_projects.get().id
 		# path = 'clients.{client_id}.production_projects.{project_id}'.format(client_id=client_id, project_id=project_id)
 		# path = 'user'
-		path = ''
+		path = 'clients'
 
 		# request data using path
 		user = User.objects.get(email='1@1.com')
-		role = user.roles.get(type='worker', client__name='TestProductionClient')
+		role = user.roles.get(type='admin', client__name='TestProductionClient')
 		permission = Permission(user, role)
 
 		data = access(path, permission)

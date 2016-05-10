@@ -44,29 +44,30 @@ var Context = {
 		force = force !== undefined ? force : false;
 
 		// proceed to get from context object
-		path = path.split('.');
+		context_path = path.split('.');
 		sub = Context.context;
-		for (i=0; i<path.length; i++) {
-			sub = sub[path[i]];
+		for (i=0; i<context_path.length; i++) {
+			sub = sub[context_path[i]];
 			if (sub === undefined) {
 				break;
 			}
 		}
 
 		// return loaded data if necessary
-		sub = sub !== undefined ? (force ? Context.load(path) : sub) : Context.load(path);
-		return sub;
+		return sub !== undefined ? (force ? Context.load(path) : sub) : Context.load(path);
 	},
 
 	// The load method gets the requested path from the server if it does not exist locally.
 	// This operation can be forced from the get method.
 	load: function (path) {
+		var result = undefined;
 		var ajax_data = {
 			type: 'post',
 			data: Permission.permit(),
 			url: '/context/{path}'.format({path: path}),
 			success: function (data, textStatus, XMLHttpRequest) {
-				Registry.trigger(path);
+				Context.set(path, data);
+				result = data;
 			},
 			error: function (xhr, ajaxOptions, thrownError) {
 				if (xhr.status === 404 || xhr.status === 0) {
@@ -75,13 +76,28 @@ var Context = {
 			}
 		}
 
-		$.when($.ajax(ajax_data)).done();
+		$.ajax(ajax_data);
+		return result;
 	},
 
 	// SET
 	// Sets the value of a path in the store. If the value changes, a request is sent to change this piece of data.
 	set: function (path, value) {
+		context_path = path.split('.');
+		sub = Context.context;
+		for (i=0; i<context_path.length; i++) {
+			if (i+1 === context_path.length) {
+				sub[context_path[i]] = value;
+			} else {
+				if (sub[context_path[i]] === undefined) {
+					sub[context_path[i]] = {};
+				}
+			}
+			sub = sub[context_path[i]];
+		}
 
+		// trigger registry
+		Registry.trigger(path);
 	},
 }
 
@@ -105,7 +121,19 @@ var Active = {
 // PERMISSION
 // Works the same way as active but stores only the permission information needed to specify the user, role, and client.
 var Permission = {
-	permission: {},
+	// stores relevant permission details
+	permission: {
+		role_type: 'admin',
+		client_id: '6f56a306-cfa9-4557-bec9-f65bd2de67e0',
+	},
+
+	// appends permission details to an object to be passed as data
+	permit: function (data) {
+		// set
+		data = data !== undefined ? data : {};
+		data.permission = Permission.permission;
+		return JSON.stringify(data);
+	}
 }
 
 // ACTION
@@ -118,4 +146,9 @@ var Action = {
 // Keeps a record of the state dependent paths that objects are waiting for. Updates them when data arrives in Context.
 var Registry = {
 	registry: {},
+
+	// finds registry entries in the current state with the given path and runs their stored methods.
+	trigger: function (path) {
+
+	}
 }
