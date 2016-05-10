@@ -47,11 +47,15 @@ var Context = {
 		// proceed to get from context object
 		context_path = path.split('.');
 		sub = Context.context;
-		for (i=0; i<context_path.length; i++) {
-			sub = sub[context_path[i]];
-			if (sub === undefined) {
-				break;
+		if (context_path[0] !== '') {
+			for (i=0; i<context_path.length; i++) {
+				sub = sub[context_path[i]];
+				if (sub === undefined) {
+					break;
+				}
 			}
+		} else {
+			sub = Object.keys(sub).length !== 0 ? sub : undefined; // empty context
 		}
 
 		// return loaded data if necessary
@@ -89,15 +93,19 @@ var Context = {
 	set: function (path, value) {
 		context_path = path.split('.');
 		sub = Context.context;
-		for (i=0; i<context_path.length; i++) {
-			if (i+1 === context_path.length) {
-				sub[context_path[i]] = value;
-			} else {
-				if (sub[context_path[i]] === undefined) {
-					sub[context_path[i]] = {};
+		if (context_path[0] !== '') {
+			for (i=0; i<context_path.length; i++) {
+				if (i+1 === context_path.length) {
+					sub[context_path[i]] = value;
+				} else {
+					if (sub[context_path[i]] === undefined) {
+						sub[context_path[i]] = {};
+					}
 				}
+				sub = sub[context_path[i]];
 			}
-			sub = sub[context_path[i]];
+		} else {
+			Context.context = value;
 		}
 
 		// trigger registry
