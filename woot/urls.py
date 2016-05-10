@@ -7,6 +7,7 @@ from django.conf import settings
 
 # local
 from apps.tr.requests.views import HomeView, AccountSPAView
+from apps.tr.requests.context import context
 from apps.users.views import UserSignupView, LoginView, logout_view
 
 urlpatterns = [
@@ -100,5 +101,5 @@ urlpatterns += [
 
 ### Data
 urlpatterns += [
-	url(r'^data/', include('apps.tr.requests.data.urls'))
+	url(r'^context/', context)
 ]
