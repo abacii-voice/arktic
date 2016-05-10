@@ -6,7 +6,7 @@ from django.core.files import File
 from apps.users.models import User
 from apps.tr.models.client.client import Client
 from apps.tr.models.transcription.utterance import Utterance
-from apps.tr.access import Permission, access
+from apps.tr.idgen import Permission, access
 
 # util
 import json
