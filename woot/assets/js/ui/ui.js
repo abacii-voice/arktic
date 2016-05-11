@@ -2,18 +2,40 @@
 var UI = {
 	// GLOBAL STATE
 	// store current global state
+	// This is a path like 'client-state.reload'
 	globalState: undefined,
 
 	// global state array
+	globalStates: {},
 
-	// createGlobalState
-	// createGlobalStates
+	// addGlobalState
+	addGlobalState: function (path) {
+
+	},
+
 	// changeGlobalState
+	changeGlobalState: function (path, trigger) {
+
+	},
 
 	// COMPONENT
 	// components
+	components: {},
+
 	// getComponent
+	getComponent: function (id) {
+
+	},
+
 	// component
+	component: function (id, args) {
+		// set args if none exists
+		var args = args !== undefined ? args : {};
+
+		
+
+	}
+
 	// createComponent
 	// removeComponent
 	// createApp
