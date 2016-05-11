@@ -48,7 +48,7 @@ class Client(models.Model):
 
 		if path.check('users') and permission.is_admin:
 			data.update({
-				'users': {user.id: user.data(path.down(), permission) for user in self.users.filter(id__contains=path.get_id())},
+				'users': {user.id: user.role_data(self, path.down(), permission) for user in self.users.filter(id__contains=path.get_id())},
 			})
 
 		if self.is_production:
