@@ -61,9 +61,24 @@ class User(AbstractBaseUser, PermissionsMixin):
 				'billing_date': str(self.billing_date),
 			})
 
+		return data
+
+	def client_data(self, path, permission):
+		data = self.data(path, permission)
+
 		if path.check('clients'):
 			data.update({
-				'clients': {client.id: client.user_data(path.down(), permission) for client in self.clients.filter(id__contains=path.get_id())},
+				'clients': {client.id: client.user_data(path, permission) for client in self.clients.filter(id__contains=path.get_id())},
+			})
+
+		return data
+
+	def role_data(self, client, path, permission):
+		data = self.data(path, permission)
+
+		if path.check('roles'):
+			data.update({
+				'roles': {role.id: role.data(path.down(), permission) for role in self.roles.filter(id__contains=path.get_id(), client=client)}
 			})
 
 		return data

@@ -118,14 +118,61 @@ var Context = {
 var Active = {
 	active: {},
 
+	// get
+	get: function (path) {
+		context_path = path.split('.');
+		sub = Context.context;
+		for (i=0; i<context_path.length; i++) {
+			sub = sub[context_path[i]];
+			if (sub === undefined) {
+				break;
+			}
+		}
+
+		return sub;
+	},
+
+	// set
+	set: function (path, value) {
+		context_path = path.split('.');
+		sub = Context.context;
+		for (i=0; i<context_path.length; i++) {
+			if (i+1 === context_path.length) {
+				sub[context_path[i]] = value;
+			} else {
+				if (sub[context_path[i]] === undefined) {
+					sub[context_path[i]] = {};
+				}
+			}
+			sub = sub[context_path[i]];
+		}
+	},
+
 	// COMMANDS
 	// A set of commands that are sent with permission data.
 	commands: {
 		sendWhatever: function () {
 
 		},
-		abstract: function () {
+		abstract: function (name, data, callback, args) {
+			args = args !== undefined ? args : {};
+			var ajax_params = {
+				type: 'post',
+				data: Permission.permit(data),
+				processData: args.processData !== undefined ? args.processData : true,
+				contentType: args.contentType !== undefined ? args.contentType : 'application/x-www-form-urlencoded',
+				url:'/command/{name}/'.format({name: name}),
+				success: function (data, textStatus, XMLHttpRequest) {
+					callback(data);
+				},
+				error: function (xhr, ajaxOptions, thrownError) {
+					if (xhr.status === 404 || xhr.status === 0) {
+						Active.commands.abstract(name, data, callback, args);
+					}
+				},
+			};
 
+			return $.ajax(ajax_params); // this is a promise
 		},
 	}
 }
@@ -135,8 +182,22 @@ var Active = {
 var Permission = {
 	// stores relevant permission details
 	permission: {
-		role_type: 'admin',
-		client_id: '6f56a306-cfa9-4557-bec9-f65bd2de67e0',
+		// role_type: 'admin',
+		// client_id: '6f56a306-cfa9-4557-bec9-f65bd2de67e0',
+		role_type: '',
+		client_id: '',
+	},
+
+	get: function () {
+		return Permission.permission;
+	},
+
+	set: function (value, key) {
+		if (key !== undefined) {
+			Permission.permission[key] = value;
+		} else {
+			Permission.permission = value;
+		}
 	},
 
 	// appends permission details to an object to be passed as data
@@ -158,6 +219,11 @@ var Action = {
 // Keeps a record of the state dependent paths that objects are waiting for. Updates them when data arrives in Context.
 var Registry = {
 	registry: {},
+
+	// register an object with a state, path, and function
+	register: function (component, state, path, fn) {
+
+	},
 
 	// finds registry entries in the current state with the given path and runs their stored methods.
 	trigger: function (path) {
