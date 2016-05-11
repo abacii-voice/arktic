@@ -121,7 +121,7 @@ var Active = {
 	// get
 	get: function (path) {
 		context_path = path.split('.');
-		sub = Context.context;
+		sub = Active.active;
 		for (i=0; i<context_path.length; i++) {
 			sub = sub[context_path[i]];
 			if (sub === undefined) {
@@ -129,7 +129,7 @@ var Active = {
 			}
 		}
 
-		return sub;
+		return sub !== undefined ? sub : '';
 	},
 
 	// set
@@ -232,7 +232,6 @@ var Registry = {
 
 		for (i=0; i<context_path.length; i++) {
 			if (i+1 === context_path.length) {
-				console.log(sub);
 				if (sub[context_path[i]] === undefined) {
 					sub[context_path[i]] = {
 						registered: {},
@@ -254,6 +253,41 @@ var Registry = {
 
 	// finds registry entries in the current state with the given path and runs their stored methods.
 	trigger: function (path) {
-		// var sub_registry = Registry.registry[state][path];
-	}
+		context_path = path.split('.');
+
+		// this works roughly like the get method in the rest of the structures.
+		sub = Registry.registry[state];
+		for (i=0; i<context_path.length; i++) {
+			sub = sub[context_path[i]];
+			if (sub === undefined) {
+				break;
+			}
+		}
+
+		// get list of components and their methods from sub
+		// 1. trigger all objects with exactly this path (easiest)?
+		// 2. trigger all objects with paths below this one (pretty hard)?
+		// For now: exact path. I will do all below if it proves useful.
+
+		if (sub.registered !== undefined) {
+			Object.keys(sub.registered).forEach(function (componentId) {
+				var component = UI.getComponent(componentId);
+				var fn = sub.registered[componentId];
+				fn(component);
+			});
+		}
+	},
+
+	get: function (path) {
+		context_path = path.split('.');
+		sub = Context.context;
+		for (i=0; i<context_path.length; i++) {
+			sub = sub[context_path[i]];
+			if (sub === undefined) {
+				break;
+			}
+		}
+
+		return sub;
+	},
 }
