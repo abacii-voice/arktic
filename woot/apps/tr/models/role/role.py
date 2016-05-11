@@ -25,8 +25,6 @@ class Role(models.Model):
 	# data
 	def data(self, path, permission):
 		data = {
-			# basic data
-			'supervisor': self.supervisor.id if self.supervisor is not None else '',
 			# 'project': self.project_override_id, # DON'T KNOW YET
 			'user': self.user.id,
 			'date_created': str(self.date_created),
@@ -34,24 +32,25 @@ class Role(models.Model):
 			'status': self.status,
 		}
 
-		if path.check('stats'):
+		if self.supervisor is not None and (permission.is_moderator or permission.is_productionadmin):
+			data.update({
+				'supervisor': self.supervisor.id,
+			})
+
+		if self.project_override is not None and (permission.is_moderator or permission.is_productionadmin):
+			data.update({
+				'project_override': self.project_override.id,
+			})
+
+		if path.check('stats') and (permission.is_moderator or permission.is_productionadmin or permission.check_user(self.user)):
 			data.update({
 				'stats': {stat.id: stat.data() for stat in self.stats.filter(id__contains=path.get_id())},
 			})
 
-		if path.check('thresholds'):
+		if path.check('thresholds') and (permission.is_moderator or permission.is_productionadmin):
 			data.update({
 				'thresholds': {threshold.id: threshold.data() for threshold in self.thresholds.filter(id__contains=path.get_id())},
 			})
-
-		return data
-
-	def user_data(self, path, permission):
-		data = {
-			'supervisor': self.supervisor.id if self.supervisor is not None else '',
-			'type': self.type,
-			'status': self.status,
-		}
 
 		return data
 
