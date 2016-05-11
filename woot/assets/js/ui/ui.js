@@ -222,11 +222,38 @@ var Registry = {
 
 	// register an object with a state, path, and function
 	register: function (component, state, path, fn) {
+		context_path = path.split('.');
 
+		// add state if necessary
+		if (Registry.registry[state] === undefined) {
+			Registry.registry[state] = {};
+		}
+		sub = Registry.registry[state];
+
+		for (i=0; i<context_path.length; i++) {
+			if (i+1 === context_path.length) {
+				console.log(sub);
+				if (sub[context_path[i]] === undefined) {
+					sub[context_path[i]] = {
+						registered: {},
+					};
+					sub[context_path[i]].registered[component.id] = fn;
+				} else {
+					sub[context_path[i]].registered[component.id] = fn;
+				}
+			} else {
+				if (sub[context_path[i]] === undefined) {
+					sub[context_path[i]] = {
+						'registered': {},
+					};
+				}
+			}
+			sub = sub[context_path[i]];
+		}
 	},
 
 	// finds registry entries in the current state with the given path and runs their stored methods.
 	trigger: function (path) {
-
+		// var sub_registry = Registry.registry[state][path];
 	}
 }
