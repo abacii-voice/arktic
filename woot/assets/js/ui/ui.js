@@ -32,7 +32,77 @@ var UI = {
 		// set args if none exists
 		var args = args !== undefined ? args : {};
 
-		
+		// METHODS
+		// identity
+		this.setId = function () {
+
+		}
+		this.setRoot = function () {
+
+		}
+		this.setTemplate = function () {
+
+		}
+		this.setAppearance = function () {
+
+		}
+
+		// state
+		this.getTail
+		this.setTail
+		this.addTails
+		this.addTail
+		this.tails
+
+		this.getState = function (stateName) {
+			return this.states().filter(function (state) {
+				return state.name === stateName;
+			})[0];
+		}
+		this.setState = function (argsState) {
+			if (argsState !== undefined) {
+				// default state
+				var currentDefaultState = this.defaultState !== undefined ? this.defaultState : {};
+				this.defaultState = argsState.defaultState !== undefined ? argsState.defaultState : currentDefaultState;
+
+				// states
+				this.addStates(argsState.states);
+
+				// state map
+				this.addStateMap(argsState.stateMap);
+			}
+		}
+		this.addStates = function (states) {
+			if (states !== undefined) {
+				states.forEach(this.addState, this);
+
+				if (this.state === undefined) {
+					this.state = this.getState(UI.globalState);
+					if (this.state !== undefined) {
+						this.stateClasses = this.state.classes !== undefined ? this.state.classes : [];
+						this.stateStyle = this.state.style !== undefined ? this.state.style : {};
+					}
+				}
+			}
+		}
+		this.addState = function (statePrototype) {
+			// add as new state
+			UI.createState(this, statePrototype.name, statePrototype.args);
+		}
+		this.states = function () {
+			var _this = this;
+			return UI.allStates().filter(function (state) {
+				return state.component.id === _this.id;
+			});
+		}
+
+		this.getHead
+		this.setHead
+		this.addHeads
+		this.addHead
+		this.heads
+
+		this.registry
 
 	}
 
