@@ -69,7 +69,7 @@ class Client(models.Model):
 
 		if path.check('roles'):
 			data.update({
-				'roles': {role.id: role.user_data(path, permission) for role in self.roles.filter(user=permission.user, id__contains=path.get_id())},
+				'roles': {role.id: role.data(path, permission) for role in self.roles.filter(user=permission.user, id__contains=path.get_id())},
 			})
 
 		return data
