@@ -107,12 +107,12 @@ def access(path, permission):
 
 	if path.check('clients'):
 		data.update({
-			'clients': {client.id: client.data(path.down(), permission) for client in Client.objects.filter(id__contains=path.get_id())},
+			'clients': {client.id: client.data(path.down(), permission) for client in Client.objects.filter(id__contains=path.get_id()) if client.users.filter(id=permission.user.id).exists()},
 		})
 
 	if path.check('user'):
 		data.update({
-			'user': permission.user.data(path.down(), permission),
+			'user': permission.user.client_data(path.down(), permission),
 		})
 
 	return data
