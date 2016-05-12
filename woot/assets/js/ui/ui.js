@@ -3,7 +3,7 @@ var UI = {
 	// GLOBAL STATE
 	// store current global state
 	// This is a path like 'client-state.reload'
-	globalState: 'state',
+	globalState: undefined,
 
 	// global state array
 	globalStates: {},
@@ -20,14 +20,7 @@ var UI = {
 
 	// COMPONENT
 	// components
-	components: {
-		'id1': {
-			'id': 'id1',
-		},
-		'id2': {
-			'id': 'id2',
-		}
-	},
+	components: {},
 
 	// getComponent
 	getComponent: function (id) {
@@ -314,24 +307,7 @@ var Action = {
 // REGISTRY
 // Keeps a record of the state dependent paths that objects are waiting for. Updates them when data arrives in Context.
 var Registry = {
-	registry: {
-		'state': {
-			'clients': {
-				'registered': {
-					'id1': function (component, data) {
-						console.log('state.clients.id1', data);
-					}
-				},
-				'6f56a306-cfa9-4557-bec9-f65bd2de67e0': {
-					'registered': {
-						'id2': function (component, data) {
-							console.log('state.clients.6f56a306-cfa9-4557-bec9-f65bd2de67e0.id2', data);
-						}
-					},
-				}
-			},
-		},
-	},
+	registry: {},
 
 	// register an object with a state, path, and function
 	register: function (component, state, path, fn, args) {
