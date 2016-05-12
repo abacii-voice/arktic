@@ -3,7 +3,7 @@ var UI = {
 	// GLOBAL STATE
 	// store current global state
 	// This is a path like 'client-state.reload'
-	globalState: undefined,
+	globalState: 'state',
 
 	// global state array
 	globalStates: {},
@@ -20,11 +20,18 @@ var UI = {
 
 	// COMPONENT
 	// components
-	components: {},
+	components: {
+		'id1': {
+			'id': 'id1',
+		},
+		'id2': {
+			'id': 'id2',
+		}
+	},
 
 	// getComponent
 	getComponent: function (id) {
-
+		return UI.components[id];
 	},
 
 	// component
@@ -199,9 +206,6 @@ var Context = {
 		} else {
 			Context.context = value;
 		}
-
-		// trigger registry
-		Registry.trigger(path);
 	},
 }
 
@@ -310,10 +314,28 @@ var Action = {
 // REGISTRY
 // Keeps a record of the state dependent paths that objects are waiting for. Updates them when data arrives in Context.
 var Registry = {
-	registry: {},
+	registry: {
+		'state': {
+			'clients': {
+				'registered': {
+					'id1': function (component, data) {
+						console.log('state.clients.id1', data);
+					}
+				},
+				'6f56a306-cfa9-4557-bec9-f65bd2de67e0': {
+					'registered': {
+						'id2': function (component, data) {
+							console.log('state.clients.6f56a306-cfa9-4557-bec9-f65bd2de67e0.id2', data);
+						}
+					},
+				}
+			},
+		},
+	},
 
 	// register an object with a state, path, and function
-	register: function (component, state, path, fn) {
+	register: function (component, state, path, fn, args) {
+		var force = args !== undefined ? (args.force !== undefined ? args.force : false) : false;
 		context_path = path.split('.');
 
 		// add state if necessary
@@ -324,18 +346,22 @@ var Registry = {
 
 		for (i=0; i<context_path.length; i++) {
 			if (i+1 === context_path.length) {
+				// initialise
 				if (sub[context_path[i]] === undefined) {
 					sub[context_path[i]] = {
 						registered: {},
 					};
-					sub[context_path[i]].registered[component.id] = fn;
-				} else {
-					sub[context_path[i]].registered[component.id] = fn;
 				}
+
+				// add fn to id
+				sub[context_path[i]].registered[component.id] = fn;
+
+				// set force if needed -> set to true if false or undefined and force=true
+				sub[context_path[i]].force = sub[context_path[i]].force !== undefined ? (sub[context_path[i]].force || force) : force;
 			} else {
 				if (sub[context_path[i]] === undefined) {
 					sub[context_path[i]] = {
-						'registered': {},
+						registered: {},
 					};
 				}
 			}
@@ -343,43 +369,37 @@ var Registry = {
 		}
 	},
 
-	// finds registry entries in the current state with the given path and runs their stored methods.
-	trigger: function (path) {
-		context_path = path.split('.');
+	trigger: function (parent, level) {
+		// initialise at the top of the tree. This will traverse recursively.
+		parent = parent !== undefined ? parent : '';
+		level = level !== undefined ? level : Registry.registry[UI.globalState];
 
-		// this works roughly like the get method in the rest of the structures.
-		sub = Registry.registry[state];
-		for (i=0; i<context_path.length; i++) {
-			sub = sub[context_path[i]];
-			if (sub === undefined) {
-				break;
-			}
-		}
+		var keys = Object.keys(level);
+		if ('registered' in level && parent !== '') {
 
-		// get list of components and their methods from sub
-		// 1. trigger all objects with exactly this path (easiest)?
-		// 2. trigger all objects with paths below this one (pretty hard)?
-		// For now: exact path. I will do all below if it proves useful.
+			Context.get(parent, {force: level.registered.force !== undefined ? level.registered.force : false, callback: function (data) {
+				// 1. call function for each component in registered
+				Object.keys(level.registered).forEach(function (componentId) {
+					var component = UI.getComponent(componentId);
+					var fn = level.registered[componentId];
+					fn(component, data);
+				});
 
-		if (sub.registered !== undefined) {
-			Object.keys(sub.registered).forEach(function (componentId) {
-				var component = UI.getComponent(componentId);
-				var fn = sub.registered[componentId];
-				fn(component);
+				// 2. continue down the chain.
+				keys.forEach(function (path) {
+					if (path !== 'registered') {
+						var get = '{parent}{path}.'.format({parent: parent, path: path});
+						Registry.trigger(get, level[path]);
+					}
+				});
+			}});
+		} else {
+
+			// continue without changing anything.
+			keys.forEach(function (path) {
+				var get = '{parent}{path}.'.format({parent: parent, path: path});
+				Registry.trigger(get, level[path]);
 			});
 		}
-	},
-
-	get: function (path) {
-		context_path = path.split('.');
-		sub = Context.context;
-		for (i=0; i<context_path.length; i++) {
-			sub = sub[context_path[i]];
-			if (sub === undefined) {
-				break;
-			}
-		}
-
-		return sub;
 	},
 }
