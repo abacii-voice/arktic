@@ -352,6 +352,8 @@ var Registry = {
 	},
 
 	trigger: function (parent, level) {
+		// What is this method: if "registered", then return Context.get, else a loop of promises.
+
 		// initialise at the top of the tree. This will traverse recursively.
 		parent = parent !== undefined ? parent : '';
 		level = level !== undefined ? level : (Registry.registry[UI.globalState] !== undefined ? Registry.registry[UI.globalState] : {});
