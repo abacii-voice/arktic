@@ -152,11 +152,17 @@ var Context = {
 
 		// return loaded data if necessary
 		if (sub === undefined || force) {
-			$.when(Context.load(path)).done(function () {
+			return $.when(Context.load(path)).then(function () {
 				callback(Context.get(path));
 			});
 		} else {
-			return sub;
+			if (callback !== undefined) {
+				return new Promise(function (resolve, reject) {
+					resolve(callback(sub));
+				});
+			} else {
+				return sub;
+			}
 		}
 	},
 
@@ -348,11 +354,10 @@ var Registry = {
 	trigger: function (parent, level) {
 		// initialise at the top of the tree. This will traverse recursively.
 		parent = parent !== undefined ? parent : '';
-		level = level !== undefined ? level : Registry.registry[UI.globalState];
+		level = level !== undefined ? level : (Registry.registry[UI.globalState] !== undefined ? Registry.registry[UI.globalState] : {});
 
 		var keys = Object.keys(level);
 		if ('registered' in level && parent !== '') {
-
 			Context.get(parent, {force: level.registered.force !== undefined ? level.registered.force : false, callback: function (data) {
 				// 1. call function for each component in registered
 				Object.keys(level.registered).forEach(function (componentId) {
@@ -370,7 +375,6 @@ var Registry = {
 				});
 			}});
 		} else {
-
 			// continue without changing anything.
 			keys.forEach(function (path) {
 				var get = '{parent}{path}.'.format({parent: parent, path: path});
