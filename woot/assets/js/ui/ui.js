@@ -134,7 +134,6 @@ var Context = {
 	get: function (path, args) {
 		// force load from the server?
 		force = args !== undefined ? (args.force !== undefined ? args.force : false) : false;
-		callback = args !== undefined ? (args.callback !== undefined ? args.callback : undefined) : undefined;
 
 		// proceed to get from context object
 		context_path = path.split('.');
@@ -152,17 +151,11 @@ var Context = {
 
 		// return loaded data if necessary
 		if (sub === undefined || force) {
-			return $.when(Context.load(path)).then(function () {
-				callback(Context.get(path));
+			return Context.load(path).then(function () {
+				return Context.get(path);
 			});
 		} else {
-			if (callback !== undefined) {
-				return new Promise(function (resolve, reject) {
-					resolve(callback(sub));
-				});
-			} else {
-				return sub;
-			}
+			return sub;
 		}
 	},
 
@@ -360,28 +353,27 @@ var Registry = {
 
 		var keys = Object.keys(level);
 		if ('registered' in level && parent !== '') {
-			Context.get(parent, {force: level.registered.force !== undefined ? level.registered.force : false, callback: function (data) {
+			return Context.get(parent, {force: level.registered.force !== undefined ? level.registered.force : false, callback: function (data) {
 				// 1. call function for each component in registered
-				Object.keys(level.registered).forEach(function (componentId) {
+				Promise.all(Object.keys(level.registered).map(function (componentId) {
 					var component = UI.getComponent(componentId);
-					var fn = level.registered[componentId];
-					fn(component, data);
-				});
-
-				// 2. continue down the chain.
-				keys.forEach(function (path) {
-					if (path !== 'registered') {
-						var get = '{parent}{path}.'.format({parent: parent, path: path});
-						Registry.trigger(get, level[path]);
-					}
+					var fn = new Promise(level.registered[componentId]);
+					return fn(component, data);
+				})).then(function () {
+					return Promise.all(keys.forEach(function (path) {
+						if (path !== 'registered') {
+							var get = '{parent}{path}.'.format({parent: parent, path: path});
+							return Registry.trigger(get, level[path]);
+						}
+					}));
 				});
 			}});
 		} else {
 			// continue without changing anything.
-			keys.forEach(function (path) {
+			return Promise.all(keys.map(function (path) {
 				var get = '{parent}{path}.'.format({parent: parent, path: path});
-				Registry.trigger(get, level[path]);
-			});
+				return Registry.trigger(get, level[path]);
+			}));
 		}
 	},
 }
