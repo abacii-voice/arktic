@@ -96,18 +96,53 @@ var Test = {
 
 		test_registry: function () {
 			// set data
-			var data = {
-				
-			}
 
-			var setData = function (data) {
+			var setData = function () {
 				return new Promise(function (resolve, reject) {
-					return Context.set('', data);
+					// set stuff
+					UI.globalState = 'state';
+					UI.components = {
+						'id1': {
+							'id': 'id1',
+						},
+						'id2': {
+							'id': 'id2',
+						}
+					};
+					Registry.registry = {
+						'state': {
+							'clients': {
+								'registered': {
+									'id1': function (component, data) {
+										return function (resolve, reject) {
+											resolve('id1');
+										}
+									}
+								},
+								'6f56a306-cfa9-4557-bec9-f65bd2de67e0': {
+									'registered': {
+										'id2': function (component, data) {
+											return function (resolve, reject) {
+												resolve('id2');
+											}
+										}
+									},
+								}
+							},
+						},
+					};
+					resolve({set: 'done'});
 				});
 			}
 
-			setData(data).then(function (data) {
+			var runPromise = function () {
+				return Registry.trigger();
+			}
 
+			setData().then(function (status) {
+				return runPromise();
+			}).then(function (status) {
+				console.log('done');
 			});
 		},
 	},
