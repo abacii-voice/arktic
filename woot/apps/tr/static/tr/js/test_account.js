@@ -2,12 +2,12 @@
 
 var Test = {
 	tests: {
-		test_registry_trigger: function () {
+		test_recursive_promise: function () {
 
 			var gtf = function (message) {
 				return function (resolve, reject) {
 					setTimeout(function () {
-						console.log(message);
+						// console.log(message);
 						resolve();
 					}, 1000);
 				}
@@ -90,11 +90,26 @@ var Test = {
 				});
 			}
 
-			recursivePromise().then(function () {
-				console.log('done');
-			});
+			recursivePromise();
 
-		}
+		},
+
+		test_registry: function () {
+			// set data
+			var data = {
+				
+			}
+
+			var setData = function (data) {
+				return new Promise(function (resolve, reject) {
+					return Context.set('', data);
+				});
+			}
+
+			setData(data).then(function (data) {
+
+			});
+		},
 	},
 
 	test: function () {
