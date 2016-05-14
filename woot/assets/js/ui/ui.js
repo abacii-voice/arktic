@@ -151,8 +151,10 @@ var Context = {
 
 		// return loaded data if necessary
 		if (sub === undefined || force) {
-			return Context.load(path).then(function () {
-				return Context.get(path);
+			return Context.load(path).then(function (data) {
+				return Context.set(path, data);
+			}).then(function (data) {
+				return data;
 			});
 		} else {
 			return sub;
@@ -162,42 +164,44 @@ var Context = {
 	// The load method gets the requested path from the server if it does not exist locally.
 	// This operation can be forced from the get method.
 	load: function (path) {
-		var ajax_data = {
-			type: 'post',
-			data: Permission.permit(),
-			url: '/context/{path}'.format({path: path}),
-			success: function (data, textStatus, XMLHttpRequest) {
-				Context.set(path, data);
-			},
-			error: function (xhr, ajaxOptions, thrownError) {
-				if (xhr.status === 404 || xhr.status === 0) {
-					Context.load(path);
+		return Permission.permit().then(function (data) {
+			var ajax_data = {
+				type: 'post',
+				data: data,
+				url: '/context/{path}'.format({path: path}),
+				error: function (xhr, ajaxOptions, thrownError) {
+					if (xhr.status === 404 || xhr.status === 0) {
+						Context.load(path);
+					}
 				}
 			}
-		}
 
-		return $.ajax(ajax_data);
+			return $.ajax(ajax_data);
+		});
 	},
 
 	// SET
 	// Sets the value of a path in the store. If the value changes, a request is sent to change this piece of data.
 	set: function (path, value) {
-		context_path = path.split('.');
-		sub = Context.context;
-		if (context_path[0] !== '') {
-			for (i=0; i<context_path.length; i++) {
-				if (i+1 === context_path.length) {
-					sub[context_path[i]] = value;
-				} else {
-					if (sub[context_path[i]] === undefined) {
-						sub[context_path[i]] = {};
+		return new Promise(function (resolve, reject) {
+			context_path = path.split('.');
+			sub = Context.context;
+			if (context_path[0] !== '') {
+				for (i=0; i<context_path.length; i++) {
+					if (i+1 === context_path.length) {
+						sub[context_path[i]] = value;
+					} else {
+						if (sub[context_path[i]] === undefined) {
+							sub[context_path[i]] = {};
+						}
 					}
+					sub = sub[context_path[i]];
 				}
-				sub = sub[context_path[i]];
+			} else {
+				Context.context = value;
 			}
-		} else {
-			Context.context = value;
-		}
+			resolve(value);
+		});
 	},
 }
 
@@ -351,27 +355,34 @@ var Registry = {
 		parent = parent !== undefined ? parent : '';
 		level = level !== undefined ? level : (Registry.registry[UI.globalState] !== undefined ? Registry.registry[UI.globalState] : {});
 
-		var keys = Object.keys(level);
 		if ('registered' in level && parent !== '') {
-			return Context.get(parent, {force: level.registered.force !== undefined ? level.registered.force : false, callback: function (data) {
-				// 1. call function for each component in registered
-				Promise.all(Object.keys(level.registered).map(function (componentId) {
-					var component = UI.getComponent(componentId);
-					var fn = new Promise(level.registered[componentId]);
-					return fn(component, data);
+			return Context.get(parent, {force: level.registered.force !== undefined ? level.registered.force : false}).then(function (data) {
+				return Promise.all(Object.keys(level.registered).map(function (componentId) {
+					return UI.getComponent(componentId).then(function (component) {
+						var fn = level.registered[componentId];
+						return new Promise(fn(component, data));
+						// function must be of the form:
+						// function (component, data) {
+						// 	function (resolve, reject) {
+						// 		... logic ...
+						// 		resolve();
+						// 	}
+						// }
+
+					});
 				})).then(function () {
-					return Promise.all(keys.forEach(function (path) {
+					return Promise.all(Object.keys(level).map(function (path) {
 						if (path !== 'registered') {
-							var get = '{parent}{path}.'.format({parent: parent, path: path});
+							var get = '{parent}{dot}{path}'.format({parent: parent, dot: (parent !== '' ? '.' : ''), path: path});
 							return Registry.trigger(get, level[path]);
 						}
 					}));
 				});
-			}});
+			});
 		} else {
 			// continue without changing anything.
-			return Promise.all(keys.map(function (path) {
-				var get = '{parent}{path}.'.format({parent: parent, path: path});
+			return Promise.all(Object.keys(level).map(function (path) {
+				var get = '{parent}{dot}{path}'.format({parent: parent, dot: (parent !== '' ? '.' : ''), path: path});
 				return Registry.trigger(get, level[path]);
 			}));
 		}
