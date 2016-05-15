@@ -33,33 +33,33 @@ class Client(models.Model):
 		# paths
 		if path.check('rules'):
 			data.update({
-				'rules': {rule.id: rule.data(path.down(), permission) for rule in self.rules.filter(id__contains=path.get_id())},
+				'rules': {rule.id: rule.data(path.down('rules'), permission) for rule in self.rules.filter(id__contains=path.get_id())},
 			})
 
 		if path.check('flags'):
 			data.update({
-				'flags': {flag.id: flag.data(path.down(), permission) for flag in self.flags.filter(id__contains=path.get_id())},
+				'flags': {flag.id: flag.data(path.down('flags'), permission) for flag in self.flags.filter(id__contains=path.get_id())},
 			})
 
 		if path.check('checks') and permission.is_productionadmin:
 			data.update({
-				'checks': {check.id: check.data(path.down(), permission) for check in self.checks.filter(id__contains=path.get_id())},
+				'checks': {check.id: check.data(path.down('checks'), permission) for check in self.checks.filter(id__contains=path.get_id())},
 			})
 
 		if path.check('users') and permission.is_admin:
 			data.update({
-				'users': {user.id: user.role_data(self, path.down(), permission) for user in self.users.filter(id__contains=path.get_id())},
+				'users': {user.id: user.role_data(self, path.down('users'), permission) for user in self.users.filter(id__contains=path.get_id())},
 			})
 
 		if self.is_production:
 			if path.check('production_projects') and permission.is_productionadmin:
 				data.update({
-					'production_projects': {project.id: project.data(path.down(), permission) for project in self.production_projects.filter(id__contains=path.get_id())},
+					'production_projects': {project.id: project.data(path.down('production_projects'), permission) for project in self.production_projects.filter(id__contains=path.get_id())},
 				})
 		else:
 			if path.check('contract_projects') and permission.is_contractadmin:
 				data.update({
-					'contract_projects': {project.id: project.data(path.down(), permission) for project in self.contract_projects.filter(id__contains=path.get_id())},
+					'contract_projects': {project.id: project.data(path.down('contract_projects'), permission) for project in self.contract_projects.filter(id__contains=path.get_id())},
 				})
 
 		return data
