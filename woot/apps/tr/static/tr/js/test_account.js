@@ -115,6 +115,7 @@ var Test = {
 								'registered': {
 									'id1': function (component, data) {
 										return function (resolve, reject) {
+											console.log('run function 1');
 											resolve('id1');
 										}
 									}
@@ -123,6 +124,7 @@ var Test = {
 									'registered': {
 										'id2': function (component, data) {
 											return function (resolve, reject) {
+												console.log('run function 2');
 												resolve('id2');
 											}
 										}
@@ -136,13 +138,15 @@ var Test = {
 			}
 
 			var runPromise = function () {
-				return Registry.trigger();
+				return new Promise(function(resolve, reject) {
+					return Registry.trigger();
+				});
 			}
 
 			setData().then(function (status) {
 				return runPromise();
 			}).then(function (status) {
-				console.log('done');
+				console.log(status);
 			});
 		},
 	},
