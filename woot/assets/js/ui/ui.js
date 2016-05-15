@@ -144,7 +144,6 @@ var Context = {
 			if (context_path[0] !== '') {
 				for (i=0; i<context_path.length; i++) {
 					sub = sub[context_path[i]];
-					console.log(sub, context_path[i]);
 					if (sub === undefined) {
 						break;
 					}
@@ -153,13 +152,11 @@ var Context = {
 				sub = Object.keys(sub).length !== 0 ? sub : undefined; // empty context
 			}
 
-			console.log(sub);
 			resolve(sub);
 
 		}).then(function (data) {
 			if (data === undefined || force) {
 				return Context.load(path).then(function (data) {
-					console.log(path, data);
 					return Context.set(path, data);
 				});
 			} else {
@@ -362,7 +359,6 @@ var Registry = {
 
 		if ('registered' in level && parent !== '') {
 			return Context.get(parent, {force: level.registered.force !== undefined ? level.registered.force : false}).then(function (data) {
-				console.log(parent, data)
 				return Promise.all(Object.keys(level.registered).map(function (componentId) {
 					return UI.getComponent(componentId).then(function (component) {
 						var fn = level.registered[component.id];
@@ -379,7 +375,6 @@ var Registry = {
 				})).then(function () {
 					return Promise.all(Object.keys(level).map(function (path) {
 						if (path !== 'registered') {
-							console.log(parent, 'down');
 							var get = '{parent}{dot}{path}'.format({parent: parent, dot: (parent !== '' ? '.' : ''), path: path});
 							return Registry.trigger(get, level[path]);
 						}
