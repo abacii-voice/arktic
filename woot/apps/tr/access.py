@@ -5,6 +5,7 @@
 from apps.tr.models.client.client import Client
 
 # util
+import collections
 import json
 
 ### Permissions
@@ -50,57 +51,45 @@ class Path():
 
 	def __init__(self, path):
 		# properties
-		self.is_done = False
-		self.just_done = False
 		self.is_blank = path == ''
+		self.key = ''
 		self.id = ''
-		self.type = ''
+		self.index = 0
 
 		# locations
 		if not self.is_blank:
-			self.locations = []
+			self.locations = collections.OrderedDict()
 			s = path.split('.')
 			for i in range(0, len(s), 2):
-				self.locations.append((s[i], (s[i+1] if i+1 != len(s) else '')))
+				self.locations.update({s[i]: s[i+1] if i+1 != len(s) else ''})
 
-			self.step()
+			self.key, self.id = list(self.locations.items())[self.index]
 
 	def __str__(self):
-		return 'done: {done}, just: {just}, blank: {blank}, type: {type}, id: {id}, locations: {locations}'.format(
-			done=self.is_done,
-			just=self.just_done,
-			blank=self.is_blank,
-			type=self.type if self.type != '' else '_',
-			id=self.id if self.id != '' else '_',
-			locations=self.locations if hasattr(self, 'locations') else 'None',
-		)
-
-	def step(self):
-		if not self.is_blank:
-			if not self.is_done:
-				if self.locations:
-					self.type, self.id = self.locations.pop(0)
-					self.is_done = not self.locations
-					self.just_done = self.is_done
-			else:
-				self.type, self.id = 'NONE', 'DONE'
+		return ''
 
 	def check(self, location, blank=True):
-		print('check', self.type, self.id, location)
-		return self.type == location if not self.is_blank else blank
+		# If a check is successful, it should lock the search to this path.
+		# A record should be kept so that the path can return to this level.
+		return self.key == location if not self.is_blank else blank
 
 	def get_id(self):
-		print('id', self.type, self.id)
+		# get id should have no effect on any levels or locking.
 		return self.id
 
-	def down(self, parent):
-		print('down', parent, self.type, self.id)
-		if self.just_done:
-			self.just_done = False
-			return Path('')
-		else:
-			self.step()
-			return self
+	def down(self, key):
+		# This should shift the index to the next token, or if the key is the same as a previous key,
+		# the index should rewind to this key instead.
+		if not self.is_blank:
+			key_index = list(self.locations.keys()).index(key)
+			self.index = key_index if key_index < self.index else self.index + 1
+
+			if self.index < len(self.locations):
+				self.key, self.id = list(self.locations.items())[self.index]
+			else:
+				return Path('')
+
+		return self
 
 ### Access
 def access(original_path, permission):
@@ -110,7 +99,7 @@ def access(original_path, permission):
 
 	if path.check('clients'):
 		data.update({
-			'clients': {client.id: client.data(path.down('clients'), permission) for client in Client.objects.filter(id__contains=path.get_id()) if client.users.filter(id=permission.user.id).exists()},
+			'clients': {client.id: client.data(path.down('clients'), permission) for client in Client.objects.filter(id__startswith=path.get_id()) if client.users.filter(id=permission.user.id).exists()},
 		})
 
 	if path.check('user'):

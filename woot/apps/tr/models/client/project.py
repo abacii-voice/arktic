@@ -46,22 +46,22 @@ class Project(models.Model):
 
 		if path.check('dictionaries'):
 			data.update({
-				'dictionaries': {dictionary.id: dictionary.data(path.down('dictionaries'), permission) for dictionary in self.dictionaries.filter(id__contains=path.get_id())},
+				'dictionaries': {dictionary.id: dictionary.data(path.down('dictionaries'), permission) for dictionary in self.dictionaries.filter(id__startswith=path.get_id())},
 			})
 
 		if path.check('grammars') and permission.is_admin:
 			data.update({
-				'grammars': {grammar.id: grammar.data(path.down('grammars'), permission) for grammar in self.grammars.filter(id__contains=path.get_id())},
+				'grammars': {grammar.id: grammar.data(path.down('grammars'), permission) for grammar in self.grammars.filter(id__startswith=path.get_id())},
 			})
 
 		if path.check('batches') and permission.is_admin:
 			data.update({
-				'batches': {batch.id: batch.data(path.down('batches'), permission) for batch in self.batches.filter(id__contains=path.get_id())},
+				'batches': {batch.id: batch.data(path.down('batches'), permission) for batch in self.batches.filter(id__startswith=path.get_id())},
 			})
 
 		if path.check('transcriptions', blank=False):
 			data.update({
-				'transcriptions': {transcription.id: transcription.data(path.down('transcriptions'), permission) for transcription in self.transcriptions.filter(id__contains=path.get_id())},
+				'transcriptions': {transcription.id: transcription.data(path.down('transcriptions'), permission) for transcription in self.transcriptions.filter(id__startswith=path.get_id())},
 			})
 
 		return data
@@ -102,7 +102,7 @@ class Batch(models.Model):
 
 		if path.check('uploads'):
 			data.update({
-				'uploads': {upload.id: upload.data(path.down(), permission) for upload in self.uploads.filter(id__contains=path.get_id())},
+				'uploads': {upload.id: upload.data(path.down('uploads'), permission) for upload in self.uploads.filter(id__startswith=path.get_id())},
 			})
 
 		return data
@@ -145,7 +145,7 @@ class Upload(models.Model):
 
 		if path.check('fragments'):
 			data.update({
-				'fragments': {fragment.id: fragment.data(path.down(), permission) for fragment in self.fragments.filter(id__contains=path.get_id())},
+				'fragments': {fragment.id: fragment.data(path.down('fragments'), permission) for fragment in self.fragments.filter(id__startswith=path.get_id())},
 			})
 
 		return data

@@ -15,7 +15,7 @@ class Command(BaseCommand):
 		# path
 		client_id = '6f56a306-cfa9-4557-bec9-f65bd2de67e0'
 		role_type = 'admin'
-		path = ''
+		path = 'clients.6f56a306-cfa9-4557-bec9-f65bd2de67e0'
 
 		# request data using path
 		user = User.objects.get(email='n@a.com')
