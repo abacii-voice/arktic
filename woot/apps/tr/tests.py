@@ -79,9 +79,9 @@ class ContextTestCase(TestCase):
 		# path
 		client_id = Client.objects.get(name='TestProductionClient').id
 		project_id = Client.objects.get(name='TestProductionClient').production_projects.get().id
-		# path = 'clients.{client_id}.production_projects.{project_id}'.format(client_id=client_id, project_id=project_id)
+		path = 'clients.{client_id}.production_projects.{project_id}'.format(client_id=client_id, project_id=project_id)
 		# path = 'user'
-		path = ''
+		# path = ''
 
 		# request data using path
 		user = User.objects.get(email='1@1.com')

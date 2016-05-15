@@ -68,7 +68,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 		if path.check('clients'):
 			data.update({
-				'clients': {client.id: client.user_data(path, permission) for client in self.clients.filter(id__contains=path.get_id())},
+				'clients': {client.id: client.user_data(path, permission) for client in self.clients.filter(id__startswith=path.get_id())},
 			})
 
 		return data
@@ -78,7 +78,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 		if path.check('roles'):
 			data.update({
-				'roles': {role.id: role.data(path.down('roles'), permission) for role in self.roles.filter(id__contains=path.get_id(), client=client)}
+				'roles': {role.id: role.data(path.down('roles'), permission) for role in self.roles.filter(id__startswith=path.get_id(), client=client)}
 			})
 
 		return data

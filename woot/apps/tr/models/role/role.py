@@ -44,12 +44,12 @@ class Role(models.Model):
 
 		if path.check('stats') and (permission.is_moderator or permission.is_productionadmin or permission.check_user(self.user)):
 			data.update({
-				'stats': {stat.id: stat.data() for stat in self.stats.filter(id__contains=path.get_id())},
+				'stats': {stat.id: stat.data() for stat in self.stats.filter(id__startswith=path.get_id())},
 			})
 
 		if path.check('thresholds') and (permission.is_moderator or permission.is_productionadmin):
 			data.update({
-				'thresholds': {threshold.id: threshold.data() for threshold in self.thresholds.filter(id__contains=path.get_id())},
+				'thresholds': {threshold.id: threshold.data() for threshold in self.thresholds.filter(id__startswith=path.get_id())},
 			})
 
 		return data
