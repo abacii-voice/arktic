@@ -66,7 +66,12 @@ class Path():
 			self.key, self.id = list(self.locations.items())[self.index]
 
 	def __str__(self):
-		return ''
+		return 'B: {blank}, key: {key}, id: {id}, index: {index}'.format(
+			blank=self.is_blank,
+			key=self.key if self.key is not '' else '_',
+			id=self.id if self.id is not '' else '_',
+			index=self.index,
+		)
 
 	def check(self, location, blank=True):
 		# If a check is successful, it should lock the search to this path.
@@ -81,8 +86,8 @@ class Path():
 		# This should shift the index to the next token, or if the key is the same as a previous key,
 		# the index should rewind to this key instead.
 		if not self.is_blank:
-			key_index = list(self.locations.keys()).index(key)
-			self.index = key_index if key_index < self.index else self.index + 1
+			key_index = list(self.locations.keys()).index(key) + 1
+			self.index = key_index if key_index < self.index else (self.index + 1)
 
 			if self.index < len(self.locations):
 				self.key, self.id = list(self.locations.items())[self.index]
