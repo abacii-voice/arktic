@@ -47,7 +47,7 @@ class Transcription(models.Model):
 
 		if path.check('captions'):
 			data.update({
-				'captions': {caption.id: caption.data(path.down('captions'), permission) for caption in self.captions.filter(id__contains=path.get_id())},
+				'captions': {caption.id: caption.data(path.down('captions'), permission) for caption in self.captions.filter(id__startswith=path.get_id())},
 			})
 
 		return data

@@ -15,7 +15,7 @@ class Command(BaseCommand):
 		# path
 		client_id = '6f56a306-cfa9-4557-bec9-f65bd2de67e0'
 		role_type = 'admin'
-		original_path = 'clients'
+		original_path = 'clients.23098.sfsdf.23423'
 
 		path = Path(original_path)
-		print(path)
+		print('clients' in path.locations)
