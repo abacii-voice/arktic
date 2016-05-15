@@ -15,11 +15,11 @@ class Command(BaseCommand):
 		# path
 		client_id = '6f56a306-cfa9-4557-bec9-f65bd2de67e0'
 		role_type = 'admin'
-		path = 'clients.6f56a306-cfa9-4557-bec9-f65bd2de67e0'
+		path = 'clients'
 
 		# request data using path
 		user = User.objects.get(email='n@a.com')
 		permission = Permission(user, role=user.get_role(client_id, role_type))
 
 		data = access(path, permission)
-		# print(json.dumps(data, indent=2, sort_keys=True))
+		print(json.dumps(data, indent=2, sort_keys=True))
