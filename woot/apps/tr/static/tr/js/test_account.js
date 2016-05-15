@@ -115,7 +115,7 @@ var Test = {
 								'registered': {
 									'id1': function (component, data) {
 										return function (resolve, reject) {
-											console.log('run function 1');
+											console.log(component, data);
 											resolve('id1');
 										}
 									}
@@ -124,7 +124,7 @@ var Test = {
 									'registered': {
 										'id2': function (component, data) {
 											return function (resolve, reject) {
-												console.log('run function 2');
+												console.log(component, data);
 												resolve('id2');
 											}
 										}
