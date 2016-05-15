@@ -24,7 +24,9 @@ var UI = {
 
 	// getComponent
 	getComponent: function (id) {
-		return UI.components[id];
+		return new Promise(function(resolve, reject) {
+			resolve(UI.components[id]);
+		});
 	},
 
 	// component
@@ -135,30 +137,35 @@ var Context = {
 		// force load from the server?
 		force = args !== undefined ? (args.force !== undefined ? args.force : false) : false;
 
-		// proceed to get from context object
-		context_path = path.split('.');
-		sub = Context.context;
-		if (context_path[0] !== '') {
-			for (i=0; i<context_path.length; i++) {
-				sub = sub[context_path[i]];
-				if (sub === undefined) {
-					break;
+		return new Promise(function(resolve, reject) {
+			// proceed to get from context object
+			context_path = path.split('.');
+			sub = Context.context;
+			if (context_path[0] !== '') {
+				for (i=0; i<context_path.length; i++) {
+					sub = sub[context_path[i]];
+					console.log(sub, context_path[i]);
+					if (sub === undefined) {
+						break;
+					}
 				}
+			} else {
+				sub = Object.keys(sub).length !== 0 ? sub : undefined; // empty context
 			}
-		} else {
-			sub = Object.keys(sub).length !== 0 ? sub : undefined; // empty context
-		}
 
-		// return loaded data if necessary
-		if (sub === undefined || force) {
-			return Context.load(path).then(function (data) {
-				return Context.set(path, data);
-			}).then(function (data) {
+			console.log(sub);
+			resolve(sub);
+
+		}).then(function (data) {
+			if (data === undefined || force) {
+				return Context.load(path).then(function (data) {
+					console.log(path, data);
+					return Context.set(path, data);
+				});
+			} else {
 				return data;
-			});
-		} else {
-			return sub;
-		}
+			}
+		});
 	},
 
 	// The load method gets the requested path from the server if it does not exist locally.
@@ -200,7 +207,7 @@ var Context = {
 			} else {
 				Context.context = value;
 			}
-			resolve(value);
+			resolve(sub);
 		});
 	},
 }
@@ -280,10 +287,6 @@ var Permission = {
 		client_id: '',
 	},
 
-	get: function () {
-		return Permission.permission;
-	},
-
 	set: function (value, key) {
 		if (key !== undefined) {
 			Permission.permission[key] = value;
@@ -294,10 +297,12 @@ var Permission = {
 
 	// appends permission details to an object to be passed as data
 	permit: function (data) {
-		// set
-		data = data !== undefined ? data : {};
-		data.permission = Permission.permission;
-		return JSON.stringify(data);
+		return new Promise(function (resolve, reject) {
+			// set
+			data = data !== undefined ? data : {};
+			data.permission = Permission.permission;
+			resolve(JSON.stringify(data));
+		})
 	}
 }
 
@@ -357,9 +362,10 @@ var Registry = {
 
 		if ('registered' in level && parent !== '') {
 			return Context.get(parent, {force: level.registered.force !== undefined ? level.registered.force : false}).then(function (data) {
+				console.log(parent, data)
 				return Promise.all(Object.keys(level.registered).map(function (componentId) {
 					return UI.getComponent(componentId).then(function (component) {
-						var fn = level.registered[componentId];
+						var fn = level.registered[component.id];
 						return new Promise(fn(component, data));
 						// function must be of the form:
 						// function (component, data) {
@@ -373,6 +379,7 @@ var Registry = {
 				})).then(function () {
 					return Promise.all(Object.keys(level).map(function (path) {
 						if (path !== 'registered') {
+							console.log(parent, 'down');
 							var get = '{parent}{dot}{path}'.format({parent: parent, dot: (parent !== '' ? '.' : ''), path: path});
 							return Registry.trigger(get, level[path]);
 						}

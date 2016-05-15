@@ -78,7 +78,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 		if path.check('roles'):
 			data.update({
-				'roles': {role.id: role.data(path.down(), permission) for role in self.roles.filter(id__contains=path.get_id(), client=client)}
+				'roles': {role.id: role.data(path.down('roles'), permission) for role in self.roles.filter(id__contains=path.get_id(), client=client)}
 			})
 
 		return data

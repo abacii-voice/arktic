@@ -46,22 +46,22 @@ class Project(models.Model):
 
 		if path.check('dictionaries'):
 			data.update({
-				'dictionaries': {dictionary.id: dictionary.data(path.down(), permission) for dictionary in self.dictionaries.filter(id__contains=path.get_id())},
+				'dictionaries': {dictionary.id: dictionary.data(path.down('dictionaries'), permission) for dictionary in self.dictionaries.filter(id__contains=path.get_id())},
 			})
 
 		if path.check('grammars') and permission.is_admin:
 			data.update({
-				'grammars': {grammar.id: grammar.data(path.down(), permission) for grammar in self.grammars.filter(id__contains=path.get_id())},
+				'grammars': {grammar.id: grammar.data(path.down('grammars'), permission) for grammar in self.grammars.filter(id__contains=path.get_id())},
 			})
 
 		if path.check('batches') and permission.is_admin:
 			data.update({
-				'batches': {batch.id: batch.data(path.down(), permission) for batch in self.batches.filter(id__contains=path.get_id())},
+				'batches': {batch.id: batch.data(path.down('batches'), permission) for batch in self.batches.filter(id__contains=path.get_id())},
 			})
-			
+
 		if path.check('transcriptions', blank=False):
 			data.update({
-				'transcriptions': {transcription.id: transcription.data(path.down(), permission) for transcription in self.transcriptions.filter(id__contains=path.get_id())},
+				'transcriptions': {transcription.id: transcription.data(path.down('transcriptions'), permission) for transcription in self.transcriptions.filter(id__contains=path.get_id())},
 			})
 
 		return data

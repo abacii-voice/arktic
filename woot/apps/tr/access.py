@@ -5,7 +5,6 @@
 from apps.tr.models.client.client import Client
 
 # util
-import collections
 import json
 
 ### Permissions
@@ -55,22 +54,24 @@ class Path():
 		self.just_done = False
 		self.is_blank = path == ''
 		self.id = ''
+		self.type = ''
 
 		# locations
 		if not self.is_blank:
-			self.locations = collections.OrderedDict()
+			self.locations = []
 			s = path.split('.')
 			for i in range(0, len(s), 2):
-				self.locations[s[i]] = s[i+1] if i+1 != len(s) else ''
+				self.locations.append((s[i], (s[i+1] if i+1 != len(s) else '')))
 
 			self.step()
 
 	def __str__(self):
-		return 'done: {done}, just: {just}, blank: {blank}, id: {id}, locations: {locations}'.format(
+		return 'done: {done}, just: {just}, blank: {blank}, type: {type}, id: {id}, locations: {locations}'.format(
 			done=self.is_done,
 			just=self.just_done,
 			blank=self.is_blank,
-			id=self.id,
+			type=self.type if self.type != '' else '_',
+			id=self.id if self.id != '' else '_',
 			locations=self.locations if hasattr(self, 'locations') else 'None',
 		)
 
@@ -78,20 +79,22 @@ class Path():
 		if not self.is_blank:
 			if not self.is_done:
 				if self.locations:
-					self.type, self.id = self.locations.popitem(last=False)
+					self.type, self.id = self.locations.pop(0)
 					self.is_done = not self.locations
 					self.just_done = self.is_done
 			else:
-				self.type, self.id = None, 'DONE'
+				self.type, self.id = 'NONE', 'DONE'
 
 	def check(self, location, blank=True):
+		print('check', self.type, self.id, location)
 		return self.type == location if not self.is_blank else blank
 
 	def get_id(self):
-		value = self.id
-		return value
+		print('id', self.type, self.id)
+		return self.id
 
-	def down(self):
+	def down(self, parent):
+		print('down', parent, self.type, self.id)
 		if self.just_done:
 			self.just_done = False
 			return Path('')
@@ -100,20 +103,25 @@ class Path():
 			return self
 
 ### Access
-def access(path, permission):
+def access(original_path, permission):
 	# 1. create path
-	path = Path(path)
+	path = Path(original_path)
 	data = {}
 
 	if path.check('clients'):
 		data.update({
-			'clients': {client.id: client.data(path.down(), permission) for client in Client.objects.filter(id__contains=path.get_id()) if client.users.filter(id=permission.user.id).exists()},
+			'clients': {client.id: client.data(path.down('clients'), permission) for client in Client.objects.filter(id__contains=path.get_id()) if client.users.filter(id=permission.user.id).exists()},
 		})
 
 	if path.check('user'):
 		data.update({
-			'user': permission.user.client_data(path.down(), permission),
+			'user': permission.user.client_data(path.down('user'), permission),
 		})
+
+	# cut to size
+	if original_path != '':
+		for token in original_path.split('.'):
+			data = data[token]
 
 	return data
 
