@@ -36,8 +36,24 @@ var UI = {
 
 		// METHODS
 		// identity
-		this.setId = function () {
+		this.setId = function (id) {
+			var currentId = this.id;
+			this.id = id !== undefined ? id : currentId;
 
+			// handle any changes
+			if (this.id !== currentId && this.rendered) {
+				var model = this.model();
+
+				// 1. change model id
+				model.attr('id', this.id);
+
+				// 2. swap key in UI.components object
+				UI.components[this.id] = UI.components[currentId];
+				delete UI.components[currentId];
+
+				// 3. remove old from parent children
+				delete this.parent().children[currentId];
+			}
 		}
 		this.setRoot = function () {
 
@@ -50,12 +66,6 @@ var UI = {
 		}
 
 		// state
-		this.getTail
-		this.setTail
-		this.addTails
-		this.addTail
-		this.tails
-
 		this.getState = function (stateName) {
 			return this.states().filter(function (state) {
 				return state.name === stateName;
@@ -97,26 +107,141 @@ var UI = {
 				return state.component.id === _this.id;
 			});
 		}
+		this.addStateMap = function (stateMap) {
+			this.stateMap = this.stateMap !== undefined ? this.stateMap : {};
 
-		this.getHead
-		this.setHead
-		this.addHeads
-		this.addHead
-		this.heads
+			if (stateMap !== undefined) {
+				if (typeof stateMap === 'string') {
+					UI.globalStates.forEach(function (globalState) {
+						this.stateMap[globalState] = stateMap;
+					}, this);
+				} else {
+					Object.keys(stateMap).forEach(function (stateName) {
+						this.stateMap[stateName] = stateMap[stateName];
+					}, this);
+				}
+			}
+		}
+		this.mapState = function () {
 
-		this.registry
+		}
+		this.triggerState = function () {
 
-	}
+		}
+		this.setRegistry = function (registry) {
+
+		}
+
+		// DOM
+		this.setBindings = function (bindings) {
+			this.bindings = this.bindings !== undefined ? this.bindings : {};
+			if (bindings !== undefined) {
+				bindings.forEach(function (binding) {
+					// 1. determine if binding with the same name is in the current array
+					this.bindings[binding.name] = {fn: binding.fn};
+					if (binding.fn2 !== undefined) {
+						this.bindings[binding.name].fn2 = binding.fn2;
+					}
+
+					// 2. if rendered, add to model
+					if (this.rendered) {
+						var _this = this;
+						if (binding.fn2 !== undefined) {
+							this.model().on(binding.name, function () {
+								binding.fn(_this);
+							}, function () {
+								binding.fn2(_this);
+							});
+						} else {
+							this.model().on(binding.name, function () {
+								binding.fn(_this);
+							});
+						}
+					}
+				}, this);
+			}
+		}
+		this.setChildren = function (children) {
+			this.children = this.children !== undefined ? this.children : {};
+			if (children !== undefined) {
+				children.forEach(function (child) {
+					this.children[child.id] = child;
+
+					if (this.rendered) {
+						child.root = this.id;
+						this.renderChild(child.id);
+					}
+				}, this);
+			}
+		}
+		this.update = function (args) {
+			// id, root, after, template
+			this.setId(args.id);
+			this.setRoot(args.root);
+			this.setAfter(args.after);
+			this.setTemplate(args.template);
+
+			// appearance
+			this.setAppearance(args.appearance);
+
+			// state
+			this.setState(args.state);
+
+			// registry
+			this.setRegistry(args.registry);
+
+			// bindings
+			this.setBindings(args.bindings);
+
+			// children
+			this.setChildren(args.children);
+		}
+		this.model = function () {
+			return $('#{id}'.format({id: this.id}));
+		}
+		this.renderChild = function (childId) {
+			var child = this.children[childId];
+			child.root = this.id;
+			child.render();
+		}
+		this.render = function () {
+
+		}
+		this.parent = function () {
+
+		}
+		this.changeState = function () {
+
+		}
+
+		// initialise
+		this.id = id;
+		this.rendered = false; // establish whether or not the component has been rendered to the DOM.
+		this.update(args);
+	},
 
 	// createComponent
-	// removeComponent
-	// createApp
-	// renderApp
+	createComponent: function () {
 
-	// HEADS
+	},
+
+	// removeComponent
+	removeComponent: function () {
+
+	},
+
+	// createApp
+	createApp: function () {
+
+	},
+
+	// renderApp
+	renderApp: function () {
+
+	},
+
 	// STATES
-	// TAILS
-	// REGISTRY
+	states: {},
 
 	// TEMPLATES
 	// FUNCTIONS
