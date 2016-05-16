@@ -55,14 +55,68 @@ var UI = {
 				delete this.parent().children[currentId];
 			}
 		}
-		this.setRoot = function () {
+		this.setRoot = function (root) {
+			var currentRoot = this.root !== undefined ? this.root : 'hook';
+			this.root = root !== undefined ? root : currentRoot;
 
+			if (this.root !== currentRoot && this.rendered) {
+				var newRoot = $('#{id}'.format({id: this.root}));
+				this.model().appendTo(newRoot);
+
+				// add to new root
+				UI.getComponent(this.root).children[this.id] = this;
+
+				// remove from old root
+				delete UI.getComponent(currentRoot).children[this.id];
+			}
 		}
-		this.setTemplate = function () {
-
+		this.setTemplate = function (template) {
+			var currentTemplate = this.template !== undefined ? this.template : UI.templates.div;
+			this.template = template !== undefined ? template : currentTemplate;
 		}
-		this.setAppearance = function () {
+		this.setAppearance = function (appearance) {
+			var currentProperties = this.properties !== undefined ? this.properties : {};
+			var currentClasses = this.classes !== undefined ? this.classes : [];
+			var currentStyle = this.style !== undefined ? this.style : {};
 
+			if (appearance !== undefined) {
+				this.properties = appearance.properties !== undefined ? appearance.properties : currentProperties;
+				this.html = appearance.html !== undefined ? appearance.html : this.html;
+				this.classes = appearance.classes !== undefined ? appearance.classes : currentClasses;
+				this.style = appearance.style !== undefined ? appearance.style : currentStyle;
+
+				if (this.rendered) {
+					// model
+					var model = this.model();
+
+					// properties
+					var _this = this;
+					Object.keys(this.properties).forEach(function (property) {
+						model.attr(property, _this.properties[property]);
+					});
+
+					// html
+					model.html(this.html);
+
+					// classes
+					if (_this.classes !== undefined) {
+						// remove current classes that are not the new classes variable
+						currentClasses.filter(function (className) {
+							return _this.classes.indexOf(className) === -1;
+						}).forEach(function (className) {
+							model.removeClass(className);
+						});
+
+						// add new classes
+						_this.classes.forEach(function (className) {
+							model.addClass(className);
+						});
+					}
+
+					// style
+					model.css(this.style);
+				}
+			}
 		}
 
 		// state
@@ -71,17 +125,17 @@ var UI = {
 				return state.name === stateName;
 			})[0];
 		}
-		this.setState = function (argsState) {
-			if (argsState !== undefined) {
+		this.setState = function (state) {
+			if (state !== undefined) {
 				// default state
 				var currentDefaultState = this.defaultState !== undefined ? this.defaultState : {};
-				this.defaultState = argsState.defaultState !== undefined ? argsState.defaultState : currentDefaultState;
+				this.defaultState = state.defaultState !== undefined ? state.defaultState : currentDefaultState;
 
 				// states
-				this.addStates(argsState.states);
+				this.addStates(state.states);
 
 				// state map
-				this.addStateMap(argsState.stateMap);
+				this.addStateMap(state.stateMap);
 			}
 		}
 		this.addStates = function (states) {
@@ -97,9 +151,9 @@ var UI = {
 				}
 			}
 		}
-		this.addState = function (statePrototype) {
+		this.addState = function (state) {
 			// add as new state
-			UI.createState(this, statePrototype.name, statePrototype.args);
+			UI.createState(this, state.name, state.args);
 		}
 		this.states = function () {
 			var _this = this;
@@ -116,17 +170,15 @@ var UI = {
 						this.stateMap[globalState] = stateMap;
 					}, this);
 				} else {
-					Object.keys(stateMap).forEach(function (stateName) {
-						this.stateMap[stateName] = stateMap[stateName];
-					}, this);
+					this.stateMap = stateMap;
 				}
 			}
 		}
 		this.mapState = function () {
-
+			return this.stateMap[stateName] !== undefined ? this.stateMap[stateName] : '';
 		}
 		this.triggerState = function () {
-
+			UI.changeState(this.mapState(UI.globalState), this.id);
 		}
 		this.setRegistry = function (registry) {
 
@@ -178,10 +230,7 @@ var UI = {
 			// id, root, after, template
 			this.setId(args.id);
 			this.setRoot(args.root);
-			this.setAfter(args.after);
 			this.setTemplate(args.template);
-
-			// appearance
 			this.setAppearance(args.appearance);
 
 			// state
@@ -205,13 +254,125 @@ var UI = {
 			child.render();
 		}
 		this.render = function () {
+			// 1. root
+			var root = $('#{id}'.format({id: this.root}));
 
+			// 2. render template
+			var classes = this.classes !== undefined ? this.classes : [];
+			var style = this.style !== undefined ? this.style : {};
+			var properties = this.properties != undefined ? this.properties : {};
+			var html = this.html !== undefined ? this.html : '';
+			var renderedTemplate = this.template.format({
+				id: this.id,
+				classes: formatClasses(classes),
+				style: formatStyle(style),
+				properties: formatProperties(properties),
+				html: html,
+			});
+
+			// 3. Add element to the DOM under root.
+			if (root.children().length !== 0) {
+				root.children().last().after(renderedTemplate); // add as last child
+			} else {
+				root.html(renderedTemplate);
+			}
+
+			// 4. Add classes and style of initial state
+			var model = this.model();
+			if (this.state !== undefined) {
+				this.stateClasses.forEach(function (stateClass) {
+					model.addClass(stateClass);
+				});
+				model.css(this.stateStyle);
+			}
+
+			// 5. render children
+			Object.keys(this.children).forEach(this.renderChild, this);
+
+			// 6. add bindings
+			var _this = this;
+			Object.keys(this.bindings).forEach(function (bindingName) {
+				var fn = _this.bindings[bindingName].fn;
+				var fn2 = _this.bindings[bindingName].fn2;
+
+				if (fn2 !== undefined) {
+					model.on(bindingName, function () {
+						fn(_this);
+					}, function () {
+						fn2(_this);
+					});
+				} else {
+					model.on(bindingName, function () {
+						fn(_this);
+					});
+				}
+			});
+
+			// 7. set rendered
+			this.rendered = true;
 		}
 		this.parent = function () {
-
+			return UI.getComponent(this.root);
 		}
-		this.changeState = function () {
+		this.changeState = function (state) {
+			// 1. set new state
+			this.state = state;
 
+			// 2. get model
+			var _this = this;
+			var model = _this.model();
+
+			// 3. run pre FN
+			var preFnPromise = function () {
+				if (_this.state.preFn !== undefined) {
+					return new Promise(_this.state.preFn);
+				}
+			}
+
+			// 4. run state change
+			var stateChangePromise = function () {
+				return Promise.all(_this.stateClasses.map(function (className) {
+					return new Promise(function(resolve, reject) {
+						model.removeClass(className);
+						resolve();
+					});
+				})).then(function () {
+					_this.stateClasses = _this.state.classes !== undefined ? _this.state.classes : [];
+					return Promise.all(_this.stateClasses.map(function (className) {
+						return new Promise(function(resolve, reject) {
+							model.addClass(className);
+							resolve();
+						});
+					}));
+				}).then(function () {
+					return new Promise(function(resolve, reject) {
+						if (_this.state.html !== undefined) {
+							model.html(_this.state.html);
+						}
+						resolve();
+					});
+				}).then(function () {
+					return new Promise(function(resolve, reject) {
+						_this.stateStyle = _this.state.style !== undefined ? _this.state.style : {};
+						model.css(_this.stateStyle);
+						resolve();
+					});
+				});
+			}
+
+			// 5. run FN
+			var fnPromise = function () {
+				if (_this.state.fn !== undefined) {
+					return new Promise(_this.state.fn);
+				}
+			}
+
+			// execute
+			preFnPromise().then(function () {
+				return stateChangePromise();
+			}).then(function () {
+				return fnPromise();
+			})
 		}
 
 		// initialise
