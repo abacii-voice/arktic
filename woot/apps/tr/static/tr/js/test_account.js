@@ -162,13 +162,34 @@ var Test = {
 		},
 
 		test_state_change: function () {
+			new Promise(function(resolve, reject) {
+				// set data
+				UI.globalState = 'state';
+				var c = UI.createComponent('id1', {
+					registry: [
+						{state: 'state1', path: 'clients', args: {force: false}, fn: function (_this, data) {
+							return function (resolve, reject) {
+								console.log('executing function for id1, state1, clients');
+								resolve();
+							}
+						}},
+					],
+				});
 
+				resolve();
+			}).then(function () {
+				// call state change
+				return new Promise(function(resolve, reject) {
+					UI.changeState('state1');
+					resolve();
+				});
+			});
 		},
 	},
 
 	test: function () {
 
-		
+		Test.tests.test_state_change();
 
 		// all
 		// Object.keys(Test.tests).forEach(function (test) {
