@@ -2,20 +2,26 @@
 var UI = {
 	// GLOBAL STATE
 	// store current global state
-	// This is a path like 'client-state.reload'
+	// This is a path like 'client-state.reload' -> later, James.
 	globalState: undefined,
 
-	// global state array
-	globalStates: {},
-
-	// addGlobalState
-	addGlobalState: function (path) {
-
-	},
-
-	// changeGlobalState
-	changeGlobalState: function (path, trigger) {
-
+	// changeState
+	changeState: function (stateName, trigger) {
+		return new Promise(function(resolve, reject) {
+			UI.globalState = stateName;
+			resolve();
+		}).then(function () {
+			return Registry.trigger();
+		}).then(function () {
+			return Promise.all(UI.states.filter(function (state) {
+				return state.name === UI.globalState;
+			}).map(function (state) {
+				return new Promise(function(resolve, reject) {
+					state.component.changeState(UI.globalState);
+					resolve();
+				});
+			}));
+		});
 	},
 
 	// COMPONENT
@@ -157,7 +163,7 @@ var UI = {
 		}
 		this.states = function () {
 			var _this = this;
-			return UI.allStates().filter(function (state) {
+			return UI.states.filter(function (state) {
 				return state.component.id === _this.id;
 			});
 		}
@@ -382,30 +388,126 @@ var UI = {
 	},
 
 	// createComponent
-	createComponent: function () {
-
+	createComponent: function (id, args) {
+		var component = new this.component(id, args);
+		this.components[id] = component;
+		return component;
 	},
 
 	// removeComponent
-	removeComponent: function () {
+	removeComponent: function (id) {
+		var component = this.getComponent(id);
+		// remove from registry
+		Registry.del(component.id);
 
+		// remove all bindings
+		Object.keys(component.bindings).forEach(function (bindingName) {
+			component.model().off(bindingName);
+		}, component);
+
+		// remove children recursively
+		Object.keys(component.children).forEach(function (childId) {
+			UI.removeComponent(childId);
+		});
+
+		// remove model from DOM
+		component.model().remove();
+
+		// remove component from components
+		delete this.components[id];
 	},
 
 	// createApp
-	createApp: function () {
+	createApp: function (root, children) {
+		var id = 'app';
+		var args = {
+			root: root,
+			template: UI.templates.div,
+			children: children,
+		};
 
+		this.createComponent(id, args);
 	},
 
 	// renderApp
 	renderApp: function () {
-
+		var app = this.getComponent('app');
+		app.render();
+		this.changeState(this.globalState);
 	},
 
 	// STATES
-	states: {},
+	states: [],
+
+	// Basic state definition
+	state: function (component, name, args) {
+		this.component = component;
+		this.name = name;
+
+		// args
+		this.preFn = args.preFn;
+		this.classes = args.classes;
+		this.style = args.style;
+		this.html = args.html;
+		this.fn = args.fn;
+	},
+
+	// state factory
+	createState: function (component, name, args) {
+		var state;
+		if (args === 'default') {
+			state = new this.state(component, name, component.defaultState);
+		} else {
+			state = new this.state(component, name, args);
+		}
+		state.index = this.states.length - 1; // able to find state again
+		this.states.push(state);
+		return state;
+	},
 
 	// TEMPLATES
+	templates: {
+		button: `
+			<div id={id} class='ie show button relative centred-horizontally {classes}' style='{style}' {properties}>
+				{html}
+			</div>
+		`,
+		div: `
+			<div id='{id}' class='{classes}' style='{style}' {properties}>
+				{html}
+			</div>
+		`,
+		loadingIcon: `
+			<div id='{id}' class='ie loading-icon centred {classes}' style='{style}'>
+				<img src='/static/img/loading-icon.gif' />
+			</div>
+		`,
+	},
+
+	template: function (type, initialClass) {
+		return `<{type} id='{id}' class='{initialClass} {classes}' style='{style}' {properties}>{html}</{type}>`.format({
+			type: type,
+			id: '{id}',
+			initialClass: initialClass !== undefined ? initialClass : '',
+			classes: '{classes}',
+			style: '{style}',
+			properties: '{properties}',
+			html: '{html}',
+		});
+	},
+
 	// FUNCTIONS
+	functions: {
+		activate: function (_this) {
+			_this.model().css({'display': ' block'});
+		},
+		deactivate: function (_this) {
+			_this.model().css({'display': 'none'});
+		},
+		triggerState: function (_this) {
+			_this.triggerState();
+		},
+	},
 }
 
 // CONTEXT
