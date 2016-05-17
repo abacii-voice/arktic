@@ -283,7 +283,6 @@ var UI = {
 			});
 
 			// 3. Add element to the DOM under root.
-			console.log(root);
 			if (root.children().length !== 0) {
 				root.children().last().after(renderedTemplate); // add as last child
 			} else {
@@ -437,10 +436,10 @@ var UI = {
 	},
 
 	// renderApp
-	renderApp: function () {
+	renderApp: function (initialState) {
 		UI.getComponent('app').then(function (app) {
 			app.render();
-			UI.changeState(UI.globalState);
+			UI.changeState(initialState);
 		});
 	},
 
