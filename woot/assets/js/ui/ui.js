@@ -428,7 +428,16 @@ var UI = {
 		var id = 'app';
 		var args = {
 			root: root,
-			template: UI.templates.div,
+			template: UI.template('div', ''),
+			appearance: {
+				style: {
+					'position': 'absolute',
+					'top': '0px',
+					'left': '0px',
+					'height': '100%',
+					'width': '100%',
+				},
+			},
 			children: children,
 		};
 
