@@ -283,6 +283,7 @@ var UI = {
 			});
 
 			// 3. Add element to the DOM under root.
+			console.log(root);
 			if (root.children().length !== 0) {
 				root.children().last().after(renderedTemplate); // add as last child
 			} else {
@@ -402,7 +403,7 @@ var UI = {
 
 	// removeComponent
 	removeComponent: function (id) {
-		var component = this.getComponent(id);
+		var component = UI.getComponent(id);
 		// remove from registry
 		Registry.del(component.id);
 
@@ -420,7 +421,7 @@ var UI = {
 		component.model().remove();
 
 		// remove component from components
-		delete this.components[id];
+		delete UI.components[id];
 	},
 
 	// createApp
@@ -432,14 +433,15 @@ var UI = {
 			children: children,
 		};
 
-		this.createComponent(id, args);
+		UI.createComponent(id, args);
 	},
 
 	// renderApp
 	renderApp: function () {
-		var app = this.getComponent('app');
-		app.render();
-		this.changeState(this.globalState);
+		UI.getComponent('app').then(function (app) {
+			app.render();
+			UI.changeState(UI.globalState);
+		});
 	},
 
 	// STATES
@@ -754,7 +756,7 @@ var Registry = {
 		if ('registered' in level && parent !== '') {
 			return Context.get(parent, {force: level.registered.force !== undefined ? level.registered.force : false}).then(function (data) {
 				return Promise.all(Object.keys(level.registered).map(function (componentId) {
-					return UI.getComponent(componentId).then(function (component) {
+					return UI.nent(componentId).then(function (component) {
 						var fn = level.registered[component.id];
 						return new Promise(fn(component, data));
 						// function must be of the form:
