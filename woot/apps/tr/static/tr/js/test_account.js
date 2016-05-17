@@ -149,12 +149,31 @@ var Test = {
 				console.log(status);
 			});
 		},
+
+		test_promise_with_normal_stuff_inside: function () {
+			new Promise(function(resolve, reject) {
+				for (i=0; i<100; i++) {
+					console.log(i);
+				}
+				resolve();
+			}).then(function () {
+				console.log('done');
+			});
+		},
+
+		test_state_change: function () {
+
+		},
 	},
 
 	test: function () {
-		Object.keys(Test.tests).forEach(function (test) {
-			var fn = Test.tests[test];
-			fn();
-		});
+
+		
+
+		// all
+		// Object.keys(Test.tests).forEach(function (test) {
+		// 	var fn = Test.tests[test];
+		// 	fn();
+		// });
 	},
 }
