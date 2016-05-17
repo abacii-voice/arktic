@@ -49,7 +49,7 @@ SITE_NAME = basename(dirname(DJANGO_ROOT))
 path.append(DJANGO_ROOT)
 
 def get_access():
-	path = os.path.join(CODE_ROOT, '.idgen/{}.json'.format(SITE_NAME))
+	path = os.path.join(CODE_ROOT, '.access/{}.json'.format(SITE_NAME))
 	data = {}
 	with open(path) as access:
 		data = json.load(access)
