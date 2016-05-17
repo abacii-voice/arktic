@@ -187,7 +187,13 @@ var UI = {
 			UI.changeState(this.mapState(UI.globalState), this.id);
 		}
 		this.setRegistry = function (registry) {
-
+			var _this = this;
+			if (registry !== undefined) {
+				registry.forEach(function (entry) {
+					var args = entry.args !== undefined ? entry.args : {};
+					Registry.register(_this, entry.state, entry.path, args, entry.fn);
+				});
+			}
 		}
 
 		// DOM
@@ -390,7 +396,7 @@ var UI = {
 	// createComponent
 	createComponent: function (id, args) {
 		var component = new this.component(id, args);
-		this.components[id] = component;
+		UI.components[id] = component;
 		return component;
 	},
 
@@ -703,7 +709,7 @@ var Registry = {
 	registry: {},
 
 	// register an object with a state, path, and function
-	register: function (component, state, path, fn, args) {
+	register: function (component, state, path, args, fn) {
 		var force = args !== undefined ? (args.force !== undefined ? args.force : false) : false;
 		context_path = path.split('.');
 
