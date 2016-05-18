@@ -200,25 +200,26 @@ var UI = {
 		this.setBindings = function (bindings) {
 			this.bindings = this.bindings !== undefined ? this.bindings : {};
 			if (bindings !== undefined) {
-				bindings.forEach(function (binding) {
+				Object.keys(bindings).forEach(function (name) {
+					var binding = bindings[name];
 					// 1. determine if binding with the same name is in the current array
-					this.bindings[binding.name] = {fn: binding.fn};
+					this.bindings[name] = {fn: binding.fn};
 					if (binding.fn2 !== undefined) {
-						this.bindings[binding.name].fn2 = binding.fn2;
+						this.bindings[name].fn2 = binding.fn2;
 					}
 
 					// 2. if rendered, add to model
 					if (this.rendered) {
 						var _this = this;
-						if (binding.fn2 !== undefined) {
-							this.model().on(binding.name, function () {
-								binding.fn(_this);
+						if (this.bindings[name].fn2 !== undefined) {
+							this.model().on(name, function () {
+								this.bindings[name].fn(_this);
 							}, function () {
-								binding.fn2(_this);
+								this.bindings[name].fn2(_this);
 							});
 						} else {
-							this.model().on(binding.name, function () {
-								binding.fn(_this);
+							this.model().on(name, function () {
+								this.bindings[name].fn(_this);
 							});
 						}
 					}
@@ -229,11 +230,13 @@ var UI = {
 			this.children = this.children !== undefined ? this.children : {};
 			if (children !== undefined) {
 				children.forEach(function (child) {
-					this.children[child.id] = child;
+					if (child !== undefined) {
+						this.children[child.id] = child;
 
-					if (this.rendered) {
-						child.root = this.id;
-						this.renderChild(child.id);
+						if (this.rendered) {
+							child.root = this.id;
+							this.renderChild(child.id);
+						}
 					}
 				}, this);
 			}
@@ -483,18 +486,13 @@ var UI = {
 
 	// TEMPLATES
 	templates: {
-		button: `
-			<div id={id} class='ie show button relative centred-horizontally {classes}' style='{style}' {properties}>
-				{html}
-			</div>
-		`,
 		div: `
 			<div id='{id}' class='{classes}' style='{style}' {properties}>
 				{html}
 			</div>
 		`,
 		loadingIcon: `
-			<div id='{id}' class='ie loading-icon centred {classes}' style='{style}'>
+			<div id='{id}' class='ie loading-icon {classes}' style='{style}'>
 				<img src='/static/img/loading-icon.gif' />
 			</div>
 		`,
