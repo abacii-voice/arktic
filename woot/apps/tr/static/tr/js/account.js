@@ -52,6 +52,7 @@ UI.createApp('hook', [
 											key: key,
 										}
 
+										_this.buffer[key] = display;
 										_this.display(_this, display);
 									});
 

@@ -114,6 +114,7 @@ var Components = {
 			],
 		});
 		list.display = args.options.display;
+		list.buffer = {};
 
 		// create base component
 		var base = UI.createComponent(id, {
