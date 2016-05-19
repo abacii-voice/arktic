@@ -428,27 +428,29 @@ var UI = {
 
 	// createApp
 	createApp: function (root, children) {
-		var id = 'app';
-		var args = {
-			root: root,
-			template: UI.template('div', ''),
-			appearance: {
-				style: {
-					'position': 'absolute',
-					'top': '0px',
-					'left': '0px',
-					'height': '100%',
-					'width': '100%',
+		return new Promise(function(resolve, reject) {
+			var id = 'app';
+			var args = {
+				root: root,
+				template: UI.template('div', ''),
+				appearance: {
+					style: {
+						'position': 'absolute',
+						'top': '0px',
+						'left': '0px',
+						'height': '100%',
+						'width': '100%',
+					},
 				},
-			},
-			children: children,
-		};
+				children: children,
+			};
 
-		UI.createComponent(id, args);
+			resolve(UI.createComponent(id, args));
+		});
 	},
 
 	// renderApp
-	renderApp: function (initialState) {
+	renderApp: function () {
 		UI.getComponent('app').then(function (app) {
 			app.render();
 			UI.changeState(initialState);
@@ -762,7 +764,7 @@ var Registry = {
 		if ('registered' in level && parent !== '') {
 			return Context.get(parent, {force: level.registered.force !== undefined ? level.registered.force : false}).then(function (data) {
 				return Promise.all(Object.keys(level.registered).map(function (componentId) {
-					return UI.nent(componentId).then(function (component) {
+					return UI.getComponent(componentId).then(function (component) {
 						var fn = level.registered[component.id];
 						return new Promise(fn(component, data));
 						// function must be of the form:
