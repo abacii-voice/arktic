@@ -84,15 +84,19 @@ var Components = {
 						'height': listHeight,
 					},
 				},
+				children: args.filter,
 			});
 		}
 
+		// LIST
+		// The list is fundementally responsible for displaying the data. If this means getting stuff
+		// from the registry, or calling a url for data, its behaviour should be the same.
 		var loadingIcon = UI.createComponent('{id}-loading-icon'.format({id: id}), {
 			template: UI.templates.loadingIcon,
+			appearance: {
+				classes: ['hidden'],
+			},
 		});
-		loadingIcon.fade = function () {
-			loadingIcon.model().fadeOut();
-		};
 		var list = UI.createComponent('{id}-list'.format({id: id}), {
 			// in future, allow this to be bound to another element.
 			template: UI.template('div', 'ie'),
@@ -105,7 +109,11 @@ var Components = {
 			children: [
 				loadingIcon,
 			],
+			registry: [
+				{state: 'client-state', path: args.options.search.target.path, args: {}, fn: args.options.search.target.process},
+			],
 		});
+		list.display = args.options.display;
 
 		// create base component
 		var base = UI.createComponent(id, {
