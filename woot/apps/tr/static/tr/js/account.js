@@ -136,12 +136,9 @@ UI.createApp('hook', [
 		],
 	}),
 ]).then (function (app) {
-	return new Promise(function(resolve, reject) {
-		app.render();
-		resolve();
-	}).then(function () {
-		UI.changeState('client-state');
-	});
+	return app.render();
+}).then(function () {
+	UI.changeState('client-state');
 });
 
 // Search would go something like:

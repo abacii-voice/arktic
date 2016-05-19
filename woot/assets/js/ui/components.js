@@ -36,8 +36,11 @@ var Components = {
 			listHeight = 'calc(100% - {offset}px)'.format({offset: offset});
 		}
 
-		// create child components
+		// ALL COMPONENTS
 		var title, input, loadingIcon, list, filter;
+
+		// TITLE
+		// Optional title at the top, can be centred.
 		if (titleText !== undefined) {
 			title = UI.createComponent('{id}-title'.format({id: id}), {
 				template: UI.template('h4', 'ie title'),
@@ -50,6 +53,10 @@ var Components = {
 				},
 			});
 		}
+
+		// SEARCH
+		
+
 
 		if (search !== undefined) {
 			input = UI.createComponent('{id}-search'.format({id: id}), {
@@ -71,6 +78,12 @@ var Components = {
 						'fn': function (_this) {
 							list.model().show();
 							filter.model().hide();
+						}
+					},
+					'input': {
+						'fn': function (_this) {
+							var tokens = _this.model().val().split('');
+							console.log(tokens);
 						}
 					}
 				},

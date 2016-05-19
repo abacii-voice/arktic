@@ -269,62 +269,65 @@ var UI = {
 			child.render();
 		}
 		this.render = function () {
-			// 1. root
-			var root = $('#{id}'.format({id: this.root}));
-
-			// 2. render template
-			var classes = this.classes !== undefined ? this.classes : [];
-			var style = this.style !== undefined ? this.style : {};
-			var properties = this.properties != undefined ? this.properties : {};
-			var html = this.html !== undefined ? this.html : '';
-			var renderedTemplate = this.template.format({
-				id: this.id,
-				classes: formatClasses(classes),
-				style: formatStyle(style),
-				properties: formatProperties(properties),
-				html: html,
-			});
-
-			// 3. Add element to the DOM under root.
-			if (root.children().length !== 0) {
-				root.children().last().after(renderedTemplate); // add as last child
-			} else {
-				root.html(renderedTemplate);
-			}
-
-			// 4. Add classes and style of initial state
-			var model = this.model();
-			if (this.state !== undefined) {
-				this.stateClasses.forEach(function (stateClass) {
-					model.addClass(stateClass);
-				});
-				model.css(this.stateStyle);
-			}
-
-			// 5. render children
-			Object.keys(this.children).forEach(this.renderChild, this);
-
-			// 6. add bindings
 			var _this = this;
-			Object.keys(this.bindings).forEach(function (bindingName) {
-				var fn = _this.bindings[bindingName].fn;
-				var fn2 = _this.bindings[bindingName].fn2;
+			return new Promise (function (resolve, reject) {
+				// 1. root
+				var root = $('#{id}'.format({id: _this.root}));
 
-				if (fn2 !== undefined) {
-					model.on(bindingName, function () {
-						fn(_this);
-					}, function () {
-						fn2(_this);
-					});
+				// 2. render template
+				var classes = _this.classes !== undefined ? _this.classes : [];
+				var style = _this.style !== undefined ? _this.style : {};
+				var properties = _this.properties != undefined ? _this.properties : {};
+				var html = _this.html !== undefined ? _this.html : '';
+				var renderedTemplate = _this.template.format({
+					id: _this.id,
+					classes: formatClasses(classes),
+					style: formatStyle(style),
+					properties: formatProperties(properties),
+					html: html,
+				});
+
+				// 3. Add element to the DOM under root.
+				if (root.children().length !== 0) {
+					root.children().last().after(renderedTemplate); // add as last child
 				} else {
-					model.on(bindingName, function () {
-						fn(_this);
-					});
+					root.html(renderedTemplate);
 				}
-			});
 
-			// 7. set rendered
-			this.rendered = true;
+				// 4. Add classes and style of initial state
+				var model = _this.model();
+				if (_this.state !== undefined) {
+					_this.stateClasses.forEach(function (stateClass) {
+						model.addClass(stateClass);
+					});
+					model.css(_this.stateStyle);
+				}
+
+				// 5. render children
+				Object.keys(_this.children).forEach(_this.renderChild, _this);
+
+				// 6. add bindings
+				Object.keys(_this.bindings).forEach(function (bindingName) {
+					var fn = _this.bindings[bindingName].fn;
+					var fn2 = _this.bindings[bindingName].fn2;
+
+					if (fn2 !== undefined) {
+						model.on(bindingName, function () {
+							fn(_this);
+						}, function () {
+							fn2(_this);
+						});
+					} else {
+						model.on(bindingName, function () {
+							fn(_this);
+						});
+					}
+				});
+
+				// 7. set rendered
+				_this.rendered = true;
+				resolve();
+			});
 		}
 		this.parent = function () {
 			return UI.getComponent(this.root);
@@ -446,14 +449,6 @@ var UI = {
 			};
 
 			resolve(UI.createComponent(id, args));
-		});
-	},
-
-	// renderApp
-	renderApp: function () {
-		UI.getComponent('app').then(function (app) {
-			app.render();
-			UI.changeState(initialState);
 		});
 	},
 
