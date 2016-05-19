@@ -27,58 +27,40 @@ UI.createApp('hook', [
 
 				// modifiers and features
 				options: {
+
+					// Simple text title
 					title: 'Title',
-					scroll: true,
+
+					// If the data is to be sorted.
 					sort: true,
-					filter: true,
-					search: {
 
-						// This defines what is being searched for, i.e. paths in context.
-						target: {
-							path: 'clients',
-							// url: 'commands/transcription_set/', // expects a list of stuff obviously
+					// This defines what is being searched for, i.e. paths in context.
+					// This is the source of the data for the list.
+					target: {
+						path: 'clients',
+						// url: 'commands/transcription_set/', // expects a list of stuff obviously
 
-							// convert target into a list if it is not already.
-							process: function (_this, data) {
-								// 'data' is the lump of stuff returned from the path.
-								return function (resolve, reject) {
-
-									// process client list
-									Object.keys(data).forEach(function (key, i) {
-										var display = {
-											main: data[key].name,
-											index: i,
-											tag: 'tag',
-											key: key,
-										}
-
-										_this.buffer[key] = display;
-										_this.display(_this, display);
-									});
-
-									resolve();
-								}
-							}
-						},
-
-						// This defines how to respond to a query.
-						query: function (query) {
-							// 'query' is the text entered by the user after having been cleaned by the standard function
+						// convert target into a list if it is not already.
+						process: function (_this, data) {
+							// 'data' is the lump of stuff returned from the path.
 							return function (resolve, reject) {
-								// This returns a function ready for a promise to use in the response chain.
+
+								// process client list
+								Object.keys(data).forEach(function (key, i) {
+									var display = {
+										main: data[key].name,
+										index: i,
+										tag: 'tag',
+										key: key,
+									}
+
+									_this.buffer[key] = display;
+									_this.display(_this, display);
+								});
 
 								resolve();
 							}
-						},
-
-						// This filters a search in progress by the currently imposed filter.
-						filter: function (query) {
-							return function (resolve, reject) {
-								// This returns a function ready for a promise to use in the response chain.
-
-								resolve();
-							}
-						},
+						}
 					},
 
 					// Define a way of display individual list items
@@ -125,7 +107,51 @@ UI.createApp('hook', [
 						});
 
 						unit.render();
-					}
+					},
+
+					// Defines the search bar.
+					search: {
+						// Autocomplete tells the filter panel (if present) to be shown first, else show nothing until a query is submitted.
+						autocomplete: true,
+
+						// Filter tells the element what structure to give to the filter panel, buttons, etc.
+						filter: {
+							options: {
+								'/': {
+									main: 'Display only rules',
+								},
+							},
+
+							// How to display an individual option.
+							display: function (item) {
+
+							}
+						},
+
+						// Instructions on how to process queried data.
+						process: {
+							// This defines how to respond to a query.
+							// This is a filter in a way, as in the total list of results will be filtered based on the query,
+							// but it does not respond to any filter other than the query.
+							query: function (query) {
+								// 'query' is the text entered by the user after having been cleaned by the standard function
+								return function (resolve, reject) {
+									// This returns a function ready for a promise to use in the response chain.
+
+									resolve();
+								}
+							},
+
+							// This filters a search in progress by the currently imposed filter.
+							filter: function (query) {
+								return function (resolve, reject) {
+									// This returns a function ready for a promise to use in the response chain.
+
+									resolve();
+								}
+							},
+						},
+					},
 				},
 
 				// children of the filter panel
