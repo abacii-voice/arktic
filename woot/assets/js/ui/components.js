@@ -55,10 +55,9 @@ var Components = {
 		}
 
 		// SEARCH
-		
-
-
 		if (search !== undefined) {
+			// search functions engaged. can be in autocomplete mode and include filter panel.
+			// INPUT: if search, define input field
 			input = UI.createComponent('{id}-search'.format({id: id}), {
 				template: UI.template('input', 'ie input'),
 				appearance: {
@@ -89,16 +88,45 @@ var Components = {
 				},
 			});
 
-			filter = UI.createComponent('{id}-filter'.format({id: id}), {
-				template: UI.template('div', 'ie hidden'),
-				appearance: {
-					style: {
-						'width': '100%',
-						'height': listHeight,
+			if (search.filter !== undefined) {
+				// the filter panel will be displayed
+				// autocomplete will decide whether the panel is displayed before the list of data.
+				// FILTER: if filter, define filter panel
+				filter = UI.createComponent('{id}-filter'.format({id: id}), {
+					template: UI.template('div', 'ie hidden'),
+					appearance: {
+						style: {
+							'width': '100%',
+							'height': listHeight,
+						},
 					},
-				},
-				children: args.filter,
-			});
+					children: args.filter,
+				});
+
+				// Autocomplete mode only affects present elements, it does not add any.
+				if (search.autocomplete !== undefined && search.autocomplete) {
+					// autocomplete mode: display filter first
+
+				} else {
+					// display data first, display filter panel upon focussing input, hide again on input.
+
+				}
+
+			} else {
+				// No filter panel
+				if (search.autocomplete !== undefined && search.autocomplete) {
+					// autocomplete mode: show no data until search query is entered.
+
+				} else {
+					// data is displayed first and filtered when search query is entered.
+
+				}
+
+			}
+
+		} else {
+			// display immediately, buffer can only be changed by scrolling.
+
 		}
 
 		// LIST
@@ -123,7 +151,7 @@ var Components = {
 				loadingIcon,
 			],
 			registry: [
-				{state: 'client-state', path: args.options.search.target.path, args: {}, fn: args.options.search.target.process},
+				{state: 'client-state', path: args.options.target.path, args: {}, fn: args.options.target.process},
 			],
 		});
 		list.display = args.options.display;
