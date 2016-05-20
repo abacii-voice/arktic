@@ -76,13 +76,14 @@ var Components = {
 				loadingIcon,
 			],
 			registry: [
-				{state: 'client-state', path: args.options.target.path, args: {}, fn: args.options.target.process},
+				// {state: 'client-state', path: args.options.target.path, args: {}, fn: args.options.target.process},
 			],
 		});
 		list.display = args.options.display;
 		list.buffer = {};
 
 		// SEARCH
+		// If the search option is filled, include a search bar and an optional filter panel
 		if (search !== undefined) {
 			// search functions engaged. can be in autocomplete mode and include filter panel.
 			// INPUT: if search, define input field
@@ -120,7 +121,8 @@ var Components = {
 				// the filter panel will be displayed
 				// autocomplete will decide whether the panel is displayed before the list of data.
 				// FILTER: if filter, define filter panel
-				filter = UI.createComponent('{id}-filter'.format({id: id}), {
+				var filterId = '{id}-filter'.format({id: id});
+				filter = UI.createComponent(filterId, {
 					template: UI.template('div', 'ie'),
 					appearance: {
 						style: {
@@ -128,7 +130,7 @@ var Components = {
 							'height': listHeight,
 						},
 					},
-					children: args.filter,
+					children: search.filter.options.map(search.filter.display(filterId)),
 				});
 
 				// Autocomplete mode only affects present elements, it does not add any.

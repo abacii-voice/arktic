@@ -263,13 +263,9 @@ var UI = {
 		this.model = function () {
 			return $('#{id}'.format({id: this.id}));
 		}
-		this.renderChild = function (childId) {
-			var child = this.children[childId];
-			child.root = this.id;
-			child.render();
-		}
 		this.render = function () {
 			var _this = this;
+			// console.log('before', _this.id, _this.bindings);
 			return new Promise (function (resolve, reject) {
 				// 1. root
 				var root = $('#{id}'.format({id: _this.root}));
@@ -303,30 +299,43 @@ var UI = {
 					model.css(_this.stateStyle);
 				}
 
-				// 5. render children
-				Object.keys(_this.children).forEach(_this.renderChild, _this);
+				// 5. add bindings
+				// console.log(_this.id);
+				// console.log(_this.id, _this.bindings);
+				// console.log(_this.id, Object.keys(_this.bindings));
+				// Object.keys(_this.bindings).forEach(function (bindingName) {
+				//
+				// 	var fn = _this.bindings[bindingName].fn;
+				// 	var fn2 = _this.bindings[bindingName].fn2;
+				//
+				// 	if (fn2 !== undefined) {
+				// 		model.on(bindingName, function () {
+				// 			fn(_this);
+				// 		}, function () {
+				// 			fn2(_this);
+				// 		});
+				// 	} else {
+				// 		model.on(bindingName, function () {
+				// 			fn(_this);
+				// 		});
+				// 	}
+				// });
 
-				// 6. add bindings
-				Object.keys(_this.bindings).forEach(function (bindingName) {
-					var fn = _this.bindings[bindingName].fn;
-					var fn2 = _this.bindings[bindingName].fn2;
+				// console.log('after', _this.id);
 
-					if (fn2 !== undefined) {
-						model.on(bindingName, function () {
-							fn(_this);
-						}, function () {
-							fn2(_this);
-						});
-					} else {
-						model.on(bindingName, function () {
-							fn(_this);
-						});
-					}
-				});
 
-				// 7. set rendered
+				// 6. set rendered
 				_this.rendered = true;
+
 				resolve();
+			}).then(function () {
+				return Promise.all(Object.keys(_this.children).map(function (key) {
+					return UI.getComponent(key).then(function (child) {
+						child.root = _this.id;
+						// console.log(_this.id, _this.children, child.id);
+						return child.render();
+					});
+				}));
 			});
 		}
 		this.parent = function () {
