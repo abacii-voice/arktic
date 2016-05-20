@@ -143,7 +143,7 @@ var Components = {
 				} else {
 					// display data first, display filter panel upon focussing input, hide again on input.
 					filter.setAppearance({
-						classes: ['ie', 'hidden'],
+						classes: ['hidden'],
 					});
 
 				}
