@@ -265,6 +265,7 @@ var UI = {
 		}
 		this.render = function () {
 			var _this = this;
+			// console.log('render', _this.id, _this.children);
 			// console.log('before', _this.id, _this.bindings);
 			return new Promise (function (resolve, reject) {
 				// 1. root
@@ -303,6 +304,8 @@ var UI = {
 				// console.log(_this.id);
 				// console.log(_this.id, _this.bindings);
 				// console.log(_this.id, Object.keys(_this.bindings));
+
+
 				// Object.keys(_this.bindings).forEach(function (bindingName) {
 				//
 				// 	var fn = _this.bindings[bindingName].fn;
@@ -332,7 +335,7 @@ var UI = {
 				return Promise.all(Object.keys(_this.children).map(function (key) {
 					return UI.getComponent(key).then(function (child) {
 						child.root = _this.id;
-						// console.log(_this.id, _this.children, child.id);
+						console.log(_this.id, _this.children, child.id);
 						return child.render();
 					});
 				}));
