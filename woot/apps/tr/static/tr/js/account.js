@@ -43,7 +43,7 @@ UI.createApp('hook', [
 						// convert target into a list if it is not already.
 						process: function (_this, data) {
 							// 'data' is the lump of stuff returned from the path.
-							return function (resolve, reject) {
+							return new Promise(function (resolve, reject) {
 
 								// process client list
 								Object.keys(data).forEach(function (key, i) {
@@ -59,7 +59,7 @@ UI.createApp('hook', [
 								});
 
 								resolve();
-							}
+							});
 						}
 					},
 

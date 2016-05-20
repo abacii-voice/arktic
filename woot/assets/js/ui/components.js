@@ -54,6 +54,34 @@ var Components = {
 			});
 		}
 
+		// LIST
+		// The list is fundementally responsible for displaying the data. If this means getting stuff
+		// from the registry, or calling a url for data, its behaviour should be the same.
+		var loadingIcon = UI.createComponent('{id}-loading-icon'.format({id: id}), {
+			template: UI.templates.loadingIcon,
+			appearance: {
+				classes: ['hidden'],
+			},
+		});
+		var list = UI.createComponent('{id}-list'.format({id: id}), {
+			// in future, allow this to be bound to another element.
+			template: UI.template('div', 'ie'),
+			appearance: {
+				style: {
+					'width': '100%',
+					'height': listHeight,
+				},
+			},
+			children: [
+				loadingIcon,
+			],
+			registry: [
+				{state: 'client-state', path: args.options.target.path, args: {}, fn: args.options.target.process},
+			],
+		});
+		list.display = args.options.display;
+		list.buffer = {};
+
 		// SEARCH
 		if (search !== undefined) {
 			// search functions engaged. can be in autocomplete mode and include filter panel.
@@ -93,7 +121,7 @@ var Components = {
 				// autocomplete will decide whether the panel is displayed before the list of data.
 				// FILTER: if filter, define filter panel
 				filter = UI.createComponent('{id}-filter'.format({id: id}), {
-					template: UI.template('div', 'ie hidden'),
+					template: UI.template('div', 'ie'),
 					appearance: {
 						style: {
 							'width': '100%',
@@ -106,9 +134,15 @@ var Components = {
 				// Autocomplete mode only affects present elements, it does not add any.
 				if (search.autocomplete !== undefined && search.autocomplete) {
 					// autocomplete mode: display filter first
+					list.setAppearance({
+						classes: ['hidden'],
+					});
 
 				} else {
 					// display data first, display filter panel upon focussing input, hide again on input.
+					filter.setAppearance({
+						classes: ['ie', 'hidden'],
+					});
 
 				}
 
@@ -116,6 +150,9 @@ var Components = {
 				// No filter panel
 				if (search.autocomplete !== undefined && search.autocomplete) {
 					// autocomplete mode: show no data until search query is entered.
+					list.setAppearance({
+						classes: ['ie', 'hidden'],
+					});
 
 				} else {
 					// data is displayed first and filtered when search query is entered.
@@ -128,34 +165,6 @@ var Components = {
 			// display immediately, buffer can only be changed by scrolling.
 
 		}
-
-		// LIST
-		// The list is fundementally responsible for displaying the data. If this means getting stuff
-		// from the registry, or calling a url for data, its behaviour should be the same.
-		var loadingIcon = UI.createComponent('{id}-loading-icon'.format({id: id}), {
-			template: UI.templates.loadingIcon,
-			appearance: {
-				classes: ['hidden'],
-			},
-		});
-		var list = UI.createComponent('{id}-list'.format({id: id}), {
-			// in future, allow this to be bound to another element.
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'width': '100%',
-					'height': listHeight,
-				},
-			},
-			children: [
-				loadingIcon,
-			],
-			registry: [
-				{state: 'client-state', path: args.options.target.path, args: {}, fn: args.options.target.process},
-			],
-		});
-		list.display = args.options.display;
-		list.buffer = {};
 
 		// create base component
 		var base = UI.createComponent(id, {
