@@ -41,72 +41,74 @@ UI.createApp('hook', [
 						// url: 'commands/transcription_set/', // expects a list of stuff obviously
 
 						// convert target into a list if it is not already.
-						process: function (_this, data) {
-							// 'data' is the lump of stuff returned from the path.
-							return new Promise(function (resolve, reject) {
-
-								// process client list
-								Object.keys(data).forEach(function (key, i) {
-									var display = {
-										main: data[key].name,
-										index: i,
-										tag: 'tag',
-										key: key,
-									}
-
-									_this.buffer[key] = display;
-									_this.display(_this, display);
-								});
-
-								resolve();
-							});
-						}
+						// process: function (_this, data) {
+						// 	// 'data' is the lump of stuff returned from the path.
+						// 	return Promise.all(Object.keys(data).map(function (key, i) {
+						// 		// process client list
+						// 		var display = {
+						// 			main: data[key].name,
+						// 			index: i,
+						// 			tag: 'tag',
+						// 			key: key,
+						// 		}
+						//
+						// 		_this.buffer[key] = display;
+						//
+						// 										return display;
+						// 									}).map(_this.display(_this)));
+						// 	return new Promise(function (resolve, reject) {
+						//
+						// 		resolve();
+						// 	});
+						// },
 					},
 
 					// Define a way of display individual list items
-					display: function (_this, data) {
-						// 'data' is a single unit of the full dataset to be included.
-						var unit = UI.createComponent('{id}-{key}'.format({id: _this.id, key: data.key}), {
-							root: _this.id,
-							template: UI.template('div', 'ie button border-bottom'),
-							appearance: {
-								style: {
-									'width': '100%',
-									'height': '80px',
+					display: function (_this) {
+						return function (display) {
+							// 'data' is a single unit of the full dataset to be included.
+							var unit = UI.createComponent('{id}-{key}'.format({id: _this.id, key: display.key}), {
+								root: _this.id,
+								template: UI.template('div', 'ie button border-bottom'),
+								appearance: {
+									style: {
+										'width': '100%',
+										'height': '80px',
+									},
 								},
-							},
-							children: [
-								UI.createComponent('{id}-{key}-main'.format({id: _this.id, key: data.key}), {
-									template: UI.template('span', 'ie'),
-									appearance: {
-										style: {
+								children: [
+									UI.createComponent('{id}-{key}-main'.format({id: _this.id, key: display.key}), {
+										template: UI.template('span', 'ie'),
+										appearance: {
+											style: {
 
+											},
+											html: '{main}'.format({main: display.main}),
 										},
-										html: '{main}'.format({main: data.main}),
-									},
-								}),
-								UI.createComponent('{id}-{key}-tag'.format({id: _this.id, key: data.key}), {
-									template: UI.template('span', 'ie'),
-									appearance: {
-										style: {
+									}),
+									UI.createComponent('{id}-{key}-tag'.format({id: _this.id, key: display.key}), {
+										template: UI.template('span', 'ie'),
+										appearance: {
+											style: {
 
+											},
+											html: '{main}'.format({main: display.tag}),
 										},
-										html: '{main}'.format({main: data.tag}),
-									},
-								}),
-								UI.createComponent('{id}-{key}-index'.format({id: _this.id, key: data.key}), {
-									template: UI.template('span', 'ie'),
-									appearance: {
-										style: {
+									}),
+									UI.createComponent('{id}-{key}-index'.format({id: _this.id, key: display.key}), {
+										template: UI.template('span', 'ie'),
+										appearance: {
+											style: {
 
+											},
+											html: '{main}'.format({main: display.index}),
 										},
-										html: '{main}'.format({main: data.index}),
-									},
-								}),
-							],
-						});
+									}),
+								],
+							});
 
-						unit.render();
+							unit.render();
+						}
 					},
 
 					// Defines the search bar.
@@ -116,15 +118,37 @@ UI.createApp('hook', [
 
 						// Filter tells the element what structure to give to the filter panel, buttons, etc.
 						filter: {
-							options: {
-								'/': {
+							options: [
+								{key: '/', args: {
 									main: 'Display only rules',
-								},
-							},
+								}}
+							],
 
 							// How to display an individual option.
-							display: function (item) {
+							display: function (id) {
+								console.log('display', id);
+								return function (display) {
+									var unit = UI.createComponent('{id}-{key}'.format({id: id, key: display.key}), {
+										root: id,
+										template: UI.template('div', 'ie button border-bottom'),
+										appearance: {
+											style: {
+												'width': '100%',
+												'height': '60px',
+											},
+										},
+										children: [
+											UI.createComponent('{id}-{key}-text'.format({id: id, key: display.key}), {
+												template: UI.template('span'),
+												appearance: {
+													html: '"{key}" : {main}'.format({key: display.key, main: display.args.main}),
+												},
+											}),
+										],
+									});
 
+									return unit;
+								}
 							}
 						},
 
@@ -153,11 +177,6 @@ UI.createApp('hook', [
 						},
 					},
 				},
-
-				// children of the filter panel
-				filter: [
-
-				],
 			}),
 		],
 	}),
