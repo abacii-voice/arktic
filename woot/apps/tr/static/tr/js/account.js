@@ -126,7 +126,6 @@ UI.createApp('hook', [
 
 							// How to display an individual option.
 							display: function (id) {
-								console.log('display', id);
 								return function (display) {
 									var unit = UI.createComponent('{id}-{key}'.format({id: id, key: display.key}), {
 										root: id,
