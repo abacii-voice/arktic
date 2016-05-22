@@ -6,23 +6,16 @@ var UI = {
 	globalState: undefined,
 
 	// changeState
-	changeState: function (stateName, trigger) {
-		return new Promise(function(resolve, reject) {
-			UI.globalState = stateName;
-			resolve();
-		}).then(function () {
-			return Registry.trigger();
-		}).then(function () {
-			return Promise.all(UI.states.filter(function (state) {
-				return state.name === UI.globalState;
-			}).map(function (state) {
-				return new Promise(function(resolve, reject) {
-					state.component.changeState(UI.globalState);
-					resolve();
-				});
-			}));
-		});
-	},
+	// changeState: function (stateName, trigger) {
+	// 	return new Promise(function(resolve, reject) {
+	// 		UI.globalState = stateName;
+	// 		resolve();
+	// 	}).then(Registry.trigger).then(function () {
+	// 		return Promise.all(UI.states.map(function (state) {
+	// 			return state.change();
+	// 		});
+	// 	});
+	// },
 
 	// COMPONENT
 	// components
@@ -36,101 +29,179 @@ var UI = {
 	},
 
 	// component
-	component: function (id, args) {
-		// set args if none exists
-		var args = args !== undefined ? args : {};
-
-		// METHODS
+	component: function (id) {
 		// identity
 		this.setId = function (id) {
 			var currentId = this.id;
-			this.id = id !== undefined ? id : currentId;
+			id = id !== undefined ? id : currentId;
 
-			// handle any changes
-			if (this.id !== currentId && this.rendered) {
-				var model = this.model();
+			if (id !== currentId && this.isRendered) {
+				var _this = this;
+				// 1. remove the component while keeping a solid var present
+				// 2. change the id of the var and change the model attr.
+				// 3. Add the var.
 
-				// 1. change model id
-				model.attr('id', this.id);
-
-				// 2. swap key in UI.components object
-				UI.components[this.id] = UI.components[currentId];
-				delete UI.components[currentId];
-
-				// 3. remove old from parent children
-				delete this.parent().children[currentId];
+				UI.remove(_this).then(function (component) {
+					return new Promise(function(resolve, reject) {
+						component.id = id;
+						component.model().attr('id', id);
+						resolve(component);
+					});
+				}).then(UI.add);
+			} else {
+				return this.id;
 			}
 		}
 		this.setRoot = function (root) {
 			var currentRoot = this.root !== undefined ? this.root : 'hook';
-			this.root = root !== undefined ? root : currentRoot;
+			root = root !== undefined ? root : currentRoot;
 
-			if (this.root !== currentRoot && this.rendered) {
-				var newRoot = $('#{id}'.format({id: this.root}));
-				this.model().appendTo(newRoot);
+			if (root !== currentRoot && this.isRendered) {
+				var _this = this;
+				// 1. get the current parent.
+				// 2.	remove the child from the current parent.
+				// 3. append to new parent model.
+				// 4. change the root value.
+				// 5. get the new parent.
+				// 6. add the child to new parent.
 
-				// add to new root
-				UI.getComponent(this.root).children[this.id] = this;
-
-				// remove from old root
-				delete UI.getComponent(currentRoot).children[this.id];
+				return this.parent().then(function (parent) {
+					return parent.removeChild(_this);
+				}).then(function () {
+					return new Promise(function(resolve, reject) {
+						_this.model().appendTo('#{id}'.format({id: root}));
+						_this.root = root;
+						resolve(root);
+					});
+				}).then(UI.getComponent).then(function (newParent) {
+					return newParent.addChild(_this);
+				});
+			} else {
+				return this.root;
 			}
 		}
 		this.setTemplate = function (template) {
 			var currentTemplate = this.template !== undefined ? this.template : UI.templates.div;
-			this.template = template !== undefined ? template : currentTemplate;
+			template = template !== undefined ? template : currentTemplate;
+
+			if (template !== currentTemplate && this.isRendered) {
+				var _this = this;
+				_this.template = template;
+				// 1. render empty template element to the DOM.
+				// 2. Append all children to the new empty element
+				// 3. Remove the old element.
+
+				return _this.renderTemplate(_this.template).then(function (renderedTemplate) {
+					return new Promise(function(resolve, reject) {
+						var model = _this.model();
+						model.after(renderedTemplate);
+						model.attr('id', 'REMOVE-{id}'.format({id: _this.id}));
+						resolve();
+					});
+				}).then(function () {
+					return _this.children();
+				}).then(function (children) {
+					return new Promise(function(resolve, reject) {
+						children.forEach(function (child) {
+							child.model().appendTo('#{id}'.format({id: _this.id}));
+						});
+						resolve();
+					});
+				}).then(function () {
+					return _this.parent();
+				}).then(function (parent) {
+					parent.model().remove('REMOVE-{id}'.format({id: _this.id}));
+				});
+			} else {
+				return this.template;
+			}
+		}
+		this.renderTemplate = function (template) {
+			var _this = this;
+			return new Promise(function(resolve, reject) {
+				var classes = _this.classes !== undefined ? _this.classes : [];
+				var style = _this.style !== undefined ? _this.style : {};
+				var properties = _this.properties != undefined ? _this.properties : {};
+				var html = _this.html !== undefined ? _this.html : '';
+				var renderedTemplate = _this.template.format({
+					id: _this.id,
+					classes: formatClasses(classes),
+					style: formatStyle(style),
+					properties: formatProperties(properties),
+					html: html,
+				});
+				resolve(renderedTemplate);
+			});
 		}
 		this.setAppearance = function (appearance) {
 			var currentProperties = this.properties !== undefined ? this.properties : {};
 			var currentClasses = this.classes !== undefined ? this.classes : [];
 			var currentStyle = this.style !== undefined ? this.style : {};
+			var currentAppearance = {
+				properties: currentProperties,
+				classes: currentClasses,
+				style: currentStyle,
+			}
 
 			if (appearance !== undefined) {
 				this.properties = appearance.properties !== undefined ? appearance.properties : currentProperties;
 				this.html = appearance.html !== undefined ? appearance.html : this.html;
-				this.classes = appearance.classes !== undefined ? appearance.classes : currentClasses;
+
+				// classes need to be a combination of ones removed and ones added. If "add" and "remove" are not present, defaults to using whole object.
+				this.classes = currentClasses;
+				var addClasses = appearance.classes !== undefined ? (appearance.classes.add !== undefined ? appearance.classes.add : appearance.classes) : currentClasses;
+				var removeClasses = appearance.classes !== undefined ? (appearance.classes.remove !== undefined ? appearance.classes.remove : []) : [];
+
+				addClasses.forEach(function (cls) {
+					this.classes.push(cls);
+				});
+				this.classes = this.classes.filter(function (cls) {
+					return removeClasses.indexOf(cls) !== -1;
+				});
+
 				this.style = appearance.style !== undefined ? appearance.style : currentStyle;
 
-				if (this.rendered) {
-					// model
-					var model = this.model();
+				if (this.isRendered) {
+					return new Promise(function(resolve, reject) {
+						// model
+						var model = this.model();
 
-					// properties
-					var _this = this;
-					Object.keys(this.properties).forEach(function (property) {
-						model.attr(property, _this.properties[property]);
+						// properties
+						var _this = this;
+						Object.keys(this.properties).forEach(function (property) {
+							model.attr(property, _this.properties[property]);
+						});
+
+						// html
+						model.html(this.html);
+
+						// classes
+						if (_this.classes !== undefined) {
+							// remove current classes that are not the new classes variable
+							removeClasses.forEach(function (cls) {
+								model.removeClass(cls);
+							});
+
+							// add new classes
+							addClasses.forEach(function (cls) {
+								model.addClass(cls);
+							});
+						}
+
+						// style
+						model.css(this.style);
+
+						resolve();
 					});
-
-					// html
-					model.html(this.html);
-
-					// classes
-					if (_this.classes !== undefined) {
-						// remove current classes that are not the new classes variable
-						currentClasses.filter(function (className) {
-							return _this.classes.indexOf(className) === -1;
-						}).forEach(function (className) {
-							model.removeClass(className);
-						});
-
-						// add new classes
-						_this.classes.forEach(function (className) {
-							model.addClass(className);
-						});
-					}
-
-					// style
-					model.css(this.style);
+				} else {
+					return appearance;
 				}
+			} else {
+				return currentAppearance;
 			}
 		}
 
 		// state
-		this.getState = function (stateName) {
-			return this.states().filter(function (state) {
-				return state.name === stateName;
-			})[0];
-		}
 		this.setState = function (state) {
 			if (state !== undefined) {
 				// default state
@@ -146,191 +217,153 @@ var UI = {
 		}
 		this.addStates = function (states) {
 			if (states !== undefined) {
-				states.forEach(this.addState, this);
-
-				if (this.state === undefined) {
-					this.state = this.getState(UI.globalState);
-					if (this.state !== undefined) {
-						this.stateClasses = this.state.classes !== undefined ? this.state.classes : [];
-						this.stateStyle = this.state.style !== undefined ? this.state.style : {};
-					}
-				}
+				var _this = this;
+				return Promise.all(states.map(function (state) {
+					return _this.addState(state);
+				}));
 			}
 		}
 		this.addState = function (state) {
 			// add as new state
-			UI.createState(this, state.name, state.args);
+			return UI.createState(this, state.name, state.args);
 		}
 		this.states = function () {
 			var _this = this;
-			return UI.states.filter(function (state) {
-				return state.component.id === _this.id;
+			return new Promise(function(resolve, reject) {
+				resolve(UI.states.filter(function (state) {
+					return state.component.id === _this.id;
+				}));
 			});
 		}
 		this.addStateMap = function (stateMap) {
-			this.stateMap = this.stateMap !== undefined ? this.stateMap : {};
+			return new Promise(function(resolve, reject) {
+				this.stateMap = this.stateMap !== undefined ? this.stateMap : {};
 
-			if (stateMap !== undefined) {
-				if (typeof stateMap === 'string') {
-					UI.globalStates.forEach(function (globalState) {
-						this.stateMap[globalState] = stateMap;
-					}, this);
-				} else {
-					this.stateMap = stateMap;
+				if (stateMap !== undefined) {
+					if (typeof stateMap === 'string') {
+						UI.globalStates.forEach(function (globalState) {
+							this.stateMap[globalState] = stateMap;
+						}, this);
+					} else {
+						this.stateMap = stateMap;
+					}
 				}
-			}
+				resolve();
+			});
 		}
 		this.mapState = function () {
 			return this.stateMap[stateName] !== undefined ? this.stateMap[stateName] : '';
 		}
 		this.triggerState = function () {
-			UI.changeState(this.mapState(UI.globalState), this.id);
+			return UI.changeState(this.mapState(UI.globalState), this.id);
 		}
 		this.setRegistry = function (registry) {
 			var _this = this;
 			if (registry !== undefined) {
-				registry.forEach(function (entry) {
+				return Promise.all(registry.map(function (entry) {
 					var args = entry.args !== undefined ? entry.args : {};
-					Registry.register(_this, entry.state, entry.path, args, entry.fn);
-				});
+					return Registry.register(_this, entry.state, entry.path, args, entry.fn);
+				}));
 			}
 		}
+
 
 		// DOM
 		this.setBindings = function (bindings) {
-			this.bindings = this.bindings !== undefined ? this.bindings : {};
-			if (bindings !== undefined) {
-				Object.keys(bindings).forEach(function (name) {
-					var binding = bindings[name];
-					// 1. determine if binding with the same name is in the current array
-					this.bindings[name] = {fn: binding.fn};
-					if (binding.fn2 !== undefined) {
-						this.bindings[name].fn2 = binding.fn2;
-					}
-
-					// 2. if rendered, add to model
-					if (this.rendered) {
-						var _this = this;
-						if (this.bindings[name].fn2 !== undefined) {
-							this.model().on(name, function () {
-								this.bindings[name].fn(_this);
-							}, function () {
-								this.bindings[name].fn2(_this);
-							});
-						} else {
-							this.model().on(name, function () {
-								this.bindings[name].fn(_this);
-							});
+			var _this = this;
+			return new Promise(function(resolve, reject) {
+				_this.bindings = _this.bindings !== undefined ? _this.bindings : {};
+				if (bindings !== undefined) {
+					Object.keys(bindings).forEach(function (name) {
+						var binding = bindings[name];
+						// 1. determine if binding with the same name is in the current array
+						_this.bindings[name] = {fn: binding.fn};
+						if (binding.fn2 !== undefined) {
+							_this.bindings[name].fn2 = binding.fn2;
 						}
-					}
-				}, this);
-			}
+
+						// 2. if rendered, add to model
+						if (_this.isRendered) {
+							if (_this.bindings[name].fn2 !== undefined) {
+								_this.model().on(name, function () {
+									_this.bindings[name].fn(_this);
+								}, function () {
+									_this.bindings[name].fn2(_this);
+								});
+							} else {
+								_this.model().on(name, function () {
+									_this.bindings[name].fn(_this);
+								});
+							}
+						}
+					}, this);
+				}
+				resolve();
+			});
+		}
+		this.addChild = function (child) {
+			return new Promise(function(resolve, reject) {
+				this.children[child.id] = child;
+				resolve(child);
+			});
+		}
+		this.removeChild = function (child) {
+			return new Promise(function(resolve, reject) {
+				delete this.children[child.id];
+				resolve(child);
+			});
 		}
 		this.setChildren = function (children) {
 			this.children = this.children !== undefined ? this.children : {};
+			var _this = this;
 			if (children !== undefined) {
-				children.forEach(function (child) {
-					if (child !== undefined) {
-						this.children[child.id] = child;
-
-						if (this.rendered) {
-							child.root = this.id;
-							this.renderChild(child.id);
-						}
-					}
-				}, this);
+				return Promise.all(children.map(function (child) {
+					return _this.addChild(child).then(function (component) {
+						component.root = _this.id;
+						component.render();
+					});
+				}));
 			}
 		}
 		this.update = function (args) {
-			// id, root, after, template
-			this.setId(args.id);
-			this.setRoot(args.root);
-			this.setTemplate(args.template);
-			this.setAppearance(args.appearance);
+			return Promise.all([
+				// id, root, after, template
+				this.setId(args.id),
+				this.setRoot(args.root),
+				this.setTemplate(args.template),
+				this.setAppearance(args.appearance),
 
-			// state
-			this.setState(args.state);
+				// state
+				this.setState(args.state),
 
-			// registry
-			this.setRegistry(args.registry);
+				// registry
+				this.setRegistry(args.registry),
 
-			// bindings
-			this.setBindings(args.bindings);
-
-			// children
-			this.setChildren(args.children);
+				// bindings
+				this.setBindings(args.bindings),
+			]).then(function () {
+				return this.setChildren(args.children);
+			});
 		}
 		this.model = function () {
 			return $('#{id}'.format({id: this.id}));
 		}
 		this.render = function () {
 			var _this = this;
-			// console.log('render', _this.id, _this.children);
-			// console.log('before', _this.id, _this.bindings);
-			return new Promise (function (resolve, reject) {
-				// 1. root
-				var root = $('#{id}'.format({id: _this.root}));
+			var root = $('#{id}'.format({id: _this.root}));
 
-				// 2. render template
-				var classes = _this.classes !== undefined ? _this.classes : [];
-				var style = _this.style !== undefined ? _this.style : {};
-				var properties = _this.properties != undefined ? _this.properties : {};
-				var html = _this.html !== undefined ? _this.html : '';
-				var renderedTemplate = _this.template.format({
-					id: _this.id,
-					classes: formatClasses(classes),
-					style: formatStyle(style),
-					properties: formatProperties(properties),
-					html: html,
+			return _this.renderTemplate(_this.template).then(function (renderedTemplate) {
+				return new Promise(function(resolve, reject) {
+					if (root.children().length !== 0) {
+						root.children().last().after(renderedTemplate); // add as last child
+					} else {
+						root.html(renderedTemplate);
+					}
+					_this.isRendered = true;
+					resolve();
 				});
-
-				// 3. Add element to the DOM under root.
-				if (root.children().length !== 0) {
-					root.children().last().after(renderedTemplate); // add as last child
-				} else {
-					root.html(renderedTemplate);
-				}
-
-				// 4. Add classes and style of initial state
-				var model = _this.model();
-				if (_this.state !== undefined) {
-					_this.stateClasses.forEach(function (stateClass) {
-						model.addClass(stateClass);
-					});
-					model.css(_this.stateStyle);
-				}
-
-				// 5. add bindings
-				// console.log(_this.id);
-				// console.log(_this.id, _this.bindings);
-				// console.log(_this.id, Object.keys(_this.bindings));
-
-
-				// Object.keys(_this.bindings).forEach(function (bindingName) {
-				//
-				// 	var fn = _this.bindings[bindingName].fn;
-				// 	var fn2 = _this.bindings[bindingName].fn2;
-				//
-				// 	if (fn2 !== undefined) {
-				// 		model.on(bindingName, function () {
-				// 			fn(_this);
-				// 		}, function () {
-				// 			fn2(_this);
-				// 		});
-				// 	} else {
-				// 		model.on(bindingName, function () {
-				// 			fn(_this);
-				// 		});
-				// 	}
-				// });
-
-				// console.log('after', _this.id);
-
-
-				// 6. set rendered
-				_this.rendered = true;
-
-				resolve();
+			}).then(function () {
+				return _this.setBindings(_this.bindings);
 			}).then(function () {
 				return Promise.all(Object.keys(_this.children).map(function (key) {
 					return UI.getComponent(key).then(function (child) {
@@ -344,6 +377,7 @@ var UI = {
 		this.parent = function () {
 			return UI.getComponent(this.root);
 		}
+
 		this.changeState = function (state) {
 			// 1. set new state
 			this.state = state;
@@ -407,61 +441,60 @@ var UI = {
 
 		// initialise
 		this.id = id;
-		this.rendered = false; // establish whether or not the component has been rendered to the DOM.
-		this.update(args);
+		this.isRendered = false; // establish whether or not the component has been rendered to the DOM.
 	},
 
 	// createComponent
+	add: function (component) {
+		return new Promise(function(resolve, reject) {
+			UI.components[component.id] = component;
+			resolve(component);
+		});
+	},
+
 	createComponent: function (id, args) {
-		var component = new this.component(id, args);
-		UI.components[id] = component;
-		return component;
+		return new Promise(function(resolve, reject) {
+			resolve(new UI.component(id));
+		}).then(UI.add).then(function (component) {
+			return component.update(args);
+		});
 	},
 
 	// removeComponent
-	removeComponent: function (id) {
-		var component = UI.getComponent(id);
-		// remove from registry
-		Registry.del(component.id);
-
-		// remove all bindings
-		Object.keys(component.bindings).forEach(function (bindingName) {
-			component.model().off(bindingName);
-		}, component);
-
-		// remove children recursively
-		Object.keys(component.children).forEach(function (childId) {
-			UI.removeComponent(childId);
+	remove: function (component) {
+		return new Promise(function(resolve, reject) {
+			delete UI.components[component.id];
+			resolve(component);
 		});
-
-		// remove model from DOM
-		component.model().remove();
-
-		// remove component from components
-		delete UI.components[id];
 	},
 
-	// createApp
-	createApp: function (root, children) {
-		return new Promise(function(resolve, reject) {
-			var id = 'app';
-			var args = {
-				root: root,
-				template: UI.template('div', ''),
-				appearance: {
-					style: {
-						'position': 'absolute',
-						'top': '0px',
-						'left': '0px',
-						'height': '100%',
-						'width': '100%',
-					},
-				},
-				children: children,
-			};
-
-			resolve(UI.createComponent(id, args));
+	removeComponent: function (id) {
+		return UI.getComponent(id).then(function (component) {
+			return component.removeChildren().then(component.removeBindings).then(component.removeModel).then(function () {
+				return Promise.all([UI.delete(component), Registry.delete(component)]);
+			});
 		});
+	},
+
+	// app
+	app: function (root, children) {
+		var id = 'app';
+		var args = {
+			root: root,
+			template: UI.template('div', ''),
+			appearance: {
+				style: {
+					'position': 'absolute',
+					'top': '0px',
+					'left': '0px',
+					'width': '100%',
+					'height': '100%',
+				},
+			},
+			children: children,
+		};
+
+		return UI.createComponent(id, args);
 	},
 
 	// STATES
@@ -478,19 +511,29 @@ var UI = {
 		this.style = args.style;
 		this.html = args.html;
 		this.fn = args.fn;
+
+		// change
+		this.change = function () {
+			if (this.name === UI.globalState) {
+				return this.component.changeState();
+			}
+		}
 	},
 
 	// state factory
 	createState: function (component, name, args) {
-		var state;
-		if (args === 'default') {
-			state = new this.state(component, name, component.defaultState);
-		} else {
-			state = new this.state(component, name, args);
-		}
-		state.index = this.states.length - 1; // able to find state again
-		this.states.push(state);
-		return state;
+		var _this = this;
+		return new Promise(function(resolve, reject) {
+			var state;
+			if (args === 'default') {
+				state = new _this.state(component, name, component.defaultState);
+			} else {
+				state = new _this.state(component, name, args);
+			}
+			state.index = _this.states.length - 1; // able to find state again
+			_this.states.push(state);
+			resolve(state);
+		});
 	},
 
 	// TEMPLATES

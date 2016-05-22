@@ -136,15 +136,15 @@ var Components = {
 				// Autocomplete mode only affects present elements, it does not add any.
 				if (search.autocomplete !== undefined && search.autocomplete) {
 					// autocomplete mode: display filter first
-					list.setAppearance({
-						classes: ['hidden'],
-					});
+					// list.setAppearance({
+					// 	classes: ['hidden'],
+					// });
 
 				} else {
 					// display data first, display filter panel upon focussing input, hide again on input.
-					filter.setAppearance({
-						classes: ['hidden'],
-					});
+					// filter.setAppearance({
+					// 	classes: ['hidden'],
+					// });
 
 				}
 
