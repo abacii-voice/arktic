@@ -23,6 +23,7 @@ var UI = {
 
 	// getComponent
 	getComponent: function (id) {
+		console.log(id);
 		return new Promise(function(resolve, reject) {
 			resolve(UI.components[id]);
 		});
@@ -35,16 +36,18 @@ var UI = {
 			var currentId = this.id;
 			id = id !== undefined ? id : currentId;
 
-			if (id !== currentId && this.isRendered) {
+			if (id !== currentId) {
 				var _this = this;
 				// 1. remove the component while keeping a solid var present
 				// 2. change the id of the var and change the model attr.
 				// 3. Add the var.
 
-				UI.remove(_this).then(function (component) {
+				return UI.remove(_this).then(function (component) {
 					return new Promise(function(resolve, reject) {
 						component.id = id;
-						component.model().attr('id', id);
+						if (component.isRendered) {
+							component.model().attr('id', id);
+						}
 						resolve(component);
 					});
 				}).then(UI.add);
@@ -82,11 +85,11 @@ var UI = {
 		}
 		this.setTemplate = function (template) {
 			var currentTemplate = this.template !== undefined ? this.template : UI.templates.div;
-			template = template !== undefined ? template : currentTemplate;
+			this.template = template !== undefined ? template : currentTemplate;
+
 
 			if (template !== currentTemplate && this.isRendered) {
 				var _this = this;
-				_this.template = template;
 				// 1. render empty template element to the DOM.
 				// 2. Append all children to the new empty element
 				// 3. Remove the old element.
@@ -302,8 +305,9 @@ var UI = {
 			});
 		}
 		this.addChild = function (child) {
+			var _this = this;
 			return new Promise(function(resolve, reject) {
-				this.children[child.id] = child;
+				_this.children[child.id] = child;
 				resolve(child);
 			});
 		}
@@ -318,10 +322,12 @@ var UI = {
 			var _this = this;
 			if (children !== undefined) {
 				return Promise.all(children.map(function (child) {
-					return _this.addChild(child).then(function (component) {
-						component.root = _this.id;
-						component.render();
-					});
+					return child.then(function (component) {
+						return _this.addChild(component);
+					}).then(function (final) {
+						final.root = _this.id;
+						return final.render();
+					});;
 				}));
 			}
 		}
@@ -368,7 +374,6 @@ var UI = {
 				return Promise.all(Object.keys(_this.children).map(function (key) {
 					return UI.getComponent(key).then(function (child) {
 						child.root = _this.id;
-						console.log(_this.id, _this.children, child.id);
 						return child.render();
 					});
 				}));
@@ -456,7 +461,8 @@ var UI = {
 		return new Promise(function(resolve, reject) {
 			resolve(new UI.component(id));
 		}).then(UI.add).then(function (component) {
-			return component.update(args);
+			return component;
+			// return component.update(args);
 		});
 	},
 
@@ -481,7 +487,7 @@ var UI = {
 		var id = 'app';
 		var args = {
 			root: root,
-			template: UI.template('div', ''),
+			template: UI.template('div'),
 			appearance: {
 				style: {
 					'position': 'absolute',
