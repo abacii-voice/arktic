@@ -188,9 +188,9 @@ var Test = {
 
 		test_components: function () {
 			UI.createComponent('a').then(function (component) {
-				return component.setId('b');
-			}).then(function (component) {
-				console.log(component);
+				return component.render();
+			}).catch(function (error) {
+				console.log(error);
 			});
 		},
 	},
