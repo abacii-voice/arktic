@@ -23,7 +23,6 @@ var UI = {
 
 	// getComponent
 	getComponent: function (id) {
-		console.log(id);
 		return new Promise(function(resolve, reject) {
 			resolve(UI.components[id]);
 		});
@@ -59,7 +58,7 @@ var UI = {
 			var currentRoot = this.root !== undefined ? this.root : 'hook';
 			root = root !== undefined ? root : currentRoot;
 
-			if (root !== currentRoot && this.isRendered) {
+			if (root !== currentRoot) {
 				var _this = this;
 				// 1. get the current parent.
 				// 2.	remove the child from the current parent.
@@ -67,19 +66,21 @@ var UI = {
 				// 4. change the root value.
 				// 5. get the new parent.
 				// 6. add the child to new parent.
-
-				return this.parent().then(function (parent) {
+				return _this.parent().then(function (parent) {
 					return parent.removeChild(_this);
 				}).then(function () {
 					return new Promise(function(resolve, reject) {
-						_this.model().appendTo('#{id}'.format({id: root}));
 						_this.root = root;
+						if (_this.isRendered) {
+							_this.model().appendTo('#{id}'.format({id: root}));
+						}
 						resolve(root);
 					});
 				}).then(UI.getComponent).then(function (newParent) {
 					return newParent.addChild(_this);
 				});
 			} else {
+				this.root = root;
 				return this.root;
 			}
 		}
@@ -87,39 +88,45 @@ var UI = {
 			var currentTemplate = this.template !== undefined ? this.template : UI.templates.div;
 			this.template = template !== undefined ? template : currentTemplate;
 
-
-			if (template !== currentTemplate && this.isRendered) {
+			if (this.template !== currentTemplate) {
 				var _this = this;
 				// 1. render empty template element to the DOM.
 				// 2. Append all children to the new empty element
 				// 3. Remove the old element.
 
-				return _this.renderTemplate(_this.template).then(function (renderedTemplate) {
+				return _this.renderTemplate().then(function (renderedTemplate) {
 					return new Promise(function(resolve, reject) {
-						var model = _this.model();
-						model.after(renderedTemplate);
-						model.attr('id', 'REMOVE-{id}'.format({id: _this.id}));
+						if (_this.isRendered) {
+							var model = _this.model();
+							model.after(renderedTemplate);
+							model.attr('id', 'REMOVE-{id}'.format({id: _this.id}));
+						}
 						resolve();
 					});
 				}).then(function () {
-					return _this.children();
-				}).then(function (children) {
-					return new Promise(function(resolve, reject) {
-						children.forEach(function (child) {
-							child.model().appendTo('#{id}'.format({id: _this.id}));
-						});
-						resolve();
-					});
+					if (_this.isRendered) {
+						return Promise.all(Object.keys(_this.children).map(function (child) {
+							return new Promise(function(resolve, reject) {
+								child.model().appendTo('#{id}'.format({id: _this.id}));
+								resolve();
+							});
+						}));
+					}
 				}).then(function () {
 					return _this.parent();
 				}).then(function (parent) {
-					parent.model().remove('REMOVE-{id}'.format({id: _this.id}));
+					return new Promise(function(resolve, reject) {
+						if (_this.isRendered) {
+							parent.model().remove('REMOVE-{id}'.format({id: _this.id}));
+						}
+						resolve();
+					});
 				});
 			} else {
 				return this.template;
 			}
 		}
-		this.renderTemplate = function (template) {
+		this.renderTemplate = function () {
 			var _this = this;
 			return new Promise(function(resolve, reject) {
 				var classes = _this.classes !== undefined ? _this.classes : [];
@@ -207,15 +214,14 @@ var UI = {
 		// state
 		this.setState = function (state) {
 			if (state !== undefined) {
-				// default state
 				var currentDefaultState = this.defaultState !== undefined ? this.defaultState : {};
 				this.defaultState = state.defaultState !== undefined ? state.defaultState : currentDefaultState;
+				var _this = this;
 
-				// states
-				this.addStates(state.states);
-
-				// state map
-				this.addStateMap(state.stateMap);
+				return Promise.all([
+					this.addStates(state.states),
+					this.addStateMap(state.stateMap),
+				]);
 			}
 		}
 		this.addStates = function (states) {
@@ -240,22 +246,17 @@ var UI = {
 		}
 		this.addStateMap = function (stateMap) {
 			return new Promise(function(resolve, reject) {
-				this.stateMap = this.stateMap !== undefined ? this.stateMap : {};
-
-				if (stateMap !== undefined) {
-					if (typeof stateMap === 'string') {
-						UI.globalStates.forEach(function (globalState) {
-							this.stateMap[globalState] = stateMap;
-						}, this);
-					} else {
-						this.stateMap = stateMap;
-					}
-				}
+				this.stateMap = this.stateMap !== undefined ? this.stateMap : '';
+				this.stateMap = stateMap !== undefined ? stateMap : this.stateMap;
 				resolve();
 			});
 		}
 		this.mapState = function () {
-			return this.stateMap[stateName] !== undefined ? this.stateMap[stateName] : '';
+			if (typeof this.stateMap === 'string') {
+				return this.stateMap;
+			} else {
+				return this.stateMap[stateName] !== undefined ? this.stateMap[stateName] : '';
+			}
 		}
 		this.triggerState = function () {
 			return UI.changeState(this.mapState(UI.globalState), this.id);
@@ -269,7 +270,6 @@ var UI = {
 				}));
 			}
 		}
-
 
 		// DOM
 		this.setBindings = function (bindings) {
@@ -325,30 +325,38 @@ var UI = {
 					return child.then(function (component) {
 						return _this.addChild(component);
 					}).then(function (final) {
-						final.root = _this.id;
-						return final.render();
+						if (_this.isRendered) {
+							final.root = _this.id;
+							return final.render();
+						}
 					});;
 				}));
+			} else {
+				return this.children;
 			}
 		}
 		this.update = function (args) {
+			args = args !== undefined ? args : {};
+			var _this = this;
 			return Promise.all([
 				// id, root, after, template
-				this.setId(args.id),
-				this.setRoot(args.root),
-				this.setTemplate(args.template),
-				this.setAppearance(args.appearance),
+				_this.setId(args.id),
+				_this.setRoot(args.root),
+				_this.setTemplate(args.template),
+				_this.setAppearance(args.appearance),
 
 				// state
-				this.setState(args.state),
+				_this.setState(args.state),
 
 				// registry
-				this.setRegistry(args.registry),
+				_this.setRegistry(args.registry),
 
 				// bindings
-				this.setBindings(args.bindings),
-			]).then(function () {
-				return this.setChildren(args.children);
+				_this.setBindings(args.bindings),
+			]).then(function (results) {
+				return _this.setChildren(args.children);
+			}).then(function (children) {
+				return _this;
 			});
 		}
 		this.model = function () {
@@ -357,8 +365,9 @@ var UI = {
 		this.render = function () {
 			var _this = this;
 			var root = $('#{id}'.format({id: _this.root}));
+			console.log(_this.id, root);
 
-			return _this.renderTemplate(_this.template).then(function (renderedTemplate) {
+			return _this.renderTemplate().then(function (renderedTemplate) {
 				return new Promise(function(resolve, reject) {
 					if (root.children().length !== 0) {
 						root.children().last().after(renderedTemplate); // add as last child
@@ -461,8 +470,7 @@ var UI = {
 		return new Promise(function(resolve, reject) {
 			resolve(new UI.component(id));
 		}).then(UI.add).then(function (component) {
-			return component;
-			// return component.update(args);
+			return component.update(args);
 		});
 	},
 
