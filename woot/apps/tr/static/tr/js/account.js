@@ -207,6 +207,10 @@
 // // 	});
 // // }
 
-UI.app('hook', [
-	UI.createComponent('a'),
-]);
+// UI.app('hook', [
+// 	UI.createComponent('a'),
+// ]).then(function (app) {
+// 	app.render().catch(function (error) {
+// 		console.log(error);
+// 	});
+// });
