@@ -185,11 +185,19 @@ var Test = {
 				});
 			});
 		},
+
+		test_components: function () {
+			UI.createComponent('a').then(function (component) {
+				return component.setId('b');
+			}).then(function (component) {
+				console.log(component);
+			});
+		},
 	},
 
 	test: function () {
 
-		Test.tests.test_state_change();
+		Test.tests.test_components();
 
 		// all
 		// Object.keys(Test.tests).forEach(function (test) {
