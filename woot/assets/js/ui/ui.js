@@ -365,7 +365,6 @@ var UI = {
 		this.render = function () {
 			var _this = this;
 			var root = $('#{id}'.format({id: _this.root}));
-			console.log(_this.id, root);
 
 			return _this.renderTemplate().then(function (renderedTemplate) {
 				return new Promise(function(resolve, reject) {
