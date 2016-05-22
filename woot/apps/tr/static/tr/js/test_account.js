@@ -187,7 +187,16 @@ var Test = {
 		},
 
 		test_components: function () {
-			UI.createComponent('a').then(function (component) {
+			UI.createComponent('a', {
+				children: [
+					UI.createComponent('b'),
+					UI.createComponent('c'),
+					UI.createComponent('d'),
+					UI.createComponent('e'),
+					UI.createComponent('f'),
+					UI.createComponent('g'),
+				],
+			}).then(function (component) {
 				return component.render();
 			}).catch(function (error) {
 				console.log(error);
