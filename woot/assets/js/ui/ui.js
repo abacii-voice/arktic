@@ -54,8 +54,39 @@ var UI = {
 				return this.id;
 			}
 		}
+		this.setAfter = function (after) {
+			var currentAfter = this.after;
+			after = after !== undefined ? after : currentAfter;
+
+			if (after !== currentAfter) {
+				var _this = this;
+				_this.after = after;
+				// 1. Parent stays the same.
+				// 2. Or does it...
+				// 3. No other element has to change.
+				if (after !== '') {
+					return UI.getComponent(_this.after).then(function (before) {
+						return _this.setRoot(before.root).then(function (child) {
+							return new Promise(function(resolve, reject) {
+								_this.model().insertAfter(before.model());
+								resolve();
+							});
+						});
+					});
+				} else {
+					return _this.parent().then(function (parent) {
+						return new Promise(function(resolve, reject) {
+							_this.model().insertBefore(parent.model().children().first());
+							resolve();
+						});
+					});
+				}
+			} else {
+				return this.after;
+			}
+		}
 		this.setRoot = function (root) {
-			var currentRoot = this.root !== undefined ? this.root : 'hook';
+			var currentRoot = this.root !== undefined ? this.root : 'hook'; // this should be 'app' when making an app
 			root = root !== undefined ? root : currentRoot;
 
 			if (root !== currentRoot) {
@@ -81,7 +112,9 @@ var UI = {
 				});
 			} else {
 				this.root = root;
-				return this.root;
+				return new Promise(function(resolve, reject) {
+					resolve(this.root);
+				});
 			}
 		}
 		this.setTemplate = function (template) {
@@ -312,8 +345,9 @@ var UI = {
 			});
 		}
 		this.removeChild = function (child) {
+			var _this = this;
 			return new Promise(function(resolve, reject) {
-				delete this.children[child.id];
+				delete _this.children[child.id];
 				resolve(child);
 			});
 		}
@@ -369,7 +403,11 @@ var UI = {
 			return _this.renderTemplate().then(function (renderedTemplate) {
 				return new Promise(function(resolve, reject) {
 					if (root.children().length !== 0) {
-						root.children().last().after(renderedTemplate); // add as last child
+						if (_this.after !== undefined) {
+							root.children().find('#{id}'.format({id: _this.after})).after(renderedTemplate); // add as child after 'after'.
+						} else {
+							root.children().last().after(renderedTemplate); // add as child after last child.
+						}
 					} else {
 						root.html(renderedTemplate);
 					}
