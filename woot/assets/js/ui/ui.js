@@ -43,10 +43,10 @@ var UI = {
 
 				return UI.remove(_this).then(function (component) {
 					return new Promise(function(resolve, reject) {
-						component.id = id;
 						if (component.isRendered) {
 							component.model().attr('id', id);
 						}
+						component.id = id;
 						resolve(component);
 					});
 				}).then(UI.add);
@@ -355,8 +355,9 @@ var UI = {
 			this.children = this.children !== undefined ? this.children : {};
 			var _this = this;
 			if (children !== undefined) {
-				return Promise.all(children.map(function (child) {
+				return Promise.all(children.map(function (child, index) {
 					return child.then(function (component) {
+						component.index = index;
 						return _this.addChild(component);
 					}).then(function (final) {
 						if (_this.isRendered) {
@@ -376,6 +377,7 @@ var UI = {
 				// id, root, after, template
 				_this.setId(args.id),
 				_this.setRoot(args.root),
+				_this.setAfter(args.after),
 				_this.setTemplate(args.template),
 				_this.setAppearance(args.appearance),
 
@@ -417,18 +419,21 @@ var UI = {
 			}).then(function () {
 				return _this.setBindings(_this.bindings);
 			}).then(function () {
-				return Promise.all(Object.keys(_this.children).map(function (key) {
+				return Promise.ordered(Object.keys(_this.children).sort(function (first, second) {
+					return _this.children[first].index - _this.children[second].index;
+				}).map(function (key) {
 					return UI.getComponent(key).then(function (child) {
 						child.root = _this.id;
 						return child.render();
 					});
 				}));
+			}).then(function () {
+				return _this;
 			});
 		}
 		this.parent = function () {
 			return UI.getComponent(this.root);
 		}
-
 		this.changeState = function (state) {
 			// 1. set new state
 			this.state = state;
@@ -483,7 +488,7 @@ var UI = {
 			}
 
 			// execute
-			preFnPromise().then(function () {
+			return preFnPromise().then(function () {
 				return stateChangePromise();
 			}).then(function () {
 				return fnPromise();

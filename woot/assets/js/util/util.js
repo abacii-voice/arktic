@@ -75,3 +75,17 @@ function alphaSort(key) {
 		}
 	}
 }
+
+// Ordered promises
+Promise.prototype.ordered = function (promises) {
+	var result = promises[0];
+	promises.forEach(function (promise, index) {
+		if (index > 0) {
+			result = result.then(function () {
+				return promise;
+			});
+		}
+	});
+
+	return result;
+}
