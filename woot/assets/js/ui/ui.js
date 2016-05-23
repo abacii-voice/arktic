@@ -138,22 +138,22 @@ var UI = {
 					});
 				}).then(function () {
 					if (_this.isRendered) {
-						return Promise.all(Object.keys(_this.children).map(function (child) {
-							return new Promise(function(resolve, reject) {
-								child.model().appendTo('#{id}'.format({id: _this.id}));
-								resolve();
+						return Promise.all(Object.keys(_this.children).map(function (key) {
+							return UI.getComponent(key).then(function (child) {
+								return new Promise(function(resolve, reject) {
+									child.model().appendTo('#{id}'.format({id: _this.id}));
+									resolve();
+								});
 							});
 						}));
 					}
 				}).then(function () {
-					return _this.parent();
-				}).then(function (parent) {
-					return new Promise(function(resolve, reject) {
-						if (_this.isRendered) {
-							parent.model().remove('REMOVE-{id}'.format({id: _this.id}));
-						}
-						resolve();
-					});
+					if (_this.isRendered) {
+						return new Promise(function(resolve, reject) {
+							$('#REMOVE-{id}'.format({id: _this.id})).remove();
+							resolve();
+						});
+					}
 				});
 			} else {
 				return this.template;
