@@ -227,6 +227,10 @@ var Test = {
 				UI.createComponent('b'),
 			]).then(function (app) {
 				return app.render();
+			}).then(function (app) {
+				return UI.getComponent('a');
+			}).then(function (component) {
+				return component.setTemplate(UI.template('div'));
 			});
 		},
 	},
