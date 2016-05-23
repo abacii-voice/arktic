@@ -26,6 +26,8 @@
 			{% block outdated_message %}<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>{% endblock %}
 		<![endif]-->
 
+		{% block content %}{% endblock %}
+
 		<!-- NAVBAR -->
 		<nav class='navbar'>
 			<div class='navbar-left'>
@@ -44,9 +46,6 @@
 			</div>
 		</nav>
 		<!-- END NAVBAR -->
-
-		{% block content %}{% endblock %}
-
 		<!-- Core JavaScript ================================================== -->
 		<!-- Placed at the end of the document so the pages load faster -->
 

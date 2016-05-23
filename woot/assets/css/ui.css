@@ -23,7 +23,8 @@ html {
 */
 
 .navbar {
-
+	position: fixed;
+	width: 100%;
 }
 
 .navbar .nav-link {

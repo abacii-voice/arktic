@@ -189,7 +189,15 @@ var Test = {
 		test_components: function () {
 			UI.createComponent('a', {
 				children: [
-					UI.createComponent('b'),
+					UI.createComponent('b', {
+						appearance: {
+							style: {
+								'height': '300px',
+								'width': '300px',
+								'border': '1px solid #ccc',
+							},
+						},
+					}),
 					UI.createComponent('c'),
 					UI.createComponent('d'),
 					UI.createComponent('e'),
@@ -202,11 +210,30 @@ var Test = {
 				console.log(error);
 			});
 		},
+
+		test_app: function () {
+			UI.app('hook', [
+				UI.createComponent('a', {
+					template: UI.template('a'),
+					children: [
+						UI.createComponent('c', {
+							template: UI.template('a'),
+						}),
+						UI.createComponent('d', {
+							template: UI.template('a'),
+						}),
+					],
+				}),
+				UI.createComponent('b'),
+			]).then(function (app) {
+				return app.render();
+			});
+		},
 	},
 
 	test: function () {
 
-		Test.tests.test_components();
+		Test.tests.test_app();
 
 		// all
 		// Object.keys(Test.tests).forEach(function (test) {
