@@ -301,6 +301,7 @@ var UI = {
 
 		// DOM
 		this.setBindings = function (bindings) {
+			// TODO: later change to accept single value as single function, with the need for 'fn' key.
 			var _this = this;
 			return new Promise(function(resolve, reject) {
 				_this.bindings = _this.bindings !== undefined ? _this.bindings : {};
@@ -339,12 +340,16 @@ var UI = {
 				resolve(child);
 			});
 		}
-		this.removeChild = function (child) {
+		this.removeChild = function (id) {
 			var _this = this;
 			return new Promise(function(resolve, reject) {
-				delete _this.children[child.id];
-				resolve(child);
-			});
+				delete _this.children[id];
+				resolve(id);
+			}).then(UI.removeComponent);
+		}
+		this.removeChildren = function () {
+			var _this = this;
+			return Promise.all(Object.keys(_this.children).map(_this.removeChild));
 		}
 		this.setChildren = function (children) {
 			this.children = this.children !== undefined ? this.children : {};
@@ -399,6 +404,13 @@ var UI = {
 				return _this.setChildren(args.children);
 			}).then(function (children) {
 				return _this;
+			});
+		}
+		this.removeModel = function () {
+			var _this = this;
+			return new Promise(function(resolve, reject) {
+				_this.model().remove();
+				resolve();
 			});
 		}
 		this.model = function () {
@@ -532,8 +544,10 @@ var UI = {
 
 	removeComponent: function (id) {
 		return UI.getComponent(id).then(function (component) {
-			return component.removeChildren().then(component.removeBindings).then(component.removeModel).then(function () {
-				return Promise.all([UI.delete(component), Registry.delete(component)]);
+			return component.removeChildren().then(function () {
+				return component.removeModel();
+			}).then(function () {
+				return Promise.all([UI.remove(component), Registry.delete(component)]);
 			});
 		});
 	},
@@ -898,5 +912,24 @@ var Registry = {
 				}
 			}));
 		}
+	},
+
+	delete: function (component, level) {
+		// initialise state and level
+		level = level !== undefined ? level : (Registry.registry !== undefined ? Registry.registry : {});
+
+		// scan registry for this component and remove fn from each entry
+		if ('registered' in level) {
+			if (component.id in level.registered) {
+				delete level.registered[component.id];
+			}
+		}
+
+		return Promise.all(Object.keys(level).map(function (key) {
+			// each key is a top level state
+			if (key !== 'registered' && key !== 'force') {
+				return Registry.delete(component, level[key]);
+			}
+		}));
 	},
 }
