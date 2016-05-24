@@ -178,45 +178,47 @@ var UI = {
 		}
 		this.setAppearance = function (appearance) {
 			var currentProperties = this.properties !== undefined ? this.properties : {};
+			var currentHTML = this.html !== undefined ? this.html : {};
 			var currentClasses = this.classes !== undefined ? this.classes : [];
 			var currentStyle = this.style !== undefined ? this.style : {};
 			var currentAppearance = {
 				properties: currentProperties,
+				html: currentHTML,
 				classes: currentClasses,
 				style: currentStyle,
 			}
 
 			if (appearance !== undefined) {
 				this.properties = appearance.properties !== undefined ? appearance.properties : currentProperties;
-				this.html = appearance.html !== undefined ? appearance.html : this.html;
+				this.html = appearance.html !== undefined ? appearance.html : currentHTML;
 
 				// classes need to be a combination of ones removed and ones added. If "add" and "remove" are not present, defaults to using whole object.
 				this.classes = currentClasses;
 				var addClasses = appearance.classes !== undefined ? (appearance.classes.add !== undefined ? appearance.classes.add : appearance.classes) : currentClasses;
 				var removeClasses = appearance.classes !== undefined ? (appearance.classes.remove !== undefined ? appearance.classes.remove : []) : [];
+				this.classes = this.classes.concat(addClasses);
 
-				addClasses.forEach(function (cls) {
-					this.classes.push(cls);
-				});
 				this.classes = this.classes.filter(function (cls) {
-					return removeClasses.indexOf(cls) !== -1;
+					return removeClasses.indexOf(cls) === -1;
 				});
 
 				this.style = appearance.style !== undefined ? appearance.style : currentStyle;
 
 				if (this.isRendered) {
+					var _this = this;
 					return new Promise(function(resolve, reject) {
 						// model
-						var model = this.model();
+						var model = _this.model();
 
 						// properties
-						var _this = this;
-						Object.keys(this.properties).forEach(function (property) {
+						Object.keys(_this.properties).forEach(function (property) {
 							model.attr(property, _this.properties[property]);
 						});
 
 						// html
-						model.html(this.html);
+						if (model.children().length === 0) {
+							model.html(_this.html);
+						}
 
 						// classes
 						if (_this.classes !== undefined) {
@@ -232,7 +234,7 @@ var UI = {
 						}
 
 						// style
-						model.css(this.style);
+						model.css(_this.style);
 
 						resolve();
 					});
@@ -607,10 +609,10 @@ var UI = {
 	},
 
 	template: function (type, initialClass) {
-		return `<{type} id='{id}' class='{initialClass} {classes}' style='{style}' {properties}>{html}</{type}>`.format({
+		return `<{type} id='{id}' class='{initialClass}{classes}' style='{style}' {properties}>{html}</{type}>`.format({
 			type: type,
 			id: '{id}',
-			initialClass: initialClass !== undefined ? initialClass : '',
+			initialClass: initialClass !== undefined ? (initialClass + ' ') : '',
 			classes: '{classes}',
 			style: '{style}',
 			properties: '{properties}',
