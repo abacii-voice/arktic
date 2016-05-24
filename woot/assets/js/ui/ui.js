@@ -99,7 +99,9 @@ var UI = {
 				// 5. get the new parent.
 				// 6. add the child to new parent.
 				return _this.parent().then(function (parent) {
-					return parent.removeChild(_this);
+					if (this.isRendered) {
+						return parent.removeChild(_this);
+					}
 				}).then(function () {
 					return new Promise(function(resolve, reject) {
 						_this.root = root;
@@ -342,6 +344,7 @@ var UI = {
 		}
 		this.removeChild = function (id) {
 			var _this = this;
+			console.log(id);
 			return new Promise(function(resolve, reject) {
 				delete _this.children[id];
 				resolve(id);
