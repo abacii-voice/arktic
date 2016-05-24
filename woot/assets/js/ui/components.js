@@ -72,9 +72,9 @@ var Components = {
 						},
 					}),
 				],
-				registry: [
-					// {state: 'client-state', path: args.options.target.path, args: {}, fn: args.options.target.process},
-				],
+				registry: args.options.target.states.map(function (state) {
+					return {state: state, path: args.options.target.path(), args: {}, fn: args.options.target.process};
+				}),
 			}),
 
 			// make input

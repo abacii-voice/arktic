@@ -878,19 +878,11 @@ var Registry = {
 				return Promise.all(Object.keys(level.registered).map(function (componentId) {
 					return UI.getComponent(componentId).then(function (component) {
 						var fn = level.registered[component.id];
-						return new Promise(fn(component, data));
-						// function must be of the form:
-						// function (component, data) {
-						// 	function (resolve, reject) {
-						// 		... logic ...
-						// 		resolve();
-						// 	}
-						// }
-
+						return fn(component, data); // must return a promise
 					});
 				})).then(function () {
 					return Promise.all(Object.keys(level).map(function (path) {
-						if (path !== 'registered') {
+						if (path !== 'registered' && path !== 'force') {
 							var get = '{parent}{dot}{path}'.format({parent: parent, dot: (parent !== '' ? '.' : ''), path: path});
 							return Registry.trigger(get, level[path]);
 						}
@@ -900,8 +892,10 @@ var Registry = {
 		} else {
 			// continue without changing anything.
 			return Promise.all(Object.keys(level).map(function (path) {
-				var get = '{parent}{dot}{path}'.format({parent: parent, dot: (parent !== '' ? '.' : ''), path: path});
-				return Registry.trigger(get, level[path]);
+				if (path !== 'force') {
+					var get = '{parent}{dot}{path}'.format({parent: parent, dot: (parent !== '' ? '.' : ''), path: path});
+					return Registry.trigger(get, level[path]);
+				}
 			}));
 		}
 	},
