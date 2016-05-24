@@ -77,13 +77,24 @@ var Components = {
 				}),
 			}),
 
-			// make input
+			// input group
 			UI.createComponent('{id}-search'.format({id: id}), {
-				template: UI.template('input', 'ie input'),
+				template: UI.template('div', 'ie'),
 				appearance: {
 					style: {
 						'width': '100%',
 						'height': '40px',
+					},
+				},
+			}),
+
+			// make input
+			UI.createComponent('{id}-search-input'.format({id: id}), {
+				template: UI.template('input', 'ie input'),
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': '100%',
 					}
 				},
 			}),
@@ -102,8 +113,9 @@ var Components = {
 		]).then(function (components) {
 			var title = components[0];
 			var list = components[1];
-			var input = components[2];
-			var filter = components[3];
+			var inputGroup = components[2];
+			var input = components[3];
+			var filter = components[4];
 
 			// set bindings, children, etc.
 			return new Promise(function(resolve, reject) {
@@ -121,20 +133,36 @@ var Components = {
 				if (search !== undefined) {
 					// search functions engaged. can be in autocomplete mode and include filter panel.
 					// INPUT: if search, define input field
-					input.defined = true;
 					input.setBindings({
+
+						// FOCUS INPUT
+						// autocomplete ? show filter : hide filter
 						'focus': {
 							'fn': function (_this) {
-								list.model().hide();
-								filter.model().show();
+								if (search.autocomplete !== undefined && search.autocomplete) {
+									list.model().hide();
+									filter.model().show();
+								} else {
+									list.model().hide();
+									filter.model().show();
+								}
 							}
 						},
+
+						// BLUR INPUT:
 						'blur': {
 							'fn': function (_this) {
-								list.model().show();
-								filter.model().hide();
+								if (search.autocomplete !== undefined && search.autocomplete) {
+									list.model().hide();
+									filter.model().show();
+								} else {
+									list.model().show();
+									filter.model().hide();
+								}
 							}
 						},
+
+						// TYPE INPUT:
 						'input': {
 							'fn': function (_this) {
 								var tokens = _this.model().val().split('');
@@ -143,12 +171,27 @@ var Components = {
 						}
 					});
 
+					// DEFINE INPUT GROUP
+					inputGroup.defined = true;
+					inputGroup.setChildren([
+						input,
+					]);
+
 					if (search.filter !== undefined) {
 						// the filter panel will be displayed
 						// autocomplete will decide whether the panel is displayed before the list of data.
 						// FILTER: if filter, define filter panel
 						filter.defined = true;
 						filter.setChildren(search.filter.options.map(search.filter.display(filterId)));
+						filter.set = function (rule) {
+							filter.active = rule.rule;
+							input.model().focus();
+							filter.model().hide();
+							list.model().show();
+
+							// add-on for filter
+							inputGroup.addChild();
+						}
 
 						// Autocomplete mode only affects present elements, it does not add any.
 						if (search.autocomplete !== undefined && search.autocomplete) {
@@ -183,12 +226,11 @@ var Components = {
 
 				} else {
 					// display immediately, buffer can only be changed by scrolling.
-					input.defined = false;
-
+					inputGroup.defined = false;
 				}
 
 				// return elements as they entered to be added to the base
-				resolve([title, input, list, filter]);
+				resolve([title, inputGroup, list, filter]);
 			});
 		}).then(function (children) {
 			// return base
