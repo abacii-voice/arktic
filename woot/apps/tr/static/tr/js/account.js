@@ -136,13 +136,14 @@ UI.app('hook', [
 											style: {
 												'width': '100%',
 												'height': '60px',
+												'padding-top': '20px',
 											},
 										},
 										children: [
 											UI.createComponent('{id}-{key}-text'.format({id: id, key: display.key}), {
 												template: UI.template('span'),
 												appearance: {
-													html: '"{key}" : {main}'.format({key: display.args.char, main: display.args.main}),
+													html: '"{char}" : {main}'.format({char: display.args.char, main: display.args.main}),
 												},
 											}),
 										],
