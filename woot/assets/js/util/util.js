@@ -13,7 +13,7 @@ function formatStyle (style) {
 
 function formatClasses (classes) {
 	if (classes !== undefined) {
-		return classes.join(' ');
+		return classes.join(' ').trim();
 	} else {
 		return '';
 	}
@@ -88,4 +88,11 @@ Promise.ordered = function (promises) {
 	});
 
 	return result;
+}
+
+// Trim string
+if(!String.prototype.trim) {
+  String.prototype.trim = function () {
+    return this.replace(/^\s+|\s+$/g,'');
+  };
 }

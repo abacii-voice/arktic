@@ -215,6 +215,9 @@ var Test = {
 			UI.app('hook', [
 				UI.createComponent('a', {
 					template: UI.template('a'),
+					appearance: {
+						classes: ['a'],
+					},
 					children: [
 						UI.createComponent('c', {
 							template: UI.template('a'),
@@ -230,7 +233,12 @@ var Test = {
 			}).then(function (app) {
 				return UI.getComponent('a');
 			}).then(function (component) {
-				return component.setTemplate(UI.template('div'));
+				return component.setAppearance({
+					classes: {
+						add: ['b'],
+						remove: ['a'],
+					},
+				});
 			});
 		},
 	},
