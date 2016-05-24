@@ -37,30 +37,32 @@ UI.app('hook', [
 					// This defines what is being searched for, i.e. paths in context.
 					// This is the source of the data for the list.
 					target: {
-						path: 'clients',
+						path: function () {
+							return 'clients';
+						},
 						// url: 'commands/transcription_set/', // expects a list of stuff obviously
 
 						// convert target into a list if it is not already.
-						// process: function (_this, data) {
-						// 	// 'data' is the lump of stuff returned from the path.
-						// 	return Promise.all(Object.keys(data).map(function (key, i) {
-						// 		// process client list
-						// 		var display = {
-						// 			main: data[key].name,
-						// 			index: i,
-						// 			tag: 'tag',
-						// 			key: key,
-						// 		}
-						//
-						// 		_this.buffer[key] = display;
-						//
-						// 										return display;
-						// 									}).map(_this.display(_this)));
-						// 	return new Promise(function (resolve, reject) {
-						//
-						// 		resolve();
-						// 	});
-						// },
+						process: function (_this, data) {
+							// 'data' is the lump of stuff returned from the path.
+							return Promise.all(Object.keys(data).map(function (key, i) {
+								// process client list
+								var display = {
+									main: data[key].name,
+									index: i,
+									tag: 'tag',
+									key: key,
+								}
+
+								_this.buffer[key] = display;
+
+								return display;
+							}).map(_this.display(_this)));
+						},
+
+						states: [
+							'client-state',
+						],
 					},
 
 					// Define a way of display individual list items
