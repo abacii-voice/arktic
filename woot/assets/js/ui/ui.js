@@ -271,14 +271,6 @@ var UI = {
 			// add as new state
 			return UI.createState(this, state.name, state.args);
 		}
-		this.states = function () {
-			var _this = this;
-			return new Promise(function(resolve, reject) {
-				resolve(UI.states.filter(function (state) {
-					return state.component.id === _this.id;
-				}));
-			});
-		}
 		this.addStateMap = function (stateMap) {
 			return new Promise(function(resolve, reject) {
 				this.stateMap = this.stateMap !== undefined ? this.stateMap : '';
