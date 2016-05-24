@@ -179,7 +179,7 @@ var UI = {
 		}
 		this.setAppearance = function (appearance) {
 			var currentProperties = this.properties !== undefined ? this.properties : {};
-			var currentHTML = this.html !== undefined ? this.html : {};
+			var currentHTML = this.html !== undefined ? this.html : '';
 			var currentClasses = this.classes !== undefined ? this.classes : [];
 			var currentStyle = this.style !== undefined ? this.style : {};
 			var currentAppearance = {

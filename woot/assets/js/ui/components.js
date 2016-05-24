@@ -107,9 +107,13 @@ var Components = {
 
 			// set bindings, children, etc.
 			return new Promise(function(resolve, reject) {
+				// title
+				title.defined = true;
+
 				// list modifications
 				list.display = args.options.display;
 				list.buffer = {};
+				list.defined = true;
 
 				// search options
 				// SEARCH
@@ -117,6 +121,7 @@ var Components = {
 				if (search !== undefined) {
 					// search functions engaged. can be in autocomplete mode and include filter panel.
 					// INPUT: if search, define input field
+					input.defined = true;
 					input.setBindings({
 						'focus': {
 							'fn': function (_this) {
@@ -142,25 +147,27 @@ var Components = {
 						// the filter panel will be displayed
 						// autocomplete will decide whether the panel is displayed before the list of data.
 						// FILTER: if filter, define filter panel
+						filter.defined = true;
 						filter.setChildren(search.filter.options.map(search.filter.display(filterId)));
 
 						// Autocomplete mode only affects present elements, it does not add any.
 						if (search.autocomplete !== undefined && search.autocomplete) {
 							// autocomplete mode: display filter first
-							// list.setAppearance({
-							// 	classes: ['hidden'],
-							// });
+							list.setAppearance({
+								classes: ['hidden'],
+							});
 
 						} else {
 							// display data first, display filter panel upon focussing input, hide again on input.
-							// filter.setAppearance({
-							// 	classes: ['hidden'],
-							// });
+							filter.setAppearance({
+								classes: ['hidden'],
+							});
 
 						}
 
 					} else {
 						// No filter panel
+						filter.defined = false;
 						if (search.autocomplete !== undefined && search.autocomplete) {
 							// autocomplete mode: show no data until search query is entered.
 							list.setAppearance({
@@ -176,6 +183,7 @@ var Components = {
 
 				} else {
 					// display immediately, buffer can only be changed by scrolling.
+					input.defined = false;
 
 				}
 
@@ -185,9 +193,11 @@ var Components = {
 		}).then(function (children) {
 			// return base
 			return UI.createComponent(id, {
-				template: UI.template('div', ''),
+				template: UI.template('div'),
 				appearance: args.appearance,
-				children: children,
+				children: children.filter(function (child) {
+					return child.defined;
+				}),
 			})
 		});
 	},
