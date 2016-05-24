@@ -233,12 +233,9 @@ var Test = {
 			}).then(function (app) {
 				return UI.getComponent('a');
 			}).then(function (component) {
-				return component.setAppearance({
-					classes: {
-						add: ['b'],
-						remove: ['a'],
-					},
-				});
+				return component.removeChild('c');
+			}).catch(function (error) {
+				console.log(error);
 			});
 		},
 	},
