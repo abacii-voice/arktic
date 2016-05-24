@@ -6,16 +6,16 @@ var UI = {
 	globalState: undefined,
 
 	// changeState
-	// changeState: function (stateName, trigger) {
-	// 	return new Promise(function(resolve, reject) {
-	// 		UI.globalState = stateName;
-	// 		resolve();
-	// 	}).then(Registry.trigger).then(function () {
-	// 		return Promise.all(UI.states.map(function (state) {
-	// 			return state.change();
-	// 		});
-	// 	});
-	// },
+	changeState: function (stateName, trigger) {
+		return new Promise(function(resolve, reject) {
+			UI.globalState = stateName;
+			resolve();
+		}).then(Registry.trigger).then(function () {
+			return Promise.all(UI.states.map(function (state) {
+				return state.change();
+			}));
+		});
+	},
 
 	// COMPONENT
 	// components
@@ -91,6 +91,7 @@ var UI = {
 
 			if (root !== currentRoot) {
 				var _this = this;
+				_this.root = _this.root !== undefined ? _this.root : root;
 				// 1. get the current parent.
 				// 2.	remove the child from the current parent.
 				// 3. append to new parent model.
@@ -350,15 +351,25 @@ var UI = {
 			var _this = this;
 			if (children !== undefined) {
 				return Promise.all(children.map(function (child, index) {
-					return child.then(function (component) {
-						component.index = index;
-						return _this.addChild(component);
-					}).then(function (final) {
-						if (_this.isRendered) {
-							final.root = _this.id;
-							return final.render();
-						}
-					});;
+					if (child.then !== undefined) { // is an unevaluated promise
+						return child.then(function (component) {
+							component.index = index;
+							return _this.addChild(component);
+						}).then(function (final) {
+							if (_this.isRendered) {
+								final.root = _this.id;
+								return final.render();
+							}
+						});
+					} else {
+						child.index = index;
+						return _this.addChild(child).then(function (final) {
+							if (_this.isRendered) {
+								final.root = _this.id;
+								return final.render();
+							}
+						});
+					}
 				}));
 			} else {
 				return this.children;
@@ -367,6 +378,7 @@ var UI = {
 		this.update = function (args) {
 			args = args !== undefined ? args : {};
 			var _this = this;
+			_this.index = args.index !== undefined ? args.index : -1;
 			return Promise.all([
 				// id, root, after, template
 				_this.setId(args.id),
