@@ -197,9 +197,12 @@ var UI = {
 
 				// classes need to be a combination of ones removed and ones added. If "add" and "remove" are not present, defaults to using whole object.
 				this.classes = currentClasses;
-				var addClasses = appearance.classes !== undefined ? (appearance.classes.add !== undefined ? appearance.classes.add : appearance.classes) : currentClasses;
+				var addClasses = appearance.classes !== undefined ? (appearance.classes.add !== undefined ? appearance.classes.add : (appearance.classes.remove !== undefined ? [] : appearance.classes)) : [];
 				var removeClasses = appearance.classes !== undefined ? (appearance.classes.remove !== undefined ? appearance.classes.remove : []) : [];
-				this.classes = this.classes.concat(addClasses);
+				var _this = this;
+				this.classes = this.classes.concat(addClasses.filter(function (cls) {
+					return _this.classes.indexOf(cls) === -1;
+				}));
 
 				this.classes = this.classes.filter(function (cls) {
 					return removeClasses.indexOf(cls) === -1;
@@ -208,7 +211,6 @@ var UI = {
 				this.style = appearance.style !== undefined ? appearance.style : currentStyle;
 
 				if (this.isRendered) {
-					var _this = this;
 					return new Promise(function(resolve, reject) {
 						// model
 						var model = _this.model();
