@@ -72,9 +72,9 @@ var Components = {
 						},
 					}),
 				],
-				registry: args.options.target.states.map(function (state) {
-					return {state: state, path: args.options.target.path(), args: {}, fn: args.options.target.process};
-				}),
+				// registry: args.options.target.states.map(function (state) {
+				// 	return {state: state, path: args.options.target.path(), args: {}, fn: args.options.target.process};
+				// }),
 			}),
 
 			// search group
@@ -156,40 +156,64 @@ var Components = {
 						// autocomplete ? show filter : hide filter
 						'focus': {
 							'fn': function (_this) {
-								if (search.autocomplete !== undefined && search.autocomplete) {
-									list.setAppearance({classes: {add: ['hidden']}});
-									searchButton.setAppearance({classes: {add: ['hidden']}});
-									filter.setAppearance({classes: {remove: ['hidden']}});
-								} else {
-									list.setAppearance({classes: {add: ['hidden']}});
-									searchButton.setAppearance({classes: {add: ['hidden']}});
-									filter.setAppearance({classes: {remove: ['hidden']}});
-								}
+								list.setAppearance({classes: {add: ['hidden']}});
+								searchButton.setAppearance({classes: {add: ['hidden']}});
+								filter.setAppearance({classes: {remove: ['hidden']}});
 							}
 						},
 
 						// BLUR INPUT:
 						'blur': {
 							'fn': function (_this) {
-								if (search.autocomplete !== undefined && search.autocomplete) {
-									list.setAppearance({classes: {add: ['hidden']}});
-									searchButton.setAppearance({classes: {add: ['hidden']}});
-									filter.setAppearance({classes: {remove: ['hidden']}});
-								} else {
-									list.setAppearance({classes: {remove: ['hidden']}});
-									searchButton.setAppearance({classes: {remove: ['hidden']}});
-									filter.setAppearance({classes: {add: ['hidden']}});
-								}
+								list.setAppearance({classes: {add: ['hidden']}});
+								searchButton.setAppearance({classes: {add: ['hidden']}});
+								filter.setAppearance({classes: {remove: ['hidden']}});
 							}
 						},
 
 						// TYPE INPUT:
 						'input': {
 							'fn': function (_this) {
+								// get words
 								var tokens = _this.model().val().split('');
-								console.log(tokens);
+
+								// show or hide
+								if (tokens.length !== 0) {
+									list.setAppearance({classes: {remove: ['hidden']}});
+									filter.setAppearance({classes: {add: ['hidden']}});
+								} else {
+									list.setAppearance({classes: {add: ['hidden']}});
+									filter.setAppearance({classes: {remove: ['hidden']}});
+								}
+
+								// run search and filter methods
+
+								//
+
+								new Promise(search.process.query(tokens)).then(function (buffer) {
+									// buffer is a list of organised search results to be filtered.
+									// only display those whose rule matches the active filter.
+									buffer = buffer.filter(function (item) {
+										return item.rule === filter.active;
+									});
+
+									// split display into a number of tokens and make ones that match the filter bold.
+									return new Promise(search.process.filter(buffer));
+								}).then(function (buffer) {
+									//
+
+								});
 							}
 						}
+					});
+
+					// Search button behaviour
+					searchButton.setBindings({
+						'mousedown': {
+							'fn': function (_this) {
+								filter.active = undefined;
+							},
+						},
 					});
 
 					// DEFINE INPUT GROUP
@@ -208,9 +232,9 @@ var Components = {
 						filter.set = function (rule) {
 							filter.active = rule.rule;
 							searchInput.model().focus();
-							list.setAppearance({classes: {remove: ['hidden']}});
+							// list.setAppearance({classes: {remove: ['hidden']}});
 							searchButton.setAppearance({classes: {remove: ['hidden']}, html: rule.status});
-							filter.setAppearance({classes: {add: ['hidden']}});
+							// filter.setAppearance({classes: {add: ['hidden']}});
 
 
 						}
