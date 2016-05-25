@@ -99,7 +99,7 @@ var UI = {
 				// 5. get the new parent.
 				// 6. add the child to new parent.
 				return _this.parent().then(function (parent) {
-					if (this.isRendered) {
+					if (_this.isRendered) {
 						return parent.removeChild(_this.id);
 					}
 				}).then(function () {
@@ -353,7 +353,9 @@ var UI = {
 		}
 		this.removeChildren = function () {
 			var _this = this;
-			return Promise.all(Object.keys(_this.children).map(_this.removeChild));
+			return Promise.all(Object.keys(_this.children).map(function (child) {
+				return _this.removeChild(child);
+			}));
 		}
 		this.setChildren = function (children) {
 			this.children = this.children !== undefined ? this.children : {};
@@ -936,4 +938,29 @@ var Registry = {
 			}
 		}));
 	},
+}
+
+var Request = {
+	get: function (url, args) {
+		if (url !== undefined && url !== '') {
+			return Permission.permit(args).then(function (data) {
+				var ajax_data = {
+					type: 'post',
+					data: data,
+					url: '/{url}'.format({url: url}),
+					error: function (xhr, ajaxOptions, thrownError) {
+						if (xhr.status === 404 || xhr.status === 0) {
+							Request.get(url, args);
+						}
+					}
+				}
+
+				return $.ajax(ajax_data);
+			});
+		} else {
+			return new Promise(function(resolve, reject) {
+				resolve();
+			});
+		}
+	}
 }

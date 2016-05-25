@@ -36,10 +36,7 @@ var Components = {
 			listHeight = 'calc(100% - {offset}px)'.format({offset: offset});
 		}
 
-		// filter id for extended use
-		var filterId = '{id}-filter'.format({id: id});
-
-		// CREATE ALL ELEMENTS
+		// CREATE ALL COMPONENTS
 		// create elements in parallel
 		return Promise.all([
 			// title
@@ -54,6 +51,11 @@ var Components = {
 				},
 			}),
 
+			// NEED LIST GROUP
+			// list container
+			// list
+			// loading icon
+
 			// list
 			UI.createComponent('{id}-list'.format({id: id}), {
 				// in future, allow this to be bound to another element.
@@ -65,12 +67,12 @@ var Components = {
 					},
 				},
 				children: [
-					UI.createComponent('{id}-loading-icon'.format({id: id}), {
-						template: UI.templates.loadingIcon,
-						appearance: {
-							classes: ['hidden'],
-						},
-					}),
+					// UI.createComponent('{id}-loading-icon'.format({id: id}), {
+					// 	template: UI.templates.loadingIcon,
+					// 	appearance: {
+					// 		classes: ['hidden'],
+					// 	},
+					// }),
 				],
 				// registry: args.options.target.states.map(function (state) {
 				// 	return {state: state, path: args.options.target.path(), args: {}, fn: args.options.target.process};
@@ -111,12 +113,11 @@ var Components = {
 						'padding': '7px',
 						'font-size': '12px',
 					},
-					html: 'whatever',
 				},
 			}),
 
 			// make filter
-			UI.createComponent(filterId, {
+			UI.createComponent('{id}-filter'.format({id: id}), {
 				template: UI.template('div', 'ie'),
 				appearance: {
 					style: {
@@ -149,95 +150,145 @@ var Components = {
 				// If the search option is filled, include a search bar and an optional filter panel
 				if (search !== undefined) {
 					// search functions engaged. can be in autocomplete mode and include filter panel.
-					// INPUT: if search, define input field
-					searchInput.setBindings({
 
-						// FOCUS INPUT
-						// autocomplete ? show filter : hide filter
-						'focus': {
-							'fn': function (_this) {
-								list.setAppearance({classes: {add: ['hidden']}});
-								searchButton.setAppearance({classes: {add: ['hidden']}});
-								filter.setAppearance({classes: {remove: ['hidden']}});
-							}
-						},
-
-						// BLUR INPUT:
-						'blur': {
-							'fn': function (_this) {
-								list.setAppearance({classes: {add: ['hidden']}});
-								searchButton.setAppearance({classes: {add: ['hidden']}});
-								filter.setAppearance({classes: {remove: ['hidden']}});
-							}
-						},
-
-						// TYPE INPUT:
-						'input': {
-							'fn': function (_this) {
-								// get words
-								var tokens = _this.model().val().split('');
-
-								// show or hide
-								if (tokens.length !== 0) {
-									list.setAppearance({classes: {remove: ['hidden']}});
-									filter.setAppearance({classes: {add: ['hidden']}});
-								} else {
-									list.setAppearance({classes: {add: ['hidden']}});
-									filter.setAppearance({classes: {remove: ['hidden']}});
-								}
-
-								// run search and filter methods
-
-								//
-
-								new Promise(search.process.query(tokens)).then(function (buffer) {
-									// buffer is a list of organised search results to be filtered.
-									// only display those whose rule matches the active filter.
-									buffer = buffer.filter(function (item) {
-										return item.rule === filter.active;
-									});
-
-									// split display into a number of tokens and make ones that match the filter bold.
-									return new Promise(search.process.filter(buffer));
-								}).then(function (buffer) {
-									//
-
-								});
-							}
-						}
-					});
-
-					// Search button behaviour
-					searchButton.setBindings({
-						'mousedown': {
-							'fn': function (_this) {
-								filter.active = undefined;
-							},
-						},
-					});
-
-					// DEFINE INPUT GROUP
-					searchGroup.defined = true;
-					searchGroup.setChildren([
-						searchInput,
-						searchButton
-					]);
-
-					if (search.filter !== undefined) {
+					if (search.filter !== undefined && search.filter) {
 						// the filter panel will be displayed
 						// autocomplete will decide whether the panel is displayed before the list of data.
 						// FILTER: if filter, define filter panel
 						filter.defined = true;
-						filter.setChildren(search.filter.options.map(search.filter.display(filterId)));
+						filter.setChildren(Object.keys(args.options.targets).map(function (key, index) {
+							var display = args.options.display.filter(filter.id);
+							return display(args.options.targets[key].filter, index);
+						}));
 						filter.set = function (rule) {
 							filter.active = rule.rule;
 							searchInput.model().focus();
 							// list.setAppearance({classes: {remove: ['hidden']}});
-							searchButton.setAppearance({classes: {remove: ['hidden']}, html: rule.status});
+							searchButton.setAppearance({classes: {remove: ['hidden']}, html: rule.button});
 							// filter.setAppearance({classes: {add: ['hidden']}});
 
 
 						}
+						filter.defaults = Object.keys(args.options.targets).filter(function (key) {
+							return args.options.targets[key].default;
+						}).map(function (key) {
+							return key;
+						});
+
+						// INPUT: if search, define input field
+						searchInput.setBindings({
+
+							// FOCUS INPUT
+							// autocomplete ? show filter : hide filter
+							'focus': {
+								'fn': function (_this) {
+									list.setAppearance({classes: {add: ['hidden']}});
+									searchButton.setAppearance({classes: {add: ['hidden']}});
+									filter.setAppearance({classes: {remove: ['hidden']}});
+								}
+							},
+
+							// BLUR INPUT:
+							'blur': {
+								'fn': function (_this) {
+									list.setAppearance({classes: {add: ['hidden']}});
+									searchButton.setAppearance({classes: {add: ['hidden']}});
+									filter.setAppearance({classes: {remove: ['hidden']}});
+								}
+							},
+
+							// TYPE INPUT:
+							'input': {
+								'fn': function (_this) {
+									// get words
+									var value = _this.model().val();
+									var tokens = value.split('');
+
+									// show or hide
+									if (tokens.length !== 0) {
+										list.setAppearance({classes: {remove: ['hidden']}});
+										filter.setAppearance({classes: {add: ['hidden']}});
+
+										// Materials
+										// 1. tokens or value -> filters values
+										// 2. active filter -> filters rules
+										// 3. sources: paths and urls
+
+										// remove all previous results (this is before buffer is implemented)
+										list.removeChildren().then(function () {
+											// Steps
+											// 1. If active filter is set, use only the url/path of that filter.
+											if (filter.active !== undefined) {
+												// get only active filter
+
+											} else {
+												if (filter.defaults.length !== 0) {
+													// display only defaults
+													for (i=0; i<filter.defaults.length; i++) {
+														var details = args.options.targets[filter.defaults[i]];
+														// Context
+														if (details.path !== undefined) {
+															Context.get(details.path()).then(details.process).then(function (results) {
+																results.filter(function (result) {
+																	// apply actual filter
+																	// console.log(result.main, value, (result.main.indexOf(value) !== -1));
+																	return result.main.indexOf(value) !== -1;
+																}).forEach(args.options.display.list(list));
+															});
+														}
+														// Request
+														if (details.url !== undefined) {
+															Request.get(details.url()).then(function (results) {
+																results.forEach(args.options.display.list(list));
+															});
+														}
+													}
+												} else {
+													// display everything
+													var targets = Object.keys(args.options.targets);
+													for (i=0; i<targets.length; i++) {
+														var details = args.options.targets[targets[i]];
+														// Context
+														if (details.path !== undefined) {
+															Context.get(details.path()).then(details.process).then(function (results) {
+																results.forEach(args.options.display.list(list));
+															});
+														}
+														// Request
+														if (details.url !== undefined) {
+															Request.get(details.url()).then(function (results) {
+																results.forEach(args.options.display.list(list));
+															});
+														}
+													}
+												}
+											}
+										}).catch(function (error) {
+											console.log(error);
+										});
+									} else {
+										list.setAppearance({classes: {add: ['hidden']}});
+										filter.setAppearance({classes: {remove: ['hidden']}});
+									}
+								}
+							}
+						});
+
+						// Search button behaviour
+						searchButton.setBindings({
+							'mousedown': {
+								'fn': function (_this) {
+									filter.active = undefined;
+								},
+							},
+						});
+
+						// DEFINE INPUT GROUP
+						searchGroup.defined = true;
+						searchGroup.setChildren([
+							searchInput,
+							searchButton
+						]);
 
 						// Autocomplete mode only affects present elements, it does not add any.
 						if (search.autocomplete !== undefined && search.autocomplete) {
@@ -260,6 +311,56 @@ var Components = {
 					} else {
 						// No filter panel
 						filter.defined = false;
+
+						// INPUT: if search, define input field
+						searchInput.setBindings({
+
+							// FOCUS INPUT
+							// autocomplete ? show filter : hide filter
+							'focus': {
+								'fn': function (_this) {
+									// list.setAppearance({classes: {add: ['hidden']}});
+								}
+							},
+
+							// BLUR INPUT:
+							'blur': {
+								'fn': function (_this) {
+									list.setAppearance({classes: {add: ['hidden']}});
+								}
+							},
+
+							// TYPE INPUT:
+							'input': {
+								'fn': function (_this) {
+									// get words
+									var tokens = _this.model().val().split('');
+
+									// show or hide
+									if (tokens.length !== 0) {
+										list.setAppearance({classes: {remove: ['hidden']}});
+									} else {
+										list.setAppearance({classes: {add: ['hidden']}});
+									}
+
+									// Materials
+									// 1. tokens or value -> filters values
+									// 2. active filter -> filters rules
+									// 3. sources: paths and urls
+
+									// Steps
+									// 1. If active filter is set, use only the url/path of that filter.
+
+								}
+							}
+						});
+
+						// DEFINE INPUT GROUP
+						searchGroup.defined = true;
+						searchGroup.setChildren([
+							searchInput,
+						]);
+
 						if (search.autocomplete !== undefined && search.autocomplete) {
 							// autocomplete mode: show no data until search query is entered.
 							list.setAppearance({
