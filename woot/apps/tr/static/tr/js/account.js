@@ -127,6 +127,12 @@ UI.app('hook', [
 									status: 'Rules',
 									rule: 'rules',
 								}},
+								{key: 'period', args: {
+									char: '.',
+									main: 'Display only single words',
+									status: 'Words',
+									rule: 'words',
+								}},
 							],
 
 							// How to display an individual option.
