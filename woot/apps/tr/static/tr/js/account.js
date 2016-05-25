@@ -36,8 +36,14 @@ UI.app('hook', [
 
 					// This defines what is being searched for, i.e. paths in context.
 					// This is the source of the data for the list.
-					target: {
-						path: function () {
+					targets: {
+						keys: {
+							clients: {
+								
+							},
+						},
+
+						function () {
 							return 'clients';
 						},
 						// url: 'commands/transcription_set/', // expects a list of stuff obviously
@@ -125,13 +131,13 @@ UI.app('hook', [
 									char: '/',
 									main: 'Display only rules',
 									status: 'Rules',
-									rule: 'rules',
+									rule: 'rule',
 								}},
 								{key: 'period', args: {
 									char: '.',
 									main: 'Display only single words',
 									status: 'Words',
-									rule: 'words',
+									rule: 'word',
 								}},
 							],
 
@@ -178,7 +184,7 @@ UI.app('hook', [
 							// This defines how to respond to a query.
 							// This is a filter in a way, as in the total list of results will be filtered based on the query,
 							// but it does not respond to any filter other than the query.
-							query: function (query) {
+							query: function (tokens) {
 								// 'query' is the text entered by the user after having been cleaned by the standard function
 								return function (resolve, reject) {
 									// This returns a function ready for a promise to use in the response chain.
