@@ -77,7 +77,7 @@ var Components = {
 				}),
 			}),
 
-			// input group
+			// search group
 			UI.createComponent('{id}-search'.format({id: id}), {
 				template: UI.template('div', 'ie'),
 				appearance: {
@@ -88,14 +88,30 @@ var Components = {
 				},
 			}),
 
-			// make input
+			// search input
 			UI.createComponent('{id}-search-input'.format({id: id}), {
-				template: UI.template('input', 'ie input'),
+				template: UI.template('input', 'ie input abs'),
 				appearance: {
 					style: {
 						'width': '100%',
 						'height': '100%',
 					}
+				},
+			}),
+
+			// search button
+			UI.createComponent('{id}-search-button'.format({id: id}), {
+				template: UI.template('div', 'ie button abs border border-radius'),
+				appearance: {
+					style: {
+						'top': '5px',
+						'height': '30px',
+						'width': 'auto',
+						'right': '5px',
+						'padding': '7px',
+						'font-size': '12px',
+					},
+					html: 'whatever',
 				},
 			}),
 
@@ -113,9 +129,10 @@ var Components = {
 		]).then(function (components) {
 			var title = components[0];
 			var list = components[1];
-			var inputGroup = components[2];
-			var input = components[3];
-			var filter = components[4];
+			var searchGroup = components[2];
+			var searchInput = components[3];
+			var searchButton = components[4];
+			var filter = components[5];
 
 			// set bindings, children, etc.
 			return new Promise(function(resolve, reject) {
@@ -133,18 +150,20 @@ var Components = {
 				if (search !== undefined) {
 					// search functions engaged. can be in autocomplete mode and include filter panel.
 					// INPUT: if search, define input field
-					input.setBindings({
+					searchInput.setBindings({
 
 						// FOCUS INPUT
 						// autocomplete ? show filter : hide filter
 						'focus': {
 							'fn': function (_this) {
 								if (search.autocomplete !== undefined && search.autocomplete) {
-									list.model().hide();
-									filter.model().show();
+									list.setAppearance({classes: {add: ['hidden']}});
+									searchButton.setAppearance({classes: {add: ['hidden']}});
+									filter.setAppearance({classes: {remove: ['hidden']}});
 								} else {
-									list.model().hide();
-									filter.model().show();
+									list.setAppearance({classes: {add: ['hidden']}});
+									searchButton.setAppearance({classes: {add: ['hidden']}});
+									filter.setAppearance({classes: {remove: ['hidden']}});
 								}
 							}
 						},
@@ -153,11 +172,13 @@ var Components = {
 						'blur': {
 							'fn': function (_this) {
 								if (search.autocomplete !== undefined && search.autocomplete) {
-									list.model().hide();
-									filter.model().show();
+									list.setAppearance({classes: {add: ['hidden']}});
+									searchButton.setAppearance({classes: {add: ['hidden']}});
+									filter.setAppearance({classes: {remove: ['hidden']}});
 								} else {
-									list.model().show();
-									filter.model().hide();
+									list.setAppearance({classes: {remove: ['hidden']}});
+									searchButton.setAppearance({classes: {remove: ['hidden']}});
+									filter.setAppearance({classes: {add: ['hidden']}});
 								}
 							}
 						},
@@ -172,9 +193,10 @@ var Components = {
 					});
 
 					// DEFINE INPUT GROUP
-					inputGroup.defined = true;
-					inputGroup.setChildren([
-						input,
+					searchGroup.defined = true;
+					searchGroup.setChildren([
+						searchInput,
+						searchButton
 					]);
 
 					if (search.filter !== undefined) {
@@ -185,18 +207,21 @@ var Components = {
 						filter.setChildren(search.filter.options.map(search.filter.display(filterId)));
 						filter.set = function (rule) {
 							filter.active = rule.rule;
-							input.model().focus();
-							filter.model().hide();
-							list.model().show();
+							searchInput.model().focus();
+							list.setAppearance({classes: {remove: ['hidden']}});
+							searchButton.setAppearance({classes: {remove: ['hidden']}, html: rule.status});
+							filter.setAppearance({classes: {add: ['hidden']}});
 
-							// add-on for filter
-							inputGroup.addChild();
+
 						}
 
 						// Autocomplete mode only affects present elements, it does not add any.
 						if (search.autocomplete !== undefined && search.autocomplete) {
 							// autocomplete mode: display filter first
 							list.setAppearance({
+								classes: ['hidden'],
+							});
+							searchButton.setAppearance({
 								classes: ['hidden'],
 							});
 
@@ -226,11 +251,11 @@ var Components = {
 
 				} else {
 					// display immediately, buffer can only be changed by scrolling.
-					inputGroup.defined = false;
+					searchGroup.defined = false;
 				}
 
 				// return elements as they entered to be added to the base
-				resolve([title, inputGroup, list, filter]);
+				resolve([title, searchGroup, list, filter]);
 			});
 		}).then(function (children) {
 			// return base
