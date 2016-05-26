@@ -231,15 +231,14 @@ var Components = {
 															Context.get(details.path()).then(details.process).then(function (results) {
 																results.filter(function (result) {
 																	// apply actual filter
-																	// console.log(result.main, value, (result.main.indexOf(value) !== -1));
 																	return result.main.indexOf(value) !== -1;
-																}).forEach(args.options.display.list(list));
+																}).forEach(args.options.display.list(list, tokens));
 															});
 														}
 														// Request
 														if (details.url !== undefined) {
 															Request.get(details.url()).then(function (results) {
-																results.forEach(args.options.display.list(list));
+																results.forEach(args.options.display.list(list, tokens));
 															});
 														}
 													}
