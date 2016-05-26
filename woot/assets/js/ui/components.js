@@ -201,8 +201,8 @@ var Components = {
 							'input': {
 								'fn': function (_this) {
 									// get words
-									var value = _this.model().val();
-									var tokens = value.split('');
+									var query = _this.model().val();
+									var tokens = query.split('');
 
 									// show or hide
 									if (tokens.length !== 0) {
@@ -231,14 +231,14 @@ var Components = {
 															Context.get(details.path()).then(details.process).then(function (results) {
 																results.filter(function (result) {
 																	// apply actual filter
-																	return result.main.indexOf(value) !== -1;
-																}).forEach(args.options.display.list(list, tokens));
+																	return result.main.indexOf(query) !== -1;
+																}).forEach(args.options.display.list(list, query));
 															});
 														}
 														// Request
 														if (details.url !== undefined) {
 															Request.get(details.url()).then(function (results) {
-																results.forEach(args.options.display.list(list, tokens));
+																results.forEach(args.options.display.list(list, query));
 															});
 														}
 													}
