@@ -98,7 +98,7 @@ UI.app('hook', [
 
 					// Define a way of display individual list items
 					display: {
-						list: function (_this, tokens) {
+						list: function (_this, query) {
 							return function (display) {
 								// 'data' is a single unit of the full dataset to be included.
 								return UI.createComponent('{id}-{key}'.format({id: _this.id, key: display.id}), {
@@ -117,13 +117,11 @@ UI.app('hook', [
 												style: {
 
 												},
-												html: '{main}'.format({main: display.main.split('').map(function (token) {
-													if (tokens.indexOf(token) !== -1) {
-														return '<span style="color:#fff;">{token}</span>'.format({token: token});
-													} else {
-														return token;
-													}
-												}).join('')}),
+												html: '{main}'.format({main: '{head}<span style="color:#fff;">{query}</span>{tail}'.format({
+													head: display.main.substring(0, display.main.indexOf(query)),
+													query: display.main.substr(display.main.indexOf(query), query.length),
+													tail: display.main.substr(display.main.indexOf(query) + query.length),
+												})}),
 											},
 										}),
 										UI.createComponent('{id}-{key}-index'.format({id: _this.id, key: display.id}), {
