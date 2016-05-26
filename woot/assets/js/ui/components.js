@@ -46,6 +46,7 @@ var Components = {
 					style: {
 						'width': '100%',
 						'height': '22px',
+						'font-size': '18px',
 					},
 					html: titleText,
 				},
@@ -55,6 +56,8 @@ var Components = {
 			// list container
 			// list
 			// loading icon
+
+			UI.createComponent(),
 
 			// list
 			UI.createComponent('{id}-list'.format({id: id}), {
@@ -141,7 +144,7 @@ var Components = {
 			// set bindings, children, etc.
 			return new Promise(function(resolve, reject) {
 				// title
-				title.defined = true;
+				title.defined = args.options.title !== undefined;
 
 				// list modifications
 				list.display = args.options.display;
@@ -396,4 +399,12 @@ var Components = {
 		});
 	},
 
+	//////////// AUDIO PLAYER
+	// Plays audio given a source
+	// Has a buffer for storing multiple tracks and cycling between them.
+	// Parts:
+	// 1.
+	audio: function (id, args) {
+
+	},
 }
