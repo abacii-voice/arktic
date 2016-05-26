@@ -208,3 +208,27 @@ UI.app('hook', [
 // 		});
 // 	});
 // }
+
+// PLAN
+// scroll list
+// 1. Add persistent search tokens for certain objects (TR, word, phrase, MOD, caption, utterance)
+// 2. Remove standalone requests for objects
+// 3. Add non-autocomplete option for list
+// 4. Add multiple tag support for filtering.
+// 5. Speed is ok, so see if objects can be sorted in place. The list can be reorganised with 'setAfter'.
+// 6. Add correct scroll structure for scroll list
+// 7. Ensure loading icon is formatted properly.
+// 8. Add filter element can that be formatted like any other component. NEED FILTER GROUP
+
+// audio element
+// 1. Follow model for scroll list in terms of how to construct component composite.
+// 2. It is just a glorified scroll list in the way it fetches transcriptions or moderations.
+// 3. Have buffer that can load more and dismiss audio files,
+// 		construct audio elements for them to live in, and connect the component to them.
+// 4.
+
+// sidebar
+// 1. very simple, build the same way as scroll list
+// 2. Link buttons to Active properties
+
+//
