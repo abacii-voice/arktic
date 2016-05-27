@@ -219,6 +219,7 @@ UI.app('hook', [
 // 6. Add correct scroll structure for scroll list
 // 7. Ensure loading icon is formatted properly.
 // 8. Add filter element can that be formatted like any other component. NEED FILTER GROUP
+// 9. Add FILTER to database level in Context
 
 // audio element
 // 1. Follow model for scroll list in terms of how to construct component composite.
