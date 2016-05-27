@@ -49,12 +49,13 @@ class Path():
 
 	'''
 
-	def __init__(self, path):
+	def __init__(self, path, fltr=''):
 		# properties
 		self.is_blank = path == ''
 		self.key = ''
 		self.id = ''
 		self.index = 0
+		self.fltr = fltr
 
 		# locations
 		if not self.is_blank:
@@ -82,6 +83,15 @@ class Path():
 		# get id should have no effect on any levels or locking.
 		return self.id
 
+	def get_filter(self, key):
+		# simulates going down so that the filter can be returned on the last object.
+		if not self.is_blank:
+			last_key, last_id = list(self.locations.items())[-1]
+			if key == last_key:
+				return self.fltr
+
+		return ''
+
 	def down(self, key):
 		# This should shift the index to the next token, or if the key is the same as a previous key,
 		# the index should rewind to this key instead.
@@ -97,9 +107,9 @@ class Path():
 		return self
 
 ### Access
-def access(original_path, permission):
+def access(original_path, permission, fltr=''):
 	# 1. create path
-	path = Path(original_path)
+	path = Path(original_path, fltr=fltr)
 	data = {}
 
 	if path.check('clients'):

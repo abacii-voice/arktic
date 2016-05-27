@@ -57,8 +57,9 @@ class ContextTestCase(TestCase):
 		caption = worker.captions.create(transcription=transcription)
 
 		# token, tokenInstance
-		token = dictionary.tokens.create(content='test_token')
-		token_instance = token.instances.create(caption=caption)
+		for i, t in enumerate(['qwe', 'qweqwrl', 'eroii', 'weori', 'powe', 'bsbdw']):
+			token = dictionary.tokens.create(content=t)
+			token_instance = token.instances.create(caption=caption, index=i)
 
 		# flag, flagInstance
 		flag = contract_client.flags.create(name='unsure')
@@ -79,7 +80,8 @@ class ContextTestCase(TestCase):
 		# path
 		client_id = Client.objects.get(name='TestProductionClient').id
 		project_id = Client.objects.get(name='TestProductionClient').production_projects.get().id
-		path = 'clients.{client_id}.production_projects.{project_id}'.format(client_id=client_id, project_id=project_id)
+		dictionary_id = Client.objects.get(name='TestProductionClient').production_projects.get().dictionaries.get().id
+		path = 'clients.{client_id}.production_projects.{project_id}.dictionaries.{dictionary_id}.tokens'.format(client_id=client_id, project_id=project_id, dictionary_id=dictionary_id)
 		# path = 'user'
 		# path = ''
 
@@ -87,5 +89,5 @@ class ContextTestCase(TestCase):
 		user = User.objects.get(email='1@1.com')
 		permission = Permission(user, user.get_role(client_id, 'admin'))
 
-		data = access(path, permission)
+		data = access(path, permission, fltr='we')
 		print(json.dumps(data, indent=2, sort_keys=True))
