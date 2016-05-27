@@ -671,7 +671,8 @@ var Context = {
 	// This will get from the current store. If it does not exist, a request will be made for it. This will trigger registry.
 	get: function (path, args) {
 		// force load from the server?
-		force = args !== undefined ? (args.force !== undefined ? args.force : false) : false;
+		var force = args !== undefined ? (args.force !== undefined ? args.force : false) : false;
+		var options = args !== undefined ? (args.options !== undefined ? args.options : {}) : {};
 
 		return new Promise(function(resolve, reject) {
 			// proceed to get from context object
@@ -692,7 +693,7 @@ var Context = {
 
 		}).then(function (data) {
 			if (data === undefined || force) {
-				return Context.load(path).then(function (data) {
+				return Context.load(path, options).then(function (data) {
 					return Context.set(path, data);
 				});
 			} else {
@@ -703,15 +704,15 @@ var Context = {
 
 	// The load method gets the requested path from the server if it does not exist locally.
 	// This operation can be forced from the get method.
-	load: function (path) {
-		return Permission.permit().then(function (data) {
+	load: function (path, options) {
+		return Permission.permit(options).then(function (data) {
 			var ajax_data = {
 				type: 'post',
 				data: data,
 				url: '/context/{path}'.format({path: path}),
 				error: function (xhr, ajaxOptions, thrownError) {
 					if (xhr.status === 404 || xhr.status === 0) {
-						Context.load(path);
+						Context.load(path, options);
 					}
 				}
 			}
