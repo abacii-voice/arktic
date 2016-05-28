@@ -61,7 +61,12 @@ class Project(models.Model):
 
 		if path.check('transcriptions', blank=False):
 			data.update({
-				'transcriptions': {transcription.id: transcription.data(path.down('transcriptions'), permission) for transcription in self.transcriptions.filter(id__startswith=path.get_id())},
+				'transcriptions': {transcription.id: transcription.data(path.down('transcriptions'), permission) for transcription in self.transcriptions.filter(id__startswith=path.get_id()).filter(**path.get_filter('transcriptions'))},
+			})
+
+		if path.check('moderations', blank=False):
+			data.update({
+				'moderations': {moderation.id: moderation.data(path.down('moderations'), permission) for moderation in self.moderations.filter(id__startswith=path.get_id()).filter(**path.get_filter('moderations'))},
 			})
 
 		return data

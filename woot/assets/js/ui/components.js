@@ -52,38 +52,10 @@ var Components = {
 				},
 			}),
 
-			// NEED LIST GROUP
-			// list container
-			// list
-			// loading icon
 
-			UI.createComponent(),
-
-			// list
-			UI.createComponent('{id}-list'.format({id: id}), {
-				// in future, allow this to be bound to another element.
-				template: UI.template('div', 'ie'),
-				appearance: {
-					style: {
-						'width': '100%',
-						'height': listHeight,
-					},
-				},
-				children: [
-					// UI.createComponent('{id}-loading-icon'.format({id: id}), {
-					// 	template: UI.templates.loadingIcon,
-					// 	appearance: {
-					// 		classes: ['hidden'],
-					// 	},
-					// }),
-				],
-				// registry: args.options.target.states.map(function (state) {
-				// 	return {state: state, path: args.options.target.path(), args: {}, fn: args.options.target.process};
-				// }),
-			}),
-
-			// search group
-			UI.createComponent('{id}-search'.format({id: id}), {
+			// SEARCH GROUP
+			// search wrapper
+			UI.createComponent('{id}-search-wrapper'.format({id: id}), {
 				template: UI.template('div', 'ie'),
 				appearance: {
 					style: {
@@ -122,8 +94,46 @@ var Components = {
 				},
 			}),
 
-			// make filter
-			UI.createComponent('{id}-filter'.format({id: id}), {
+
+			// LIST GROUP
+			// list wrapper
+			UI.createComponent('{id}-list-wrapper'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': listHeight,
+						'overflow': 'hidden',
+					},
+				},
+			}),
+
+			// list
+			UI.createComponent('{id}-list'.format({id: id}), {
+				// in future, allow this to be bound to another element.
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': 'calc(100% + 20px)',
+						'height': listHeight,
+						'padding-right': '20px',
+						'overflow-y': 'scroll',
+					},
+				},
+				// registry: args.options.target.states.map(function (state) {
+				// 	return {state: state, path: args.options.target.path(), args: {}, fn: args.options.target.process};
+				// }),
+			}),
+
+			// list loading icon
+			UI.createComponent('{id}-list-loading-icon'.format({id: id}), {
+				template: UI.templates.loadingIcon,
+			}),
+
+
+			// FILTER GROUP
+			// filter wrapper
+			UI.createComponent('{id}-filter-wrapper'.format({id: id}), {
 				template: UI.template('div', 'ie'),
 				appearance: {
 					style: {
@@ -133,23 +143,56 @@ var Components = {
 				},
 			}),
 
-		]).then(function (components) {
-			var title = components[0];
-			var list = components[1];
-			var searchGroup = components[2];
-			var searchInput = components[3];
-			var searchButton = components[4];
-			var filter = components[5];
+			// filter list
+			UI.createComponent('{id}-filter'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': '100%',
+					},
+				},
+			}),
 
+			// filter info
+			UI.createComponent('{id}-filter-info'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': '100%',
+					},
+				},
+			}),
+
+		]).then(function (components) {
+			// unpack components
+			// title
+			var title = components[0];
+
+			// SEARCH GROUP
+			var searchWrapper = components[1];
+			var searchInput = components[2];
+			var searchButton = components[3];
+
+			// LIST GROUP
+			var listWrapper = components[4];
+			var list = components[5];
+			var listLoadingIcon =  components[6];
+
+			// FILTER GROUP
+			var filterWrapper = components[7];
+			var filter = components[8];
+			var filterInfo = components[9];
+
+			// SET PROPERTIES AND METHODS
 			// set bindings, children, etc.
 			return new Promise(function(resolve, reject) {
 				// title
-				title.defined = args.options.title !== undefined;
+				title.defined = titleText !== undefined;
 
 				// list modifications
+				listWrapper.defined = true;
 				list.display = args.options.display;
 				list.buffer = {};
-				list.defined = true;
 
 				// search options
 				// SEARCH
@@ -161,7 +204,7 @@ var Components = {
 						// the filter panel will be displayed
 						// autocomplete will decide whether the panel is displayed before the list of data.
 						// FILTER: if filter, define filter panel
-						filter.defined = true;
+						filterWrapper.defined = true;
 						filter.setChildren(Object.keys(args.options.targets).map(function (key, index) {
 							var display = args.options.display.filter(filter.id);
 							return display(args.options.targets[key].filter, index);
@@ -241,12 +284,6 @@ var Components = {
 																}).forEach(args.options.display.list(list, query));
 															});
 														}
-														// Request
-														if (details.url !== undefined) {
-															Request.get(details.url()).then(function (results) {
-																results.forEach(args.options.display.list(list, query));
-															});
-														}
 													}
 												} else {
 													// display everything
@@ -256,12 +293,6 @@ var Components = {
 														// Context
 														if (details.path !== undefined) {
 															Context.get(details.path()).then(details.process).then(function (results) {
-																results.forEach(args.options.display.list(list));
-															});
-														}
-														// Request
-														if (details.url !== undefined) {
-															Request.get(details.url()).then(function (results) {
 																results.forEach(args.options.display.list(list));
 															});
 														}
@@ -381,11 +412,11 @@ var Components = {
 
 				} else {
 					// display immediately, buffer can only be changed by scrolling.
-					searchGroup.defined = false;
+					searchWrapper.defined = false;
 				}
 
 				// return elements as they entered to be added to the base
-				resolve([title, searchGroup, list, filter]);
+				resolve([title, searchWrapper, listWrapper, filterWrapper]);
 			});
 		}).then(function (children) {
 			// return base

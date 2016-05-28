@@ -49,7 +49,7 @@ class Path():
 
 	'''
 
-	def __init__(self, path, fltr=''):
+	def __init__(self, path, fltr={}):
 		# properties
 		self.is_blank = path == ''
 		self.key = ''
@@ -90,7 +90,7 @@ class Path():
 			if key == last_key:
 				return self.fltr
 
-		return ''
+		return {}
 
 	def down(self, key):
 		# This should shift the index to the next token, or if the key is the same as a previous key,
@@ -107,7 +107,7 @@ class Path():
 		return self
 
 ### Access
-def access(original_path, permission, fltr=''):
+def access(original_path, permission, fltr={}):
 	# 1. create path
 	path = Path(original_path, fltr=fltr)
 	data = {}
