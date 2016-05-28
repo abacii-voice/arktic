@@ -89,5 +89,6 @@ class ContextTestCase(TestCase):
 		user = User.objects.get(email='1@1.com')
 		permission = Permission(user, user.get_role(client_id, 'admin'))
 
-		data = access(path, permission, fltr='we')
+		test_fltr = {'content__contains': 'we'}
+		data = access(path, permission, fltr=test_fltr)
 		print(json.dumps(data, indent=2, sort_keys=True))

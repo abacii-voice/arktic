@@ -41,12 +41,6 @@ UI.app('hook', [
 							// default targets are always displayed if no filter is applied
 							default: true,
 
-							// url for requests, should return things in expected form
-							url: function () {
-								// return 'search/clients';
-								return '';
-							},
-
 							// path in Context
 							path: function () {
 								return 'clients';
@@ -212,14 +206,16 @@ UI.app('hook', [
 // PLAN
 // scroll list
 // 1. Add persistent search tokens for certain objects (TR, word, phrase, MOD, caption, utterance)
-// 2. Remove standalone requests for objects
+// 1a. Filter list of transcriptions by relationship to active token.
+// 1b. Filter object in access using dict {'filter': 'value', 'filter2': 'value2'}
+// 2. [DONE] Remove standalone requests for objects
 // 3. Add non-autocomplete option for list
 // 4. Add multiple tag support for filtering.
 // 5. Speed is ok, so see if objects can be sorted in place. The list can be reorganised with 'setAfter'.
 // 6. Add correct scroll structure for scroll list
 // 7. Ensure loading icon is formatted properly.
 // 8. Add filter element can that be formatted like any other component. NEED FILTER GROUP
-// 9. Add FILTER to database level in Context
+// 9. [DONE] Add FILTER to database level in Context
 
 // audio element
 // 1. Follow model for scroll list in terms of how to construct component composite.
