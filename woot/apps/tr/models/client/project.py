@@ -71,6 +71,24 @@ class Project(models.Model):
 
 		return data
 
+	def get_transcription(self):
+
+		'''
+		Select a single transcription based on several criteria.
+
+		'''
+
+		return self.transcriptions.filter(is_active=True, is_available=True).order_by('original_caption', 'date_created')[0]
+
+	def get_moderation(self):
+
+		'''
+		Select a single transcription based on several criteria.
+
+		'''
+
+		return self.moderations.filter(is_active=True, is_available=True).order_by('date_created')[0]
+
 class Batch(models.Model):
 
 	### Connections
