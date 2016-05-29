@@ -79,6 +79,6 @@ for (i=0; i<targets.length; i++) {
 	}
 }
 
-var display = function () {
-	
+var display = function (details, query) {
+
 }
