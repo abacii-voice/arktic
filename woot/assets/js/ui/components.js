@@ -190,8 +190,16 @@ var Components = {
 				// TITLE
 				title.defined = titleText !== undefined;
 
-				list.display = function () {
-
+				list.runDisplay = function (details, query) {
+					var fltr = details.fltr !== undefined ? {options: {filter: details.fltr()}} : {};
+					query = query !== undefined ? query : '';
+					if (details.path !== undefined) {
+						Context.get(details.path(), fltr).then(details.process).then(function (results) {
+							results.filter(function (result) {
+								return result.main.indexOf(query) !== -1;
+							}).forEach(args.options.display.list(list, query));
+						});
+					}
 				}
 
 				// SEARCH
@@ -243,9 +251,13 @@ var Components = {
 							// BLUR INPUT:
 							'blur': {
 								'fn': function (_this) {
+									if (search.autocomplete !== undefined && search.autocomplete) {
+										filterWrapper.setAppearance({classes: {remove: ['hidden']}});
+									} else {
+										filterWrapper.setAppearance({classes: {add: ['hidden']}});
+									}
 									listWrapper.setAppearance({classes: {add: ['hidden']}});
 									searchButton.setAppearance({classes: {add: ['hidden']}});
-									filterWrapper.setAppearance({classes: {remove: ['hidden']}});
 								}
 							},
 
@@ -271,54 +283,18 @@ var Components = {
 											// Steps
 											// 1. If active filter is set, use only the url/path of that filter.
 											if (filter.active !== undefined) {
-												// get only active filter
-												var path = filter.active.path !== undefined ? filter.active.path() : '';
-												var fltr = filter.active.fltr !== undefined ? {options: {filter: filter.active.fltr()}} : {};
-
-												// Context
-												if (filter.active.path !== undefined) {
-													Context.get(path, fltr).then(filter.active.process).then(function (results) {
-														results.filter(function (result) {
-															// apply actual filter
-															return result.main.indexOf(query) !== -1;
-														}).forEach(args.options.display.list(list, query));
-													});
-												}
-
+												list.runDisplay(filter.active, query);
 											} else {
 												if (filter.defaults.length !== 0) {
 													// display only defaults
 													for (i=0; i<filter.defaults.length; i++) {
-														var details = args.options.targets[filter.defaults[i]];
-														var path = details.path !== undefined ? details.path() : '';
-														var fltr = details.fltr !== undefined ? {options: {filter: details.fltr()}} : {};
-
-														// Context
-														if (details.path !== undefined) {
-															Context.get(path, fltr).then(details.process).then(function (results) {
-																results.filter(function (result) {
-																	// apply actual filter
-																	return result.main.indexOf(query) !== -1;
-																}).forEach(args.options.display.list(list, query));
-															});
-														}
+														list.runDisplay(args.options.targets[filter.defaults[i]], query);
 													}
 												} else {
 													// display everything
 													var targets = Object.keys(args.options.targets);
 													for (i=0; i<targets.length; i++) {
-														var details = args.options.targets[targets[i]];
-														var path = details.path !== undefined ? details.path() : '';
-														var fltr = details.fltr !== undefined ? {options: {filter: details.fltr()}} : {};
-
-														// Context
-														if (details.path !== undefined) {
-															Context.get(path, fltr).then(details.process).then(function (results) {
-																results.filter(function (result) {
-																	return result.main.indexOf(query) !== -1;
-																}).forEach(args.options.display.list(list, query));
-															});
-														}
+														list.runDisplay(args.options.targets[targets[i]], query);
 													}
 												}
 											}
@@ -342,12 +318,12 @@ var Components = {
 						});
 
 						// Autocomplete mode only affects present elements, it does not add any.
+						searchButton.setAppearance({
+							classes: ['hidden'],
+						});
 						if (search.autocomplete !== undefined && search.autocomplete) {
 							// autocomplete mode: display filter first
 							listWrapper.setAppearance({
-								classes: ['hidden'],
-							});
-							searchButton.setAppearance({
 								classes: ['hidden'],
 							});
 
@@ -373,16 +349,7 @@ var Components = {
 						// display everything
 						var targets = Object.keys(args.options.targets);
 						for (i=0; i<targets.length; i++) {
-							var details = args.options.targets[targets[i]];
-							var path = details.path !== undefined ? details.path() : '';
-							var fltr = details.fltr !== undefined ? {options: {filter: details.fltr()}} : {};
-
-							// Context
-							if (details.path !== undefined) {
-								Context.get(path, fltr).then(details.process).then(function (results) {
-									results.forEach(args.options.display.list(list));
-								});
-							}
+							list.runDisplay(args.options.targets[targets[i]]);
 						}
 
 						// INPUT: if search, define input field
@@ -421,18 +388,7 @@ var Components = {
 											// display everything
 											var targets = Object.keys(args.options.targets);
 											for (i=0; i<targets.length; i++) {
-												var details = args.options.targets[targets[i]];
-												var path = details.path !== undefined ? details.path() : '';
-												var fltr = details.fltr !== undefined ? {options: {filter: details.fltr()}} : {};
-
-												// Context
-												if (details.path !== undefined) {
-													Context.get(path, fltr).then(details.process).then(function (results) {
-														results.filter(function (result) {
-															return result.main.indexOf(query) !== -1;
-														}).forEach(args.options.display.list(list, query));
-													});
-												}
+												list.runDisplay(args.options.targets[targets[i]], query);
 											}
 										});
 									} else {
@@ -440,16 +396,7 @@ var Components = {
 											if (search.autocomplete === undefined || !search.autocomplete) {
 												var targets = Object.keys(args.options.targets);
 												for (i=0; i<targets.length; i++) {
-													var details = args.options.targets[targets[i]];
-													var path = details.path !== undefined ? details.path() : '';
-													var fltr = details.fltr !== undefined ? {options: {filter: details.fltr()}} : {};
-
-													// Context
-													if (details.path !== undefined) {
-														Context.get(path, fltr).then(details.process).then(function (results) {
-															results.forEach(args.options.display.list(list));
-														});
-													}
+													list.runDisplay(args.options.targets[targets[i]]);
 												}
 											}
 										});
@@ -483,16 +430,7 @@ var Components = {
 
 					var targets = Object.keys(args.options.targets);
 					for (i=0; i<targets.length; i++) {
-						var details = args.options.targets[targets[i]];
-						var path = details.path !== undefined ? details.path() : '';
-						var fltr = details.fltr !== undefined ? {options: {filter: details.fltr()}} : {};
-
-						// Context
-						if (details.path !== undefined) {
-							Context.get(path, fltr).then(details.process).then(function (results) {
-								results.forEach(args.options.display.list(list));
-							});
-						}
+						list.runDisplay(args.options.targets[targets[i]]);
 					}
 				}
 

@@ -87,13 +87,13 @@ UI.app('hook', [
 					},
 
 					// Defines the search bar.
-					// search: {
-					// 	// Autocomplete tells the filter panel (if present) to be shown first, else show nothing until a query is submitted.
-					// 	autocomplete: false,
-					//
-					// 	// Filter tells the element what structure to give to the filter panel, buttons, etc.
-					// 	filter: false,
-					// },
+					search: {
+						// Autocomplete tells the filter panel (if present) to be shown first, else show nothing until a query is submitted.
+						autocomplete: false,
+
+						// Filter tells the element what structure to give to the filter panel, buttons, etc.
+						filter: true,
+					},
 
 					// Define a way of display individual list items
 					display: {
