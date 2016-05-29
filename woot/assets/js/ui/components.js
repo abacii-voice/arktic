@@ -463,7 +463,7 @@ var Components = {
 	// Plays audio given a source
 	// Has a buffer for storing multiple tracks and cycling between them.
 	// Parts:
-	// 1.
+	// 1. 
 	audio: function (id, args) {
 
 	},
