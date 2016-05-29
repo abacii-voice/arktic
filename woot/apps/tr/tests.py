@@ -86,14 +86,14 @@ class ContextTestCase(TestCase):
 		client_id = Client.objects.get(name='TestProductionClient').id
 		project_id = Client.objects.get(name='TestProductionClient').production_projects.get().id
 		dictionary_id = Client.objects.get(name='TestProductionClient').production_projects.get().dictionaries.get().id
-		# path = 'clients.{client_id}.production_projects.{project_id}.dictionaries.{dictionary_id}.tokens'.format(client_id=client_id, project_id=project_id, dictionary_id=dictionary_id)
+		path = 'clients.{client_id}.production_projects.{project_id}.transcriptions'.format(client_id=client_id, project_id=project_id, dictionary_id=dictionary_id)
 		# path = 'user'
-		path = ''
+		# path = ''
 
 		# request data using path
 		user = User.objects.get(email='1@1.com')
 		permission = Permission(user, user.get_role(client_id, 'admin'))
 
-		test_fltr = {'content__contains': 'we'}
-		data = access(path, permission, fltr={})
+		test_fltr = {'token__id': user.get_role(client_id, 'worker').active_transcription_token().id}
+		data = access(path, permission, fltr=test_fltr)
 		print(json.dumps(data, indent=2, sort_keys=True))
