@@ -29,10 +29,15 @@ class ContextTestCase(TestCase):
 		user2 = User.objects.create(email='2@2.com', first_name='first_name_2', last_name='last_name_2')
 
 		production_admin = production_client.add_admin(user1)
-		moderator = production_client.add_moderator(user1)
-		worker = production_client.add_worker(user1, moderator)
 
+		moderator = production_client.add_moderator(user1)
+		moderator.project = project
+		moderator.save()
+
+		worker = production_client.add_worker(user1, moderator)
 		worker.add_threshold(project)
+		worker.project = project
+		worker.save()
 
 		# dictionary, userDictionary
 		dictionary = project.dictionaries.create(name='test_dictionary')
@@ -66,7 +71,7 @@ class ContextTestCase(TestCase):
 		flag_instance = flag.instances.create(caption=caption)
 
 		# moderation
-		moderation = moderator.moderations.create(caption=caption)
+		moderation = moderator.moderations.create(project=project, caption=caption)
 
 		# quality
 		quality_check = production_client.checks.create(name='automatic_capital_check')
@@ -81,14 +86,14 @@ class ContextTestCase(TestCase):
 		client_id = Client.objects.get(name='TestProductionClient').id
 		project_id = Client.objects.get(name='TestProductionClient').production_projects.get().id
 		dictionary_id = Client.objects.get(name='TestProductionClient').production_projects.get().dictionaries.get().id
-		path = 'clients.{client_id}.production_projects.{project_id}.dictionaries.{dictionary_id}.tokens'.format(client_id=client_id, project_id=project_id, dictionary_id=dictionary_id)
+		# path = 'clients.{client_id}.production_projects.{project_id}.dictionaries.{dictionary_id}.tokens'.format(client_id=client_id, project_id=project_id, dictionary_id=dictionary_id)
 		# path = 'user'
-		# path = ''
+		path = ''
 
 		# request data using path
 		user = User.objects.get(email='1@1.com')
 		permission = Permission(user, user.get_role(client_id, 'admin'))
 
 		test_fltr = {'content__contains': 'we'}
-		data = access(path, permission, fltr=test_fltr)
+		data = access(path, permission, fltr={})
 		print(json.dumps(data, indent=2, sort_keys=True))
