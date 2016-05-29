@@ -163,6 +163,7 @@ var Components = {
 				},
 			}),
 
+
 		]).then(function (components) {
 			// unpack components
 			// title
@@ -186,15 +187,9 @@ var Components = {
 			// SET PROPERTIES AND METHODS
 			// set bindings, children, etc.
 			return new Promise(function(resolve, reject) {
-				// title
+				// TITLE
 				title.defined = titleText !== undefined;
 
-				// list modifications
-				listWrapper.defined = true;
-				list.display = args.options.display;
-				list.buffer = {};
-
-				// search options
 				// SEARCH
 				// If the search option is filled, include a search bar and an optional filter panel
 				if (search !== undefined) {
@@ -207,22 +202,26 @@ var Components = {
 						filterWrapper.defined = true;
 						filter.setChildren(Object.keys(args.options.targets).map(function (key, index) {
 							var display = args.options.display.filter(filter.id);
-							return display(args.options.targets[key].filter, index);
+							return display(args.options.targets[key], index);
 						}));
-						filter.set = function (rule) {
-							filter.active = rule.rule;
+						filter.set = function (target) {
+							filter.active = target;
 							searchInput.model().focus();
-							// list.setAppearance({classes: {remove: ['hidden']}});
-							searchButton.setAppearance({classes: {remove: ['hidden']}, html: rule.button});
-							// filter.setAppearance({classes: {add: ['hidden']}});
-
-
+							listWrapper.setAppearance({classes: {remove: ['hidden']}});
+							searchButton.setAppearance({classes: {remove: ['hidden']}, html: target.filter.button});
+							filterWrapper.setAppearance({classes: {add: ['hidden']}});
 						}
 						filter.defaults = Object.keys(args.options.targets).filter(function (key) {
 							return args.options.targets[key].default;
 						}).map(function (key) {
 							return key;
 						});
+
+						// set filterWrapper
+						filterWrapper.setChildren([
+							filter,
+							filterInfo,
+						]);
 
 						// INPUT: if search, define input field
 						searchInput.setBindings({
@@ -231,18 +230,18 @@ var Components = {
 							// autocomplete ? show filter : hide filter
 							'focus': {
 								'fn': function (_this) {
-									list.setAppearance({classes: {add: ['hidden']}});
+									listWrapper.setAppearance({classes: {add: ['hidden']}});
 									searchButton.setAppearance({classes: {add: ['hidden']}});
-									filter.setAppearance({classes: {remove: ['hidden']}});
+									filterWrapper.setAppearance({classes: {remove: ['hidden']}});
 								}
 							},
 
 							// BLUR INPUT:
 							'blur': {
 								'fn': function (_this) {
-									list.setAppearance({classes: {add: ['hidden']}});
+									listWrapper.setAppearance({classes: {add: ['hidden']}});
 									searchButton.setAppearance({classes: {add: ['hidden']}});
-									filter.setAppearance({classes: {remove: ['hidden']}});
+									filterWrapper.setAppearance({classes: {remove: ['hidden']}});
 								}
 							},
 
@@ -255,8 +254,8 @@ var Components = {
 
 									// show or hide
 									if (tokens.length !== 0) {
-										list.setAppearance({classes: {remove: ['hidden']}});
-										filter.setAppearance({classes: {add: ['hidden']}});
+										listWrapper.setAppearance({classes: {remove: ['hidden']}});
+										filterWrapper.setAppearance({classes: {add: ['hidden']}});
 
 										// Materials
 										// 1. tokens or value -> filters values
@@ -269,15 +268,30 @@ var Components = {
 											// 1. If active filter is set, use only the url/path of that filter.
 											if (filter.active !== undefined) {
 												// get only active filter
+												var path = filter.active.path !== undefined ? filter.active.path() : '';
+												var fltr = filter.active.fltr !== undefined ? {options: {filter: filter.active.fltr()}} : {};
+
+												// Context
+												if (filter.active.path !== undefined) {
+													Context.get(path, fltr).then(filter.active.process).then(function (results) {
+														results.filter(function (result) {
+															// apply actual filter
+															return result.main.indexOf(query) !== -1;
+														}).forEach(args.options.display.list(list, query));
+													});
+												}
 
 											} else {
 												if (filter.defaults.length !== 0) {
 													// display only defaults
 													for (i=0; i<filter.defaults.length; i++) {
 														var details = args.options.targets[filter.defaults[i]];
+														var path = details.path !== undefined ? details.path() : '';
+														var fltr = details.fltr !== undefined ? {options: {filter: details.fltr()}} : {};
+
 														// Context
 														if (details.path !== undefined) {
-															Context.get(details.path()).then(details.process).then(function (results) {
+															Context.get(path, fltr).then(details.process).then(function (results) {
 																results.filter(function (result) {
 																	// apply actual filter
 																	return result.main.indexOf(query) !== -1;
@@ -290,21 +304,25 @@ var Components = {
 													var targets = Object.keys(args.options.targets);
 													for (i=0; i<targets.length; i++) {
 														var details = args.options.targets[targets[i]];
+														var path = details.path !== undefined ? details.path() : '';
+														var fltr = details.fltr !== undefined ? {options: {filter: details.fltr()}} : {};
+
 														// Context
 														if (details.path !== undefined) {
-															Context.get(details.path()).then(details.process).then(function (results) {
-																results.forEach(args.options.display.list(list));
+															Context.get(path, fltr).then(details.process).then(function (results) {
+																results.filter(function (result) {
+																	return result.main.indexOf(query) !== -1;
+																}).forEach(args.options.display.list(list, query));
 															});
 														}
 													}
 												}
 											}
-										}).catch(function (error) {
-											console.log(error);
 										});
 									} else {
-										list.setAppearance({classes: {add: ['hidden']}});
-										filter.setAppearance({classes: {remove: ['hidden']}});
+										listWrapper.setAppearance({classes: {add: ['hidden']}});
+										filterWrapper.setAppearance({classes: {remove: ['hidden']}});
+										list.removeChildren();
 									}
 								}
 							}
@@ -319,17 +337,10 @@ var Components = {
 							},
 						});
 
-						// DEFINE INPUT GROUP
-						searchGroup.defined = true;
-						searchGroup.setChildren([
-							searchInput,
-							searchButton
-						]);
-
 						// Autocomplete mode only affects present elements, it does not add any.
 						if (search.autocomplete !== undefined && search.autocomplete) {
 							// autocomplete mode: display filter first
-							list.setAppearance({
+							listWrapper.setAppearance({
 								classes: ['hidden'],
 							});
 							searchButton.setAppearance({
@@ -338,15 +349,22 @@ var Components = {
 
 						} else {
 							// display data first, display filter panel upon focussing input, hide again on input.
-							filter.setAppearance({
+							filterWrapper.setAppearance({
 								classes: ['hidden'],
 							});
 
 						}
 
+						// DEFINE INPUT GROUP
+						searchWrapper.defined = true;
+						searchWrapper.setChildren([
+							searchInput,
+							searchButton
+						]);
+
 					} else {
 						// No filter panel
-						filter.defined = false;
+						filterWrapper.defined = false;
 
 						// INPUT: if search, define input field
 						searchInput.setBindings({
@@ -355,14 +373,14 @@ var Components = {
 							// autocomplete ? show filter : hide filter
 							'focus': {
 								'fn': function (_this) {
-									// list.setAppearance({classes: {add: ['hidden']}});
+
 								}
 							},
 
 							// BLUR INPUT:
 							'blur': {
 								'fn': function (_this) {
-									list.setAppearance({classes: {add: ['hidden']}});
+
 								}
 							},
 
@@ -370,36 +388,58 @@ var Components = {
 							'input': {
 								'fn': function (_this) {
 									// get words
-									var tokens = _this.model().val().split('');
+									var query = _this.model().val();
+									var tokens = query.split('');
 
-									// show or hide
 									if (tokens.length !== 0) {
-										list.setAppearance({classes: {remove: ['hidden']}});
+										// show or hide
+										listWrapper.setAppearance({
+											classes: {remove: ['hidden']},
+										});
+
+										// Materials
+										// 1. tokens or value -> filters values
+										// 2. active filter -> filters rules
+										// 3. sources: paths and urls
+
+										// remove all previous results (this is before buffer is implemented)
+										list.removeChildren().then(function () {
+											// display everything
+											var targets = Object.keys(args.options.targets);
+											for (i=0; i<targets.length; i++) {
+												var details = args.options.targets[targets[i]];
+												var path = details.path !== undefined ? details.path() : '';
+												var fltr = details.fltr !== undefined ? {options: {filter: details.fltr()}} : {};
+
+												// Context
+												if (details.path !== undefined) {
+													Context.get(path, fltr).then(details.process).then(function (results) {
+														results.filter(function (result) {
+															return result.main.indexOf(query) !== -1;
+														}).forEach(args.options.display.list(list, query));
+													});
+												}
+											}
+										});
 									} else {
-										list.setAppearance({classes: {add: ['hidden']}});
+										listWrapper.setAppearance({
+											classes: {add: ['hidden']},
+										});
+										list.removeChildren();
 									}
-
-									// Materials
-									// 1. tokens or value -> filters values
-									// 2. active filter -> filters rules
-									// 3. sources: paths and urls
-
-									// Steps
-									// 1. If active filter is set, use only the url/path of that filter.
-
 								}
 							}
 						});
 
 						// DEFINE INPUT GROUP
-						searchGroup.defined = true;
-						searchGroup.setChildren([
+						searchWrapper.defined = true;
+						searchWrapper.setChildren([
 							searchInput,
 						]);
 
 						if (search.autocomplete !== undefined && search.autocomplete) {
 							// autocomplete mode: show no data until search query is entered.
-							list.setAppearance({
+							listWrapper.setAppearance({
 								classes: ['ie', 'hidden'],
 							});
 
@@ -414,6 +454,16 @@ var Components = {
 					// display immediately, buffer can only be changed by scrolling.
 					searchWrapper.defined = false;
 				}
+
+				// LIST
+				listWrapper.defined = true;
+				list.display = args.options.display;
+				list.buffer = {};
+
+				listWrapper.setChildren([
+					list,
+					listLoadingIcon,
+				]);
 
 				// return elements as they entered to be added to the base
 				resolve([title, searchWrapper, listWrapper, filterWrapper]);

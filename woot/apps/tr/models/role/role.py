@@ -47,7 +47,7 @@ class Role(models.Model):
 				'stats': {stat.id: stat.data() for stat in self.stats.filter(id__startswith=path.get_id())},
 			})
 
-		if path.check('thresholds') and (permission.is_moderator or permission.is_productionadmin):
+		if path.check('thresholds') and (permission.is_moderator or permission.is_productionadmin) and self.type == 'worker':
 			data.update({
 				'thresholds': {threshold.id: threshold.data() for threshold in self.thresholds.filter(id__startswith=path.get_id())},
 			})
