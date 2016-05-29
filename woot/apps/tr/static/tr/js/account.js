@@ -39,11 +39,16 @@ UI.app('hook', [
 					targets: {
 						'clients': {
 							// default targets are always displayed if no filter is applied
-							default: true,
+							default: false,
 
 							// path in Context
 							path: function () {
 								return 'clients';
+							},
+
+							// filter to apply to request
+							fltr: function () {
+								return {};
 							},
 
 							// process search results from the path.
@@ -134,7 +139,8 @@ UI.app('hook', [
 							}
 						},
 						filter: function (id) {
-							return function (display, index) {
+							return function (target, index) {
+								var display = target.filter;
 								return UI.createComponent('{id}-{key}'.format({id: id, key: display.key}), {
 									index: index,
 									root: id,
@@ -152,7 +158,7 @@ UI.app('hook', [
 										'mousedown': {
 											'fn': function (_this) {
 												_this.parent().then(function (parent) {
-													parent.set(display);
+													parent.set(target);
 												});
 											},
 										}
@@ -205,16 +211,16 @@ UI.app('hook', [
 
 // PLAN
 // scroll list
-// 1. Add persistent search tokens for certain objects (TR, word, phrase, MOD, caption, utterance)
-// 1a. Filter list of transcriptions by relationship to active token.
-// 1b. Filter object in access using dict {'filter': 'value', 'filter2': 'value2'}
+// 1. [DONE] Add persistent search tokens for certain objects (TR, word, phrase, MOD, caption, utterance)
+// 1a. [DONE] Filter list of transcriptions by relationship to active token.
+// 1b. [DONE] Filter object in access using dict {'filter': 'value', 'filter2': 'value2'}
 // 2. [DONE] Remove standalone requests for objects
 // 3. Add non-autocomplete option for list
 // 4. Add multiple tag support for filtering.
 // 5. Speed is ok, so see if objects can be sorted in place. The list can be reorganised with 'setAfter'.
-// 6. Add correct scroll structure for scroll list
-// 7. Ensure loading icon is formatted properly.
-// 8. Add filter element can that be formatted like any other component. NEED FILTER GROUP
+// 6. [DONE] Add correct scroll structure for scroll list
+// 7. [DONE] Ensure loading icon is formatted properly.
+// 8. [DONE] Add filter element can that be formatted like any other component. NEED FILTER GROUP
 // 9. [DONE] Add FILTER to database level in Context
 
 // audio element

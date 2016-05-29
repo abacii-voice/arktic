@@ -370,6 +370,8 @@ var UI = {
 							if (_this.isRendered) {
 								final.root = _this.id;
 								return final.render();
+							} else {
+								return final;
 							}
 						});
 					} else {
