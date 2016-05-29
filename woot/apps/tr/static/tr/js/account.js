@@ -87,18 +87,25 @@ UI.app('hook', [
 					},
 
 					// Defines the search bar.
-					search: {
-						// Autocomplete tells the filter panel (if present) to be shown first, else show nothing until a query is submitted.
-						autocomplete: true,
-
-						// Filter tells the element what structure to give to the filter panel, buttons, etc.
-						filter: true,
-					},
+					// search: {
+					// 	// Autocomplete tells the filter panel (if present) to be shown first, else show nothing until a query is submitted.
+					// 	autocomplete: false,
+					//
+					// 	// Filter tells the element what structure to give to the filter panel, buttons, etc.
+					// 	filter: false,
+					// },
 
 					// Define a way of display individual list items
 					display: {
 						list: function (_this, query) {
 							return function (display) {
+								// set main display
+								var main = query !== undefined ? '{main}'.format({main: '{head}<span style="color:#fff;">{query}</span>{tail}'.format({
+									head: display.main.substring(0, display.main.indexOf(query)),
+									query: display.main.substr(display.main.indexOf(query), query.length),
+									tail: display.main.substr(display.main.indexOf(query) + query.length),
+								})}) : display.main;
+
 								// 'data' is a single unit of the full dataset to be included.
 								return UI.createComponent('{id}-{key}'.format({id: _this.id, key: display.id}), {
 									root: _this.id,
@@ -116,11 +123,7 @@ UI.app('hook', [
 												style: {
 
 												},
-												html: '{main}'.format({main: '{head}<span style="color:#fff;">{query}</span>{tail}'.format({
-													head: display.main.substring(0, display.main.indexOf(query)),
-													query: display.main.substr(display.main.indexOf(query), query.length),
-													tail: display.main.substr(display.main.indexOf(query) + query.length),
-												})}),
+												html: main,
 											},
 										}),
 										UI.createComponent('{id}-{key}-index'.format({id: _this.id, key: display.id}), {
