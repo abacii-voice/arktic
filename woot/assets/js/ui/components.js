@@ -463,8 +463,79 @@ var Components = {
 	// Plays audio given a source
 	// Has a buffer for storing multiple tracks and cycling between them.
 	// Parts:
-	// 1. 
+	// 1. Play button
+	// 2. Audio track
+	// 3. Back button
+	// 4. Forward button
+	// 5. Anchor cursor
+	// 6. Now cursor
 	audio: function (id, args) {
 
+		// any static variables like measurements
+
+
+		// components
+		return Promise.all([
+			// BUTTON GROUP
+			// button wrapper
+			UI.createComponent('{id}-'.format({id: id}), {
+
+			}),
+
+			// play button
+			UI.createComponent('{id}-'.format({id: id}), {
+
+			}),
+
+			// back button
+			UI.createComponent('{id}-'.format({id: id}), {
+
+			}),
+
+			// forward button
+			UI.createComponent('{id}-'.format({id: id}), {
+
+			}),
+
+
+			// AUDIO GROUP
+			// audio wrapper
+			UI.createComponent('{id}-'.format({id: id}), {
+
+			}),
+
+			// audio track
+			UI.createComponent('{id}-'.format({id: id}), {
+
+			}),
+
+			// now cursor
+			UI.createComponent('{id}-'.format({id: id}), {
+
+			}),
+
+			// anchor cursor
+			UI.createComponent('{id}-'.format({id: id}), {
+
+			}),
+
+
+		]).then(function (components) {
+			// unpack components
+			// BUTTON GROUP
+			var buttonWrapper = components[0];
+			var playButton = components[1];
+			var backButton = components[2];
+
+			return new Promise(function(resolve, reject) {
+				// modify components and add methods etc.
+
+				// resolve list of components to be rendered.
+				resolve([whatever]);
+			});
+		}).then(function (components) {
+			// create the base component and add the children from above.
+
+		});
 	},
 }

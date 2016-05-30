@@ -8,10 +8,10 @@ UI.app('hook', [
 		template: UI.template('div', ''),
 		appearance: {
 			style: {
-				'position': 'relative',
+				'position': 'absolute',
 				'height': '600px',
 				'width': '300px',
-				'left': '50%',
+				'left': '30%',
 				'top': '50%',
 				'transform': 'translate(-50%, -50%)',
 			},
@@ -182,6 +182,25 @@ UI.app('hook', [
 			}),
 		],
 	}),
+
+	// audio test
+	UI.createComponent('test-audio-wrapper', {
+		template: UI.template('div', 'ie border border-radius'),
+		appearance: {
+			style: {
+				'position': 'absolute',
+				'height': '80px',
+				'width': '400px',
+				'left': '65%',
+				'top': '17%',
+				'transform': 'translate(-50%, -50%)',
+			},
+		},
+		children: [
+
+		],
+	}),
+
 ]).then (function (app) {
 	return app.render();
 }).then(function () {
