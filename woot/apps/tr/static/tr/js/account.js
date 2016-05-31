@@ -89,7 +89,7 @@ UI.app('hook', [
 					// Defines the search bar.
 					search: {
 						// Autocomplete tells the filter panel (if present) to be shown first, else show nothing until a query is submitted.
-						autocomplete: false,
+						autocomplete: true,
 
 						// Filter tells the element what structure to give to the filter panel, buttons, etc.
 						filter: true,
@@ -185,7 +185,7 @@ UI.app('hook', [
 
 	// audio test
 	UI.createComponent('test-audio-wrapper', {
-		template: UI.template('div', 'ie border border-radius'),
+		template: UI.template('div', 'ie border-radius'),
 		appearance: {
 			style: {
 				'position': 'absolute',
@@ -197,7 +197,9 @@ UI.app('hook', [
 			},
 		},
 		children: [
+			Components.audio('test-audio', {
 
+			}),
 		],
 	}),
 
@@ -237,13 +239,15 @@ UI.app('hook', [
 // 1a. [DONE] Filter list of transcriptions by relationship to active token.
 // 1b. [DONE] Filter object in access using dict {'filter': 'value', 'filter2': 'value2'}
 // 2. [DONE] Remove standalone requests for objects
-// 3. Add non-autocomplete option for list
+// 3. [DONE] Add non-autocomplete option for list
 // 4. Add multiple tag support for filtering.
 // 5. Speed is ok, so see if objects can be sorted in place. The list can be reorganised with 'setAfter'.
 // 6. [DONE] Add correct scroll structure for scroll list
 // 7. [DONE] Ensure loading icon is formatted properly.
 // 8. [DONE] Add filter element can that be formatted like any other component. NEED FILTER GROUP
 // 9. [DONE] Add FILTER to database level in Context
+// 10. Arrow keys + enter for selecting (later)
+// 11. Enter filter char to cause filter.
 
 // audio element
 // 1. Follow model for scroll list in terms of how to construct component composite.
