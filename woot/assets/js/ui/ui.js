@@ -783,6 +783,16 @@ var Active = {
 		}
 	},
 
+	// find id of current role
+	role_id: function () {
+		return Promise.all([
+			Active.get('client'),
+			Active.get('role'),
+		]).then(function (results) {
+
+		});
+	}
+
 	// COMMANDS
 	// A set of commands that are sent with permission data.
 	commands: {
@@ -816,19 +826,9 @@ var Active = {
 // Works the same way as active but stores only the permission information needed to specify the user, role, and client.
 var Permission = {
 	// stores relevant permission details
-	permission: {
-		// role_type: 'admin',
-		// client_id: '6f56a306-cfa9-4557-bec9-f65bd2de67e0',
-		role_type: '',
-		client_id: '',
-	},
-
-	set: function (value, key) {
-		if (key !== undefined) {
-			Permission.permission[key] = value;
-		} else {
-			Permission.permission = value;
-		}
+	permission: '',
+	set: function (id) {
+		Permission.permission = id;
 	},
 
 	// appends permission details to an object to be passed as data
@@ -839,7 +839,7 @@ var Permission = {
 			data.permission = Permission.permission;
 			resolve(JSON.stringify(data));
 		})
-	}
+	},
 }
 
 // ACTION

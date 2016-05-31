@@ -504,11 +504,11 @@ var Components = {
 			// BUTTON GROUP
 			// button wrapper
 			UI.createComponent('{id}-button-wrapper'.format({id: id}), {
-				template: UI.template('div', 'ie'),
+				template: UI.template('div', 'ie abs'),
 				appearance: {
 					style: {
 						'height': '50px',
-						'width': '110px',
+						'width': '100px',
 					},
 				},
 			}),
@@ -520,8 +520,8 @@ var Components = {
 					style: {
 						'height': '50px',
 						'width': '50px',
-						'top': '15px',
-						'left': '15px',
+						'top': '0px',
+						'left': '0px',
 						'border-radius': '25px',
 					},
 				},
@@ -534,8 +534,8 @@ var Components = {
 					style: {
 						'height': '50px',
 						'width': '75px',
-						'top': '15px',
-						'left': '15px',
+						'top': '0px',
+						'left': '0px',
 						'border-radius': '25px',
 					},
 				},
@@ -548,8 +548,8 @@ var Components = {
 					style: {
 						'height': '50px',
 						'width': '100px',
-						'top': '15px',
-						'left': '15px',
+						'top': '0px',
+						'left': '0px',
 						'border-radius': '25px',
 					},
 				},
@@ -559,40 +559,62 @@ var Components = {
 			// AUDIO GROUP
 			// audio wrapper
 			UI.createComponent('{id}-audio-wrapper'.format({id: id}), {
-				template: UI.template('div', 'ie'),
+				template: UI.template('div', 'ie abs border'),
 				appearance: {
 					style: {
+						'border-left': '0px',
+						'height': '50px',
+						'width': 'calc(100% - 30px)',
+						'left': '30px',
+						'border-top-right-radius': '5px',
+						'border-bottom-right-radius': '5px',
+					},
+				},
+			}),
 
+			// audio track wrapper
+			UI.createComponent('{id}-audio-track-wrapper'.format({id: id}), {
+				template: UI.template('div', 'ie abs'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': 'calc(100% - 70px)',
+						'left': '70px',
 					},
 				},
 			}),
 
 			// audio track
 			UI.createComponent('{id}-audio-track'.format({id: id}), {
-				template: UI.template('div', 'ie'),
+				template: UI.template('div', 'ie abs'),
 				appearance: {
 					style: {
-
-					},
-				},
-			}),
-
-			// now cursor
-			UI.createComponent('{id}-now-cursor'.format({id: id}), {
-				template: UI.template('div', 'ie'),
-				appearance: {
-					style: {
-
+						'height': '100%',
+						'width': '100%',
 					},
 				},
 			}),
 
 			// anchor cursor
 			UI.createComponent('{id}-anchor-cursor'.format({id: id}), {
-				template: UI.template('div', 'ie'),
+				template: UI.template('div', 'ie abs'),
 				appearance: {
 					style: {
+						'height': '100%',
+						'width': '1px',
+						'background-color': '#ccc',
+					},
+				},
+			}),
 
+			// now cursor
+			UI.createComponent('{id}-now-cursor'.format({id: id}), {
+				template: UI.template('div', 'ie abs'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '1px',
+						'background-color': 'red',
 					},
 				},
 			}),
@@ -608,13 +630,18 @@ var Components = {
 
 			// AUDIO GROUP
 			var audioWrapper = components[4];
-			var audioTrack = components[5];
-			var nowCursor = components[6];
+			var audioTrackWrapper = components[5];
+			var audioTrack = components[6];
 			var anchorCursor = components[7];
+			var nowCursor = components[8];
 
 			return new Promise(function(resolve, reject) {
 				// modify components and add methods etc.
 				// BUTTON GROUP
+				// forwardButton.click;
+				// backButton.click;
+				// playButton.click;
+
 				buttonWrapper.setChildren([
 					forwardButton,
 					backButton,
@@ -622,14 +649,32 @@ var Components = {
 				]);
 
 				// AUDIO GROUP
+				// audioTrack.buffer;
+				// audioTrack.next;
+				// audioTrack.previous;
+				// audioTrack.display;
+				// audioTrack.hover;
+				// audioTrack.click;
+				// audioTrack.drag;
+				// anchorCursor.set;
+				// nowCursor.set;
+				// nowCursor.go;
 
+				audioTrackWrapper.setChildren([
+					audioTrack,
+					anchorCursor,
+					nowCursor,
+				]);
+				audioWrapper.setChildren([
+					audioTrackWrapper,
+				]);
 
 				// resolve list of components to be rendered.
-				resolve([buttonWrapper, audioWrapper]);
+				resolve([audioWrapper, buttonWrapper]);
 			});
 		}).then(function (components) {
 			// create the base component and add the children from above.
-			return UI.createComponent('{id}-anchor-cursor'.format({id: id}), {
+			return UI.createComponent('{id}-audio'.format({id: id}), {
 				template: UI.template('div', 'ie'),
 				appearance: {
 					style: {
