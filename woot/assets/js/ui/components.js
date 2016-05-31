@@ -196,7 +196,7 @@ var Components = {
 					if (details.path !== undefined) {
 						Context.get(details.path(), fltr).then(details.process).then(function (results) {
 							results.filter(function (result) {
-								return result.main.indexOf(query) !== -1;
+								return result.main.indexOf(query) === 0;
 							}).forEach(args.options.display.list(list, query));
 						});
 					}
@@ -228,6 +228,9 @@ var Components = {
 						}).map(function (key) {
 							return key;
 						});
+						filter.keys = Object.keys(args.options.targets).map(function (key) {
+							return args.options.targets[key].filter.char;
+						});
 
 						// set filterWrapper
 						filterWrapper.setChildren([
@@ -253,10 +256,17 @@ var Components = {
 								'fn': function (_this) {
 									if (search.autocomplete !== undefined && search.autocomplete) {
 										filterWrapper.setAppearance({classes: {remove: ['hidden']}});
+										listWrapper.setAppearance({classes: {add: ['hidden']}});
 									} else {
 										filterWrapper.setAppearance({classes: {add: ['hidden']}});
+										listWrapper.setAppearance({classes: {remove: ['hidden']}});
+										list.removeChildren().then(function () {
+											var targets = Object.keys(args.options.targets);
+											for (i=0; i<targets.length; i++) {
+												list.runDisplay(args.options.targets[targets[i]]);
+											}
+										})
 									}
-									listWrapper.setAppearance({classes: {add: ['hidden']}});
 									searchButton.setAppearance({classes: {add: ['hidden']}});
 								}
 							},
@@ -273,32 +283,42 @@ var Components = {
 										listWrapper.setAppearance({classes: {remove: ['hidden']}});
 										filterWrapper.setAppearance({classes: {add: ['hidden']}});
 
-										// Materials
-										// 1. tokens or value -> filters values
-										// 2. active filter -> filters rules
-										// 3. sources: paths and urls
+										if (filter.keys.indexOf(tokens[0]) !== -1) {
+											filter.active = args.options.targets[Object.keys(args.options.targets).filter(function (key) {
+												return args.options.targets[key].filter.char === tokens[0];
+											})[0]];
+											query = tokens.slice(1).join('');
+											filter.set(filter.active);
+										}
 
-										// remove all previous results (this is before buffer is implemented)
-										list.removeChildren().then(function () {
-											// Steps
-											// 1. If active filter is set, use only the url/path of that filter.
-											if (filter.active !== undefined) {
-												list.runDisplay(filter.active, query);
-											} else {
-												if (filter.defaults.length !== 0) {
-													// display only defaults
-													for (i=0; i<filter.defaults.length; i++) {
-														list.runDisplay(args.options.targets[filter.defaults[i]], query);
-													}
+										if (query !== '') {
+											// Materials
+											// 1. tokens or value -> filters values
+											// 2. active filter -> filters rules
+											// 3. sources: paths and urls
+
+											// remove all previous results (this is before buffer is implemented)
+											list.removeChildren().then(function () {
+												// Steps
+												// 1. If active filter is set, use only the url/path of that filter.
+												if (filter.active !== undefined) {
+													list.runDisplay(filter.active, query);
 												} else {
-													// display everything
-													var targets = Object.keys(args.options.targets);
-													for (i=0; i<targets.length; i++) {
-														list.runDisplay(args.options.targets[targets[i]], query);
+													if (filter.defaults.length !== 0) {
+														// display only defaults
+														for (i=0; i<filter.defaults.length; i++) {
+															list.runDisplay(args.options.targets[filter.defaults[i]], query);
+														}
+													} else {
+														// display everything
+														var targets = Object.keys(args.options.targets);
+														for (i=0; i<targets.length; i++) {
+															list.runDisplay(args.options.targets[targets[i]], query);
+														}
 													}
 												}
-											}
-										});
+											});
+										}
 									} else {
 										listWrapper.setAppearance({classes: {add: ['hidden']}});
 										filterWrapper.setAppearance({classes: {remove: ['hidden']}});
@@ -332,7 +352,10 @@ var Components = {
 							filterWrapper.setAppearance({
 								classes: ['hidden'],
 							});
-
+							var targets = Object.keys(args.options.targets);
+							for (i=0; i<targets.length; i++) {
+								list.runDisplay(args.options.targets[targets[i]]);
+							}
 						}
 
 						// DEFINE INPUT GROUP
@@ -437,7 +460,9 @@ var Components = {
 				// LIST
 				listWrapper.defined = true;
 				list.display = args.options.display;
-				list.buffer = {};
+				// list.activate = args.options.activate(list);
+				// list.up = args.options.up(list);
+				// list.down = args.options.down(list);
 
 				listWrapper.setChildren([
 					list,
@@ -478,45 +503,98 @@ var Components = {
 		return Promise.all([
 			// BUTTON GROUP
 			// button wrapper
-			UI.createComponent('{id}-'.format({id: id}), {
-
+			UI.createComponent('{id}-button-wrapper'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': '50px',
+						'width': '110px',
+					},
+				},
 			}),
 
 			// play button
-			UI.createComponent('{id}-'.format({id: id}), {
-
+			UI.createComponent('{id}-play-button'.format({id: id}), {
+				template: UI.template('div', 'ie button border abs'),
+				appearance: {
+					style: {
+						'height': '50px',
+						'width': '50px',
+						'top': '15px',
+						'left': '15px',
+						'border-radius': '25px',
+					},
+				},
 			}),
 
 			// back button
-			UI.createComponent('{id}-'.format({id: id}), {
-
+			UI.createComponent('{id}-back-button'.format({id: id}), {
+				template: UI.template('div', 'ie button border abs'),
+				appearance: {
+					style: {
+						'height': '50px',
+						'width': '75px',
+						'top': '15px',
+						'left': '15px',
+						'border-radius': '25px',
+					},
+				},
 			}),
 
 			// forward button
-			UI.createComponent('{id}-'.format({id: id}), {
-
+			UI.createComponent('{id}-forward-button'.format({id: id}), {
+				template: UI.template('div', 'ie button border abs'),
+				appearance: {
+					style: {
+						'height': '50px',
+						'width': '100px',
+						'top': '15px',
+						'left': '15px',
+						'border-radius': '25px',
+					},
+				},
 			}),
 
 
 			// AUDIO GROUP
 			// audio wrapper
-			UI.createComponent('{id}-'.format({id: id}), {
+			UI.createComponent('{id}-audio-wrapper'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
 
+					},
+				},
 			}),
 
 			// audio track
-			UI.createComponent('{id}-'.format({id: id}), {
+			UI.createComponent('{id}-audio-track'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
 
+					},
+				},
 			}),
 
 			// now cursor
-			UI.createComponent('{id}-'.format({id: id}), {
+			UI.createComponent('{id}-now-cursor'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
 
+					},
+				},
 			}),
 
 			// anchor cursor
-			UI.createComponent('{id}-'.format({id: id}), {
+			UI.createComponent('{id}-anchor-cursor'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
 
+					},
+				},
 			}),
 
 
@@ -526,16 +604,41 @@ var Components = {
 			var buttonWrapper = components[0];
 			var playButton = components[1];
 			var backButton = components[2];
+			var forwardButton = components[3];
+
+			// AUDIO GROUP
+			var audioWrapper = components[4];
+			var audioTrack = components[5];
+			var nowCursor = components[6];
+			var anchorCursor = components[7];
 
 			return new Promise(function(resolve, reject) {
 				// modify components and add methods etc.
+				// BUTTON GROUP
+				buttonWrapper.setChildren([
+					forwardButton,
+					backButton,
+					playButton,
+				]);
+
+				// AUDIO GROUP
+
 
 				// resolve list of components to be rendered.
-				resolve([whatever]);
+				resolve([buttonWrapper, audioWrapper]);
 			});
 		}).then(function (components) {
 			// create the base component and add the children from above.
-
+			return UI.createComponent('{id}-anchor-cursor'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '100%',
+					},
+				},
+				children: components,
+			});
 		});
 	},
 }
