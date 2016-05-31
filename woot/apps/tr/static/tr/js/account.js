@@ -189,7 +189,7 @@ UI.app('hook', [
 		appearance: {
 			style: {
 				'position': 'absolute',
-				'height': '80px',
+				'height': '50px',
 				'width': '400px',
 				'left': '65%',
 				'top': '17%',
@@ -198,7 +198,25 @@ UI.app('hook', [
 		},
 		children: [
 			Components.audio('test-audio', {
+				appearance: {
+					style: {
 
+					},
+				},
+				options: {
+					source: {
+						path: function () {
+							return Promise.all().then(function () {
+								return 'clients.{}.projects.{}.transcriptions'.format();
+							});
+						},
+						token: function () {
+							return Promise.all().then(function () {
+								return 'clients.{}.users.{}.roles.{}.active_transcription_token'.format();
+							});
+						},
+					},
+				},
 			}),
 		],
 	}),
@@ -247,7 +265,7 @@ UI.app('hook', [
 // 8. [DONE] Add filter element can that be formatted like any other component. NEED FILTER GROUP
 // 9. [DONE] Add FILTER to database level in Context
 // 10. Arrow keys + enter for selecting (later)
-// 11. Enter filter char to cause filter.
+// 11. [DONE] Enter filter char to cause filter.
 
 // audio element
 // 1. Follow model for scroll list in terms of how to construct component composite.
