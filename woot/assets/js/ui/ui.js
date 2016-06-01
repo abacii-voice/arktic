@@ -783,16 +783,6 @@ var Active = {
 		}
 	},
 
-	// find id of current role
-	role_id: function () {
-		return Promise.all([
-			Active.get('client'),
-			Active.get('role'),
-		]).then(function (results) {
-
-		});
-	}
-
 	// COMMANDS
 	// A set of commands that are sent with permission data.
 	commands: {
@@ -828,7 +818,10 @@ var Permission = {
 	// stores relevant permission details
 	permission: '',
 	set: function (id) {
-		Permission.permission = id;
+		return new Promise(function(resolve, reject) {
+			Permission.permission = id;
+			resolve();
+		});
 	},
 
 	// appends permission details to an object to be passed as data
