@@ -136,11 +136,11 @@ def process_request(request):
 
 	# 2. get user and role_type
 	user = request.user
-	client_id = data['permission']['client_id'] if 'permission' in data else ''
-	role_type = data['permission']['role_type'] if 'permission' in data else ''
+	role_id = data['permission']
+	role = user.roles.get(id=role_id) if user.roles.filter(id=role_id).exists() else None
 
 	# 3. get permission
-	permission = Permission(user, role=user.get_role(client_id, role_type))
+	permission = Permission(user, role=role)
 
 	# 4. get verification
 	verified = request.method == 'POST' and request.user.is_authenticated()
