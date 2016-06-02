@@ -158,13 +158,11 @@ UI.app('hook', [
 									bindings: {
 										// 'click' occurs on mouseup, so any blur will happen before it.
 										// 'mousedown' occurs before 'blur'.
-										'mousedown': {
-											'fn': function (_this) {
-												_this.parent().then(function (parent) {
-													parent.set(target);
-												});
-											},
-										}
+										'mousedown': function (_this) {
+											_this.parent().then(function (parent) {
+												parent.set(target);
+											});
+										},
 									},
 									children: [
 										UI.createComponent('{id}-{key}-text'.format({id: id, key: display.key}), {
@@ -204,15 +202,43 @@ UI.app('hook', [
 					},
 				},
 				options: {
+
+					// number of loads either side of current
+					trigger: 3,
+
+					// where to gather references
 					source: {
+
+						// adaptive location in Context to fetch audio references
 						path: function () {
-							return Promise.all().then(function () {
-								return 'clients.{}.projects.{}.transcriptions'.format();
+							return Promise.all([
+								Active.get('client'),
+								Active.get('project'),
+							]).then(function (results) {
+								// unpack variables
+								var client = results[0];
+								var project = results[1];
+
+								// return path
+								return 'clients.{client}.projects.{project}.transcriptions'.format({client: client, project: project});
 							});
 						},
+
+						// fetch active token to filter transcription references
 						token: function () {
-							return Promise.all().then(function () {
-								return 'clients.{}.users.{}.roles.{}.active_transcription_token'.format();
+							return Promise.all([
+								Active.get('client'),
+								Context.get('user').then(function (user) {
+									return user.id;
+								}),
+								Permission.get(),
+							]).then(function (results) {
+								// unpack variable
+								var client = results[0];
+								var user_id = results[1];
+								var role_id = results[2];
+
+								return 'clients.{client}.users.{user_id}.roles.{role_id}.active_transcription_token'.format({client: client, user_id: user_id, role_id: role_id});
 							});
 						},
 					},

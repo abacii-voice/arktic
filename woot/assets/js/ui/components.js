@@ -243,97 +243,89 @@ var Components = {
 
 							// FOCUS INPUT
 							// autocomplete ? show filter : hide filter
-							'focus': {
-								'fn': function (_this) {
-									listWrapper.setAppearance({classes: {add: ['hidden']}});
-									searchButton.setAppearance({classes: {add: ['hidden']}});
-									filterWrapper.setAppearance({classes: {remove: ['hidden']}});
-								}
+							'focus': function (_this) {
+								listWrapper.setAppearance({classes: {add: ['hidden']}});
+								searchButton.setAppearance({classes: {add: ['hidden']}});
+								filterWrapper.setAppearance({classes: {remove: ['hidden']}});
 							},
 
 							// BLUR INPUT:
-							'blur': {
-								'fn': function (_this) {
-									if (search.autocomplete !== undefined && search.autocomplete) {
-										filterWrapper.setAppearance({classes: {remove: ['hidden']}});
-										listWrapper.setAppearance({classes: {add: ['hidden']}});
-									} else {
-										filterWrapper.setAppearance({classes: {add: ['hidden']}});
-										listWrapper.setAppearance({classes: {remove: ['hidden']}});
-										list.removeChildren().then(function () {
-											var targets = Object.keys(args.options.targets);
-											for (i=0; i<targets.length; i++) {
-												list.runDisplay(args.options.targets[targets[i]]);
-											}
-										})
-									}
-									searchButton.setAppearance({classes: {add: ['hidden']}});
+							'blur': function (_this) {
+								if (search.autocomplete !== undefined && search.autocomplete) {
+									filterWrapper.setAppearance({classes: {remove: ['hidden']}});
+									listWrapper.setAppearance({classes: {add: ['hidden']}});
+								} else {
+									filterWrapper.setAppearance({classes: {add: ['hidden']}});
+									listWrapper.setAppearance({classes: {remove: ['hidden']}});
+									list.removeChildren().then(function () {
+										var targets = Object.keys(args.options.targets);
+										for (i=0; i<targets.length; i++) {
+											list.runDisplay(args.options.targets[targets[i]]);
+										}
+									})
 								}
+								searchButton.setAppearance({classes: {add: ['hidden']}});
 							},
 
 							// TYPE INPUT:
-							'input': {
-								'fn': function (_this) {
-									// get words
-									var query = _this.model().val();
-									var tokens = query.split('');
+							'input': function (_this) {
+								// get words
+								var query = _this.model().val();
+								var tokens = query.split('');
 
-									// show or hide
-									if (tokens.length !== 0) {
-										listWrapper.setAppearance({classes: {remove: ['hidden']}});
-										filterWrapper.setAppearance({classes: {add: ['hidden']}});
+								// show or hide
+								if (tokens.length !== 0) {
+									listWrapper.setAppearance({classes: {remove: ['hidden']}});
+									filterWrapper.setAppearance({classes: {add: ['hidden']}});
 
-										if (filter.keys.indexOf(tokens[0]) !== -1) {
-											filter.active = args.options.targets[Object.keys(args.options.targets).filter(function (key) {
-												return args.options.targets[key].filter.char === tokens[0];
-											})[0]];
-											query = tokens.slice(1).join('');
-											filter.set(filter.active);
-										}
+									if (filter.keys.indexOf(tokens[0]) !== -1) {
+										filter.active = args.options.targets[Object.keys(args.options.targets).filter(function (key) {
+											return args.options.targets[key].filter.char === tokens[0];
+										})[0]];
+										query = tokens.slice(1).join('');
+										filter.set(filter.active);
+									}
 
-										if (query !== '') {
-											// Materials
-											// 1. tokens or value -> filters values
-											// 2. active filter -> filters rules
-											// 3. sources: paths and urls
+									if (query !== '') {
+										// Materials
+										// 1. tokens or value -> filters values
+										// 2. active filter -> filters rules
+										// 3. sources: paths and urls
 
-											// remove all previous results (this is before buffer is implemented)
-											list.removeChildren().then(function () {
-												// Steps
-												// 1. If active filter is set, use only the url/path of that filter.
-												if (filter.active !== undefined) {
-													list.runDisplay(filter.active, query);
+										// remove all previous results (this is before buffer is implemented)
+										list.removeChildren().then(function () {
+											// Steps
+											// 1. If active filter is set, use only the url/path of that filter.
+											if (filter.active !== undefined) {
+												list.runDisplay(filter.active, query);
+											} else {
+												if (filter.defaults.length !== 0) {
+													// display only defaults
+													for (i=0; i<filter.defaults.length; i++) {
+														list.runDisplay(args.options.targets[filter.defaults[i]], query);
+													}
 												} else {
-													if (filter.defaults.length !== 0) {
-														// display only defaults
-														for (i=0; i<filter.defaults.length; i++) {
-															list.runDisplay(args.options.targets[filter.defaults[i]], query);
-														}
-													} else {
-														// display everything
-														var targets = Object.keys(args.options.targets);
-														for (i=0; i<targets.length; i++) {
-															list.runDisplay(args.options.targets[targets[i]], query);
-														}
+													// display everything
+													var targets = Object.keys(args.options.targets);
+													for (i=0; i<targets.length; i++) {
+														list.runDisplay(args.options.targets[targets[i]], query);
 													}
 												}
-											});
-										}
-									} else {
-										listWrapper.setAppearance({classes: {add: ['hidden']}});
-										filterWrapper.setAppearance({classes: {remove: ['hidden']}});
-										list.removeChildren();
+											}
+										});
 									}
+								} else {
+									listWrapper.setAppearance({classes: {add: ['hidden']}});
+									filterWrapper.setAppearance({classes: {remove: ['hidden']}});
+									list.removeChildren();
 								}
 							}
 						});
 
 						// Search button behaviour
 						searchButton.setBindings({
-							'mousedown': {
-								'fn': function (_this) {
-									filter.active = undefined;
-								},
+							'mousedown': function (_this) {
+								filter.active = undefined;
 							},
 						});
 
@@ -378,52 +370,48 @@ var Components = {
 						// INPUT: if search, define input field
 						searchInput.setBindings({
 							// BLUR INPUT:
-							'blur': {
-								'fn': function (_this) {
-									if (search.autocomplete !== undefined && search.autocomplete) {
-										listWrapper.setAppearance({
-											classes: {add: ['hidden']},
-										});
-									}
+							'blur': function (_this) {
+								if (search.autocomplete !== undefined && search.autocomplete) {
+									listWrapper.setAppearance({
+										classes: {add: ['hidden']},
+									});
 								}
 							},
 
 							// TYPE INPUT:
-							'input': {
-								'fn': function (_this) {
-									// get words
-									var query = _this.model().val();
-									var tokens = query.split('');
+							'input': function (_this) {
+								// get words
+								var query = _this.model().val();
+								var tokens = query.split('');
 
-									if (tokens.length !== 0) {
-										// show or hide
-										listWrapper.setAppearance({
-											classes: {remove: ['hidden']},
-										});
+								if (tokens.length !== 0) {
+									// show or hide
+									listWrapper.setAppearance({
+										classes: {remove: ['hidden']},
+									});
 
-										// Materials
-										// 1. tokens or value -> filters values
-										// 2. active filter -> filters rules
-										// 3. sources: paths and urls
+									// Materials
+									// 1. tokens or value -> filters values
+									// 2. active filter -> filters rules
+									// 3. sources: paths and urls
 
-										// remove all previous results (this is before buffer is implemented)
-										list.removeChildren().then(function () {
-											// display everything
+									// remove all previous results (this is before buffer is implemented)
+									list.removeChildren().then(function () {
+										// display everything
+										var targets = Object.keys(args.options.targets);
+										for (i=0; i<targets.length; i++) {
+											list.runDisplay(args.options.targets[targets[i]], query);
+										}
+									});
+								} else {
+									list.removeChildren().then(function () {
+										if (search.autocomplete === undefined || !search.autocomplete) {
 											var targets = Object.keys(args.options.targets);
 											for (i=0; i<targets.length; i++) {
-												list.runDisplay(args.options.targets[targets[i]], query);
+												list.runDisplay(args.options.targets[targets[i]]);
 											}
-										});
-									} else {
-										list.removeChildren().then(function () {
-											if (search.autocomplete === undefined || !search.autocomplete) {
-												var targets = Object.keys(args.options.targets);
-												for (i=0; i<targets.length; i++) {
-													list.runDisplay(args.options.targets[targets[i]]);
-												}
-											}
-										});
-									}
+										}
+									});
 								}
 							}
 						});
@@ -513,13 +501,13 @@ var Components = {
 				},
 			}),
 
-			// play button
-			UI.createComponent('{id}-play-button'.format({id: id}), {
+			// forward button
+			UI.createComponent('{id}-forward-button'.format({id: id}), {
 				template: UI.template('div', 'ie button border abs'),
 				appearance: {
 					style: {
 						'height': '50px',
-						'width': '50px',
+						'width': '100px',
 						'top': '0px',
 						'left': '0px',
 						'border-radius': '25px',
@@ -541,13 +529,13 @@ var Components = {
 				},
 			}),
 
-			// forward button
-			UI.createComponent('{id}-forward-button'.format({id: id}), {
+			// play button
+			UI.createComponent('{id}-play-button'.format({id: id}), {
 				template: UI.template('div', 'ie button border abs'),
 				appearance: {
 					style: {
 						'height': '50px',
-						'width': '100px',
+						'width': '50px',
 						'top': '0px',
 						'left': '0px',
 						'border-radius': '25px',
@@ -595,6 +583,17 @@ var Components = {
 				},
 			}),
 
+			// audio track
+			UI.createComponent('{id}-audio-track-info'.format({id: id}), {
+				template: UI.template('div', 'ie abs'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '100%',
+					},
+				},
+			}),
+
 			// anchor cursor
 			UI.createComponent('{id}-anchor-cursor'.format({id: id}), {
 				template: UI.template('div', 'ie abs'),
@@ -624,23 +623,73 @@ var Components = {
 			// unpack components
 			// BUTTON GROUP
 			var buttonWrapper = components[0];
-			var playButton = components[1];
+			var forwardButton = components[1];
 			var backButton = components[2];
-			var forwardButton = components[3];
+			var playButton = components[3];
 
 			// AUDIO GROUP
 			var audioWrapper = components[4];
 			var audioTrackWrapper = components[5];
 			var audioTrack = components[6];
-			var anchorCursor = components[7];
-			var nowCursor = components[8];
+			var audioTrackInfo = components[7];
+			var anchorCursor = components[8];
+			var nowCursor = components[9];
 
 			return new Promise(function(resolve, reject) {
 				// modify components and add methods etc.
 				// BUTTON GROUP
-				// forwardButton.click;
-				// backButton.click;
-				// playButton.click;
+				forwardButton.setBindings({
+					'mousedown': function (_this) {
+						// the forward button jumps the now cursor forward in time by 2 seconds, or an adjustable amount.
+					},
+
+					// display tooltip in track info field
+					'mouseover': function (_this) {
+
+					},
+
+					// remove tooltip
+					'mouseout': function (_this) {
+
+					},
+				});
+
+				backButton.setBindings({
+					'mousedown': function (_this) {
+						// the back button has different behaviour based on the position of the anchor cursor.
+						// if the anchor cursor is at 0, the anchor will be set 2 seconds before the current time, then play from this point.
+						// if the anchor is not at 0, it will be set 2 seconds before the anchors position and play from this point.
+
+
+					},
+
+					// display tooltip in track info field
+					'mouseover': function (_this) {
+
+					},
+
+					// remove tooltip
+					'mouseout': function (_this) {
+
+					},
+				});
+
+				playButton.setBindings({
+					'mousedown': function (_this) {
+						// The play button will always return to the anchor and play from there.
+
+					},
+
+					// display tooltip in track info field
+					'mouseover': function (_this) {
+
+					},
+
+					// remove tooltip
+					'mouseout': function (_this) {
+
+					},
+				});
 
 				buttonWrapper.setChildren([
 					forwardButton,
@@ -649,19 +698,73 @@ var Components = {
 				]);
 
 				// AUDIO GROUP
-				// audioTrack.buffer;
-				// audioTrack.next;
-				// audioTrack.previous;
-				// audioTrack.display;
-				// audioTrack.hover;
-				// audioTrack.click;
-				// audioTrack.drag;
-				// anchorCursor.set;
-				// nowCursor.set;
-				// nowCursor.go;
+				// audio track variables
+				// audioTrack.trackId = '';
+				// audioTrack.trackLength = 0;
+				// audioTrack.audioTime = 0;
+				// audioTrack.pixelToTimeRatio = 0;
+
+				// determines which audio references to create as audio tags
+				audioTrack.buffer = function () {
+
+				}
+
+				// gets the next
+				audioTrack.next = function () {
+					// find next
+
+					// buffer
+
+				}
+
+				// get previous track
+				audioTrack.previous = function () {
+					// find previous
+
+					// buffer
+
+				}
+
+				audioTrack.setBindings({
+					// can be used to set cursor position
+					'mousedown': function (_this) {
+						// get position of click
+
+					},
+
+					// highlights part of the track
+					'mouseover': function (_this) {
+						// get position of mouse
+
+					},
+
+					// removes highlights
+					'mouseout': function (_this) {
+
+					},
+
+					// DRAG?
+
+				});
+
+				// sets the location of the anchor
+				anchorCursor.set = function () {
+
+				}
+
+				// sets the now cursor
+				nowCursor.set = function () {
+
+				}
+
+				// animates the movement of the now cursor according to the length of the audio clip.
+				nowCursor.play = function () {
+
+				}
 
 				audioTrackWrapper.setChildren([
 					audioTrack,
+					audioTrackInfo,
 					anchorCursor,
 					nowCursor,
 				]);

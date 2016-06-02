@@ -312,25 +312,13 @@ var UI = {
 				if (bindings !== undefined) {
 					Object.keys(bindings).forEach(function (name) {
 						var binding = bindings[name];
-						// 1. determine if binding with the same name is in the current array
-						_this.bindings[name] = {fn: binding.fn};
-						if (binding.fn2 !== undefined) {
-							_this.bindings[name].fn2 = binding.fn2;
-						}
-
-						// 2. if rendered, add to model
+						// if rendered, add to model
 						if (_this.isRendered) {
-							if (_this.bindings[name].fn2 !== undefined) {
-								_this.model().on(name, function () {
-									_this.bindings[name].fn(_this);
-								}, function () {
-									_this.bindings[name].fn2(_this);
-								});
-							} else {
-								_this.model().on(name, function () {
-									_this.bindings[name].fn(_this);
-								});
-							}
+							_this.model().on(name, function () {
+								binding(_this);
+							});
+						} else {
+							_this.bindings[name] = binding;
 						}
 					}, this);
 				}
@@ -732,6 +720,9 @@ var Context = {
 			if (context_path[0] !== '') {
 				for (i=0; i<context_path.length; i++) {
 					if (i+1 === context_path.length) {
+
+						// Here, the value can be an object, it should be merged with any existing object or overwritten if keys match.
+
 						sub[context_path[i]] = value;
 					} else {
 						if (sub[context_path[i]] === undefined) {
@@ -817,6 +808,12 @@ var Active = {
 var Permission = {
 	// stores relevant permission details
 	permission: '',
+	get: function () {
+		return new Promise(function(resolve, reject) {
+			resolve(Permission.permission);
+		});
+	},
+
 	set: function (id) {
 		return new Promise(function(resolve, reject) {
 			Permission.permission = id;
