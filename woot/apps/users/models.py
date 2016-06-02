@@ -51,6 +51,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 		if path.is_blank:
 			data.update({
+				'id': self.id,
 				'email': self.email,
 				'first_name': self.first_name,
 				'last_name': self.last_name,
