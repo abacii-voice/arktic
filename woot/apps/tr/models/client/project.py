@@ -78,7 +78,11 @@ class Project(models.Model):
 
 		'''
 
-		return self.transcriptions.filter(is_active=True, is_available=True).order_by('original_caption', 'date_created')[0]
+		transcription = self.transcriptions.filter(is_active=True, is_available=True).order_by('original_caption', 'date_created')[0]
+		transcription.is_available = False
+		transcription.save()
+
+		return transcription
 
 	def get_moderation(self):
 

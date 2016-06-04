@@ -65,6 +65,11 @@ class Command(BaseCommand):
 		user_dictionary = dictionary.children.create(role=worker_role)
 		user_dictionary2 = dictionary.children.create(role=worker_role2)
 
+		worker_role.project = project
+		worker_role.save()
+		worker_role2.project = project
+		worker_role2.save()
+
 		# fragment list
 		fragment_list = [
 			'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806082036x10317.wav',

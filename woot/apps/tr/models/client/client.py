@@ -52,14 +52,14 @@ class Client(models.Model):
 			})
 
 		if self.is_production:
-			if path.check('production_projects') and permission.is_productionadmin:
+			if path.check('projects'):
 				data.update({
-					'production_projects': {project.id: project.data(path.down('production_projects'), permission) for project in self.production_projects.filter(id__startswith=path.get_id())},
+					'projects': {project.id: project.data(path.down('projects'), permission) for project in self.production_projects.filter(id__startswith=path.get_id())},
 				})
 		else:
-			if path.check('contract_projects') and permission.is_contractadmin:
+			if path.check('projects'):
 				data.update({
-					'contract_projects': {project.id: project.data(path.down('contract_projects'), permission) for project in self.contract_projects.filter(id__startswith=path.get_id())},
+					'projects': {project.id: project.data(path.down('projects'), permission) for project in self.contract_projects.filter(id__startswith=path.get_id())},
 				})
 
 		return data
