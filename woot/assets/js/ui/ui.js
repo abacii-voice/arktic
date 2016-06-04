@@ -731,10 +731,11 @@ var Context = {
 					}
 					sub = sub[context_path[i]];
 				}
+				resolve(sub);
 			} else {
 				Context.context = value;
+				resolve(Context.context);
 			}
-			resolve(sub);
 		});
 	},
 }
