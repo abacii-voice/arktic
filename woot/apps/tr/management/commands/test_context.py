@@ -2,6 +2,7 @@
 from django.core.management.base import BaseCommand, CommandError
 
 # local
+from apps.tr.models.client import Client
 from apps.tr.access import access, Permission
 from apps.users.models import User
 
@@ -12,14 +13,21 @@ import json
 class Command(BaseCommand):
 
 	def handle(self, *args, **options):
-		# path
-		client_id = '6f56a306-cfa9-4557-bec9-f65bd2de67e0'
-		role_type = 'admin'
-		path = 'clients'
+
+		# user
+		user = User.objects.get(email='n@a.com')
+
+		# path and role
+		role = user.roles.get(client__name__contains='Production', type='worker')
+
+		client = Client.objects.get(name__contains='Production')
+		project = client.production_projects.get()
+
+		path = 'clients.{client}.projects.{project}.transcriptions'.format(client=client.id, project=project.id)
+		fltr = {'token': role.active_transcription_token()}
 
 		# request data using path
-		user = User.objects.get(email='n@a.com')
-		permission = Permission(user, role=user.get_role(client_id, role_type))
+		permission = Permission(user, role=role)
 
-		data = access(path, permission)
+		data = access(path, permission, fltr)
 		print(json.dumps(data, indent=2, sort_keys=True))
