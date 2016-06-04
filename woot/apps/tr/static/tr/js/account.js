@@ -201,6 +201,14 @@ UI.app('hook', [
 
 					},
 				},
+				registry: {
+					'client-state': {
+						path: 'clients',
+						fn: function (_this) {
+							_this.checkBuffer();
+						}
+					},
+				},
 				options: {
 
 					// number of loads either side of current

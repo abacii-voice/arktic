@@ -296,9 +296,10 @@ var UI = {
 		this.setRegistry = function (registry) {
 			var _this = this;
 			if (registry !== undefined) {
-				return Promise.all(registry.map(function (entry) {
+				return Promise.all(Object.keys(registry).map(function (state) {
+					var entry = registry[state];
 					var args = entry.args !== undefined ? entry.args : {};
-					return Registry.register(_this, entry.state, entry.path, args, entry.fn);
+					return Registry.register(_this, state, entry.path, args, entry.fn);
 				}));
 			}
 		}

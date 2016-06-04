@@ -705,8 +705,8 @@ var Components = {
 				// audioTrack.pixelToTimeRatio = 0;
 
 				// determines which audio references to create as audio tags
-				audioTrack.buffer = function () {
-
+				audioTrack.checkBuffer = function () {
+					console.log('hello');
 				}
 
 				// gets the next
@@ -724,6 +724,8 @@ var Components = {
 					// buffer
 
 				}
+
+				audioTrack.setRegistry(args.registry);
 
 				audioTrack.setBindings({
 					// can be used to set cursor position
