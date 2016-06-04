@@ -125,7 +125,8 @@ def access(original_path, permission, fltr={}):
 	# cut to size
 	if original_path != '':
 		for token in original_path.split('.'):
-			data = data[token]
+			if token in data:
+				data = data[token]
 
 	return data
 

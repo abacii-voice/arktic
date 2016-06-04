@@ -23,7 +23,7 @@ class TranscriptionToken(models.Model):
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	date_created = models.DateTimeField(auto_now_add=True)
-	transcription_limit = models.PositiveIntegerField(default=20)
+	transcription_limit = models.PositiveIntegerField(default=5)
 	is_active = models.BooleanField(default=True)
 
 	### Methods
