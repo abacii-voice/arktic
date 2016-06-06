@@ -205,7 +205,7 @@ UI.app('hook', [
 					'client-state': {
 						path: 'clients',
 						fn: function (_this) {
-							_this.checkBuffer();
+							_this.load();
 						}
 					},
 				},
@@ -246,7 +246,7 @@ UI.app('hook', [
 								var user_id = results[1];
 								var role_id = results[2];
 
-								return 'clients.{client}.users.{user_id}.roles.{role_id}.active_transcription_token'.format({client: client, user_id: user_id, role_id: role_id});
+								return 'user.clients.{client}.roles.{role_id}.active_transcription_token.id'.format({client: client, role_id: role_id});
 							});
 						},
 					},
@@ -257,6 +257,12 @@ UI.app('hook', [
 
 ]).then (function (app) {
 	return app.render();
+}).then(function () {
+	return Promise.all([
+		Permission.set('c8533b66-dafd-451f-8cd1-40c9ce061983'),
+		Active.set('client', 'b7d99024-c7c1-4094-9294-8f096894ca6b'),
+		Active.set('project', 'c67980fe-350b-4dd7-9dbc-14b23755fa5b'),
+	]);
 }).then(function () {
 	return UI.changeState('client-state');
 }).catch(function (error) {
