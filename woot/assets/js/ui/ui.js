@@ -763,7 +763,7 @@ var Active = {
 	// set
 	set: function (path, value) {
 		context_path = path.split('.');
-		sub = Context.context;
+		sub = Active.active;
 		for (i=0; i<context_path.length; i++) {
 			if (i+1 === context_path.length) {
 				sub[context_path[i]] = value;
