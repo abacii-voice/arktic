@@ -705,8 +705,19 @@ var Components = {
 				// audioTrack.pixelToTimeRatio = 0;
 
 				// determines which audio references to create as audio tags
-				audioTrack.checkBuffer = function () {
-					console.log('hello');
+				audioTrack.load = function () {
+					Promise.all([
+						args.options.source.path(),
+						args.options.source.token().then(function (tokenPath) {
+							return Context.get(tokenPath);
+						}),
+					]).then(function (options) {
+						return Context.get(options[0], {options: {filter: {token: options[1]}}});
+					}).then(function (result) {
+						console.log(result);
+					}).catch(function (error) {
+						console.log(error);
+					});
 				}
 
 				// gets the next
