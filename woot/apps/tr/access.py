@@ -68,8 +68,6 @@ class Path():
 
 			self.key, self.id = list(self.locations.items())[self.index]
 
-			print(self.locations)
-
 	def __str__(self):
 		return 'B: {blank}, key: {key}, id: {id}, index: {index}'.format(
 			blank=self.is_blank,
