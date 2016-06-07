@@ -54,12 +54,12 @@ class Role(models.Model):
 
 		if self.project is not None and self.type == 'worker' and permission.check_user(self.user):
 			data.update({
-				'active_transcription_token': self.active_transcription_token().data(path, permission),
+				'active_transcription_token': self.active_transcription_token(force=path.check('active_transcription_token', blank=False)).data(path, permission),
 			})
 
 		if self.project is not None and self.type == 'moderator' and permission.check_user(self.user):
 			data.update({
-				'active_moderation_token': self.active_moderation_token().data(path, permission),
+				'active_moderation_token': self.active_moderation_token(force=path.check('active_moderation_token', blank=False)).data(path, permission),
 			})
 
 		return data
@@ -70,21 +70,39 @@ class Role(models.Model):
 		return self.thresholds.create(project=project)
 
 	# tokens
-	def active_transcription_token(self):
-		if self.transcription_tokens.filter(project=self.project, is_active=True).count():
-			return self.transcription_tokens.get(project=self.project, is_active=True)
+	def active_transcription_token(self, force=False):
+		if not force:
+			if self.transcription_tokens.filter(project=self.project, is_active=True).count():
+				return self.transcription_tokens.get(project=self.project, is_active=True)
+			else:
+				token = self.transcription_tokens.create(project=self.project)
+				token.get_transcriptions()
+				return token
 		else:
-			token = self.transcription_tokens.create(project=self.project)
-			token.get_transcriptions()
-			return token
+			for token in self.transcription_tokens.filter(project=self.project, is_active=True):
+				token.is_active = False
+				token.save()
 
-	def active_moderation_token(self):
-		if self.transcription_tokens.filter(project=self.project, is_active=True).count():
-			return self.moderation_tokens.get(project=self.project, is_active=True)
+			new_token = self.transcription_tokens.create(project=self.project)
+			new_token.get_transcriptions()
+			return new_token
+
+	def active_moderation_token(self, force=False):
+		if not force:
+			if self.transcription_tokens.filter(project=self.project, is_active=True).count():
+				return self.moderation_tokens.get(project=self.project, is_active=True)
+			else:
+				token = self.moderation_tokens.create(project=self.project)
+				token.get_moderations()
+				return token
 		else:
-			token = self.moderation_tokens.create(project=self.project)
-			token.get_moderations()
-			return token
+			for token in self.transcription_tokens.filter(project=self.project, is_active=True):
+				token.is_active = False
+				token.save()
+
+			new_token = self.moderation_tokens.create(project=self.project)
+			new_token.get_moderations()
+			return new_token
 
 class Threshold(models.Model):
 

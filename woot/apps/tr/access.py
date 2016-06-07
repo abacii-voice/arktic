@@ -61,10 +61,14 @@ class Path():
 		if not self.is_blank:
 			self.locations = collections.OrderedDict()
 			s = path.split('.')
-			for i in range(0, len(s), 2):
-				self.locations.update({s[i]: s[i+1] if i+1 != len(s) else ''})
+			i = 0
+			while i < len(s):
+				self.locations.update({s[i]: s[i+1] if (i+1 != len(s) and '-' in s[i+1]) else ''})
+				i += 2 if (i+1 != len(s) and '-' in s[i+1]) else 1
 
 			self.key, self.id = list(self.locations.items())[self.index]
+
+			print(self.locations)
 
 	def __str__(self):
 		return 'B: {blank}, key: {key}, id: {id}, index: {index}'.format(

@@ -86,14 +86,18 @@ class Transcription(models.Model):
 				'batch': self.batch.id,
 				'date_created': str(self.date_created),
 				'original_caption': self.original_caption,
-				'filename': self.filename,
 				'requests': str(self.requests),
 				'request_allowance': str(self.request_allowance),
 				'date_last_requested': str(self.date_last_requested),
-				'utterance': self.utterance.data(),
 			})
 
-		if path.check('captions'):
+		if permission.is_admin:
+			data.update({
+				'utterance': self.utterance.data(),
+				'filename': self.filename,
+			})
+
+		if path.check('captions') and (permission.is_moderator or permission.is_productionadmin):
 			data.update({
 				'captions': {caption.id: caption.data(path.down('captions'), permission) for caption in self.captions.filter(id__startswith=path.get_id())},
 			})
