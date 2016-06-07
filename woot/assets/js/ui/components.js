@@ -705,8 +705,34 @@ var Components = {
 				// audioTrack.pixelToTimeRatio = 0;
 
 				// determines which audio references to create as audio tags
+				audioTrack.buffer = {};
+				audioTrack.active = 0;
+				audioTrack.update = function () {
+					var _this = audioTrack;
+					// 1. if the buffer is completely empty, the audio element must wait before attempting to load the audio.
+					// 2. active_transcription_token is not "active". It should change each time it is requested, unless the page is reloaded.
+					// 3. 
+
+					var remaining = Object.keys(_this.buffer).filter(function (key) {
+						return _this.buffer[key].is_available;
+					}).length;
+
+					return _this.load().then(function () {
+
+					});
+				}
+				audioTrack.loadAudio = function () {
+					// determine which audio elements to load
+					// load 2 either side of active index.
+					for (i=0; i<5; i++) {
+						var index = _this.active + i - 2;
+					}
+				}
 				audioTrack.load = function () {
-					Promise.all([
+					var _this = audioTrack;
+					var total = Object.keys(_this.buffer).length;
+					// load more and process into buffer
+					return Promise.all([
 						args.options.source.path(),
 						args.options.source.token().then(function (tokenPath) {
 							return Context.get(tokenPath);
@@ -714,9 +740,22 @@ var Components = {
 					]).then(function (options) {
 						return Context.get(options[0], {options: {filter: {token: options[1]}}});
 					}).then(function (result) {
-						console.log(result);
-					}).catch(function (error) {
-						console.log(error);
+
+						// Result is a list of transcriptions filtered by active token
+						Object.keys(result).sort(function (a, b) {
+							return result[a].original_caption > result[b].original_caption ? 1 : -1;
+						}).forEach(function (key, index) {
+							_this.buffer[key] = {
+								original_caption: result[key].original_caption,
+								is_available: true,
+								is_active: true,
+								index: index + total,
+							}
+						});
+					}).then(function () {
+						return new Promise(function(resolve, reject) {
+							resolve(_this.buffer);
+						});
 					});
 				}
 
