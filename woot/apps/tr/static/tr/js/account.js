@@ -205,7 +205,9 @@ UI.app('hook', [
 					'client-state': {
 						path: 'clients',
 						fn: function (_this) {
-							_this.load();
+							_this.update().catch(function (error) {
+								console.log(error);
+							});
 						}
 					},
 				},
@@ -246,7 +248,7 @@ UI.app('hook', [
 								var user_id = results[1];
 								var role_id = results[2];
 
-								return 'user.clients.{client}.roles.{role_id}.active_transcription_token.id'.format({client: client, role_id: role_id});
+								return 'user.clients.{client}.roles.{role_id}.active_transcription_token'.format({client: client, role_id: role_id});
 							});
 						},
 					},
@@ -259,9 +261,22 @@ UI.app('hook', [
 	return app.render();
 }).then(function () {
 	return Promise.all([
-		Permission.set('c8533b66-dafd-451f-8cd1-40c9ce061983'),
-		Active.set('client', 'b7d99024-c7c1-4094-9294-8f096894ca6b'),
-		Active.set('project', 'c67980fe-350b-4dd7-9dbc-14b23755fa5b'),
+		Context.get('clients').then(function (clients) {
+			var productionClient = Object.keys(clients).filter(function (key) {
+				return clients[key].is_production;
+			})[0];
+			var project = Object.keys(clients[productionClient].projects)[0];
+			return Promise.all([
+				Active.set('client', productionClient),
+				Active.set('project', project),
+				Context.get('user').then(function (user) {
+					var workerRole = Object.keys(user.clients[productionClient].roles).filter(function (key) {
+						return user.clients[productionClient].roles[key].type === 'worker';
+					})[0];
+					return Permission.set(workerRole);
+				}),
+			]);
+		}),
 	]);
 }).then(function () {
 	return UI.changeState('client-state');

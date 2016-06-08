@@ -937,25 +937,19 @@ var Registry = {
 
 var Request = {
 	get: function (url, args) {
-		if (url !== undefined && url !== '') {
-			return Permission.permit(args).then(function (data) {
-				var ajax_data = {
-					type: 'post',
-					data: data,
-					url: '/{url}'.format({url: url}),
-					error: function (xhr, ajaxOptions, thrownError) {
-						if (xhr.status === 404 || xhr.status === 0) {
-							Request.get(url, args);
-						}
+		return Permission.permit(args).then(function (data) {
+			var ajax_data = {
+				type: 'post',
+				data: data,
+				url: '/command/{url}/'.format({url: url}),
+				error: function (xhr, ajaxOptions, thrownError) {
+					if (xhr.status === 404 || xhr.status === 0) {
+						Request.get(url, args);
 					}
 				}
+			}
 
-				return $.ajax(ajax_data);
-			});
-		} else {
-			return new Promise(function(resolve, reject) {
-				resolve();
-			});
-		}
+			return $.ajax(ajax_data);
+		});
 	}
 }
