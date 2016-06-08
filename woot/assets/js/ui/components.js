@@ -641,6 +641,7 @@ var Components = {
 				forwardButton.setBindings({
 					'mousedown': function (_this) {
 						// the forward button jumps the now cursor forward in time by 2 seconds, or an adjustable amount.
+						audioTrack.next();
 					},
 
 					// display tooltip in track info field
@@ -659,7 +660,7 @@ var Components = {
 						// the back button has different behaviour based on the position of the anchor cursor.
 						// if the anchor cursor is at 0, the anchor will be set 2 seconds before the current time, then play from this point.
 						// if the anchor is not at 0, it will be set 2 seconds before the anchors position and play from this point.
-
+						audioTrack.previous();
 
 					},
 
@@ -677,7 +678,7 @@ var Components = {
 				playButton.setBindings({
 					'mousedown': function (_this) {
 						// The play button will always return to the anchor and play from there.
-
+						audioTrack.play();
 					},
 
 					// display tooltip in track info field
@@ -707,6 +708,15 @@ var Components = {
 				// determines which audio references to create as audio tags
 				audioTrack.buffer = {};
 				audioTrack.active = 0;
+				audioTrack.controller = {};
+
+				// initialise node and create context
+				if (webkitAudioContext !== undefined) { // webkit browser
+					audioTrack.controller.context = new webkitAudioContext();
+				} else {
+					audioTrack.controller.context = new AudioContext();
+				}
+
 				audioTrack.update = function () {
 					var _this = audioTrack;
 					// 1. if the buffer is completely empty, the audio element must wait before attempting to load the audio.
@@ -718,12 +728,12 @@ var Components = {
 
 					if (remaining == 0) {
 						return _this.load().then(function () {
-							return _this.audio();
+							return _this.pre();
 						});
 					} else if (remaining < 3) {
 						return Promise.all([
 							_this.load({force: true}),
-							_this.audio(),
+							_this.pre(),
 						]);
 					}
 				}
@@ -757,8 +767,7 @@ var Components = {
 						});
 					});
 				}
-
-				audioTrack.audio = function () {
+				audioTrack.pre = function () {
 					var _this = audioTrack;
 					// determine which audio elements to load
 					// load 2 either side of active index.
@@ -775,47 +784,59 @@ var Components = {
 						})[0];
 						var storage = _this.buffer[transcriptionId];
 
-						return Request.get('load_audio', {id: transcriptionId}).then(function (audioData) {
-							storage.audioData = audioData;
+						return Request.load_audio(transcriptionId).then(function (audioData) {
 							return new Promise(function(resolve, reject) {
-
-								// initialise node and create context
 								storage.buffer = audioData;
-								storage.sync = 0;
-								storage.retry = 0;
-								if (webkitAudioContext !== undefined) { // webkit browser
-									storage.context = new webkitAudioContext();
-								} else {
-									storage.context = new AudioContext();
-								}
-
-								// decode
-								decodeAudio(storage, function (decoded) {
-									storage.source = storage.context.createBufferSource();
-									storage.source.connect(storage.context.destination);
-									storage.source.buffer = decoded;
-								});
+								resolve();
 							});
-						}).then(function () {
-
 						});
-					}));
+					})).then(function () {
+						return Promise.all(Object.keys(_this.buffer).filter(function (key) {
+							return indices.indexOf(_this.buffer[key].index) === -1;
+						}).map(function (key) {
+							var removeBuffer = _this.buffer[key];
+							delete removeBuffer.buffer;
+						}));
+					});
+				}
+				audioTrack.play = function (index) {
+					var _this = audioTrack;
+					return new Promise(function(resolve, reject) {
+						var storageId = Object.keys(_this.buffer).filter(function (key) {
+							return _this.buffer[key].index === _this.active;
+						})[0];
+						var audioData = _this.buffer[storageId].buffer;
+						_this.controller.source = _this.controller.context.createBufferSource();
+						_this.controller.source.buffer = _this.controller.context.createBuffer(audioData, false);
+						_this.controller.source.connect(_this.controller.context.destination);
+						_this.controller.source.start(0);
+					});
 				}
 
-				// gets the next
+				// gets the next track
 				audioTrack.next = function () {
-					// find next
-
-					// buffer
-
+					var _this = audioTrack;
+					return new Promise(function(resolve, reject) {
+						_this.active = _this.active + 1;
+						resolve();
+					}).then(function () {
+						return _this.update();
+					}).then(function () {
+						return _this.play();
+					});
 				}
 
 				// get previous track
 				audioTrack.previous = function () {
-					// find previous
-
-					// buffer
-
+					var _this = audioTrack;
+					return new Promise(function(resolve, reject) {
+						_this.active = _this.active > 0 ? _this.active - 1 : 0;
+						resolve();
+					}).then(function () {
+						return _this.update();
+					}).then(function () {
+						return _this.play();
+					});
 				}
 
 				audioTrack.setRegistry(args.registry);
