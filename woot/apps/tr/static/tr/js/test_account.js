@@ -250,6 +250,7 @@ var Test = {
 				var request = event.target;
 				var source = myAudioContext.createBufferSource();
 				source.buffer = myAudioContext.createBuffer(request.response, false);
+				console.log(request);
 				source.connect(myAudioContext.destination);
 				source.start(0);
 			}
