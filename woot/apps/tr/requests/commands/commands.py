@@ -1,31 +1,31 @@
 
-# resolve audio
-#Write text to file
-# text_file_path = '/user/share/project/test.txt'
-# audio_file_path = '/user/share/project/test.wav'
-# text_file = open(text_file_path, "w")
-# text_file.write('How are you?')
-# text_file.close()
-#
-# #Convert file
-# conv = 'flite -f "%s" -o "%s"' % (text_file_path, audio_file_path)
-# response = commands.getoutput(conv)
-#
-# if os.path.isfile(audio_file_path):
-#     response = HttpResponse()
-#     f = open(audio_file_path, 'rb')
-#     response['Content-Type'] = 'audio/x-wav'
-#     response.write(f.read())
-#     f.close()
-#     return response
+# django
+from django.shortcuts import render
+from django.views.generic import View
+from django.http import HttpResponse, HttpResponseRedirect
+from django.conf import settings
 
-# def playAudioFile(request):
-#     fname="C:\\test\\audio\\audio.mp3"
-#     f = open(fname,"rb")
-#     response = HttpResponse()
-#     response.write(f.read())
-#     response['Content-Type'] ='audio/mp3'
-#     response['Content-Length'] =os.path.getsize(fname )
-#     return response
+# local
+from apps.tr.access import access, process_request
+from apps.tr.models.transcription import Transcription
 
+# load audio
 # http://code.tutsplus.com/tutorials/the-web-audio-api-what-is-it--cms-23735
+def load_audio(request):
+	user, permission, data, verified = process_request(request)
+	if verified:
+
+		# maybe add extra check to verify the client of the transcription and permission match
+
+		# load transcription
+		transcription_id = data['id']
+		transcription = Transcription.objects.get(id=transcription_id)
+
+		# open file
+		response = HttpResponse()
+		with transcription.utterance.file as audio_file:
+			response.write(audio_file.read())
+			response['Content-Type'] = 'audio/wav'
+			response['Content-Length'] = audio_file.size
+
+		return response

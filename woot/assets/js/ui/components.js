@@ -711,36 +711,35 @@ var Components = {
 					var _this = audioTrack;
 					// 1. if the buffer is completely empty, the audio element must wait before attempting to load the audio.
 					// 2. active_transcription_token is not "active". It should change each time it is requested, unless the page is reloaded.
-					// 3. 
 
 					var remaining = Object.keys(_this.buffer).filter(function (key) {
 						return _this.buffer[key].is_available;
 					}).length;
 
-					return _this.load().then(function () {
-
-					});
-				}
-				audioTrack.loadAudio = function () {
-					// determine which audio elements to load
-					// load 2 either side of active index.
-					for (i=0; i<5; i++) {
-						var index = _this.active + i - 2;
+					if (remaining == 0) {
+						return _this.load().then(function () {
+							return _this.audio();
+						});
+					} else if (remaining < 3) {
+						return Promise.all([
+							_this.load({force: true}),
+							_this.audio(),
+						]);
 					}
 				}
-				audioTrack.load = function () {
+				audioTrack.load = function (force) {
+					force = force !== undefined ? force.force : false;
 					var _this = audioTrack;
 					var total = Object.keys(_this.buffer).length;
 					// load more and process into buffer
 					return Promise.all([
 						args.options.source.path(),
 						args.options.source.token().then(function (tokenPath) {
-							return Context.get(tokenPath);
+							return Context.get(tokenPath, {force: force});
 						}),
 					]).then(function (options) {
-						return Context.get(options[0], {options: {filter: {token: options[1]}}});
+						return Context.get(options[0], {options: {filter: {token: options[1].id}}});
 					}).then(function (result) {
-
 						// Result is a list of transcriptions filtered by active token
 						Object.keys(result).sort(function (a, b) {
 							return result[a].original_caption > result[b].original_caption ? 1 : -1;
@@ -757,6 +756,50 @@ var Components = {
 							resolve(_this.buffer);
 						});
 					});
+				}
+
+				audioTrack.audio = function () {
+					var _this = audioTrack;
+					// determine which audio elements to load
+					// load 2 either side of active index.
+					var lower = _this.active > 1 ? _this.active - 2 : 0;
+					var upper = _this.active > 1 ? _this.active + 3 : 5;
+					var indices = [];
+					for (i=lower; i<upper; i++) {
+						indices.push(i);
+					}
+
+					return Promise.all(indices.map(function (index) {
+						var transcriptionId = Object.keys(_this.buffer).filter(function (key) {
+							return _this.buffer[key].index === index;
+						})[0];
+						var storage = _this.buffer[transcriptionId];
+
+						return Request.get('load_audio', {id: transcriptionId}).then(function (audioData) {
+							storage.audioData = audioData;
+							return new Promise(function(resolve, reject) {
+
+								// initialise node and create context
+								storage.buffer = audioData;
+								storage.sync = 0;
+								storage.retry = 0;
+								if (webkitAudioContext !== undefined) { // webkit browser
+									storage.context = new webkitAudioContext();
+								} else {
+									storage.context = new AudioContext();
+								}
+
+								// decode
+								decodeAudio(storage, function (decoded) {
+									storage.source = storage.context.createBufferSource();
+									storage.source.connect(storage.context.destination);
+									storage.source.buffer = decoded;
+								});
+							});
+						}).then(function () {
+
+						});
+					}));
 				}
 
 				// gets the next
