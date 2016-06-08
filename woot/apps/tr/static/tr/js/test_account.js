@@ -238,11 +238,35 @@ var Test = {
 				console.log(error);
 			});
 		},
+
+		test_audio: function () {
+			var url = '/media/audio/TestContractClient_p-TestProject_f-20150806082036x10317-uuid-5e3e9029-f863-4ec4-84_QSvgq20.wav';
+
+			if('webkitAudioContext' in window) {
+				var myAudioContext = new webkitAudioContext();
+			}
+
+			function bufferSound(event) {
+				var request = event.target;
+				var source = myAudioContext.createBufferSource();
+				source.buffer = myAudioContext.createBuffer(request.response, false);
+				source.connect(myAudioContext.destination);
+				source.start(0);
+			}
+
+			request = new XMLHttpRequest();
+			request.open('GET', url, true);
+			request.responseType = 'arraybuffer';
+			request.addEventListener('load', bufferSound, false);
+			request.send();
+
+
+		},
 	},
 
 	test: function () {
 
-		Test.tests.test_app();
+		Test.tests.test_audio();
 
 		// all
 		// Object.keys(Test.tests).forEach(function (test) {

@@ -46,7 +46,7 @@ String.prototype.trunc = function(n, useWordBoundary) {
 	var isTooLong = this.length > n;
 	var s_ = isTooLong ? this.substr(0,n-1) : this;
 	var s_ = (useWordBoundary && isTooLong) ? s_.substr(0,s_.lastIndexOf(' ')) : s_;
-	return  isTooLong ? s_ + '&hellip;' : s_;
+	return	isTooLong ? s_ + '&hellip;' : s_;
 };
 
 // gives filename without directories
@@ -92,7 +92,50 @@ Promise.ordered = function (promises) {
 
 // Trim string
 if(!String.prototype.trim) {
-  String.prototype.trim = function () {
-    return this.replace(/^\s+|\s+$/g,'');
-  };
+	String.prototype.trim = function () {
+		return this.replace(/^\s+|\s+$/g,'');
+	};
+}
+
+// audio processing
+function syncStream(node) {
+	return new Promise(function(resolve, reject) {
+		var buf8 = new Uint8Array(node.buffer);
+		buf8.indexOf = Array.prototype.indexOf;
+		var i = node.sync, b = buf8;
+
+		while(true) {
+			node.retry++;
+			i = b.indexOf(0xFF, i);
+			if (i === -1 || (b[i+1] & 0xE0 == 0xE0)) {
+				break;
+			}
+			i++;
+		}
+
+		if (i !== -1) {
+			var tmp = node.buffer.slice(i);
+			delete(node.buffer);
+			node.buffer = null;
+			node.buffer = tmp;
+			node.sync = i;
+			return true;
+		}
+
+		return false;
+	});
+}
+
+function decodeAudio(node, decodedCallback) {
+	return syncStream().then(function (buffer) {
+
+	});
+
+
+		node.context.decodeAudioData(node.buffer, decodedCallback, function () {
+			// only on error attempt to sync on frame boundary
+			if (syncStream(node)) {
+				decodeAudio(node, decodedCallback);
+			}
+		});
 }
