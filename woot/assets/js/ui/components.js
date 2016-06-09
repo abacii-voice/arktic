@@ -709,14 +709,13 @@ var Components = {
 				audioTrack.buffer = {};
 				audioTrack.active = 0;
 				audioTrack.controller = {};
-
+				audioTrack.threshold = 4;
 				// initialise node and create context
-				if (webkitAudioContext !== undefined) { // webkit browser
-					audioTrack.controller.context = new webkitAudioContext();
-				} else {
-					audioTrack.controller.context = new AudioContext();
-				}
-
+				audioTrack.controller.context = new (window.AudioContext || window.webkitAudioContext)();
+				audioTrack.controller.analyser = audioTrack.controller.context.createAnalyser();
+				audioTrack.controller.analyser.fftSize = 2048;
+				audioTrack.controller.bufferLength = audioTrack.controller.analyser.frequencyBinCount;
+				audioTrack.controller.dataArray = new Uint8Array(audioTrack.controller.bufferLength);
 				audioTrack.update = function () {
 					var _this = audioTrack;
 					// 1. if the buffer is completely empty, the audio element must wait before attempting to load the audio.
@@ -729,7 +728,7 @@ var Components = {
 						return _this.load().then(function () {
 							return _this.pre();
 						});
-					} else if (remaining < 3) {
+					} else if (remaining < _this.threshold) {
 						// console.log('remaining < 3');
 						return Promise.all([
 							_this.load({force: true}),
@@ -774,9 +773,8 @@ var Components = {
 					var _this = audioTrack;
 					// determine which audio elements to load
 					// load 2 either side of active index.
-					var lower = _this.active > 1 ? _this.active - 1 : 0;
-					var upper = _this.active > 1 ? _this.active + 2 : 4;
-					console.log('lower {}'.format(lower), 'upper {}'.format(upper));
+					var lower = _this.active > 1 ? _this.active - _this.threshold + 2 : 0;
+					var upper = _this.active > 1 ? _this.active + _this.threshold - 1 : _this.threshold + 1;
 					var indices = [];
 					for (i=lower; i<upper; i++) {
 						indices.push(i);
@@ -791,6 +789,7 @@ var Components = {
 							return Request.load_audio(transcriptionId).then(function (audioData) {
 								return new Promise(function(resolve, reject) {
 									storage.buffer = audioData;
+									_this.controller.dataArray = new Uint8Array(_this.controller.bufferLength);
 									resolve();
 								});
 							});
@@ -814,33 +813,48 @@ var Components = {
 						_this.controller.source = _this.controller.context.createBufferSource();
 						_this.controller.source.buffer = _this.controller.context.createBuffer(audioData, false);
 						_this.controller.source.connect(_this.controller.context.destination);
+						_this.controller.source.connect(_this.controller.analyser);
+						_this.controller.analyser.getByteTimeDomainData(_this.controller.dataArray);
+						_this.controller.source.onended = audioTrack.reset;
 						_this.controller.source.start(0);
+						resolve();
 					});
 				}
-
-				// gets the next track
-				audioTrack.next = function () {
+				audioTrack.stop = function () {
 					var _this = audioTrack;
 					return new Promise(function(resolve, reject) {
-						var currentId = Object.keys(_this.buffer).filter(function (key) {
-							return _this.buffer[key].index === _this.active;
-						})[0];
-						_this.buffer[currentId].is_available = false;
-						_this.active = _this.active + 1;
+						_this.controller.source.stop();
 						resolve();
+					});
+				}
+				audioTrack.reset = function () {
+					var _this = audioTrack;
+					// reset to beginning of current track
+				}
+				audioTrack.next = function () {
+					var _this = audioTrack;
+					return _this.stop().then(function () {
+						return new Promise(function(resolve, reject) {
+							var currentId = Object.keys(_this.buffer).filter(function (key) {
+								return _this.buffer[key].index === _this.active;
+							})[0];
+							_this.buffer[currentId].is_available = false;
+							_this.active = _this.active + 1;
+							resolve();
+						});
 					}).then(function () {
 						return _this.update();
 					}).then(function () {
 						return _this.play();
 					});
 				}
-
-				// get previous track
 				audioTrack.previous = function () {
 					var _this = audioTrack;
-					return new Promise(function(resolve, reject) {
-						_this.active = _this.active > 0 ? _this.active - 1 : 0;
-						resolve();
+					return _this.stop().then(function () {
+						return new Promise(function(resolve, reject) {
+							_this.active = _this.active > 0 ? _this.active - 1 : 0;
+							resolve();
+						});
 					}).then(function () {
 						return _this.update();
 					}).then(function () {
