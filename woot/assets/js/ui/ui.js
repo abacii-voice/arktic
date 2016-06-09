@@ -723,8 +723,11 @@ var Context = {
 					if (i+1 === context_path.length) {
 
 						// Here, the value can be an object, it should be merged with any existing object or overwritten if keys match.
-
+						// if (typeof value === 'object' && typeof sub[context_path[i]] === 'object') {
+						//
+						// } else {
 						sub[context_path[i]] = value;
+						// }
 					} else {
 						if (sub[context_path[i]] === undefined) {
 							sub[context_path[i]] = {};
