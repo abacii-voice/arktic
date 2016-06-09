@@ -725,16 +725,18 @@ var Components = {
 					var remaining = Object.keys(_this.buffer).filter(function (key) {
 						return _this.buffer[key].is_available;
 					}).length;
-
 					if (remaining == 0) {
 						return _this.load().then(function () {
 							return _this.pre();
 						});
 					} else if (remaining < 3) {
+						// console.log('remaining < 3');
 						return Promise.all([
 							_this.load({force: true}),
 							_this.pre(),
 						]);
+					} else {
+						return _this.pre();
 					}
 				}
 				audioTrack.load = function (force) {
@@ -748,9 +750,10 @@ var Components = {
 							return Context.get(tokenPath, {force: force});
 						}),
 					]).then(function (options) {
-						return Context.get(options[0], {options: {filter: {token: options[1].id}}});
+						return Context.get(options[0], {force: force, options: {filter: {token: options[1].id}}});
 					}).then(function (result) {
 						// Result is a list of transcriptions filtered by active token
+						// console.log(Object.keys(_this.buffer), Object.keys(result));
 						Object.keys(result).sort(function (a, b) {
 							return result[a].original_caption > result[b].original_caption ? 1 : -1;
 						}).forEach(function (key, index) {
@@ -771,8 +774,9 @@ var Components = {
 					var _this = audioTrack;
 					// determine which audio elements to load
 					// load 2 either side of active index.
-					var lower = _this.active > 1 ? _this.active - 2 : 0;
-					var upper = _this.active > 1 ? _this.active + 3 : 5;
+					var lower = _this.active > 1 ? _this.active - 1 : 0;
+					var upper = _this.active > 1 ? _this.active + 2 : 4;
+					console.log('lower {}'.format(lower), 'upper {}'.format(upper));
 					var indices = [];
 					for (i=lower; i<upper; i++) {
 						indices.push(i);
@@ -783,13 +787,14 @@ var Components = {
 							return _this.buffer[key].index === index;
 						})[0];
 						var storage = _this.buffer[transcriptionId];
-
-						return Request.load_audio(transcriptionId).then(function (audioData) {
-							return new Promise(function(resolve, reject) {
-								storage.buffer = audioData;
-								resolve();
+						if (storage.buffer === undefined) {
+							return Request.load_audio(transcriptionId).then(function (audioData) {
+								return new Promise(function(resolve, reject) {
+									storage.buffer = audioData;
+									resolve();
+								});
 							});
-						});
+						}
 					})).then(function () {
 						return Promise.all(Object.keys(_this.buffer).filter(function (key) {
 							return indices.indexOf(_this.buffer[key].index) === -1;
@@ -817,6 +822,10 @@ var Components = {
 				audioTrack.next = function () {
 					var _this = audioTrack;
 					return new Promise(function(resolve, reject) {
+						var currentId = Object.keys(_this.buffer).filter(function (key) {
+							return _this.buffer[key].index === _this.active;
+						})[0];
+						_this.buffer[currentId].is_available = false;
 						_this.active = _this.active + 1;
 						resolve();
 					}).then(function () {

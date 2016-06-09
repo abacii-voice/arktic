@@ -32,6 +32,7 @@ class TranscriptionToken(models.Model):
 			for i in range(self.transcription_limit):
 				transcription = self.project.get_transcription()
 				if transcription is not None:
+					transcription.is_available = False
 					self.transcriptions.add(transcription)
 					self.save()
 
