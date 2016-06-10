@@ -796,17 +796,13 @@ var Components = {
 							return _this.buffer[key].index === index;
 						})[0];
 						var storage = _this.buffer[transcriptionId];
-						if (storage.source === undefined) {
+						if (storage.data === undefined) {
 							return Request.load_audio(transcriptionId).then(function (audioData) {
 								return new Promise(function(resolve, reject) {
-									storage.source = _this.controller.context.createBufferSource();
-									storage.source.buffer = _this.controller.context.createBuffer(audioData, false);
-									storage.source.connect(_this.controller.context.destination);
-									storage.source.connect(_this.controller.analyser);
-									storage.waveform = new Uint8Array(audioTrack.controller.bufferLength);
-									_this.controller.analyser.getByteTimeDomainData(storage.waveform);
-									storage.source.onended = audioTrack.reset;
-									resolve();
+									_this.controller.context.decodeAudioData(audioData, function (decoded) {
+										storage.data = decoded;
+										resolve();
+									});
 								}).catch(function (error) {
 									console.log(error);
 								});
@@ -832,7 +828,16 @@ var Components = {
 					return _this.current().then(function (current) {
 						return new Promise(function(resolve, reject) {
 							current.is_playing = true;
-							console.log('play {}'.format(current.index), current.source, _this.controller);
+							if (current.source !== undefined) {
+								current.source.disconnect();
+							}
+							current.source = _this.controller.context.createBufferSource();
+							current.source.buffer = current.data;
+							current.source.connect(_this.controller.context.destination);
+							current.source.connect(_this.controller.analyser);
+							current.waveform = new Uint8Array(audioTrack.controller.bufferLength);
+							_this.controller.analyser.getByteTimeDomainData(current.waveform);
+							current.source.onended = audioTrack.reset;
 							current.source.start(0);
 							resolve();
 						}).catch(function (error) {
@@ -860,6 +865,7 @@ var Components = {
 								current.is_playing = false;
 								console.log('stop {}'.format(current.index));
 								current.source.stop();
+								current.source.disconnect();
 							}
 							resolve();
 						}).catch(function (error) {
