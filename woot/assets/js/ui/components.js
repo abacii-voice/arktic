@@ -710,12 +710,22 @@ var Components = {
 				audioTrack.active = 0;
 				audioTrack.controller = {};
 				audioTrack.threshold = 4;
+
 				// initialise node and create context
 				audioTrack.controller.context = new (window.AudioContext || window.webkitAudioContext)();
 				audioTrack.controller.analyser = audioTrack.controller.context.createAnalyser();
 				audioTrack.controller.analyser.fftSize = 2048;
 				audioTrack.controller.bufferLength = audioTrack.controller.analyser.frequencyBinCount;
-				audioTrack.controller.dataArray = new Uint8Array(audioTrack.controller.bufferLength);
+
+				audioTrack.current = function () {
+					var _this = audioTrack;
+					return new Promise(function(resolve, reject) {
+						var storageId = Object.keys(_this.buffer).filter(function (key) {
+							return _this.buffer[key].index === _this.active;
+						})[0];
+						resolve(_this.buffer[storageId]);
+					});
+				}
 				audioTrack.update = function () {
 					var _this = audioTrack;
 					// 1. if the buffer is completely empty, the audio element must wait before attempting to load the audio.
@@ -724,12 +734,11 @@ var Components = {
 					var remaining = Object.keys(_this.buffer).filter(function (key) {
 						return _this.buffer[key].is_available;
 					}).length;
-					if (remaining == 0) {
+					if (remaining === 0) {
 						return _this.load().then(function () {
 							return _this.pre();
 						});
 					} else if (remaining < _this.threshold) {
-						// console.log('remaining < 3');
 						return Promise.all([
 							_this.load({force: true}),
 							_this.pre(),
@@ -767,6 +776,8 @@ var Components = {
 						return new Promise(function(resolve, reject) {
 							resolve(_this.buffer);
 						});
+					}).catch(function (error) {
+						console.log(error);
 					});
 				}
 				audioTrack.pre = function () {
@@ -785,12 +796,19 @@ var Components = {
 							return _this.buffer[key].index === index;
 						})[0];
 						var storage = _this.buffer[transcriptionId];
-						if (storage.buffer === undefined) {
+						if (storage.source === undefined) {
 							return Request.load_audio(transcriptionId).then(function (audioData) {
 								return new Promise(function(resolve, reject) {
-									storage.buffer = audioData;
-									_this.controller.dataArray = new Uint8Array(_this.controller.bufferLength);
+									storage.source = _this.controller.context.createBufferSource();
+									storage.source.buffer = _this.controller.context.createBuffer(audioData, false);
+									storage.source.connect(_this.controller.context.destination);
+									storage.source.connect(_this.controller.analyser);
+									storage.waveform = new Uint8Array(audioTrack.controller.bufferLength);
+									_this.controller.analyser.getByteTimeDomainData(storage.waveform);
+									storage.source.onended = audioTrack.reset;
 									resolve();
+								}).catch(function (error) {
+									console.log(error);
 								});
 							});
 						}
@@ -799,46 +817,77 @@ var Components = {
 							return indices.indexOf(_this.buffer[key].index) === -1;
 						}).map(function (key) {
 							var removeBuffer = _this.buffer[key];
-							delete removeBuffer.buffer;
+							if (removeBuffer.source !== undefined) {
+								removeBuffer.source.disconnect();
+								delete removeBuffer.source;
+								delete removeBuffer.waveform;
+							}
 						}));
+					}).catch(function (error) {
+						console.log(error);
 					});
 				}
-				audioTrack.play = function (index) {
+				audioTrack.play = function () {
 					var _this = audioTrack;
-					return new Promise(function(resolve, reject) {
-						var storageId = Object.keys(_this.buffer).filter(function (key) {
-							return _this.buffer[key].index === _this.active;
-						})[0];
-						var audioData = _this.buffer[storageId].buffer;
-						_this.controller.source = _this.controller.context.createBufferSource();
-						_this.controller.source.buffer = _this.controller.context.createBuffer(audioData, false);
-						_this.controller.source.connect(_this.controller.context.destination);
-						_this.controller.source.connect(_this.controller.analyser);
-						_this.controller.analyser.getByteTimeDomainData(_this.controller.dataArray);
-						_this.controller.source.onended = audioTrack.reset;
-						_this.controller.source.start(0);
-						resolve();
+					return _this.current().then(function (current) {
+						return new Promise(function(resolve, reject) {
+							current.is_playing = true;
+							console.log('play {}'.format(current.index), current.source, _this.controller);
+							current.source.start(0);
+							resolve();
+						}).catch(function (error) {
+							console.log(error);
+						});
 					});
+					// draw waveform
+					// var pixelWidth = parseInt(audioTrack.model().css('width'));
+					// var sample = Math.floor(audioTrack.controller.bufferLength / pixelWidth);
+					// var sampleValues = [];
+					// for (i=0; i<_this.buffer[storageId].waveform.length; i++) {
+					// 	if (i % sample === 0) {
+					// 		sampleValues.push(_this.buffer[storageId].waveform[i]);
+					// 	}
+					// }
+					// console.log(sampleValues);
+
+					// start animating now cursor
 				}
 				audioTrack.stop = function () {
 					var _this = audioTrack;
-					return new Promise(function(resolve, reject) {
-						_this.controller.source.stop();
-						resolve();
+					return _this.current().then(function (current) {
+						return new Promise(function(resolve, reject) {
+							if (current.is_playing) {
+								current.is_playing = false;
+								console.log('stop {}'.format(current.index));
+								current.source.stop();
+							}
+							resolve();
+						}).catch(function (error) {
+							console.log(error);
+						});
+
+						// stop now cursor
 					});
 				}
 				audioTrack.reset = function () {
 					var _this = audioTrack;
 					// reset to beginning of current track
+					return _this.current().then(function (current) {
+						current.is_playing = false;
+						current.source.stop();
+					});
 				}
 				audioTrack.next = function () {
 					var _this = audioTrack;
 					return _this.stop().then(function () {
+						return _this.current();
+					}).then(function (current) {
 						return new Promise(function(resolve, reject) {
-							var currentId = Object.keys(_this.buffer).filter(function (key) {
-								return _this.buffer[key].index === _this.active;
-							})[0];
-							_this.buffer[currentId].is_available = false;
+							current.is_available = false;
+							resolve();
+						});
+					}).then(function () {
+						return new Promise(function(resolve, reject) {
 							_this.active = _this.active + 1;
 							resolve();
 						});
@@ -846,6 +895,8 @@ var Components = {
 						return _this.update();
 					}).then(function () {
 						return _this.play();
+					}).catch(function (error) {
+						console.log(error);
 					});
 				}
 				audioTrack.previous = function () {
@@ -859,6 +910,8 @@ var Components = {
 						return _this.update();
 					}).then(function () {
 						return _this.play();
+					}).catch(function (error) {
+						console.log(error);
 					});
 				}
 
