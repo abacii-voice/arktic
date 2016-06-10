@@ -776,8 +776,6 @@ var Components = {
 						return new Promise(function(resolve, reject) {
 							resolve(_this.buffer);
 						});
-					}).catch(function (error) {
-						console.log(error);
 					});
 				}
 				audioTrack.pre = function () {
@@ -803,8 +801,6 @@ var Components = {
 										storage.data = decoded;
 										resolve();
 									});
-								}).catch(function (error) {
-									console.log(error);
 								});
 							});
 						}
@@ -819,8 +815,6 @@ var Components = {
 								delete removeBuffer.waveform;
 							}
 						}));
-					}).catch(function (error) {
-						console.log(error);
 					});
 				}
 				audioTrack.play = function () {
@@ -840,8 +834,6 @@ var Components = {
 							current.source.onended = audioTrack.reset;
 							current.source.start(0);
 							resolve();
-						}).catch(function (error) {
-							console.log(error);
 						});
 					});
 					// draw waveform
@@ -863,13 +855,10 @@ var Components = {
 						return new Promise(function(resolve, reject) {
 							if (current.is_playing) {
 								current.is_playing = false;
-								console.log('stop {}'.format(current.index));
 								current.source.stop();
 								current.source.disconnect();
 							}
 							resolve();
-						}).catch(function (error) {
-							console.log(error);
 						});
 
 						// stop now cursor
@@ -901,8 +890,6 @@ var Components = {
 						return _this.update();
 					}).then(function () {
 						return _this.play();
-					}).catch(function (error) {
-						console.log(error);
 					});
 				}
 				audioTrack.previous = function () {
@@ -916,8 +903,6 @@ var Components = {
 						return _this.update();
 					}).then(function () {
 						return _this.play();
-					}).catch(function (error) {
-						console.log(error);
 					});
 				}
 
