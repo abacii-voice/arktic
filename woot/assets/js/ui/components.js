@@ -583,7 +583,12 @@ var Components = {
 				},
 			}),
 
-			// audio track
+			// audio track canvas
+			UI.createComponent('{id}-audio-track-canvas'.format({id: id}), {
+				template: UI.template('canvas', 'ie abs'),
+			}),
+
+			// audio track info
 			UI.createComponent('{id}-audio-track-info'.format({id: id}), {
 				template: UI.template('div', 'ie abs'),
 				appearance: {
@@ -631,9 +636,10 @@ var Components = {
 			var audioWrapper = components[4];
 			var audioTrackWrapper = components[5];
 			var audioTrack = components[6];
-			var audioTrackInfo = components[7];
-			var anchorCursor = components[8];
-			var nowCursor = components[9];
+			var audioTrackCanvas = components[7];
+			var audioTrackInfo = components[8];
+			var anchorCursor = components[9];
+			var nowCursor = components[10];
 
 			return new Promise(function(resolve, reject) {
 				// modify components and add methods etc.
@@ -710,6 +716,7 @@ var Components = {
 				audioTrack.active = 0;
 				audioTrack.controller = {};
 				audioTrack.threshold = 4;
+				audioTrack.barWidth = 2;
 
 				// initialise node and create context
 				audioTrack.controller.context = new (window.AudioContext || window.webkitAudioContext)();
@@ -781,7 +788,7 @@ var Components = {
 				audioTrack.pre = function () {
 					var _this = audioTrack;
 					// determine which audio elements to load
-					// load 2 either side of active index.
+					// load n either side of active index.
 					var lower = _this.active > 1 ? _this.active - _this.threshold + 2 : 0;
 					var upper = _this.active > 1 ? _this.active + _this.threshold - 1 : _this.threshold + 1;
 					var indices = [];
@@ -799,18 +806,22 @@ var Components = {
 								return new Promise(function(resolve, reject) {
 									_this.controller.context.decodeAudioData(audioData, function (decoded) {
 										storage.data = decoded;
+										storage.has_waveform = false;
 										resolve();
 									});
 								});
 							});
 						}
 					})).then(function () {
+						return _this.drawWaveform();
+					}).then(function () {
 						return Promise.all(Object.keys(_this.buffer).filter(function (key) {
 							return indices.indexOf(_this.buffer[key].index) === -1;
 						}).map(function (key) {
 							var removeBuffer = _this.buffer[key];
 							if (removeBuffer.source !== undefined) {
 								removeBuffer.source.disconnect();
+								removeBuffer.has_waveform = false;
 								delete removeBuffer.source;
 								delete removeBuffer.waveform;
 							}
@@ -828,26 +839,45 @@ var Components = {
 							current.source = _this.controller.context.createBufferSource();
 							current.source.buffer = current.data;
 							current.source.connect(_this.controller.context.destination);
-							current.source.connect(_this.controller.analyser);
-							current.waveform = new Uint8Array(audioTrack.controller.bufferLength);
-							_this.controller.analyser.getByteTimeDomainData(current.waveform);
 							current.source.onended = audioTrack.reset;
 							current.source.start(0);
 							resolve();
 						});
-					});
-					// draw waveform
-					// var pixelWidth = parseInt(audioTrack.model().css('width'));
-					// var sample = Math.floor(audioTrack.controller.bufferLength / pixelWidth);
-					// var sampleValues = [];
-					// for (i=0; i<_this.buffer[storageId].waveform.length; i++) {
-					// 	if (i % sample === 0) {
-					// 		sampleValues.push(_this.buffer[storageId].waveform[i]);
-					// 	}
-					// }
-					// console.log(sampleValues);
+					}).then(function () {
+						// start animating now cursor
+						return new Promise(function(resolve, reject) {
 
-					// start animating now cursor
+						});
+					});
+				}
+				audioTrack.drawWaveform = function () {
+					var _this = audioTrack;
+					return _this.current().then(function (current) {
+						return Promise.all([
+							// get waveform
+							new Promise(function(resolve, reject) {
+								current.waveform = current.data.getChannelData(0);
+								var pixelWidth = parseInt(_this.model().css('width'));
+								var pixelHeight = parseInt(_this.model().css('height'));
+								var sampleValues = getAbsNormalised(interpolateArray(current.waveform, pixelWidth / _this.barWidth), pixelHeight);
+								resolve(sampleValues);
+							}),
+							audioTrackCanvas.getContext(),
+						]);
+					}).then(function (waveformAndCanvasContext) {
+						var waveformData = waveformAndCanvasContext[0];
+						var canvasContext = waveformAndCanvasContext[1];
+						var pixelHeight = parseInt(_this.model().css('height'));
+
+						return new Promise(function(resolve, reject) {
+							for (i=0; i<waveformData.length; i++) {
+								canvasContext.fillStyle = '#ccc';
+								canvasContext.fillRect(i * _this.barWidth, 0.6 * (pixelHeight - waveformData[i]), _this.barWidth, 0.6 * waveformData[i]);
+								canvasContext.fillRect(i * _this.barWidth, 0.6 * pixelHeight, _this.barWidth, 0.4 * waveformData[i]);
+							}
+							resolve();
+						});
+					});
 				}
 				audioTrack.stop = function () {
 					var _this = audioTrack;
@@ -945,8 +975,21 @@ var Components = {
 
 				}
 
+				//// CANVAS
+				audioTrackCanvas.getContext = function () {
+					var _this = audioTrackCanvas;
+					return new Promise(function(resolve, reject) {
+						var canvas = document.getElementById(_this.id);
+						canvas.height = parseInt(audioTrack.model().css('height'));
+						canvas.width = parseInt(audioTrack.model().css('width'));
+						_this.context = canvas.getContext('2d');
+						resolve(_this.context);
+					});
+				}
+
 				audioTrackWrapper.setChildren([
 					audioTrack,
+					audioTrackCanvas,
 					audioTrackInfo,
 					anchorCursor,
 					nowCursor,
