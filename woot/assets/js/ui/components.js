@@ -599,31 +599,6 @@ var Components = {
 				},
 			}),
 
-			// anchor cursor
-			UI.createComponent('{id}-anchor-cursor'.format({id: id}), {
-				template: UI.template('div', 'ie abs'),
-				appearance: {
-					style: {
-						'height': '100%',
-						'width': '1px',
-						'background-color': '#ccc',
-					},
-				},
-			}),
-
-			// now cursor
-			UI.createComponent('{id}-now-cursor'.format({id: id}), {
-				template: UI.template('div', 'ie abs'),
-				appearance: {
-					style: {
-						'height': '100%',
-						'width': '1px',
-						'background-color': 'red',
-					},
-				},
-			}),
-
-
 		]).then(function (components) {
 			// unpack components
 			// BUTTON GROUP
@@ -638,8 +613,6 @@ var Components = {
 			var audioTrack = components[6];
 			var audioTrackCanvas = components[7];
 			var audioTrackInfo = components[8];
-			var anchorCursor = components[9];
-			var nowCursor = components[10];
 
 			return new Promise(function(resolve, reject) {
 				// modify components and add methods etc.
@@ -717,6 +690,7 @@ var Components = {
 				audioTrack.controller = {};
 				audioTrack.threshold = 4;
 				audioTrack.barWidth = 2;
+				audioTrack.canvas = audioTrackCanvas;
 
 				// initialise node and create context
 				audioTrack.controller.context = new (window.AudioContext || window.webkitAudioContext)();
@@ -813,8 +787,6 @@ var Components = {
 							});
 						}
 					})).then(function () {
-						return _this.drawWaveform();
-					}).then(function () {
 						return Promise.all(Object.keys(_this.buffer).filter(function (key) {
 							return indices.indexOf(_this.buffer[key].index) === -1;
 						}).map(function (key) {
@@ -828,7 +800,8 @@ var Components = {
 						}));
 					});
 				}
-				audioTrack.play = function () {
+				audioTrack.play = function (position) {
+					position = position !== undefined ? position : 0;
 					var _this = audioTrack;
 					return _this.current().then(function (current) {
 						return new Promise(function(resolve, reject) {
@@ -840,13 +813,8 @@ var Components = {
 							current.source.buffer = current.data;
 							current.source.connect(_this.controller.context.destination);
 							current.source.onended = audioTrack.reset;
-							current.source.start(0);
+							current.source.start(position);
 							resolve();
-						});
-					}).then(function () {
-						// start animating now cursor
-						return new Promise(function(resolve, reject) {
-
 						});
 					});
 				}
@@ -960,39 +928,83 @@ var Components = {
 
 				});
 
-				// sets the location of the anchor
-				anchorCursor.set = function () {
-
-				}
-
-				// sets the now cursor
-				nowCursor.set = function () {
-
-				}
-
-				// animates the movement of the now cursor according to the length of the audio clip.
-				nowCursor.play = function () {
-
-				}
-
 				//// CANVAS
-				audioTrackCanvas.getContext = function () {
+				audioTrackCanvas.is_running = false;
+				audioTrackCanvas.fps = 30;
+				audioTrackCanvas.start = function () {
 					var _this = audioTrackCanvas;
-					return new Promise(function(resolve, reject) {
-						var canvas = document.getElementById(_this.id);
-						canvas.height = parseInt(audioTrack.model().css('height'));
-						canvas.width = parseInt(audioTrack.model().css('width'));
-						_this.context = canvas.getContext('2d');
-						resolve(_this.context);
-					});
+					if (!_this.is_running) {
+						_this.is_running = true;
+
+						// create canvas and context
+						_this.canvas = document.getElementById(_this.id);
+						_this.canvas.height = parseInt(_this.model().css('height'));
+						_this.canvas.width = parseInt(_this.model().css('width'));
+						_this.context = _this.canvas.getContext('2d');
+						_this.frame = 0;
+
+						// start loop
+						_this.draw();
+					}
+				}
+				audioTrackCanvas.draw = function () {
+					var _this = audioTrackCanvas;
+					setTimeout(function () {
+						requestAnimationFrame(_this.draw);
+
+						// 1. determine changes
+						var changed = false;
+
+						// _this.data;
+						var differenceArray;
+						if (_this.previousData !== undefined) {
+							differenceArray = getDifferenceArray(_this.previousData, _this.data);
+							if (differenceArray.reduce(reduceSum) !== 0) {
+								changed = true;
+								_this.previousData = _this.data;
+							}
+						} else {
+							if (_this.data === undefined) {
+								changed = true;
+								differenceArray = Array.apply(null, Array(_this.canvas.width)).map(Number.prototype.valueOf, 0);;
+							}
+						}
+
+						// from array
+						// to array
+						// current array
+						
+						// 1. initialise with
+
+						// _this.nowCursorPosition;
+						// _this.anchorCursorPosition;
+						// _this.mousePosition;
+						// _this.highlightStart;
+						// _this.highlightEnd;
+
+						// 2. draw
+						if (changed) {
+							// clear canvas
+							_this.context.clearRect(0, 0, _this.canvas.width, _this.canvas.height);
+
+							// data
+							if (_this.data !== undefined) {
+
+							} else {
+								_this.data = differenceArray;
+							}
+
+							changed = false;
+						}
+
+						_this.frame += 1;
+					}, 1000 / _this.fps);
 				}
 
 				audioTrackWrapper.setChildren([
 					audioTrack,
 					audioTrackCanvas,
 					audioTrackInfo,
-					anchorCursor,
-					nowCursor,
 				]);
 				audioWrapper.setChildren([
 					audioTrackWrapper,
