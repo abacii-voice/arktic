@@ -98,11 +98,11 @@ if(!String.prototype.trim) {
 }
 
 // Array interpolation
-function linearInterpolate(before, after, atPoint) {
+function linearInterpolate (before, after, atPoint) {
 	return before + (after - before) * atPoint;
 };
 
-function interpolateArray(data, fitCount) {
+function interpolateArray (data, fitCount) {
 	var newData = new Array();
 	var springFactor = new Number((data.length - 1) / (fitCount - 1));
 	newData[0] = data[0]; // for new allocation
@@ -117,11 +117,11 @@ function interpolateArray(data, fitCount) {
 	return newData;
 };
 
-function getMaxOfArray(numArray) {
+function getMaxOfArray (numArray) {
   return Math.max.apply(null, numArray);
 }
 
-function getAbsNormalised(array, max) {
+function getAbsNormalised (array, max) {
 	// abs
 	var abs = array.map(function (value) {
 		return Math.abs(value);
@@ -134,4 +134,17 @@ function getAbsNormalised(array, max) {
 	});
 
 	return normalised;
+}
+
+function getDifferenceArray (previous, next) {
+	if (previous.length === next.length) {
+		var differenceArray = [];
+		for (i=0; i<previous.length; i++) {
+			differenceArray.push(next[i] - previous[i]);
+		}
+	}
+}
+
+function reduceSum (previous, next) {
+	return previous + next;
 }
