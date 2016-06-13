@@ -205,6 +205,7 @@ UI.app('hook', [
 					'client-state': {
 						path: 'clients',
 						fn: function (_this) {
+							_this.canvas.start();
 							_this.update().catch(function (error) {
 								console.log(error);
 							});
