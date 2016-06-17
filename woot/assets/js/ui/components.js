@@ -952,20 +952,15 @@ var Components = {
 					setTimeout(function () {
 						requestAnimationFrame(_this.draw);
 
-						// 1. determine changes
-						var changed = false;
-
 						// _this.data;
 						var differenceArray;
 						if (_this.previousData !== undefined) {
 							differenceArray = getDifferenceArray(_this.previousData, _this.data);
 							if (differenceArray.reduce(reduceSum) !== 0) {
-								changed = true;
 								_this.previousData = _this.data;
 							}
 						} else {
 							if (_this.data === undefined) {
-								changed = true;
 								differenceArray = Array.apply(null, Array(_this.canvas.width)).map(Number.prototype.valueOf, 0);;
 							}
 						}
@@ -973,8 +968,6 @@ var Components = {
 						// from array
 						// to array
 						// current array
-						
-						// 1. initialise with
 
 						// _this.nowCursorPosition;
 						// _this.anchorCursorPosition;
@@ -983,18 +976,14 @@ var Components = {
 						// _this.highlightEnd;
 
 						// 2. draw
-						if (changed) {
-							// clear canvas
-							_this.context.clearRect(0, 0, _this.canvas.width, _this.canvas.height);
+						// clear canvas
+						_this.context.clearRect(0, 0, _this.canvas.width, _this.canvas.height);
 
-							// data
-							if (_this.data !== undefined) {
+						// data
+						if (_this.data !== undefined) {
 
-							} else {
-								_this.data = differenceArray;
-							}
-
-							changed = false;
+						} else {
+							_this.data = differenceArray;
 						}
 
 						_this.frame += 1;
