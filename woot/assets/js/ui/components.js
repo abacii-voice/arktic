@@ -921,8 +921,8 @@ var Components = {
 
 						// create canvas and context
 						_this.canvas = document.getElementById(_this.id);
-						_this.canvas.height = parseInt(_this.model().css('height'));
-						_this.canvas.width = parseInt(_this.model().css('width'));
+						_this.canvas.height = parseInt(audioTrack.model().css('height'));
+						_this.canvas.width = parseInt(audioTrack.model().css('width'));
 						_this.context = _this.canvas.getContext('2d');
 						_this.frame = 0;
 
