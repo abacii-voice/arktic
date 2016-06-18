@@ -590,7 +590,7 @@ var Components = {
 
 			// audio track info
 			UI.createComponent('{id}-audio-track-info'.format({id: id}), {
-				template: UI.template('div', 'ie abs'),
+				template: UI.template('div', 'ie abs hidden'),
 				appearance: {
 					style: {
 						'height': '100%',
@@ -693,10 +693,6 @@ var Components = {
 
 				// initialise node and create context
 				audioTrack.controller.context = new (window.AudioContext || window.webkitAudioContext)();
-				audioTrack.controller.analyser = audioTrack.controller.context.createAnalyser();
-				audioTrack.controller.analyser.fftSize = 2048;
-				audioTrack.controller.bufferLength = audioTrack.controller.analyser.frequencyBinCount;
-
 				audioTrack.current = function () {
 					var _this = audioTrack;
 					return new Promise(function(resolve, reject) {
@@ -792,6 +788,7 @@ var Components = {
 						return _this.current().then(function (current) {
 							return new Promise(function(resolve, reject) {
 								audioTrackCanvas.data = current.data;
+								audioTrackCanvas.duration = current.data.duration;
 								resolve();
 							});
 						});
@@ -823,7 +820,10 @@ var Components = {
 							current.source.buffer = current.data;
 							current.source.connect(_this.controller.context.destination);
 							current.source.onended = audioTrack.reset;
-							current.source.start(position);
+							audioTrackCanvas.duration = current.source.buffer.duration;
+							audioTrackCanvas.time = position;
+							audioTrackCanvas.is_playing = true;
+							current.source.start(0, position);
 							resolve();
 						});
 					});
@@ -836,6 +836,7 @@ var Components = {
 								current.is_playing = false;
 								current.source.stop();
 								current.source.disconnect();
+								audioTrackCanvas.is_playing = false;
 							}
 							resolve();
 						});
@@ -848,6 +849,7 @@ var Components = {
 					// reset to beginning of current track
 					return _this.current().then(function (current) {
 						current.is_playing = false;
+						audioTrackCanvas.is_playing = false;
 						current.source.stop();
 					});
 				}
@@ -911,9 +913,11 @@ var Components = {
 
 				//// CANVAS
 				audioTrackCanvas.is_running = false;
-				audioTrackCanvas.fps = 10;
+				audioTrackCanvas.fps = 60;
 				audioTrackCanvas.step = 1000 / audioTrackCanvas.fps;
 				audioTrackCanvas.barWidth = 2;
+				audioTrackCanvas.nowCursorPosition = 0;
+				audioTrackCanvas.time = 0;
 				audioTrackCanvas.start = function () {
 					var _this = audioTrackCanvas;
 					if (!_this.is_running) {
@@ -944,8 +948,6 @@ var Components = {
 						}
 						// ANIMATING https://www.kirupa.com/html5/animating_many_things_on_a_canvas.htm
 
-						// _this.nowCursorPosition;
-						// _this.anchorCursorPosition;
 						// _this.mousePosition;
 						// _this.highlightStart;
 						// _this.highlightEnd;
@@ -956,15 +958,50 @@ var Components = {
 
 						// data
 						for (i=0; i<_this.sample.length; i++) {
+
+							// waveform
 							_this.context.fillStyle = '#ccc';
 							_this.context.fillRect(i * _this.barWidth, 0.6 * (_this.canvas.height - _this.sample[i]), _this.barWidth, 0.6 * _this.sample[i]);
 							_this.context.fillRect(i * _this.barWidth, 0.6 * _this.canvas.height, _this.barWidth, 0.4 * _this.sample[i]);
 						}
 
-						_this.frame += 1;
+						// now cursor
+						_this.context.fillStyle = 'red';
+						_this.context.fillRect(_this.nowCursorPosition, 0, _this.barWidth, _this.canvas.height);
+
+						// update now cursor
+						if (_this.is_playing) {
+							_this.time += 1 / _this.fps;
+							_this.nowCursorPosition = _this.canvas.width / _this.duration * _this.time;
+							// if (_this.nowCursorPosition > _this.canvas.width) {
+							// 	_this.nowCursorPosition = 0;
+							// 	_this.is_playing = false;
+							// }
+						}
 					}, _this.step);
 				}
+				audioTrackCanvas.getMousePosition = function (event) {
+					var _this = audioTrackCanvas;
+					var rect = _this.context.canvas.getBoundingClientRect();
 
+					return {
+						x: Math.floor((event.clientX - rect.left) / (rect.right - rect.left) * _this.context.canvas.width),
+						y: Math.floor((event.clientY-rect.top) / (rect.bottom - rect.top) * _this.context.canvas.height),
+					}
+				}
+				audioTrackCanvas.setBindings({
+
+					// like it says
+					'mousedown': function (_this, event) {
+						_this.time = _this.getMousePosition(event).x / _this.canvas.width * _this.duration;
+						audioTrack.play(_this.time);
+					},
+
+					// continuous movement
+					'mousemove': function (_this, event) {
+						// console.log(_this.getMousePosition(event));
+					},
+				});
 				audioTrackWrapper.setChildren([
 					audioTrack,
 					audioTrackCanvas,

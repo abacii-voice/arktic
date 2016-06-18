@@ -315,8 +315,8 @@ var UI = {
 						var binding = bindings[name];
 						// if rendered, add to model
 						if (_this.isRendered) {
-							_this.model().on(name, function () {
-								binding(_this);
+							_this.model().on(name, function (event) {
+								binding(_this, event);
 							});
 						} else {
 							_this.bindings[name] = binding;
