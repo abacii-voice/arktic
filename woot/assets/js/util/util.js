@@ -131,6 +131,7 @@ function getAbsNormalised (array, max) {
 
 	var normalised = abs.map(function (value) {
 		return max * Math.sqrt(value / arrayMax);
+		// return max * value / arrayMax;
 	});
 
 	return normalised;
