@@ -678,12 +678,6 @@ var Components = {
 				]);
 
 				// AUDIO GROUP
-				// audio track variables
-				// audioTrack.trackId = '';
-				// audioTrack.trackLength = 0;
-				// audioTrack.audioTime = 0;
-				// audioTrack.pixelToTimeRatio = 0;
-
 				// determines which audio references to create as audio tags
 				audioTrack.buffer = {};
 				audioTrack.active = 0;
@@ -827,7 +821,7 @@ var Components = {
 							audioTrackCanvas.position = position;
 							audioTrackCanvas.is_playing = true;
 							audioTrackCanvas.startTime = audioTrack.controller.context.currentTime;
-							if (_this.loop) {
+							if (_this.cut) {
 								current.source.loop = true;
 								current.source.loopStart = _this.loopStart;
 								current.source.loopEnd = _this.loopEnd;
@@ -948,7 +942,7 @@ var Components = {
 					for (i=0; i<_this.sample.length; i++) {
 
 						// colour
-						if (_this.looped) {
+						if (_this.cut) {
 							if (_this.loopStart > _this.loopEnd) {
 								var temp = _this.loopStart;
 								_this.loopStart = _this.loopEnd;
@@ -995,32 +989,27 @@ var Components = {
 					'mousedown': function (_this, event) {
 						_this.mouseDown = true;
 						_this.drag = false;
-						_this.mouseStart = _this.getMousePosition(event).x;
-						if (_this.looped) {
-							_this.loopStart = _this.mouseStart;
-							_this.loopEnd = _this.mousePosition;
-						}
+						_this.cutStart = _this.getMousePosition(event).x;
 					},
 
 					// continuous movement
 					'mousemove': function (_this, event) {
 						_this.mousePosition = _this.getMousePosition(event).x;
 						if (_this.mouseDown) {
-							_this.looped = true;
+							_this.cut = true;
 							_this.drag = true;
-							_this.loopStart = _this.mouseStart;
-							_this.loopEnd = _this.mousePosition;
+							_this.cutEnd = _this.mousePosition;
 						}
 					},
 
 					// let mouse up
 					'mouseup': function (_this, event) {
 						_this.mouseDown = false;
-						if (_this.looped) {
-							if (_this.drag && (_this.loopEnd - _this.loopStart > 1)) {
-								if (_this.loopStart > _this.loopEnd) {
-									var temp = _this.loopStart;
-									_this.loopStart = _this.loopEnd;
+						if (_this.cut) {
+							if (_this.drag && (_this.cutEnd - _this.cutStart > 1)) {
+								if (_this.cutStart > _this.loopEnd) {
+									var temp = _this.cutStart;
+									_this.cutStart = _this.loopEnd;
 									_this.loopEnd = temp;
 								}
 
@@ -1029,7 +1018,7 @@ var Components = {
 								audioTrack.loopEnd = _this.loopEnd / _this.canvas.width * _this.duration;
 								audioTrack.play(audioTrack.loopStart);
 							} else {
-								_this.looped = false;
+								_this.cut = false;
 								audioTrack.loop = false;
 								audioTrack.loopStart = 0;
 								audioTrack.loopEnd = 0;
