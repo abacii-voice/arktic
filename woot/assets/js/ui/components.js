@@ -809,6 +809,9 @@ var Components = {
 				}
 				audioTrack.play = function (position) {
 					position = position !== undefined ? position : 0;
+					if (position === 0) {
+						audioTrackCanvas.mouseStart = 0;
+					}
 					var _this = audioTrack;
 					return _this.current().then(function (current) {
 						return new Promise(function(resolve, reject) {
@@ -821,9 +824,17 @@ var Components = {
 							current.source.connect(_this.controller.context.destination);
 							current.source.onended = audioTrack.reset;
 							audioTrackCanvas.duration = current.source.buffer.duration;
-							audioTrackCanvas.time = position;
+							audioTrackCanvas.position = position;
 							audioTrackCanvas.is_playing = true;
-							current.source.start(0, position);
+							audioTrackCanvas.startTime = audioTrack.controller.context.currentTime;
+							if (_this.loop) {
+								current.source.loop = true;
+								current.source.loopStart = _this.loopStart;
+								current.source.loopEnd = _this.loopEnd;
+								current.source.start(0, current.source.loopStart);
+							} else {
+								current.source.start(0, position);
+							}
 							resolve();
 						});
 					});
@@ -889,32 +900,8 @@ var Components = {
 
 				audioTrack.setRegistry(args.registry);
 
-				audioTrack.setBindings({
-					// can be used to set cursor position
-					'mousedown': function (_this) {
-						// get position of click
-
-					},
-
-					// highlights part of the track
-					'mouseover': function (_this) {
-						// get position of mouse
-
-					},
-
-					// removes highlights
-					'mouseout': function (_this) {
-
-					},
-
-					// DRAG?
-
-				});
-
 				//// CANVAS
 				audioTrackCanvas.is_running = false;
-				audioTrackCanvas.fps = 60;
-				audioTrackCanvas.step = 1000 / audioTrackCanvas.fps;
 				audioTrackCanvas.barWidth = 2;
 				audioTrackCanvas.nowCursorPosition = 0;
 				audioTrackCanvas.time = 0;
@@ -928,7 +915,6 @@ var Components = {
 						_this.canvas.height = parseInt(audioTrack.model().css('height'));
 						_this.canvas.width = parseInt(audioTrack.model().css('width'));
 						_this.context = _this.canvas.getContext('2d');
-						_this.frame = 0;
 
 						// start loop
 						_this.draw();
@@ -936,49 +922,63 @@ var Components = {
 				}
 				audioTrackCanvas.draw = function () {
 					var _this = audioTrackCanvas;
-					setTimeout(function () {
-						requestAnimationFrame(_this.draw);
+					requestAnimationFrame(_this.draw);
+					_this.time = (audioTrack.controller.context.currentTime - _this.startTime + _this.position) || 0;
+					if (_this.duration !== undefined) {
+						if (_this.time > _this.duration) {
+							_this.time = 0;
+							_this.is_playing = false;
+						}
+					}
 
-						// _this.data;
-						if (_this.data === undefined) {
-							_this.sample = Array.apply(null, Array(_this.canvas.width)).map(Number.prototype.valueOf, 0);
+					// _this.data;
+					if (_this.data === undefined) {
+						_this.sample = Array.apply(null, Array(_this.canvas.width)).map(Number.prototype.valueOf, 0);
+					} else {
+						_this.waveform = _this.data.getChannelData(0);
+						_this.sample = getAbsNormalised(interpolateArray(_this.waveform, _this.canvas.width / _this.barWidth), _this.canvas.height);
+					}
+					// ANIMATING https://www.kirupa.com/html5/animating_many_things_on_a_canvas.htm
+
+					// 2. draw
+					// clear canvas
+					_this.context.clearRect(0, 0, _this.canvas.width, _this.canvas.height);
+
+					// data
+					for (i=0; i<_this.sample.length; i++) {
+
+						// colour
+						if (_this.looped) {
+							if (_this.loopStart > _this.loopEnd) {
+								var temp = _this.loopStart;
+								_this.loopStart = _this.loopEnd;
+								_this.loopEnd = temp;
+							}
+
+							if (i * _this.barWidth > _this.loopStart && i * _this.barWidth < _this.loopEnd) {
+								_this.context.fillStyle = '#ccc';
+							} else {
+								_this.context.fillStyle = '#999';
+							}
 						} else {
-							_this.waveform = _this.data.getChannelData(0);
-							_this.sample = getAbsNormalised(interpolateArray(_this.waveform, _this.canvas.width / _this.barWidth), _this.canvas.height);
-						}
-						// ANIMATING https://www.kirupa.com/html5/animating_many_things_on_a_canvas.htm
-
-						// _this.mousePosition;
-						// _this.highlightStart;
-						// _this.highlightEnd;
-
-						// 2. draw
-						// clear canvas
-						_this.context.clearRect(0, 0, _this.canvas.width, _this.canvas.height);
-
-						// data
-						for (i=0; i<_this.sample.length; i++) {
-
-							// waveform
-							_this.context.fillStyle = '#ccc';
-							_this.context.fillRect(i * _this.barWidth, 0.6 * (_this.canvas.height - _this.sample[i]), _this.barWidth, 0.6 * _this.sample[i]);
-							_this.context.fillRect(i * _this.barWidth, 0.6 * _this.canvas.height, _this.barWidth, 0.4 * _this.sample[i]);
+							if (i * _this.barWidth < _this.mousePosition) {
+								_this.context.fillStyle = '#ccc';
+							} else if (i * _this.barWidth < _this.nowCursorPosition && i * _this.barWidth > _this.mouseStart) {
+								_this.context.fillStyle = '#fff';
+							} else {
+								_this.context.fillStyle = '#bbb';
+							}
 						}
 
-						// now cursor
-						_this.context.fillStyle = 'red';
-						_this.context.fillRect(_this.nowCursorPosition, 0, _this.barWidth, _this.canvas.height);
+						_this.context.fillRect(i * _this.barWidth, 0.6 * (_this.canvas.height - _this.sample[i]), _this.barWidth, (_this.sample[i] + 1));
+					}
 
-						// update now cursor
-						if (_this.is_playing) {
-							_this.time += 1 / _this.fps;
-							_this.nowCursorPosition = _this.canvas.width / _this.duration * _this.time;
-							// if (_this.nowCursorPosition > _this.canvas.width) {
-							// 	_this.nowCursorPosition = 0;
-							// 	_this.is_playing = false;
-							// }
-						}
-					}, _this.step);
+					// update now cursor
+					if (_this.is_playing) {
+						_this.nowCursorPosition = _this.canvas.width * (_this.time / _this.duration);
+					} else {
+						_this.nowCursorPosition = 0;
+					}
 				}
 				audioTrackCanvas.getMousePosition = function (event) {
 					var _this = audioTrackCanvas;
@@ -993,14 +993,59 @@ var Components = {
 
 					// like it says
 					'mousedown': function (_this, event) {
-						_this.time = _this.getMousePosition(event).x / _this.canvas.width * _this.duration;
-						audioTrack.play(_this.time);
+						_this.mouseDown = true;
+						_this.drag = false;
+						_this.mouseStart = _this.getMousePosition(event).x;
+						if (_this.looped) {
+							_this.loopStart = _this.mouseStart;
+							_this.loopEnd = _this.mousePosition;
+						}
 					},
 
 					// continuous movement
 					'mousemove': function (_this, event) {
-						// console.log(_this.getMousePosition(event));
+						_this.mousePosition = _this.getMousePosition(event).x;
+						if (_this.mouseDown) {
+							_this.looped = true;
+							_this.drag = true;
+							_this.loopStart = _this.mouseStart;
+							_this.loopEnd = _this.mousePosition;
+						}
 					},
+
+					// let mouse up
+					'mouseup': function (_this, event) {
+						_this.mouseDown = false;
+						if (_this.looped) {
+							if (_this.drag) {
+								audioTrack.loop = true;
+								audioTrack.loopStart = _this.mouseStart / _this.canvas.width * _this.duration;
+								audioTrack.loopEnd = _this.mousePosition / _this.canvas.width * _this.duration;
+								audioTrack.play(audioTrack.loopStart);
+							} else {
+								_this.looped = false;
+								audioTrack.loop = false;
+								audioTrack.loopStart = 0;
+								audioTrack.loopEnd = 0;
+								audioTrack.stop();
+							}
+						} else {
+							_this.time = _this.getMousePosition(event).x / _this.canvas.width * _this.duration;
+							audioTrack.play(_this.time);
+						}
+					},
+
+					'mouseout': function (_this) {
+						_this.mousePosition = 0;
+					},
+
+					'blur': function (_this) {
+						console.log('blur');
+						_this.mousePosition = 0;
+						_this.looped = false;
+						_this.loopStart = 0;
+						_this.loopEnd = 0;
+					}
 				});
 				audioTrackWrapper.setChildren([
 					audioTrack,
