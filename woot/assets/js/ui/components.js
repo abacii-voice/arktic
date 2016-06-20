@@ -801,11 +801,7 @@ var Components = {
 						}));
 					});
 				}
-				audioTrack.play = function (position) {
-					position = position !== undefined ? position : 0;
-					if (position === 0) {
-						audioTrackCanvas.mouseStart = 0;
-					}
+				audioTrack.play = function (position, duration) {
 					var _this = audioTrack;
 					return _this.current().then(function (current) {
 						return new Promise(function(resolve, reject) {
@@ -817,18 +813,26 @@ var Components = {
 							current.source.buffer = current.data;
 							current.source.connect(_this.controller.context.destination);
 							current.source.onended = audioTrack.reset;
+
+							// set position
+							position = position || 0;
+							duration = duration || current.source.buffer.duration;
+							if (_this.cut) {
+								position = _this.cutStart;
+								duration = _this.cutEnd - _this.cutStart;
+							}
+							if (position === 0) {
+								audioTrackCanvas.cutStart = 0;
+							}
+
+							// set audioTrackCanvas variables
 							audioTrackCanvas.duration = current.source.buffer.duration;
 							audioTrackCanvas.position = position;
 							audioTrackCanvas.is_playing = true;
 							audioTrackCanvas.startTime = audioTrack.controller.context.currentTime;
-							if (_this.cut) {
-								current.source.loop = true;
-								current.source.loopStart = _this.loopStart;
-								current.source.loopEnd = _this.loopEnd;
-								current.source.start(0, current.source.loopStart);
-							} else {
-								current.source.start(0, position);
-							}
+
+							// play
+							current.source.start(0, position, duration);
 							resolve();
 						});
 					});
@@ -899,6 +903,7 @@ var Components = {
 				audioTrackCanvas.barWidth = 2;
 				audioTrackCanvas.nowCursorPosition = 0;
 				audioTrackCanvas.time = 0;
+				audioTrackCanvas.cutStart = 0;
 				audioTrackCanvas.start = function () {
 					var _this = audioTrackCanvas;
 					if (!_this.is_running) {
@@ -943,21 +948,19 @@ var Components = {
 
 						// colour
 						if (_this.cut) {
-							if (_this.loopStart > _this.loopEnd) {
-								var temp = _this.loopStart;
-								_this.loopStart = _this.loopEnd;
-								_this.loopEnd = temp;
-							}
-
-							if (i * _this.barWidth > _this.loopStart && i * _this.barWidth < _this.loopEnd) {
-								_this.context.fillStyle = '#ccc';
+							if (i * _this.barWidth > _this.cutStart && i * _this.barWidth < _this.cutEnd) {
+								if (i * _this.barWidth < _this.nowCursorPosition) {
+									_this.context.fillStyle = '#fff';
+								} else {
+									_this.context.fillStyle = '#ccc';
+								}
 							} else {
 								_this.context.fillStyle = '#999';
 							}
 						} else {
 							if (i * _this.barWidth < _this.mousePosition) {
 								_this.context.fillStyle = '#ccc';
-							} else if (i * _this.barWidth < _this.nowCursorPosition && i * _this.barWidth > _this.mouseStart) {
+							} else if (i * _this.barWidth < _this.nowCursorPosition && i * _this.barWidth > _this.cutStart) {
 								_this.context.fillStyle = '#fff';
 							} else {
 								_this.context.fillStyle = '#bbb';
@@ -971,7 +974,7 @@ var Components = {
 					if (_this.is_playing) {
 						_this.nowCursorPosition = _this.canvas.width * (_this.time / _this.duration);
 					} else {
-						_this.nowCursorPosition = 0;
+						_this.nowCursorPosition = _this.cut ? _this.cutStart : 0;
 					}
 				}
 				audioTrackCanvas.getMousePosition = function (event) {
@@ -1007,21 +1010,15 @@ var Components = {
 						_this.mouseDown = false;
 						if (_this.cut) {
 							if (_this.drag && (_this.cutEnd - _this.cutStart > 1)) {
-								if (_this.cutStart > _this.loopEnd) {
-									var temp = _this.cutStart;
-									_this.cutStart = _this.loopEnd;
-									_this.loopEnd = temp;
-								}
-
-								audioTrack.loop = true;
-								audioTrack.loopStart = _this.loopStart / _this.canvas.width * _this.duration;
-								audioTrack.loopEnd = _this.loopEnd / _this.canvas.width * _this.duration;
-								audioTrack.play(audioTrack.loopStart);
+								audioTrack.cut = true;
+								audioTrack.cutStart = _this.cutStart / _this.canvas.width * _this.duration;
+								audioTrack.cutEnd = _this.cutEnd / _this.canvas.width * _this.duration;
+								audioTrack.play(audioTrack.cutStart);
 							} else {
 								_this.cut = false;
-								audioTrack.loop = false;
-								audioTrack.loopStart = 0;
-								audioTrack.loopEnd = 0;
+								audioTrack.cut = false;
+								audioTrack.cutStart = 0;
+								audioTrack.cutEnd = 0;
 								audioTrack.stop();
 							}
 						} else {
