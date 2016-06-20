@@ -1017,10 +1017,16 @@ var Components = {
 					'mouseup': function (_this, event) {
 						_this.mouseDown = false;
 						if (_this.looped) {
-							if (_this.drag) {
+							if (_this.drag && (_this.loopEnd - _this.loopStart > 1)) {
+								if (_this.loopStart > _this.loopEnd) {
+									var temp = _this.loopStart;
+									_this.loopStart = _this.loopEnd;
+									_this.loopEnd = temp;
+								}
+
 								audioTrack.loop = true;
-								audioTrack.loopStart = _this.mouseStart / _this.canvas.width * _this.duration;
-								audioTrack.loopEnd = _this.mousePosition / _this.canvas.width * _this.duration;
+								audioTrack.loopStart = _this.loopStart / _this.canvas.width * _this.duration;
+								audioTrack.loopEnd = _this.loopEnd / _this.canvas.width * _this.duration;
 								audioTrack.play(audioTrack.loopStart);
 							} else {
 								_this.looped = false;
@@ -1038,14 +1044,6 @@ var Components = {
 					'mouseout': function (_this) {
 						_this.mousePosition = 0;
 					},
-
-					'blur': function (_this) {
-						console.log('blur');
-						_this.mousePosition = 0;
-						_this.looped = false;
-						_this.loopStart = 0;
-						_this.loopEnd = 0;
-					}
 				});
 				audioTrackWrapper.setChildren([
 					audioTrack,
