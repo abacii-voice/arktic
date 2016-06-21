@@ -478,10 +478,6 @@ var Components = {
 	// Parts:
 	// 1. Play button
 	// 2. Audio track
-	// 3. Back button
-	// 4. Forward button
-	// 5. Anchor cursor
-	// 6. Now cursor
 	audio: function (id, args) {
 
 		// any static variables like measurements
@@ -1065,4 +1061,31 @@ var Components = {
 			});
 		});
 	},
+
+	//////////// COUNTER
+	// Counts the number of transcriptions or moderations done in a session
+	// Parts:
+	// 1. Large number counter with date stamp
+	// 2. Counter field
+	// 3. Counters
+	counter: function (id, args) {
+		// styling
+
+		// components
+		return Promise.all([
+			//
+
+		]).then(function (components) {
+			// config and combination
+
+		}).then(function (components) {
+			// base
+
+		});
+
+		// components
+
+		// config
+	},
+
 }
