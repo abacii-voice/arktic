@@ -213,7 +213,7 @@ UI.app('hook', [
 				options: {
 
 					// number of loads either side of current
-					trigger: 3,
+					threshold: 4,
 
 					// where to gather references
 					source: {
