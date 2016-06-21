@@ -682,7 +682,7 @@ var Components = {
 				audioTrack.buffer = {};
 				audioTrack.active = 0;
 				audioTrack.controller = {};
-				audioTrack.threshold = 4;
+				audioTrack.threshold = args.options.threshold || 4;
 				audioTrack.canvas = audioTrackCanvas;
 
 				// initialise node and create context
@@ -874,6 +874,7 @@ var Components = {
 					}).then(function () {
 						return new Promise(function(resolve, reject) {
 							_this.active = _this.active + 1;
+							audioTrackCanvas.removeCut();
 							resolve();
 						});
 					}).then(function () {
@@ -887,6 +888,7 @@ var Components = {
 					return _this.stop().then(function () {
 						return new Promise(function(resolve, reject) {
 							_this.active = _this.active > 0 ? _this.active - 1 : 0;
+							audioTrackCanvas.removeCut();
 							resolve();
 						});
 					}).then(function () {
@@ -985,6 +987,12 @@ var Components = {
 						x: Math.floor((event.clientX - rect.left) / (rect.right - rect.left) * _this.context.canvas.width),
 						y: Math.floor((event.clientY-rect.top) / (rect.bottom - rect.top) * _this.context.canvas.height),
 					}
+				}
+				audioTrackCanvas.removeCut = function () {
+					audioTrackCanvas.cut = false;
+					audioTrack.cut = false;
+					audioTrack.cutStart = 0;
+					audioTrack.cutEnd = 0;
 				}
 				audioTrackCanvas.setBindings({
 
