@@ -1,4 +1,3 @@
-
 // 1. define component tree
 UI.app('hook', [
 
@@ -181,81 +180,6 @@ UI.app('hook', [
 		],
 	}),
 
-	// audio test
-	UI.createComponent('test-audio-wrapper', {
-		template: UI.template('div', 'ie border-radius'),
-		appearance: {
-			style: {
-				'position': 'absolute',
-				'height': '50px',
-				'width': '400px',
-				'left': '65%',
-				'top': '17%',
-				'transform': 'translate(-50%, -50%)',
-			},
-		},
-		children: [
-			Components.audio('test-audio', {
-				appearance: {
-					style: {
-
-					},
-				},
-				registry: {
-					'client-state': {
-						path: 'clients',
-						fn: function (_this) {
-							_this.canvas.start();
-							_this.update();
-						}
-					},
-				},
-				options: {
-
-					// number of loads either side of current
-					threshold: 4,
-
-					// where to gather references
-					source: {
-
-						// adaptive location in Context to fetch audio references
-						path: function () {
-							return Promise.all([
-								Active.get('client'),
-								Active.get('project'),
-							]).then(function (results) {
-								// unpack variables
-								var client = results[0];
-								var project = results[1];
-
-								// return path
-								return 'clients.{client}.projects.{project}.transcriptions'.format({client: client, project: project});
-							});
-						},
-
-						// fetch active token to filter transcription references
-						token: function () {
-							return Promise.all([
-								Active.get('client'),
-								Context.get('user').then(function (user) {
-									return user.id;
-								}),
-								Permission.get(),
-							]).then(function (results) {
-								// unpack variable
-								var client = results[0];
-								var user_id = results[1];
-								var role_id = results[2];
-
-								return 'user.clients.{client}.roles.{role_id}.active_transcription_token'.format({client: client, role_id: role_id});
-							});
-						},
-					},
-				},
-			}),
-		],
-	}),
-
 ]).then (function (app) {
 	return app.render();
 }).then(function () {
@@ -282,54 +206,3 @@ UI.app('hook', [
 }).catch(function (error) {
 	console.log(error);
 });
-
-// Search would go something like:
-// enterText (text) {
-// 	return this.clean(text).then(this.query).then(this.filter).then(function (listOfSearchResults) {
-// 		listOfSearchResults.forEach(function (searchResult) {
-//
-// 			searchResult = {
-// 				body: 'Piano, Nicholas',
-// 				tag: 'user',
-// 				index: '#1',
-// 			}
-//
-// 			if () {
-// 				result = UI.createComponent('id based on id or whatever', {
-// 					// stuff
-// 				});
-//
-// 				result.render();
-// 			}
-// 		});
-// 	});
-// }
-
-// PLAN
-// scroll list
-// 1. [DONE] Add persistent search tokens for certain objects (TR, word, phrase, MOD, caption, utterance)
-// 1a. [DONE] Filter list of transcriptions by relationship to active token.
-// 1b. [DONE] Filter object in access using dict {'filter': 'value', 'filter2': 'value2'}
-// 2. [DONE] Remove standalone requests for objects
-// 3. [DONE] Add non-autocomplete option for list
-// 4. Add multiple tag support for filtering.
-// 5. Speed is ok, so see if objects can be sorted in place. The list can be reorganised with 'setAfter'.
-// 6. [DONE] Add correct scroll structure for scroll list
-// 7. [DONE] Ensure loading icon is formatted properly.
-// 8. [DONE] Add filter element can that be formatted like any other component. NEED FILTER GROUP
-// 9. [DONE] Add FILTER to database level in Context
-// 10. Arrow keys + enter for selecting (later)
-// 11. [DONE] Enter filter char to cause filter.
-
-// audio element
-// 1. Follow model for scroll list in terms of how to construct component composite.
-// 2. It is just a glorified scroll list in the way it fetches transcriptions or moderations.
-// 3. Have buffer that can load more and dismiss audio files,
-// 		construct audio elements for them to live in, and connect the component to them.
-// 4.
-
-// sidebar
-// 1. very simple, build the same way as scroll list
-// 2. Link buttons to Active properties
-
-//
