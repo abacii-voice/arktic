@@ -277,7 +277,7 @@ var Test = {
 						style: {
 							'position': 'absolute',
 							'height': '50px',
-							'width': '400px',
+							'width': '500px',
 							'left': '65%',
 							'top': '17%',
 							'transform': 'translate(-50%, -50%)',
@@ -588,7 +588,7 @@ var Test = {
 
 	test: function () {
 
-		Test.tests.test_autocomplete_app();
+		Test.tests.test_audio_app();
 
 		// all
 		// Object.keys(Test.tests).forEach(function (test) {

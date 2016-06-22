@@ -479,10 +479,6 @@ var Components = {
 	// 1. Play button
 	// 2. Audio track
 	audio: function (id, args) {
-
-		// any static variables like measurements
-
-
 		// components
 		return Promise.all([
 			// BUTTON GROUP
@@ -801,6 +797,8 @@ var Components = {
 					var _this = audioTrack;
 					return _this.current().then(function (current) {
 						return new Promise(function(resolve, reject) {
+
+							// create new source from current data
 							current.is_playing = true;
 							if (current.source !== undefined) {
 								current.source.disconnect();
@@ -810,7 +808,7 @@ var Components = {
 							current.source.connect(_this.controller.context.destination);
 							current.source.onended = audioTrack.reset;
 
-							// set position
+							// set position and duration
 							position = position || 0;
 							duration = duration || current.source.buffer.duration;
 							if (_this.cut) {
@@ -845,8 +843,6 @@ var Components = {
 							}
 							resolve();
 						});
-
-						// stop now cursor
 					});
 				}
 				audioTrack.reset = function () {
@@ -977,11 +973,11 @@ var Components = {
 				}
 				audioTrackCanvas.getMousePosition = function (event) {
 					var _this = audioTrackCanvas;
-					var rect = _this.context.canvas.getBoundingClientRect();
+					var rect = _this.canvas.getBoundingClientRect();
 
 					return {
-						x: Math.floor((event.clientX - rect.left) / (rect.right - rect.left) * _this.context.canvas.width),
-						y: Math.floor((event.clientY-rect.top) / (rect.bottom - rect.top) * _this.context.canvas.height),
+						x: Math.floor((event.clientX - rect.left) / (rect.right - rect.left) * _this.canvas.width),
+						y: Math.floor((event.clientY-rect.top) / (rect.bottom - rect.top) * _this.canvas.height),
 					}
 				}
 				audioTrackCanvas.removeCut = function () {
@@ -1073,19 +1069,62 @@ var Components = {
 
 		// components
 		return Promise.all([
-			//
+			// header wrapper
+			UI.createComponent('{id}-header-wrapper'.format({id: id}), {
+
+			}),
+
+			// main header
+			UI.createComponent('{id}-main-header'.format({id: id}), {
+
+			}),
+
+			// cycle header
+			UI.createComponent('{id}-cycle-header'.format({id: id}), {
+
+			}),
+
+			// counter wrapper
+			UI.createComponent('{id}-counter-wrapper'.format({id: id}), {
+
+			}),
+
+			// left column
+			UI.createComponent('{id}-left-column'.format({id: id}), {
+
+			}),
+
+			// right column
+			UI.createComponent('{id}-right-column'.format({id: id}), {
+
+			}),
 
 		]).then(function (components) {
-			// config and combination
+			// unpack components
+			var headerWrapper = components[0];
+			var mainHeader = components[1];
+			var cycleHeader = components[2];
+			var counterWrapper = components[3];
+			var leftColumn = components[4];
+			var rightColumn = components[5];
 
+			// config and combination
+			return new Promise(function(resolve, reject) {
+
+
+
+				// final
+				resolve([headerWrapper, counterWrapper]);
+			});
 		}).then(function (components) {
 			// base
+			return UI.createComponent('{id}-base'.format({id: id}), {
+				appearance: {
 
+				},
+				children: components,
+			});
 		});
-
-		// components
-
-		// config
 	},
 
 }
