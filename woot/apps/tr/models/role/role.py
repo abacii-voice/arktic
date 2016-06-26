@@ -21,6 +21,9 @@ class Role(models.Model):
 	type = models.CharField(max_length=255)
 	status = models.CharField(max_length=255, default='pending') # shows the stage of becoming a full user.
 
+	# billing and activity
+	time_zone = models.CharField(max_length=255)
+
 	### Methods
 	# data
 	def data(self, path, permission):
@@ -60,6 +63,12 @@ class Role(models.Model):
 		if self.project is not None and self.type == 'moderator' and permission.check_user(self.user):
 			data.update({
 				'active_moderation_token': self.active_moderation_token(force=path.check('active_moderation_token', blank=False)).data(path, permission),
+			})
+
+		if self.type == 'moderator' or self.type == 'worker':
+			data.update({
+				'cycle_count': self.active_cycle().count(),
+				'daily_count': self.active_day().count,
 			})
 
 		return data
@@ -103,6 +112,12 @@ class Role(models.Model):
 			new_token = self.moderation_tokens.create(project=self.project)
 			new_token.get_moderations()
 			return new_token
+
+	def active_cycle(self):
+		return self.cycles.filter(is_active=True)[0] if self.cycles.filter(is_active=True).count() > 0 else self.cycles.create()
+
+	def active_day(self):
+		return self.days.filter(is_active=True)[0] if self.days.filter(is_active=True).count() > 0 else self.days.create(cycle=self.active_cycle())
 
 class Threshold(models.Model):
 

@@ -10,14 +10,62 @@ UI.app('hook', [
 				'position': 'absolute',
 				'height': '600px',
 				'width': '300px',
-				'left': '30%',
-				'top': '50%',
-				'transform': 'translate(-50%, -50%)',
+				'left': '60px',
+				'top': '100px',
 			},
 		},
 		children: [
 			Components.counter('test-counter', {
-				
+				appearance: {
+					style: {
+						'height': '400px',
+						'width': '100px',
+					},
+				},
+				registry: {
+					'client-state': {
+						path: 'clients',
+						fn: function (_this) {
+							_this.load();
+						}
+					},
+				},
+				options: {
+					source: {
+						daily: function () {
+							return Promise.all([
+								Active.get('client'),
+								Context.get('user').then(function (user) {
+									return user.id;
+								}),
+								Permission.get(),
+							]).then(function (results) {
+								// unpack variable
+								var client = results[0];
+								var user_id = results[1];
+								var role_id = results[2];
+
+								return 'user.clients.{client}.roles.{role_id}.daily_count'.format({client: client, role_id: role_id});
+							});
+						},
+						cycle: function () {
+							return Promise.all([
+								Active.get('client'),
+								Context.get('user').then(function (user) {
+									return user.id;
+								}),
+								Permission.get(),
+							]).then(function (results) {
+								// unpack variable
+								var client = results[0];
+								var user_id = results[1];
+								var role_id = results[2];
+
+								return 'user.clients.{client}.roles.{role_id}.cycle_count'.format({client: client, role_id: role_id});
+							});
+						},
+					},
+				},
 			}),
 		],
 	}),

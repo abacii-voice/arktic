@@ -1047,12 +1047,7 @@ var Components = {
 			// create the base component and add the children from above.
 			return UI.createComponent('{id}-audio'.format({id: id}), {
 				template: UI.template('div', 'ie'),
-				appearance: {
-					style: {
-						'height': '100%',
-						'width': '100%',
-					},
-				},
+				appearance: args.appearance,
 				children: components,
 			});
 		});
@@ -1071,22 +1066,34 @@ var Components = {
 		return Promise.all([
 			// header wrapper
 			UI.createComponent('{id}-header-wrapper'.format({id: id}), {
-
+				template: UI.template('div', 'ie border'),
+				appearance: {
+					style: {
+						'height': '100px',
+						'width': '100px',
+					},
+				},
 			}),
 
-			// main header
-			UI.createComponent('{id}-main-header'.format({id: id}), {
-
+			// daily header
+			UI.createComponent('{id}-daily-header'.format({id: id}), {
+				template: UI.template('h2', 'ie'),
 			}),
 
 			// cycle header
 			UI.createComponent('{id}-cycle-header'.format({id: id}), {
-
+				template: UI.template('h3', 'ie'),
 			}),
 
 			// counter wrapper
 			UI.createComponent('{id}-counter-wrapper'.format({id: id}), {
-
+				template: UI.template('div', 'ie border'),
+				appearance: {
+					style: {
+						'height': 'calc(100% - 100px)',
+						'width': '100px',
+					},
+				},
 			}),
 
 			// left column
@@ -1102,7 +1109,7 @@ var Components = {
 		]).then(function (components) {
 			// unpack components
 			var headerWrapper = components[0];
-			var mainHeader = components[1];
+			var dailyHeader = components[1];
 			var cycleHeader = components[2];
 			var counterWrapper = components[3];
 			var leftColumn = components[4];
@@ -1111,7 +1118,70 @@ var Components = {
 			// config and combination
 			return new Promise(function(resolve, reject) {
 
+				// header properties
+				headerWrapper.counter = counterWrapper;
+				headerWrapper.dailyCount = 0;
+				headerWrapper.cycleCount = 0;
+				headerWrapper.is_loaded = false;
+				headerWrapper.increment = function () {
+					// add one to the daily and cycle counts and increment counter wrapper
+					var _this = headerWrapper;
+					// counterWrapper.increment();
+					return Promise.all([
+						new Promise(function(resolve, reject) {
+							_this.dailyCount += 1;
+							_this.cycleCount += 1;
+							resolve();
+						}),
+						counterWrapper.increment(),
+					]).then(function () {
+						return _this.set();
+					});
+				}
+				headerWrapper.set = function () {
+					var _this = headerWrapper;
+					return new Promise(function(resolve, reject) {
+						dailyHeader.model().html(_this.dailyCount);
+						cycleHeader.model().html(_this.cycleCount);
+						resolve();
+					});
+				}
+				headerWrapper.load = function () {
+					// set value and is_loaded, display value
+					var _this = headerWrapper;
+					return Promise.all([
+						args.options.source.daily(),
+						args.options.source.cycle(),
+					]).then(function (paths) {
+						return Promise.all([
+							Context.get(paths[0]),
+							Context.get(paths[1]),
+						]);
+					}).then(function (values) {
+						return new Promise(function(resolve, reject) {
+							_this.dailyCount = values[0];
+							_this.cycleCount = values[1];
+							resolve();
+						});
+					}).then(function () {
+						return _this.set();
+					});
+				}
+				headerWrapper.setRegistry(args.registry);
+				headerWrapper.setChildren([
+					dailyHeader,
+					cycleHeader,
+				]);
 
+				// counter properties
+				counterWrapper.columnMax = 0; // calculate based on height
+				counterWrapper.increment = function () {
+					return new Promise(function(resolve, reject) {
+						// if within limit, add another token
+						// else reset and clear all tokens and add a new one
+						resolve();
+					});
+				}
 
 				// final
 				resolve([headerWrapper, counterWrapper]);
@@ -1119,9 +1189,72 @@ var Components = {
 		}).then(function (components) {
 			// base
 			return UI.createComponent('{id}-base'.format({id: id}), {
-				appearance: {
+				template: UI.template('div', 'ie border'),
+				appearance: args.appearance,
+				children: components,
+			});
+		});
+	},
 
-				},
+	renderedTextField: function (id, args) {
+		// styling
+
+		// components
+		return Promise.all([
+			// header wrapper
+			UI.createComponent('{id}-header-wrapper'.format({id: id}), {
+
+			}),
+
+		]).then(function (components) {
+			// unpack components
+			var headerWrapper = components[0];
+
+
+			// config and combination
+			return new Promise(function(resolve, reject) {
+
+
+				// final
+				resolve([headerWrapper]);
+			});
+		}).then(function (components) {
+			// base
+			return UI.createComponent('{id}-base'.format({id: id}), {
+				template: UI.template('div', 'ie border'),
+				appearance: args.appearance,
+				children: components,
+			});
+		});
+	},
+
+	textTokenField: function (id, args) {
+		// styling
+
+		// components
+		return Promise.all([
+			// header wrapper
+			UI.createComponent('{id}-header-wrapper'.format({id: id}), {
+
+			}),
+
+		]).then(function (components) {
+			// unpack components
+			var headerWrapper = components[0];
+
+
+			// config and combination
+			return new Promise(function(resolve, reject) {
+
+
+				// final
+				resolve([headerWrapper]);
+			});
+		}).then(function (components) {
+			// base
+			return UI.createComponent('{id}-base'.format({id: id}), {
+				template: UI.template('div', 'ie border'),
+				appearance: args.appearance,
 				children: components,
 			});
 		});
