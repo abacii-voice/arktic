@@ -1190,7 +1190,6 @@ var Components = {
 				counterWrapper.columnMax = 15; // calculate based on height
 				counterWrapper.leftColumnCount = 0;
 				counterWrapper.rightColumnCount = 0;
-				console.log(counterWrapper.id);
 				counterWrapper.increment = function () {
 					var _this = counterWrapper;
 					// if within limit, add another token
@@ -1209,6 +1208,8 @@ var Components = {
 						if (_this.leftColumnCount == _this.columnMax) {
 							if (_this.rightColumnCount == _this.columnMax) {
 								// reset both and add to left column
+								_this.leftColumnCount = 0;
+								_this.rightColumnCount = 0;
 								return leftColumn.removeChildren().then(function () {
 									return rightColumn.removeChildren();
 								}).then(function () {
