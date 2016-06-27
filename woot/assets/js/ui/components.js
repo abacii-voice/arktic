@@ -1098,12 +1098,26 @@ var Components = {
 
 			// left column
 			UI.createComponent('{id}-left-column'.format({id: id}), {
-
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '50%',
+						'float': 'left',
+					},
+				},
 			}),
 
 			// right column
 			UI.createComponent('{id}-right-column'.format({id: id}), {
-
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '50%',
+						'float': 'left',
+					},
+				},
 			}),
 
 		]).then(function (components) {
@@ -1122,7 +1136,6 @@ var Components = {
 				headerWrapper.counter = counterWrapper;
 				headerWrapper.dailyCount = 0;
 				headerWrapper.cycleCount = 0;
-				headerWrapper.is_loaded = false;
 				headerWrapper.increment = function () {
 					// add one to the daily and cycle counts and increment counter wrapper
 					var _this = headerWrapper;
@@ -1174,14 +1187,56 @@ var Components = {
 				]);
 
 				// counter properties
-				counterWrapper.columnMax = 0; // calculate based on height
+				counterWrapper.columnMax = 15; // calculate based on height
+				counterWrapper.leftColumnCount = 0;
+				counterWrapper.rightColumnCount = 0;
+				console.log(counterWrapper.id);
 				counterWrapper.increment = function () {
-					return new Promise(function(resolve, reject) {
-						// if within limit, add another token
-						// else reset and clear all tokens and add a new one
-						resolve();
-					});
+					var _this = counterWrapper;
+					// if within limit, add another token
+					// else reset and clear all tokens and add a new one
+					return UI.createComponent('completion-token-{index}'.format({index: (_this.leftColumnCount + _this.rightColumnCount)}), {
+						template: UI.template('div', 'ie border'),
+						appearance: {
+							style: {
+								'margin-left': '5px',
+								'margin-top': '5px',
+								'height': '10px',
+								'width': '10px',
+							},
+						},
+					}).then(function (newCompletionToken) {
+						if (_this.leftColumnCount == _this.columnMax) {
+							if (_this.rightColumnCount == _this.columnMax) {
+								// reset both and add to left column
+								return leftColumn.removeChildren().then(function () {
+									return rightColumn.removeChildren();
+								}).then(function () {
+									_this.leftColumnCount++;
+									return leftColumn.setChildren([
+										newCompletionToken,
+									]);
+								});
+							} else {
+								// add to right column
+								_this.rightColumnCount++;
+								return rightColumn.setChildren([
+									newCompletionToken,
+								]);
+							}
+						} else {
+							// add to left column
+							_this.leftColumnCount++;
+							return leftColumn.setChildren([
+								newCompletionToken,
+							]);
+						}
+					})
 				}
+				counterWrapper.setChildren([
+					leftColumn,
+					rightColumn,
+				]);
 
 				// final
 				resolve([headerWrapper, counterWrapper]);
