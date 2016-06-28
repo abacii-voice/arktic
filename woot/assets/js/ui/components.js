@@ -52,7 +52,6 @@ var Components = {
 				},
 			}),
 
-
 			// SEARCH GROUP
 			// search wrapper
 			UI.createComponent('{id}-search-wrapper'.format({id: id}), {
@@ -94,7 +93,6 @@ var Components = {
 				},
 			}),
 
-
 			// LIST GROUP
 			// list wrapper
 			UI.createComponent('{id}-list-wrapper'.format({id: id}), {
@@ -130,7 +128,6 @@ var Components = {
 				template: UI.templates.loadingIcon,
 			}),
 
-
 			// FILTER GROUP
 			// filter wrapper
 			UI.createComponent('{id}-filter-wrapper'.format({id: id}), {
@@ -162,7 +159,6 @@ var Components = {
 					},
 				},
 			}),
-
 
 		]).then(function (components) {
 			// unpack components
@@ -1252,27 +1248,74 @@ var Components = {
 		});
 	},
 
-	renderedTextField: function (id, args) {
+	//////////// TOKEN FIELD
+	// Displays tokens for each word that can react to user input.
+	textTokenField: function (id, args) {
 		// styling
 
 		// components
 		return Promise.all([
 			// header wrapper
-			UI.createComponent('{id}-header-wrapper'.format({id: id}), {
+			UI.createComponent('{id}-token-wrapper'.format({id: id}), {
 
 			}),
 
 		]).then(function (components) {
 			// unpack components
-			var headerWrapper = components[0];
+			var tokenWrapper = components[0];
 
 
 			// config and combination
 			return new Promise(function(resolve, reject) {
 
+				tokenWrapper.currentIndex = 0;
+				tokenWrapper.addToken = function (text) {
+					var _this = tokenWrapper;
+					return UI.createComponent('{id}-token-{index}'.format({id: id, index: _this.currentIndex}), {
+						appearance: {
+							style: {
+								'display': 'inline-block',
+								'height': '100%',
+								'overflow-x': 'scroll',
+							},
+							html: text,
+						},
+					}).then(function (token) {
+						// add methods and properties
+						return new Promise(function(resolve, reject) {
+							token.focus = function () {
+
+							}
+							token.input = function () {
+
+							}
+
+							resolve(token);
+						});
+					}).then(function (token) {
+						_this.currentIndex++;
+						return _this.setChildren([
+							token,
+						]);
+					});
+				}
+				tokenWrapper.removeToken = function (index) {
+
+				}
+				tokenWrapper.scrollToToken = function (index) {
+
+				}
+				tokenWrapper.exportTokens = function () {
+					// index
+					// value
+					// any properties like "best guess", "tag"
+				}
+
+				// tokens can have "best guess" and "fragment" properties
+
 
 				// final
-				resolve([headerWrapper]);
+				resolve([tokenWrapper]);
 			});
 		}).then(function (components) {
 			// base
@@ -1284,7 +1327,7 @@ var Components = {
 		});
 	},
 
-	textTokenField: function (id, args) {
+	renderedTextField: function (id, args) {
 		// styling
 
 		// components
