@@ -16,9 +16,9 @@ UI.app('hook', [
 				template: UI.template('div', 'ie border'),
 				appearance: {
 					style: {
-						'position': 'relative',
 						'height': '30px',
 						'width': '400px',
+						'overflow': 'hidden',
 					},
 				},
 			}),
