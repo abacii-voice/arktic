@@ -338,7 +338,14 @@ var UI = {
 			return new Promise(function(resolve, reject) {
 				delete _this.children[id];
 				resolve(id);
-			}).then(UI.removeComponent);
+			}).then(UI.removeComponent).then(function () {
+				// renumber children
+				return Promise.all(Object.keys(_this.children).map(function (childId, index) {
+					return UI.getComponent(childId).then(function (child) {
+						child.index = index;
+					});
+				}));
+			});
 		}
 		this.removeChildren = function () {
 			var _this = this;
@@ -351,6 +358,7 @@ var UI = {
 			var _this = this;
 			if (children !== undefined) {
 				return Promise.all(children.map(function (child, index) {
+					index = Object.keys(_this.children).length + index;
 					if (child.then !== undefined) { // is an unevaluated promise
 						return child.then(function (component) {
 							component.index = index;

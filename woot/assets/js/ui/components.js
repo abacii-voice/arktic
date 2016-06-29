@@ -1257,32 +1257,54 @@ var Components = {
 		return Promise.all([
 			// header wrapper
 			UI.createComponent('{id}-token-wrapper'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': 'calc(100% + 20px);',
+						'width': 'auto',
+						'overflow-x': 'scroll',
+					},
+				},
+			}),
 
+			UI.createComponent('{id}-token-list'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': 'auto',
+						'height': '100%',
+						'padding-bottom': '20px',
+					},
+				},
 			}),
 
 		]).then(function (components) {
 			// unpack components
 			var tokenWrapper = components[0];
-
+			var tokenList = components[1];
 
 			// config and combination
 			return new Promise(function(resolve, reject) {
 
-				tokenWrapper.currentIndex = 0;
-				tokenWrapper.addToken = function (text) {
-					var _this = tokenWrapper;
+				tokenList.currentIndex = 0;
+				tokenList.addToken = function (text, tag) {
+					var _this = tokenList;
 					return UI.createComponent('{id}-token-{index}'.format({id: id, index: _this.currentIndex}), {
 						appearance: {
 							style: {
+								'box-sizing': 'border-box',
 								'display': 'inline-block',
+								'float': 'left',
 								'height': '100%',
-								'overflow-x': 'scroll',
+								'padding': '5px',
+								'border-right': '1px solid #ccc',
 							},
 							html: text,
 						},
 					}).then(function (token) {
 						// add methods and properties
 						return new Promise(function(resolve, reject) {
+							token.tag = tag || false;
 							token.focus = function () {
 
 							}
@@ -1297,15 +1319,37 @@ var Components = {
 						return _this.setChildren([
 							token,
 						]);
+					}).then(function () {
+						return _this.fitToTokens();
 					});
 				}
-				tokenWrapper.removeToken = function (index) {
+				tokenList.removeToken = function (index) {
+					var _this = tokenList;
+					return Promise.all(Object.keys(_this.children).map(function (childId) {
+						return UI.getComponent(childId).then(function (component) {
+							if (component.index === index) {
+								return _this.removeChild(component.id);
+							}
+						});
+					})).then(function () {
+						return _this.fitToTokens();
+					});
+				}
+				tokenList.fitToTokens = function () {
+					var _this = tokenList;
+					return new Promise(function(resolve, reject) {
+						// fit container to width of all tokens
+						var totalWidth = 0;
+						_this.model().children().each(function () {
+							totalWidth += $(this).outerWidth();
+						})
+						_this.model().css({'width': '{width}px'.format({width: totalWidth})});
+					});
+				}
+				tokenList.scrollToToken = function (index) {
 
 				}
-				tokenWrapper.scrollToToken = function (index) {
-
-				}
-				tokenWrapper.exportTokens = function () {
+				tokenList.exportTokens = function () {
 					// index
 					// value
 					// any properties like "best guess", "tag"
@@ -1315,6 +1359,10 @@ var Components = {
 
 
 				// final
+				tokenWrapper.setChildren([
+					tokenList,
+				]);
+
 				resolve([tokenWrapper]);
 			});
 		}).then(function (components) {
@@ -1352,7 +1400,7 @@ var Components = {
 		}).then(function (components) {
 			// base
 			return UI.createComponent('{id}-base'.format({id: id}), {
-				template: UI.template('div', 'ie border'),
+				template: UI.template('div', 'ie'),
 				appearance: args.appearance,
 				children: components,
 			});
