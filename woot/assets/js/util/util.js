@@ -149,3 +149,9 @@ function getDifferenceArray (previous, next) {
 function reduceSum (previous, next) {
 	return previous + next;
 }
+
+function emptyPromiseFunction () {
+	return function (resolve, reject) {
+		resolve();
+	}
+}
