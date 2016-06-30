@@ -1407,8 +1407,46 @@ var Components = {
 		});
 	},
 
-	sidebar: function () {
-		
+	sidebar: function (id, args) {
+		return Promise.all([
+
+			// main
+			UI.createComponent('{id}-main'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+
+					},
+				},
+				children: args.children,
+			}),
+
+			// back
+			UI.createComponent('{id}-back'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+
+					},
+				},
+			}),
+
+		]).then(function (components) {
+			// unpack components
+			var main = components[0];
+			var back = components[1];
+
+			return new Promise(function(resolve, reject) {
+
+
+				resolve([main, back]);
+			});
+		}).then(function (components) {
+			return UI.createComponent('{id}-back'.format({id: id}), {
+				template: UI.template('div', 'ie abstract'),
+				children: components,
+			});
+		});
 	},
 
 }
