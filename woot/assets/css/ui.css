@@ -73,6 +73,10 @@ Common interface elements
 	margin: 0px;
 }
 
+.ie.abstract {
+	overflow: visible;
+}
+
 .ie.hidden {
 	display: none !important;
 }
