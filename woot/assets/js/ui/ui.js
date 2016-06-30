@@ -14,6 +14,8 @@ var UI = {
 			return Promise.all(UI.states.map(function (state) {
 				return state.change();
 			}));
+		}).catch(function (error) {
+			console.log(error);
 		});
 	},
 
@@ -277,13 +279,14 @@ var UI = {
 			return UI.createState(this, state.name, state.args);
 		}
 		this.addStateMap = function (stateMap) {
+			var _this = this;
 			return new Promise(function(resolve, reject) {
-				this.stateMap = this.stateMap !== undefined ? this.stateMap : '';
-				this.stateMap = stateMap !== undefined ? stateMap : this.stateMap;
+				_this.stateMap = _this.stateMap !== undefined ? _this.stateMap : '';
+				_this.stateMap = stateMap !== undefined ? stateMap : _this.stateMap;
 				resolve();
 			});
 		}
-		this.mapState = function () {
+		this.mapState = function (stateName) {
 			if (typeof this.stateMap === 'string') {
 				return this.stateMap;
 			} else {
@@ -467,14 +470,12 @@ var UI = {
 
 			// 3. run pre FN
 			var preFnPromise = function () {
-				if (_this.state.preFn !== undefined) {
-					return new Promise(_this.state.preFn);
-				}
+				return new Promise((_this.state.preFn || function (resolve, reject) {resolve()}));
 			}
 
 			// 4. run state change
 			var stateChangePromise = function () {
-				return Promise.all(_this.stateClasses.map(function (className) {
+				return Promise.all((_this.stateClasses || []).map(function (className) {
 					return new Promise(function(resolve, reject) {
 						model.removeClass(className);
 						resolve();
@@ -499,7 +500,7 @@ var UI = {
 						_this.stateStyle = _this.state.style !== undefined ? _this.state.style : {};
 
 						// might need a more formal way of toggling this.
-						model.animate(_this.stateStyle);
+						model.animate(_this.stateStyle, 300);
 						resolve();
 					});
 				});
@@ -598,7 +599,7 @@ var UI = {
 		// change
 		this.change = function () {
 			if (this.name === UI.globalState) {
-				return this.component.changeState();
+				return this.component.changeState(this);
 			}
 		}
 	},
@@ -756,32 +757,37 @@ var Active = {
 
 	// get
 	get: function (path) {
-		context_path = path.split('.');
-		sub = Active.active;
-		for (i=0; i<context_path.length; i++) {
-			sub = sub[context_path[i]];
-			if (sub === undefined) {
-				break;
+		return new Promise(function(resolve, reject) {
+			context_path = path.split('.');
+			sub = Active.active;
+			for (i=0; i<context_path.length; i++) {
+				sub = sub[context_path[i]];
+				if (sub === undefined) {
+					break;
+				}
 			}
-		}
 
-		return sub !== undefined ? sub : '';
+			resolve((sub || ''));
+		});
 	},
 
 	// set
 	set: function (path, value) {
-		context_path = path.split('.');
-		sub = Active.active;
-		for (i=0; i<context_path.length; i++) {
-			if (i+1 === context_path.length) {
-				sub[context_path[i]] = value;
-			} else {
-				if (sub[context_path[i]] === undefined) {
-					sub[context_path[i]] = {};
+		return new Promise(function(resolve, reject) {
+			context_path = path.split('.');
+			sub = Active.active;
+			for (i=0; i<context_path.length; i++) {
+				if (i+1 === context_path.length) {
+					sub[context_path[i]] = value;
+				} else {
+					if (sub[context_path[i]] === undefined) {
+						sub[context_path[i]] = {};
+					}
 				}
+				sub = sub[context_path[i]];
 			}
-			sub = sub[context_path[i]];
-		}
+			resolve(sub);
+		});
 	},
 
 	// COMMANDS

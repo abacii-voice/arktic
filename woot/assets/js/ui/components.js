@@ -1451,9 +1451,29 @@ var Components = {
 				template: UI.template('div', 'ie abs border-right centred-vertically'),
 				appearance: {
 					style: {
-
+						'height': '70%',
+						'width': '50px',
+						'left': '-300px',
 					},
 				},
+				children: [
+					UI.createComponent('{id}-back-button'.format({id: id}), {
+						template: UI.template('div', 'ie button'),
+						children: [
+							UI.createComponent('{id}-back-button-span'.format({id: id}), {
+								template: UI.template('span', 'glyphicon glyphicon-chevron-left'),
+							}),
+						],
+						state: {
+							stateMap: args.state.primary,
+						},
+						bindings: {
+							'click': function (_this) {
+								_this.triggerState();
+							},
+						}
+					}),
+				]
 			}),
 
 		]).then(function (components) {
@@ -1463,7 +1483,39 @@ var Components = {
 
 			return new Promise(function(resolve, reject) {
 
+				// process states
+				Object.keys(args.state).forEach(function (category) {
+					var stateSet = args.state[category];
+					var on = {
+						style: {
+							'left': '0px',
+						},
+					}
+					var off = {
+						style: {
+							'left': '-300px',
+						},
+					}
 
+					if (!$.isArray(stateSet)) {
+						stateSet = [stateSet];
+					}
+
+					// This structure sets up the sidebar to have primary, secondary, and deactivate states
+					// These can be sets of states. Primary, main is active; secondary, back is active; deactivate, neither is active.
+					stateSet.forEach(function (state) {
+						if (category === 'primary') {
+							main.addState({name: state, args: on});
+							back.addState({name: state, args: off});
+						} else if (category === 'secondary') {
+							main.addState({name: state, args: off});
+							back.addState({name: state, args: on});
+						} else if (category === 'deactivate') {
+							main.addState({name: state, args: off});
+							back.addState({name: state, args: off});
+						}
+					});
+				});
 				resolve([main, back]);
 			});
 		}).then(function (components) {

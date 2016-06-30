@@ -95,6 +95,16 @@ UI.app('hook', [
 											'padding-top': '20px',
 										},
 									},
+									bindings: {
+										'click': function (_this) {
+											Active.set('client', display.id).then(function () {
+												return _this.triggerState();
+											});
+										},
+									},
+									state: {
+										stateMap: 'role-state',
+									},
 									children: [
 										UI.createComponent('{id}-{key}-main'.format({id: _this.id, key: display.id}), {
 											template: UI.template('span', 'ie'),
@@ -450,6 +460,6 @@ UI.app('hook', [
 
 ]).then (function (app) {
 	return app.render();
-}).catch(function (error) {
-	console.log(error);
+}).then(function () {
+	return UI.changeState('client-state');
 });
