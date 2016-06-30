@@ -49,19 +49,22 @@ class Path():
 
 	'''
 
-	def __init__(self, path):
+	def __init__(self, path, fltr={}):
 		# properties
 		self.is_blank = path == ''
 		self.key = ''
 		self.id = ''
 		self.index = 0
+		self.fltr = fltr
 
 		# locations
 		if not self.is_blank:
 			self.locations = collections.OrderedDict()
 			s = path.split('.')
-			for i in range(0, len(s), 2):
-				self.locations.update({s[i]: s[i+1] if i+1 != len(s) else ''})
+			i = 0
+			while i < len(s):
+				self.locations.update({s[i]: s[i+1] if (i+1 != len(s) and '-' in s[i+1]) else ''})
+				i += 2 if (i+1 != len(s) and '-' in s[i+1]) else 1
 
 			self.key, self.id = list(self.locations.items())[self.index]
 
@@ -82,6 +85,15 @@ class Path():
 		# get id should have no effect on any levels or locking.
 		return self.id
 
+	def get_filter(self, key):
+		# simulates going down so that the filter can be returned on the last object.
+		if not self.is_blank:
+			last_key, last_id = list(self.locations.items())[-1]
+			if key == last_key:
+				return self.fltr
+
+		return {}
+
 	def down(self, key):
 		# This should shift the index to the next token, or if the key is the same as a previous key,
 		# the index should rewind to this key instead.
@@ -97,9 +109,9 @@ class Path():
 		return self
 
 ### Access
-def access(original_path, permission):
+def access(original_path, permission, fltr={}):
 	# 1. create path
-	path = Path(original_path)
+	path = Path(original_path, fltr=fltr)
 	data = {}
 
 	if path.check('clients'):
@@ -115,7 +127,8 @@ def access(original_path, permission):
 	# cut to size
 	if original_path != '':
 		for token in original_path.split('.'):
-			data = data[token]
+			if token in data:
+				data = data[token]
 
 	return data
 
@@ -126,11 +139,11 @@ def process_request(request):
 
 	# 2. get user and role_type
 	user = request.user
-	client_id = data['permission']['client_id'] if 'permission' in data else ''
-	role_type = data['permission']['role_type'] if 'permission' in data else ''
+	role_id = data['permission']
+	role = user.roles.get(id=role_id) if user.roles.filter(id=role_id).exists() else None
 
 	# 3. get permission
-	permission = Permission(user, role=user.get_role(client_id, role_type))
+	permission = Permission(user, role=role)
 
 	# 4. get verification
 	verified = request.method == 'POST' and request.user.is_authenticated()

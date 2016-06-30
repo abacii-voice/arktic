@@ -24,6 +24,7 @@ class Dictionary(models.Model):
 			# basic data
 			'name': self.name,
 			'total_tokens': str(self.total_tokens),
+			'tokens': {token.id: token.data(path, permission) for token in self.tokens.filter(**path.get_filter('tokens'))},
 		}
 
 		return data
