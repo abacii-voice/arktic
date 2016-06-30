@@ -61,10 +61,37 @@ class Project(models.Model):
 
 		if path.check('transcriptions', blank=False):
 			data.update({
-				'transcriptions': {transcription.id: transcription.data(path.down('transcriptions'), permission) for transcription in self.transcriptions.filter(id__startswith=path.get_id())},
+				'transcriptions': {transcription.id: transcription.data(path.down('transcriptions'), permission) for transcription in self.transcriptions.filter(id__startswith=path.get_id()).filter(**path.get_filter('transcriptions')).order_by('original_caption')},
+			})
+
+		if path.check('moderations', blank=False):
+			data.update({
+				'moderations': {moderation.id: moderation.data(path.down('moderations'), permission) for moderation in self.moderations.filter(id__startswith=path.get_id()).filter(**path.get_filter('moderations'))},
 			})
 
 		return data
+
+	def get_transcription(self):
+
+		'''
+		Select a single transcription based on several criteria.
+
+		'''
+
+		transcription = self.transcriptions.filter(is_active=True, is_available=True).order_by('original_caption', 'date_created')[0]
+		transcription.is_available = False
+		transcription.save()
+
+		return transcription
+
+	def get_moderation(self):
+
+		'''
+		Select a single transcription based on several criteria.
+
+		'''
+
+		return self.moderations.filter(is_active=True, is_available=True).order_by('date_created')[0]
 
 class Batch(models.Model):
 

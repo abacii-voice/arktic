@@ -13,7 +13,7 @@ function formatStyle (style) {
 
 function formatClasses (classes) {
 	if (classes !== undefined) {
-		return classes.join(' ');
+		return classes.join(' ').trim();
 	} else {
 		return '';
 	}
@@ -46,7 +46,7 @@ String.prototype.trunc = function(n, useWordBoundary) {
 	var isTooLong = this.length > n;
 	var s_ = isTooLong ? this.substr(0,n-1) : this;
 	var s_ = (useWordBoundary && isTooLong) ? s_.substr(0,s_.lastIndexOf(' ')) : s_;
-	return  isTooLong ? s_ + '&hellip;' : s_;
+	return	isTooLong ? s_ + '&hellip;' : s_;
 };
 
 // gives filename without directories
@@ -74,4 +74,78 @@ function alphaSort(key) {
 			return 0;
 		}
 	}
+}
+
+// Ordered promises
+Promise.ordered = function (promises) {
+	var result = promises[0];
+	promises.forEach(function (promise, index) {
+		if (index > 0) {
+			result = result.then(function () {
+				return promise;
+			});
+		}
+	});
+
+	return result;
+}
+
+// Trim string
+if(!String.prototype.trim) {
+	String.prototype.trim = function () {
+		return this.replace(/^\s+|\s+$/g,'');
+	};
+}
+
+// Array interpolation
+function linearInterpolate (before, after, atPoint) {
+	return before + (after - before) * atPoint;
+};
+
+function interpolateArray (data, fitCount) {
+	var newData = new Array();
+	var springFactor = new Number((data.length - 1) / (fitCount - 1));
+	newData[0] = data[0]; // for new allocation
+	for ( var i = 1; i < fitCount - 1; i++) {
+		var tmp = i * springFactor;
+		var before = new Number(Math.floor(tmp)).toFixed();
+		var after = new Number(Math.ceil(tmp)).toFixed();
+		var atPoint = tmp - before;
+		newData[i] = this.linearInterpolate(data[before], data[after], atPoint);
+		}
+	newData[fitCount - 1] = data[data.length - 1]; // for new allocation
+	return newData;
+};
+
+function getMaxOfArray (numArray) {
+  return Math.max.apply(null, numArray);
+}
+
+function getAbsNormalised (array, max) {
+	// abs
+	var abs = array.map(function (value) {
+		return Math.abs(value);
+	});
+
+	var arrayMax = getMaxOfArray(abs);
+
+	var normalised = abs.map(function (value) {
+		return max * Math.sqrt(value / arrayMax);
+		// return max * value / arrayMax;
+	});
+
+	return normalised;
+}
+
+function getDifferenceArray (previous, next) {
+	if (previous.length === next.length) {
+		var differenceArray = [];
+		for (i=0; i<previous.length; i++) {
+			differenceArray.push(next[i] - previous[i]);
+		}
+	}
+}
+
+function reduceSum (previous, next) {
+	return previous + next;
 }

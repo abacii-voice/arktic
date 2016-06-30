@@ -5,9 +5,6 @@ from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from apps.users.idgen import idgen
 
-# util
-from permission import Permission
-
 ### User classes
 class UserManager(BaseUserManager):
 	def create_user(self, first_name, last_name, email, password=None):
@@ -54,6 +51,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 		if path.is_blank:
 			data.update({
+				'id': self.id,
 				'email': self.email,
 				'first_name': self.first_name,
 				'last_name': self.last_name,
@@ -68,7 +66,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 		if path.check('clients'):
 			data.update({
-				'clients': {client.id: client.user_data(path, permission) for client in self.clients.filter(id__startswith=path.get_id())},
+				'clients': {client.id: client.user_data(path.down('clients'), permission) for client in self.clients.filter(id__startswith=path.get_id())},
 			})
 
 		return data
@@ -82,14 +80,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 			})
 
 		return data
-
-	def get_role(self, client_id, role_type):
-		possible_client = self.clients.filter(id=client_id)
-		if possible_client:
-			possible_role = possible_client[0].roles.filter(type=role_type)
-			return possible_role[0] if possible_role.count() else None
-		else:
-			return None
 
 	# str
 	def __str__(self):
