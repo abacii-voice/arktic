@@ -497,7 +497,9 @@ var UI = {
 				}).then(function () {
 					return new Promise(function(resolve, reject) {
 						_this.stateStyle = _this.state.style !== undefined ? _this.state.style : {};
-						model.css(_this.stateStyle);
+
+						// might need a more formal way of toggling this.
+						model.animate(_this.stateStyle);
 						resolve();
 					});
 				});
@@ -605,12 +607,7 @@ var UI = {
 	createState: function (component, name, args) {
 		var _this = this;
 		return new Promise(function(resolve, reject) {
-			var state;
-			if (args === 'default') {
-				state = new _this.state(component, name, component.defaultState);
-			} else {
-				state = new _this.state(component, name, args);
-			}
+			var state = new _this.state(component, name, (args || component.defaultState));
 			state.index = _this.states.length - 1; // able to find state again
 			_this.states.push(state);
 			resolve(state);
