@@ -194,13 +194,14 @@ var Components = {
 				title.defined = titleText !== undefined;
 
 				list.runDisplay = function (details, query) {
+					var _this = list;
 					var fltr = details.fltr !== undefined ? {options: {filter: details.fltr()}} : {};
 					query = query !== undefined ? query : '';
 					if (details.path !== undefined) {
 						Context.get(details.path(), fltr).then(details.process).then(function (results) {
 							results.filter(function (result) {
 								return result.main.indexOf(query) === 0;
-							}).forEach(args.options.display.list(list, query));
+							}).forEach(args.options.display.list(_this, query));
 						}).then(function () {
 							listLoadingIcon.model().fade();
 						});
@@ -354,9 +355,12 @@ var Components = {
 									name: state,
 									args: {
 										preFn: function (_this) {
-											var targets = Object.keys(args.options.targets);
-											for (i=0; i<targets.length; i++) {
-												_this.runDisplay(args.options.targets[targets[i]]);
+											return function (resolve, reject) {
+												_this.removeChildren().then(function () {
+													Object.keys(args.options.targets).forEach(function (target) {
+														_this.runDisplay(args.options.targets[target]);
+													});
+												});
 											}
 										}
 									},
@@ -381,9 +385,12 @@ var Components = {
 								name: state,
 								args: {
 									preFn: function (_this) {
-										var targets = Object.keys(args.options.targets);
-										for (i=0; i<targets.length; i++) {
-											_this.runDisplay(args.options.targets[targets[i]]);
+										return function (resolve, reject) {
+											_this.removeChildren().then(function () {
+												Object.keys(args.options.targets).forEach(function (target) {
+													_this.runDisplay(args.options.targets[target]);
+												});
+											});
 										}
 									}
 								},
@@ -469,8 +476,10 @@ var Components = {
 							args: {
 								preFn: function (_this) {
 									return function (resolve, reject) {
-										Object.keys(args.options.targets).forEach(function (target) {
-											_this.runDisplay(args.options.targets[target]);
+										_this.removeChildren().then(function () {
+											Object.keys(args.options.targets).forEach(function (target) {
+												_this.runDisplay(args.options.targets[target]);
+											});
 										});
 									}
 								}
@@ -1450,7 +1459,7 @@ var Components = {
 
 			// config and combination
 			return new Promise(function(resolve, reject) {
-
+				
 
 				// final
 				resolve([headerWrapper]);
