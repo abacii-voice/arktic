@@ -131,6 +131,9 @@ UI.app('hook', [
 							}
 						},
 					},
+
+					// States to reset
+					reset: 'client-state',
 				},
 			}),
 		],
@@ -164,7 +167,6 @@ UI.app('hook', [
 
 							// path in Context
 							path: function () {
-								console.log('here');
 								return Active.get('client').then(function (client) {
 									return 'user.clients.{client}.roles'.format({client: client});
 								})
@@ -259,6 +261,9 @@ UI.app('hook', [
 							}
 						},
 					},
+
+					// States to reset
+					reset: 'role-state',
 				},
 			}),
 		],

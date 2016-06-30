@@ -35,6 +35,11 @@ var Components = {
 
 			// listHeight
 			listHeight = 'calc(100% - {offset}px)'.format({offset: offset});
+
+			// reset
+			if (!$.isArray(args.options.reset)) {
+				args.options.reset = [args.options.reset];
+			}
 		}
 
 		// CREATE ALL COMPONENTS
@@ -344,10 +349,19 @@ var Components = {
 							filterWrapper.setAppearance({
 								classes: ['hidden'],
 							});
-							var targets = Object.keys(args.options.targets);
-							for (i=0; i<targets.length; i++) {
-								list.runDisplay(args.options.targets[targets[i]]);
-							}
+							args.options.reset.forEach(function (state) {
+								list.addState({
+									name: state,
+									args: {
+										preFn: function (_this) {
+											var targets = Object.keys(args.options.targets);
+											for (i=0; i<targets.length; i++) {
+												_this.runDisplay(args.options.targets[targets[i]]);
+											}
+										}
+									},
+								});
+							});
 						}
 
 						// DEFINE INPUT GROUP
@@ -362,10 +376,19 @@ var Components = {
 						filterWrapper.defined = false;
 
 						// display everything
-						var targets = Object.keys(args.options.targets);
-						for (i=0; i<targets.length; i++) {
-							list.runDisplay(args.options.targets[targets[i]]);
-						}
+						args.options.reset.forEach(function (state) {
+							list.addState({
+								name: state,
+								args: {
+									preFn: function (_this) {
+										var targets = Object.keys(args.options.targets);
+										for (i=0; i<targets.length; i++) {
+											_this.runDisplay(args.options.targets[targets[i]]);
+										}
+									}
+								},
+							});
+						});
 
 						// INPUT: if search, define input field
 						searchInput.setBindings({
@@ -439,10 +462,21 @@ var Components = {
 					// display immediately, buffer can only be changed by scrolling.
 					searchWrapper.defined = false;
 
-					var targets = Object.keys(args.options.targets);
-					for (i=0; i<targets.length; i++) {
-						list.runDisplay(args.options.targets[targets[i]]);
-					}
+					// console.log(args.options.reset);
+					args.options.reset.forEach(function (state) {
+						list.addState({
+							name: state,
+							args: {
+								preFn: function (_this) {
+									return function (resolve, reject) {
+										Object.keys(args.options.targets).forEach(function (target) {
+											_this.runDisplay(args.options.targets[target]);
+										});
+									}
+								}
+							},
+						});
+					});
 				}
 
 				// LIST
