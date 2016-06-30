@@ -470,7 +470,7 @@ var UI = {
 
 			// 3. run pre FN
 			var preFnPromise = function () {
-				return new Promise((_this.state.preFn || function (resolve, reject) {resolve()}));
+				return new Promise((_this.state.preFn || emptyPromiseFunction)(_this));
 			}
 
 			// 4. run state change
@@ -509,7 +509,7 @@ var UI = {
 			// 5. run FN
 			var fnPromise = function () {
 				if (_this.state.fn !== undefined) {
-					return new Promise(_this.state.fn);
+					return new Promise((_this.state.fn || emptyPromiseFunction)(_this));
 				}
 			}
 
