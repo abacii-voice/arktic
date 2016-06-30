@@ -196,6 +196,8 @@ var Components = {
 							results.filter(function (result) {
 								return result.main.indexOf(query) === 0;
 							}).forEach(args.options.display.list(list, query));
+						}).then(function () {
+							listLoadingIcon.model().fade();
 						});
 					}
 				}
@@ -459,10 +461,18 @@ var Components = {
 				resolve([title, searchWrapper, listWrapper, filterWrapper]);
 			});
 		}).then(function (children) {
+			// default appearance
+			var defaultAppearance = {
+				style: {
+					'height': '100%',
+					'width': '100%',
+				},
+			}
+
 			// return base
 			return UI.createComponent(id, {
 				template: UI.template('div'),
-				appearance: args.appearance,
+				appearance: (args.appearance || defaultAppearance),
 				children: children.filter(function (child) {
 					return child.defined;
 				}),
