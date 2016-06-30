@@ -223,8 +223,8 @@ UI.createApp('hook', [
 						state: {
 							stateMap: 'confirmed-state',
 						},
-						bindings: [
-							{name: 'click', fn: function (_this) {
+						bindings: {
+							'click': function (_this) {
 								// 1. check details and compile data
 								var noProblems = true;
 								var errorMessage = UI.getComponent('usdp-error-message');
@@ -302,8 +302,8 @@ UI.createApp('hook', [
 									// 3. change state to confirmed
 									_this.triggerState();
 								}
-							}}
-						],
+							},
+						},
 					}),
 				],
 			}),
@@ -365,11 +365,11 @@ UI.createApp('hook', [
 							classes: ['border', 'border-radius'],
 							html: 'Proceed to login',
 						},
-						bindings: [
-							{name: 'click', fn: function (_this) {
+						bindings: {
+							'click': function (_this) {
 								window.location = '/login/';
-							}}
-						],
+							},
+						},
 					}),
 				],
 			}),

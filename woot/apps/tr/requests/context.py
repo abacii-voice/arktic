@@ -14,5 +14,6 @@ import json
 def context(request, path):
 	user, permission, data, verified = process_request(request)
 	if verified:
-		data = access(path, permission)
+		fltr = data['filter'] if 'filter' in data else {}
+		data = access(path, permission, fltr=fltr)
 		return JsonResponse(data)
