@@ -1260,9 +1260,16 @@ var Components = {
 		});
 	},
 
-	//////////// TOKEN FIELD
+	//////////// TOKEN TEXT FIELD
 	// Displays tokens for each word that can react to user input.
-	textTokenField: function (id, args) {
+	// Features:
+	// 1. Tokens can be added or removed
+	// 2. Tokens can be selected and deleted.
+	// 3. Tokens can be converted into inputs for quick changing
+	// 4. Tags are coloured differently
+	// 5. A dropdown can add modifiers; best guess, etc.
+	// 6. Tokens can be exported.
+	tokenTextField: function (id, args) {
 		// styling
 
 		// components
@@ -1387,6 +1394,11 @@ var Components = {
 		});
 	},
 
+	//////////// RENDERED TEXT FIELD
+	// Displays the rendered version of a token field
+	// Features:
+	// 1. Tags are coloured differently
+	// 2. Clicking on a word will take you to the token
 	renderedTextField: function (id, args) {
 		// styling
 
