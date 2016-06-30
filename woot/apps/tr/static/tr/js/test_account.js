@@ -554,6 +554,7 @@ var Test = {
 								},
 							},
 						}),
+
 					],
 				}),
 
@@ -684,7 +685,7 @@ var Test = {
 			}).catch(function (error) {
 				console.log(error);
 			});
-		}
+		},
 
 		test_token_app: function () {
 			// 1. define component tree
