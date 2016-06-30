@@ -70,15 +70,6 @@ UI.app('hook', [
 									resolve(results);
 								});
 							},
-
-							// filter
-							filter: {
-								char: '/',
-								key: 'forwardslash',
-								display: 'Clients',
-								button: 'Clients',
-								rule: 'client',
-							},
 						},
 					},
 

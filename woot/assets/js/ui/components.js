@@ -18,11 +18,12 @@ var Components = {
 		// - if no title is given, leave no room for a title.
 		// - if no search is given, leave no room for an input.
 		// - looking for final variable 'listHeight'
-		var listHeight = '100%', offset = 0, titleText, search;
+		var listHeight = '100%', offset = 0, titleText, titleCentered, search;
 		if (args.options !== undefined) {
 			// title
 			if (args.options.title !== undefined) {
-				titleText = args.options.title;
+				titleText = args.options.title.text;
+				titleCentered = args.options.title.center;
 				offset += 22;
 			}
 
@@ -47,6 +48,7 @@ var Components = {
 						'width': '100%',
 						'height': '22px',
 						'font-size': '18px',
+						'text-align': (titleCentered ? 'center' : 'left'),
 					},
 					html: titleText,
 				},
@@ -1442,7 +1444,7 @@ var Components = {
 				resolve([main, back]);
 			});
 		}).then(function (components) {
-			return UI.createComponent('{id}-back'.format({id: id}), {
+			return UI.createComponent('{id}-base'.format({id: id}), {
 				template: UI.template('div', 'ie abstract'),
 				children: components,
 			});
