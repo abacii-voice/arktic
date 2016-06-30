@@ -1414,10 +1414,11 @@ var Components = {
 
 			// main
 			UI.createComponent('{id}-main'.format({id: id}), {
-				template: UI.template('div', 'ie'),
+				template: UI.template('div', 'ie abs border-right centred-vertically'),
 				appearance: {
 					style: {
-
+						'height': '70%',
+						'width': '200px',
 					},
 				},
 				children: args.children,
@@ -1425,7 +1426,7 @@ var Components = {
 
 			// back
 			UI.createComponent('{id}-back'.format({id: id}), {
-				template: UI.template('div', 'ie'),
+				template: UI.template('div', 'ie abs border-right centred-vertically'),
 				appearance: {
 					style: {
 
@@ -1446,6 +1447,11 @@ var Components = {
 		}).then(function (components) {
 			return UI.createComponent('{id}-base'.format({id: id}), {
 				template: UI.template('div', 'ie abstract'),
+				appearance: {
+					style: {
+						'height': '100%',
+					},
+				},
 				children: components,
 			});
 		});
