@@ -482,23 +482,26 @@ var Components = {
 					// display immediately, buffer can only be changed by scrolling.
 					searchWrapper.defined = false;
 
-					// console.log(args.options.reset);
-					args.options.reset.forEach(function (state) {
-						list.addState({
-							name: state,
-							args: {
-								preFn: function (_this) {
-									return function (resolve, reject) {
-										_this.removeChildren().then(function () {
-											Object.keys(args.options.targets).forEach(function (target) {
-												_this.runDisplay(args.options.targets[target]);
+					if (args.children !== undefined) {
+						list.setChildren(args.children);
+					} else {
+						args.options.reset.forEach(function (state) {
+							list.addState({
+								name: state,
+								args: {
+									preFn: function (_this) {
+										return function (resolve, reject) {
+											_this.removeChildren().then(function () {
+												Object.keys(args.options.targets).forEach(function (target) {
+													_this.runDisplay(args.options.targets[target]);
+												});
 											});
-										});
+										}
 									}
-								}
-							},
+								},
+							});
 						});
-					});
+					}
 				}
 
 				// LIST

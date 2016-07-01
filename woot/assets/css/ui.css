@@ -239,6 +239,12 @@ Common interface elements
 	font-size: 20px;
 }
 
+.ie.sidebar-button {
+	margin-left: 10px;
+	margin-right: 10px;
+	margin-bottom: 10px;
+}
+
 /*
 
 5. Inputs
