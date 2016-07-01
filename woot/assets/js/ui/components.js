@@ -198,13 +198,26 @@ var Components = {
 					var fltr = details.fltr !== undefined ? {options: {filter: details.fltr()}} : {};
 					query = query !== undefined ? query : '';
 					if (details.path !== undefined) {
-						Context.get(details.path(), fltr).then(details.process).then(function (results) {
-							results.filter(function (result) {
-								return result.main.indexOf(query) === 0;
-							}).forEach(args.options.display.list(_this, query));
-						}).then(function () {
-							listLoadingIcon.model().fade();
-						});
+						var path = details.path();
+						if (path.then !== undefined) {
+							path.then(function (calculatedPath) {
+								return Context.get(calculatedPath, fltr).then(details.process).then(function (results) {
+									results.filter(function (result) {
+										return result.main.indexOf(query) === 0;
+									}).forEach(args.options.display.list(_this, query));
+								}).then(function () {
+									listLoadingIcon.model().fade();
+								});
+							});
+						} else {
+							Context.get(details.path(), fltr).then(details.process).then(function (results) {
+								results.filter(function (result) {
+									return result.main.indexOf(query) === 0;
+								}).forEach(args.options.display.list(_this, query));
+							}).then(function () {
+								listLoadingIcon.model().fade();
+							});
+						}
 					}
 				}
 
@@ -1459,7 +1472,7 @@ var Components = {
 
 			// config and combination
 			return new Promise(function(resolve, reject) {
-				
+
 
 				// final
 				resolve([headerWrapper]);
@@ -1484,6 +1497,7 @@ var Components = {
 					style: {
 						'height': '70%',
 						'width': '200px',
+						'left': args.position.main.initial,
 					},
 				},
 				children: args.children,
@@ -1496,7 +1510,7 @@ var Components = {
 					style: {
 						'height': '70%',
 						'width': '50px',
-						'left': '-300px',
+						'left': args.position.back.initial,
 					},
 				},
 				children: [
@@ -1529,17 +1543,6 @@ var Components = {
 				// process states
 				Object.keys(args.state).forEach(function (category) {
 					var stateSet = args.state[category];
-					var on = {
-						style: {
-							'left': '0px',
-						},
-					}
-					var off = {
-						style: {
-							'left': '-300px',
-						},
-					}
-
 					if (!$.isArray(stateSet)) {
 						stateSet = [stateSet];
 					}
@@ -1548,14 +1551,14 @@ var Components = {
 					// These can be sets of states. Primary, main is active; secondary, back is active; deactivate, neither is active.
 					stateSet.forEach(function (state) {
 						if (category === 'primary') {
-							main.addState({name: state, args: on});
-							back.addState({name: state, args: off});
+							main.addState({name: state, args: onOff(args.position.main.on)});
+							back.addState({name: state, args: onOff(args.position.back.off)});
 						} else if (category === 'secondary') {
-							main.addState({name: state, args: off});
-							back.addState({name: state, args: on});
+							main.addState({name: state, args: onOff(args.position.main.off)});
+							back.addState({name: state, args: onOff(args.position.back.on)});
 						} else if (category === 'deactivate') {
-							main.addState({name: state, args: off});
-							back.addState({name: state, args: off});
+							main.addState({name: state, args: onOff(args.position.main.off)});
+							back.addState({name: state, args: onOff(args.position.back.off)});
 						}
 					});
 				});
