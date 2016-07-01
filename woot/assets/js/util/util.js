@@ -155,3 +155,11 @@ function emptyPromiseFunction () {
 		resolve();
 	}
 }
+
+function onOff (onOff) {
+	return {
+		style: {
+			'left': onOff,
+		},
+	}
+}
