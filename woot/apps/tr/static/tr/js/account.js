@@ -14,7 +14,65 @@ UI.app('hook', [
 	// UI.createComponent('search-interface', {
 	//
 	// }),
+	Components.sidebar('control-sidebar', {
+		children: [
+			Components.scroll('cs-controls', {
+				// modifiers and features
+				options: {
 
+					// Simple text title
+					title: {
+						text: 'Actions',
+						center: true,
+					},
+				},
+
+				// children
+				children: [
+					UI.createComponent('csc-transcription', {
+						template: UI.template('div', 'ie button sidebar-button border border-radius'),
+						appearance: {
+							style: {
+								'height': '80px',
+								'width': '180px',
+							},
+						},
+					}),
+					UI.createComponent('csc-transcriptions', {
+						template: UI.template('div', 'ie button sidebar-button border border-radius'),
+						appearance: {
+							style: {
+								'height': '80px',
+								'width': '180px',
+							},
+						},
+					}),
+				],
+			}),
+		],
+		state: {
+			primary: 'control-state',
+			secondary: [
+
+			],
+			deactivate: [
+				'role-state',
+				'client-state',
+			],
+		},
+		position: {
+			main: {
+				initial: '-300px',
+				on: '50px',
+				off: '-300px',
+			},
+			back: {
+				initial: '-300px',
+				on: '0px',
+				off: '-300px',
+			},
+		},
+	}),
 	Components.sidebar('role-sidebar', {
 		children: [
 			Components.scroll('rs-roles', {
