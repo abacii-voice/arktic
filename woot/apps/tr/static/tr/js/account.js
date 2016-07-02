@@ -5,9 +5,46 @@ UI.app('hook', [
 	// UI.createComponent('user-management-interface', {
 	//
 	// }),
-	// UI.createComponent('transcription-interface', {
-	//
-	// }),
+	UI.createComponent('transcription-interface', {
+		template: UI.template('div', 'ie abs border centred-vertically'),
+		appearance: {
+			style: {
+				'height': '70%',
+				'width': '954px',
+				'left': '120px',
+				'opacity': '0',
+			},
+		},
+		state: {
+			defaultState: {
+				style: {
+					'opacity': '0',
+					'left': '0px',
+				},
+				fn: function (_this) {
+					return function (resolve, reject) {
+						_this.model().css({'display': 'none'});
+						resolve();
+					}
+				},
+			},
+			states: [
+				{name: 'transcription-state', args: {
+					preFn: function (_this) {
+						return function (resolve, reject) {
+							_this.model().css({'display': 'block'});
+							resolve();
+						}
+					},
+					style: {
+						'left': '60px',
+						'opacity': '1',
+					},
+				}},
+				{name: 'control-state'},
+			],
+		},
+	}),
 	// UI.createComponent('billing-interface', {
 	//
 	// }),
@@ -37,8 +74,16 @@ UI.app('hook', [
 								'width': '180px',
 							},
 						},
+						bindings: {
+							'click': function (_this) {
+								_this.triggerState();
+							},
+						},
+						state: {
+							stateMap: 'transcription-state',
+						},
 					}),
-					UI.createComponent('csc-transcriptions', {
+					UI.createComponent('csc-moderation', {
 						template: UI.template('div', 'ie button sidebar-button border border-radius'),
 						appearance: {
 							style: {
@@ -53,7 +98,7 @@ UI.app('hook', [
 		state: {
 			primary: 'control-state',
 			secondary: [
-
+				'transcription-state',
 			],
 			deactivate: [
 				'role-state',
@@ -193,6 +238,7 @@ UI.app('hook', [
 			secondary: 'control-state',
 			deactivate: [
 				'client-state',
+				'transcription-state',
 			],
 		},
 		position: {
