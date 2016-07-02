@@ -469,56 +469,34 @@ var UI = {
 			var model = _this.model();
 
 			// 3. run pre FN
-			var preFnPromise = function () {
-				return new Promise((_this.state.preFn || emptyPromiseFunction)(_this));
-			}
-
-			// 4. run state change
-			var stateChangePromise = function () {
+			return new Promise((_this.state.preFn || emptyPromiseFunction)(_this)).then(function () {
 				return Promise.all((_this.stateClasses || []).map(function (className) {
 					return new Promise(function(resolve, reject) {
 						model.removeClass(className);
 						resolve();
 					});
-				})).then(function () {
-					_this.stateClasses = _this.state.classes !== undefined ? _this.state.classes : [];
-					return Promise.all(_this.stateClasses.map(function (className) {
-						return new Promise(function(resolve, reject) {
-							model.addClass(className);
-							resolve();
-						});
-					}));
-				}).then(function () {
-					return new Promise(function(resolve, reject) {
-						if (_this.state.html !== undefined) {
-							model.html(_this.state.html);
-						}
-						resolve();
-					});
-				}).then(function () {
-					return new Promise(function(resolve, reject) {
-						_this.stateStyle = _this.state.style !== undefined ? _this.state.style : {};
-
-						// might need a more formal way of toggling this.
-						model.animate(_this.stateStyle, 300);
-						resolve();
-					});
-				});
-			}
-
-			// 5. run FN
-			var fnPromise = function () {
-				if (_this.state.fn !== undefined) {
-					return new Promise((_this.state.fn || emptyPromiseFunction)(_this));
-				}
-			}
-
-			// execute
-			return preFnPromise().then(function () {
-				return stateChangePromise();
+				}));
 			}).then(function () {
-				return fnPromise();
-			})
+				_this.stateClasses = _this.state.classes !== undefined ? _this.state.classes : [];
+				return Promise.all(_this.stateClasses.map(function (className) {
+					return new Promise(function(resolve, reject) {
+						model.addClass(className);
+						resolve();
+					});
+				}));
+			}).then(function () {
+				return new Promise(function(resolve, reject) {
+					if (_this.state.html !== undefined) {
+						model.html(_this.state.html);
+					}
+					resolve();
+				});
+			}).then(function () {
+				_this.stateStyle = _this.state.style !== undefined ? _this.state.style : {};
+				return model.animate(_this.stateStyle, 300).promise();
+			}).then(function () {
+				return new Promise((_this.state.fn || emptyPromiseFunction)(_this));
+			});
 		}
 
 		// initialise
