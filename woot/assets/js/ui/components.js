@@ -1067,8 +1067,8 @@ var Components = {
 				template: UI.template('div', 'ie border'),
 				appearance: {
 					style: {
-						'height': '100px',
-						'width': '100px',
+						'height': '80px',
+						'width': '80px',
 					},
 				},
 			}),
@@ -1088,7 +1088,7 @@ var Components = {
 				template: UI.template('div', 'ie border'),
 				appearance: {
 					style: {
-						'height': 'calc(100% - 100px)',
+						'height': 'calc(100% - 80px)',
 						'width': '100px',
 					},
 				},

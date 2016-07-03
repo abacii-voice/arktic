@@ -48,8 +48,8 @@ UI.app('hook', [
 			Components.counter('transcription-counter', {
 				appearance: {
 					style: {
-						'height': '400px',
-						'width': '100px',
+						'height': '100%',
+						'width': '80px',
 						'float': 'left',
 					},
 				},
@@ -266,17 +266,29 @@ UI.app('hook', [
 				appearance: {
 					style: {
 						'height': '100%',
-						'width': '400px',
+						'width': '492px',
 						'float': 'left',
 						'margin-left': '10px',
 					}
 				},
 				children: [
-					Components.audio('test-audio', {
+					Components.tokenTextField('transcription-caption-tokens', {
+						template: UI.template('div', 'ie border'),
+						appearance: {
+							style: {
+								'height': '40px',
+								'width': '100%',
+								'overflow': 'hidden',
+								'margin-bottom': '10px',
+							},
+						},
+					}),
+					Components.audio('transcription-audio', {
 						appearance: {
 							style: {
 								'height': '50px',
 								'width': '100%',
+								'margin-bottom': '10px',
 							},
 						},
 						registry: {
@@ -331,7 +343,18 @@ UI.app('hook', [
 							},
 						},
 					}),
-				]
+				],
+			}),
+			UI.createComponent('control-panel-wrapper', {
+				template: UI.template('div', 'ie border'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '50px',
+						'float': 'left',
+						'margin-left': '10px',
+					},
+				},
 			}),
 		],
 	}),
