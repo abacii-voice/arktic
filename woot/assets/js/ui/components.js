@@ -555,35 +555,7 @@ var Components = {
 				appearance: {
 					style: {
 						'height': '50px',
-						'width': '100px',
-					},
-				},
-			}),
-
-			// forward button
-			UI.createComponent('{id}-forward-button'.format({id: id}), {
-				template: UI.template('div', 'ie button border abs'),
-				appearance: {
-					style: {
-						'height': '50px',
-						'width': '100px',
-						'top': '0px',
-						'left': '0px',
-						'border-radius': '25px',
-					},
-				},
-			}),
-
-			// back button
-			UI.createComponent('{id}-back-button'.format({id: id}), {
-				template: UI.template('div', 'ie button border abs'),
-				appearance: {
-					style: {
-						'height': '50px',
-						'width': '75px',
-						'top': '0px',
-						'left': '0px',
-						'border-radius': '25px',
+						'width': '50px',
 					},
 				},
 			}),
@@ -611,8 +583,8 @@ var Components = {
 					style: {
 						'border-left': '0px',
 						'height': '50px',
-						'width': 'calc(100% - 30px)',
-						'left': '30px',
+						'width': 'calc(100% - 25px)',
+						'left': '25px',
 						'border-top-right-radius': '5px',
 						'border-bottom-right-radius': '5px',
 					},
@@ -625,8 +597,8 @@ var Components = {
 				appearance: {
 					style: {
 						'height': '100%',
-						'width': 'calc(100% - 70px)',
-						'left': '70px',
+						'width': '100%',
+						'left': '25px',
 					},
 				},
 			}),
@@ -637,7 +609,7 @@ var Components = {
 				appearance: {
 					style: {
 						'height': '100%',
-						'width': '100%',
+						'width': 'calc(100% - 25px)',
 					},
 				},
 			}),
@@ -662,57 +634,18 @@ var Components = {
 			// unpack components
 			// BUTTON GROUP
 			var buttonWrapper = components[0];
-			var forwardButton = components[1];
-			var backButton = components[2];
-			var playButton = components[3];
+			var playButton = components[1];
 
 			// AUDIO GROUP
-			var audioWrapper = components[4];
-			var audioTrackWrapper = components[5];
-			var audioTrack = components[6];
-			var audioTrackCanvas = components[7];
-			var audioTrackInfo = components[8];
+			var audioWrapper = components[2];
+			var audioTrackWrapper = components[3];
+			var audioTrack = components[4];
+			var audioTrackCanvas = components[5];
+			var audioTrackInfo = components[6];
 
 			return new Promise(function(resolve, reject) {
 				// modify components and add methods etc.
 				// BUTTON GROUP
-				forwardButton.setBindings({
-					'mousedown': function (_this) {
-						// the forward button jumps the now cursor forward in time by 2 seconds, or an adjustable amount.
-						audioTrack.next();
-					},
-
-					// display tooltip in track info field
-					'mouseover': function (_this) {
-
-					},
-
-					// remove tooltip
-					'mouseout': function (_this) {
-
-					},
-				});
-
-				backButton.setBindings({
-					'mousedown': function (_this) {
-						// the back button has different behaviour based on the position of the anchor cursor.
-						// if the anchor cursor is at 0, the anchor will be set 2 seconds before the current time, then play from this point.
-						// if the anchor is not at 0, it will be set 2 seconds before the anchors position and play from this point.
-						audioTrack.previous();
-
-					},
-
-					// display tooltip in track info field
-					'mouseover': function (_this) {
-
-					},
-
-					// remove tooltip
-					'mouseout': function (_this) {
-
-					},
-				});
-
 				playButton.setBindings({
 					'mousedown': function (_this) {
 						// The play button will always return to the anchor and play from there.
@@ -731,8 +664,6 @@ var Components = {
 				});
 
 				buttonWrapper.setChildren([
-					forwardButton,
-					backButton,
 					playButton,
 				]);
 
