@@ -6,7 +6,7 @@ UI.app('hook', [
 	//
 	// }),
 	UI.createComponent('transcription-interface', {
-		template: UI.template('div', 'ie abs border centred-vertically'),
+		template: UI.template('div', 'ie abs centred-vertically'),
 		appearance: {
 			style: {
 				'height': '70%',
@@ -262,7 +262,7 @@ UI.app('hook', [
 				},
 			}),
 			UI.createComponent('audio-caption-wrapper', {
-				template: UI.template('div', 'ie border'),
+				template: UI.template('div', 'ie'),
 				appearance: {
 					style: {
 						'height': '100%',
@@ -343,10 +343,44 @@ UI.app('hook', [
 							},
 						},
 					}),
+					Components.renderedTextField('transcription-original-caption', {
+						appearance: {
+							style: {
+								'min-height': '40px',
+								'width': '100%',
+								'margin-bottom': '10px',
+							},
+						},
+					}),
+					Components.renderedTextField('transcription-modified-caption', {
+						appearance: {
+							style: {
+								'min-height': '40px',
+								'width': '100%',
+								'margin-bottom': '10px',
+							},
+						},
+					}),
+				],
+			}),
+			UI.createComponent('info-wrapper', {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '492px',
+						'float': 'left',
+						'margin-left': '10px',
+						'opacity': '0',
+						'display': 'none',
+					}
+				},
+				children: [
+
 				],
 			}),
 			UI.createComponent('control-panel-wrapper', {
-				template: UI.template('div', 'ie border'),
+				template: UI.template('div', 'ie'),
 				appearance: {
 					style: {
 						'height': '100%',
@@ -355,6 +389,48 @@ UI.app('hook', [
 						'margin-left': '10px',
 					},
 				},
+				children: [
+					UI.createComponent('previous-button', {
+						template: UI.template('div', 'ie button border border-radius'),
+						appearance: {
+							style: {
+								'height': '40px',
+								'width': '40px',
+								'margin-bottom': '10px',
+							},
+						},
+					}),
+					UI.createComponent('next-button', {
+						template: UI.template('div', 'ie button border border-radius'),
+						appearance: {
+							style: {
+								'height': '40px',
+								'width': '40px',
+								'margin-bottom': '10px',
+							},
+						},
+					}),
+					UI.createComponent('done-indicator', {
+						template: UI.template('div', 'ie button border border-radius'),
+						appearance: {
+							style: {
+								'height': '40px',
+								'width': '40px',
+								'margin-bottom': '10px',
+							},
+						},
+					}),
+					UI.createComponent('flag-button', {
+						template: UI.template('div', 'ie button border border-radius'),
+						appearance: {
+							style: {
+								'height': '40px',
+								'width': '40px',
+								'margin-bottom': '10px',
+							},
+						},
+					}),
+				],
 			}),
 		],
 	}),
