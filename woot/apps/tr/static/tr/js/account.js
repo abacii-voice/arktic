@@ -260,6 +260,11 @@ UI.app('hook', [
 						},
 					},
 				},
+				commands: {
+					get: function (_this) {
+
+					},
+				},
 			}),
 			UI.createComponent('audio-caption-wrapper', {
 				template: UI.template('div', 'ie'),
