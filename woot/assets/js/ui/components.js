@@ -1064,7 +1064,7 @@ var Components = {
 		return Promise.all([
 			// header wrapper
 			UI.createComponent('{id}-header-wrapper'.format({id: id}), {
-				template: UI.template('div', 'ie border'),
+				template: UI.template('div', 'ie border border-radius'),
 				appearance: {
 					style: {
 						'height': '80px',
@@ -1085,7 +1085,7 @@ var Components = {
 
 			// counter wrapper
 			UI.createComponent('{id}-counter-wrapper'.format({id: id}), {
-				template: UI.template('div', 'ie border'),
+				template: UI.template('div', 'ie'),
 				appearance: {
 					style: {
 						'height': 'calc(100% - 80px)',
@@ -1243,7 +1243,7 @@ var Components = {
 		}).then(function (components) {
 			// base
 			return UI.createComponent('{id}-base'.format({id: id}), {
-				template: UI.template('div', 'ie border'),
+				template: UI.template('div', 'ie'),
 				appearance: args.appearance,
 				children: components,
 			});
@@ -1414,7 +1414,7 @@ var Components = {
 		}).then(function (components) {
 			// base
 			return UI.createComponent('{id}-base'.format({id: id}), {
-				template: UI.template('div', 'ie'),
+				template: UI.template('div', 'ie border'),
 				appearance: args.appearance,
 				children: components,
 			});
