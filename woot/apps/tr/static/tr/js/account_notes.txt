@@ -1,0 +1,14 @@
+transcription interface elements
+1. Counter
+2. Autocomplete
+3. Audio
+4. Tokens
+5. Original caption
+6. Modified caption
+7. Info panel
+8. Previous button
+9. Next button
+10. Done button
+11. Flags button
+
+The point of user input is the Autocomplete. This is where all data added to the system is entered. The autocomplete
