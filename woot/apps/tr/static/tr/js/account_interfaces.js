@@ -44,6 +44,9 @@ var AccountInterfaces = {
 			var doneButton = components[11];
 			var flagsButton = components[12];
 
+			// add methods and properties
+			
+
 			// associate components
 			transcriptionPanel.setChildren([
 				tokens,
