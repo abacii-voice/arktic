@@ -259,11 +259,7 @@ UI.app('hook', [
 							}
 						},
 					},
-				},
-				commands: {
-					get: function (_this) {
 
-					},
 				},
 			}),
 			UI.createComponent('audio-caption-wrapper', {
