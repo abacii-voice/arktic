@@ -1052,7 +1052,7 @@ var Components = {
 			]);
 
 			// resolve list of components to be rendered.
-			base.audio = audioWrapper;
+			base.audio = audioTrack;
 			base.setChildren([
 				audioWrapper,
 				buttonWrapper,
