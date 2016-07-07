@@ -1074,7 +1074,7 @@ var Components = {
 		// components
 		return Promise.all([
 			// base
-			UI.createComponent('{id}-base'.format({id: id}), {
+			UI.createComponent(id, {
 				template: UI.template('div', 'ie'),
 				appearance: args.appearance,
 			}),
@@ -1278,28 +1278,7 @@ var Components = {
 
 		// components
 		return Promise.all([
-			// header wrapper
-			UI.createComponent('{id}-token-wrapper'.format({id: id}), {
-				template: UI.template('div', 'ie'),
-				appearance: {
-					style: {
-						'height': 'calc(100% + 20px);',
-						'width': 'auto',
-						'overflow-x': 'scroll',
-					},
-				},
-			}),
 
-			UI.createComponent('{id}-token-list'.format({id: id}), {
-				template: UI.template('div', 'ie'),
-				appearance: {
-					style: {
-						'width': 'auto',
-						'height': '100%',
-						'padding-bottom': '20px',
-					},
-				},
-			}),
 
 		]).then(function (components) {
 			// unpack components
@@ -1405,34 +1384,89 @@ var Components = {
 	// 2. Clicking on a word will take you to the token
 	renderedTextField: function (id, args) {
 		// styling
+		var baseStyle, wrapperStyle, listStyle;
+		if (args.options.horizontal) {
+			baseStyle = {
+
+			}
+
+			wrapperStyle = {
+				'height': 'calc(100% + 20px);',
+				'width': 'auto',
+				'overflow-x': 'scroll',
+			}
+
+			listStyle = {
+				'width': 'auto',
+				'height': '100%',
+				'padding-bottom': '20px',
+			}
+		} else {
+			// 1. convert height to min-height
+			baseStyle = {
+
+			}
+
+			wrapperStyle = {
+				'min-height': 'calc(100% + 20px);',
+				'width': 'auto',
+				'overflow-x': 'scroll',
+			}
+
+			listStyle = {
+				'width': 'auto',
+				'height': '100%',
+				'padding-bottom': '20px',
+			}
+
+		}
+
+		var baseAppearance = args.appearance;
+		baseAppearance.style = baseStyle;
 
 		// components
 		return Promise.all([
-			// header wrapper
-			UI.createComponent('{id}-header-wrapper'.format({id: id}), {
+			// base
+			UI.createComponent(id, {
+				template: UI.template('div', 'ie border'),
+				appearance: baseAppearance,
+			}),
 
+			// wrapper
+			UI.createComponent('{id}-wrapper'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: wrapperStyle,
+				},
+			}),
+
+			UI.createComponent('{id}-list'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: listStyle,
+				},
 			}),
 
 		]).then(function (components) {
 			// unpack components
-			var headerWrapper = components[0];
+			var base = components[0];
+			var wrapper = components[1];
+			var list = components[2];
 
+			// methods and properties
 
-			// config and combination
-			return new Promise(function(resolve, reject) {
+			// associate components
+			wrapper.setChildren([
+				list,
+			]);
 
+			base.setChildren([
+				wrapper,
+			]);
 
-				// final
-				resolve([headerWrapper]);
-			});
-		}).then(function (components) {
-			// base
-			return UI.createComponent('{id}-base'.format({id: id}), {
-				template: UI.template('div', 'ie border'),
-				appearance: args.appearance,
-				children: components,
-			});
-		});
+			// final
+			return base;
+		});;
 	},
 
 	sidebar: function (id, args) {
