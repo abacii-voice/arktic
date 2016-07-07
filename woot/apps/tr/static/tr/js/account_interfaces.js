@@ -305,6 +305,15 @@ var AccountInterfaces = {
 
 						}
 					},
+
+					style: {
+						normal: {
+
+						},
+						tag: {
+
+						},
+					},
 				},
 			}),
 
@@ -456,7 +465,10 @@ var AccountInterfaces = {
 			var flagsButton = components[12];
 
 			// add methods and properties
-
+			// 1. search input to text field transfer
+			// 2. connection between modified caption and tokens (scroll to)
+			// 3. connection between original caption and modified/tokens (copy)
+			// 4. connection between done button and counter (increment)/tokens (export)
 
 			// associate components
 			transcriptionPanel.setChildren([

@@ -20,3 +20,5 @@ The point of user input is the Autocomplete. This is where all data added to the
 4. Set up connection between original caption and tokens/modified (copy).
 5. Set up states: transcription-state-interface, transcription-state-info,
 6. Connection between done button and the counter
+
+IDEA: Use current words to search database for transcriptions with similar words and add to autocomplete
