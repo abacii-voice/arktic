@@ -259,7 +259,6 @@ UI.app('hook', [
 							}
 						},
 					},
-
 				},
 			}),
 			UI.createComponent('audio-caption-wrapper', {
