@@ -11,4 +11,12 @@ transcription interface elements
 10. Done button
 11. Flags button
 
-The point of user input is the Autocomplete. This is where all data added to the system is entered. The autocomplete
+The point of user input is the Autocomplete. This is where all data added to the system is entered.
+
+2016/7/7:
+1. Fully construct token and rendered text fields with options.
+2. Set up connection between search input and text fields.
+3. Set up connection between modified caption and tokens (scroll to and edit).
+4. Set up connection between original caption and tokens/modified (copy).
+5. Set up states: transcription-state-interface, transcription-state-info,
+6. Connection between done button and the counter
