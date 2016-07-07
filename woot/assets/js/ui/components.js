@@ -1384,12 +1384,8 @@ var Components = {
 	// 2. Clicking on a word will take you to the token
 	renderedTextField: function (id, args) {
 		// styling
-		var baseStyle, wrapperStyle, listStyle;
+		var wrapperStyle, listStyle;
 		if (args.options.horizontal) {
-			baseStyle = {
-
-			}
-
 			wrapperStyle = {
 				'height': 'calc(100% + 20px);',
 				'width': 'auto',
@@ -1402,11 +1398,6 @@ var Components = {
 				'padding-bottom': '20px',
 			}
 		} else {
-			// 1. convert height to min-height
-			baseStyle = {
-
-			}
-
 			wrapperStyle = {
 				'min-height': 'calc(100% + 20px);',
 				'width': 'auto',
@@ -1421,15 +1412,12 @@ var Components = {
 
 		}
 
-		var baseAppearance = args.appearance;
-		baseAppearance.style = baseStyle;
-
 		// components
 		return Promise.all([
 			// base
 			UI.createComponent(id, {
 				template: UI.template('div', 'ie border'),
-				appearance: baseAppearance,
+				appearance: args.appearance,
 			}),
 
 			// wrapper
