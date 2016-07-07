@@ -1391,7 +1391,6 @@ var Components = {
 				'width': 'auto',
 				'overflow-x': 'scroll',
 			}
-
 			listStyle = {
 				'width': 'auto',
 				'height': '100%',
@@ -1399,17 +1398,15 @@ var Components = {
 			}
 		} else {
 			wrapperStyle = {
-				'min-height': 'calc(100% + 20px);',
-				'width': 'auto',
-				'overflow-x': 'scroll',
-			}
-
-			listStyle = {
-				'width': 'auto',
 				'height': '100%',
-				'padding-bottom': '20px',
+				'width': '100%',
+				'overflow-y': 'hidden',
 			}
-
+			listStyle = {
+				'width': 'calc(100% + 20px)',
+				'padding-right': '20px',
+				'overflow-y': 'scroll',
+			}
 		}
 
 		// components
@@ -1442,6 +1439,35 @@ var Components = {
 			var list = components[2];
 
 			// methods and properties
+			list.addToken = function () {
+				var _this = list;
+			}
+			list.removeToken = function () {
+				var _this = list;
+			}
+			list.openToken = function () {
+				var _this = list;
+			}
+			list.closeToken = function () {
+				var _this = list;
+			}
+			list.highlightToken = function () {
+				var _this = list;
+			}
+			list.scrollToToken = function () {
+				var _this = list;
+			}
+			list.fitToTokens = function () {
+				var _this = list;
+			}
+			list.exportTokens = function () {
+				var _this = list;
+			}
+
+			base.input = function (text) {
+				// used to add text 
+				var _this = base;
+			}
 
 			// associate components
 			wrapper.setChildren([
