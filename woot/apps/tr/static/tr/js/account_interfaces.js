@@ -300,10 +300,8 @@ var AccountInterfaces = {
 					horizontal: true,
 
 					// how to display data
-					display: function (_this, text) {
-						return function (display) {
+					display: function (text, isTag) {
 
-						}
 					},
 
 					style: {
@@ -516,6 +514,17 @@ var AccountInterfaces = {
 			// 2. connection between modified caption and tokens (scroll to)
 			// 3. connection between original caption and modified/tokens (copy)
 			// 4. connection between done button and counter (increment)/tokens (export)
+			scroll.input.enter = function (_this) {
+				// 1. send a single space to the text fields
+				tokens.list.addToken(' ', false);
+				modifiedCaption.list.addToken(' ', false);
+
+				// 2. clear input
+				_this.model().val('');
+
+				// 3. hide autocomplete
+				_this.list.setAppearance({classes: {add: ['hidden']}});
+			}
 			scroll.input.external = function (_this, query, type) {
 				var isTag = (type === 'tag');
 
