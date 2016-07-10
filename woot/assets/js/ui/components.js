@@ -217,18 +217,18 @@ var Components = {
 					if (path.then !== undefined) {
 						path.then(function (calculatedPath) {
 							return Context.get(calculatedPath, fltr).then(details.process).then(function (results) {
-								results.filter(function (result) {
+								return Promise.all(results.filter(function (result) {
 									return result.main.indexOf(query) === 0;
-								}).forEach(args.options.display.list(_this, query));
+								}).map(args.options.display.list(_this, query)));
 							}).then(function () {
 								listLoadingIcon.model().fade();
 							});
 						});
 					} else {
 						Context.get(details.path(), fltr).then(details.process).then(function (results) {
-							results.filter(function (result) {
+							return Promise.all(results.filter(function (result) {
 								return result.main.indexOf(query) === 0;
-							}).forEach(args.options.display.list(_this, query));
+							}).map(args.options.display.list(_this, query)));
 						}).then(function () {
 							listLoadingIcon.model().fade();
 						});
@@ -306,6 +306,7 @@ var Components = {
 							// get words
 							var query = _this.model().val();
 							var tokens = query.split('');
+							var type = '';
 
 							// show or hide
 							if (tokens.length !== 0) {
@@ -316,6 +317,7 @@ var Components = {
 									filter.active = args.options.targets[Object.keys(args.options.targets).filter(function (key) {
 										return args.options.targets[key].filter.char === tokens[0];
 									})[0]];
+									type = filter.active.filter.rule;
 									query = tokens.slice(1).join('');
 									filter.set(filter.active);
 								}
@@ -355,7 +357,7 @@ var Components = {
 							}
 
 							if (_this.external !== undefined) {
-								_this.external(_this, query);
+								_this.external(_this, query, type);
 							}
 						}
 					});
@@ -1439,8 +1441,48 @@ var Components = {
 			var list = components[2];
 
 			// methods and properties
-			list.addToken = function () {
+			list.addToken = function (text, isTag) {
+				var lastChar = text.slice(-1);
+				var isSpace = (lastChar === ' ');
 				var _this = list;
+
+				// 
+			}
+			this.addToken = function (text, tag) {
+				var _this = tokenList;
+				return UI.createComponent('{id}-token-{index}'.format({id: id, index: _this.currentIndex}), {
+					appearance: {
+						style: {
+							'box-sizing': 'border-box',
+							'display': 'inline-block',
+							'float': 'left',
+							'height': '100%',
+							'padding': '5px',
+							'border-right': '1px solid #ccc',
+						},
+						html: text,
+					},
+				}).then(function (token) {
+					// add methods and properties
+					return new Promise(function(resolve, reject) {
+						token.tag = tag || false;
+						token.focus = function () {
+
+						}
+						token.input = function () {
+
+						}
+
+						resolve(token);
+					});
+				}).then(function (token) {
+					_this.currentIndex++;
+					return _this.setChildren([
+						token,
+					]);
+				}).then(function () {
+					return _this.fitToTokens();
+				});
 			}
 			list.removeToken = function () {
 				var _this = list;
@@ -1464,8 +1506,9 @@ var Components = {
 				var _this = list;
 			}
 
+			base.list = list;
 			base.input = function (text) {
-				// used to add text 
+				// used to add text
 				var _this = base;
 			}
 

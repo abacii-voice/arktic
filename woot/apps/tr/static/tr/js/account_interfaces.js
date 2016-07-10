@@ -434,19 +434,65 @@ var AccountInterfaces = {
 			UI.createComponent('{id}-info-panel'.format({id: id})),
 
 			// This holds the buttons
-			UI.createComponent('{id}-control-panel'.format({id: id})),
+			UI.createComponent('{id}-control-panel'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '50px',
+						'float': 'left',
+						'margin-left': '10px',
+					},
+				},
+			}),
 
 			// previous transcription
-			UI.createComponent('{id}-previous-button'.format({id: id})),
+			UI.createComponent('{id}-previous-button'.format({id: id}), {
+				template: UI.template('div', 'ie button border border-radius'),
+				appearance: {
+					style: {
+						'height': '40px',
+						'width': '40px',
+						'margin-bottom': '10px',
+					},
+				},
+			}),
 
 			// next transcription
-			UI.createComponent('{id}-next-button'.format({id: id})),
+			UI.createComponent('{id}-next-button'.format({id: id}), {
+				template: UI.template('div', 'ie button border border-radius'),
+				appearance: {
+					style: {
+						'height': '40px',
+						'width': '40px',
+						'margin-bottom': '10px',
+					},
+				},
+			}),
 
 			// marks transcription as done
-			UI.createComponent('{id}-done-button'.format({id: id})),
+			UI.createComponent('{id}-done-button'.format({id: id}), {
+				template: UI.template('div', 'ie button border border-radius'),
+				appearance: {
+					style: {
+						'height': '40px',
+						'width': '40px',
+						'margin-bottom': '10px',
+					},
+				},
+			}),
 
 			// shows flags assigned to the transcription
-			UI.createComponent('{id}-flags-button'.format({id: id})),
+			UI.createComponent('{id}-flags-button'.format({id: id}), {
+				template: UI.template('div', 'ie button border border-radius'),
+				appearance: {
+					style: {
+						'height': '40px',
+						'width': '40px',
+						'margin-bottom': '10px',
+					},
+				},
+			}),
 		]).then(function (components) {
 
 			// unpack components
@@ -460,15 +506,25 @@ var AccountInterfaces = {
 			var modifiedCaption = components[7];
 			var infoPanel = components[8];
 			var controlPanel = components[9];
-			var nextButton = components[10];
-			var doneButton = components[11];
-			var flagsButton = components[12];
+			var previousButton = components[10];
+			var nextButton = components[11];
+			var doneButton = components[12];
+			var flagsButton = components[13];
 
 			// add methods and properties
 			// 1. search input to text field transfer
 			// 2. connection between modified caption and tokens (scroll to)
 			// 3. connection between original caption and modified/tokens (copy)
 			// 4. connection between done button and counter (increment)/tokens (export)
+			scroll.input.external = function (_this, query, type) {
+				var isTag = (type === 'tag');
+
+				// 1. add token to token field
+				tokens.list.addToken(query, isTag);
+
+				// 2. add token to modified field
+				modifiedCaption.list.addToken(query, isTag);
+			}
 
 			// associate components
 			transcriptionPanel.setChildren([
@@ -479,6 +535,7 @@ var AccountInterfaces = {
 			]);
 
 			controlPanel.setChildren([
+				previousButton,
 				nextButton,
 				doneButton,
 				flagsButton,
