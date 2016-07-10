@@ -273,6 +273,7 @@ var Components = {
 					]);
 
 					// INPUT: if search, define input field
+					searchInput.list = listWrapper;
 					searchInput.setBindings({
 
 						// FOCUS INPUT
@@ -299,6 +300,19 @@ var Components = {
 								})
 							}
 							searchButton.setAppearance({classes: {add: ['hidden']}});
+						},
+
+						// handle enter key
+						'keydown': function (_this, event) {
+							// trigger enter function
+							if (event.keyCode === 13) {
+								(_this.enter || function () {})(_this);
+							}
+
+							// trigger backspace function
+							if (event.keyCode === 8) {
+								(_this.backspace || function () {})(_this);
+							}
 						},
 
 						// TYPE INPUT:
@@ -1446,7 +1460,15 @@ var Components = {
 				var isSpace = (lastChar === ' ');
 				var _this = list;
 
-				// 
+				// get active token
+				if (_this.activeToken !== undefined && !isSpace) {
+
+				} else {
+					var tokenId = '{list_id}-token-{index}'.format({list_id: _this.id, index: Object.keys(_this.children).length});
+					UI.createComponent(tokenId, args.options.display(text, isTag)).then(function (token) {
+
+					});
+				}
 			}
 			this.addToken = function (text, tag) {
 				var _this = tokenList;
