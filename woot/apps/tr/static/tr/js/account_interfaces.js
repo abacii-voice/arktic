@@ -510,6 +510,18 @@ var AccountInterfaces = {
 			var flagsButton = components[13];
 
 			// add methods and properties
+			scroll.backspace = function (_this) {
+				tokens.removeToken();
+				modifiedCaption.removeToken();
+			}
+			scroll.enter = function (_this) {
+				_this.clear();
+			}
+			scroll.input = function (_this, type, query, last) {
+				tokens.addToken();
+				modifiedCaption.addToken();
+			}
+
 			// 1. search input to text field transfer
 			// 2. connection between modified caption and tokens (scroll to)
 			// 3. connection between original caption and modified/tokens (copy)
