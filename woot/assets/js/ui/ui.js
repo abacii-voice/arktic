@@ -649,23 +649,27 @@ var Context = {
 		var force = args !== undefined ? (args.force !== undefined ? args.force : false) : false;
 		var options = args !== undefined ? (args.options !== undefined ? args.options : {}) : {};
 
-		return new Promise(function(resolve, reject) {
-			// proceed to get from context object
-			context_path = path.split('.');
-			sub = Context.context;
-			if (context_path[0] !== '') {
-				for (i=0; i<context_path.length; i++) {
-					sub = sub[context_path[i]];
-					if (sub === undefined) {
-						break;
+		return (path.then !== undefined ? path : new Promise(function(resolve, reject) {
+			resolve(path);
+		})).then(function (calculatedPath) {
+			return new Promise(function(resolve, reject) {
+				// proceed to get from context object
+				context_path = path.split('.');
+				sub = Context.context;
+				if (context_path[0] !== '') {
+					for (i=0; i<context_path.length; i++) {
+						sub = sub[context_path[i]];
+						if (sub === undefined) {
+							break;
+						}
 					}
+				} else {
+					sub = Object.keys(sub).length !== 0 ? sub : undefined; // empty context
 				}
-			} else {
-				sub = Object.keys(sub).length !== 0 ? sub : undefined; // empty context
-			}
 
-			resolve(sub);
+				resolve(sub);
 
+			});
 		}).then(function (data) {
 			if (data === undefined || force) {
 				return Context.load(path, options).then(function (data) {
