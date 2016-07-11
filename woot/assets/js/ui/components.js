@@ -258,6 +258,13 @@ var Components = {
 				_this.setAppearance({classes: {add: ['hidden']}});
 			}
 
+			// base methods
+			base.clear = function () {
+				searchButton.hide();
+				searchInput.model().val('');
+				searchInput.model().trigger('focus');
+			}
+
 			// SET PROPERTIES AND METHODS
 			// set bindings, children, etc.
 			// TITLE
@@ -285,9 +292,7 @@ var Components = {
 
 				if (search.filter !== undefined && search.filter) {
 					if (args.options.info !== undefined) {
-						info.setChildren([
-							args.options.info(id),
-						]);
+						info.setChildren([args.options.info(id)]);
 					}
 
 					// the filter panel will be displayed
@@ -1501,6 +1506,12 @@ var Components = {
 			var list = components[2];
 
 			// methods and properties
+			base.input = function (type, query, last) {
+				var _this = list;
+				// if an active token exists, the last char should be added to it.
+				// if the last char is a space, The current token should be made inactive.
+				// if no token exists, it should be created and made the active token.
+			}
 			list.addToken = function (text, isTag) {
 				var lastChar = text.slice(-1);
 				var isSpace = (lastChar === ' ');
@@ -1572,12 +1583,6 @@ var Components = {
 			}
 			list.exportTokens = function () {
 				var _this = list;
-			}
-
-			base.list = list;
-			base.input = function (text) {
-				// used to add text
-				var _this = base;
 			}
 
 			// associate components
