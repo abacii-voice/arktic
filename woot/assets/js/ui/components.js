@@ -204,6 +204,44 @@ var Components = {
 			// INFO
 			var info = components[10];
 
+			// Basic appearance methods
+			searchInput.focus = function () {
+				var _this = searchInput;
+				_this.model().focus();
+			}
+
+			searchButton.show = function (target) {
+				var _this = searchButton;
+				_this.setAppearance({classes: {remove: ['hidden']}, html: target.filter.button});
+			}
+			searchButton.hide = function () {
+				var _this = searchButton;
+				_this.setAppearance({classes: {add: ['hidden']}, html: ''});
+			}
+
+			listWrapper.show = function () {
+				var _this = listWrapper;
+				_this.setAppearance({classes: {remove: ['hidden']}});
+			}
+			listWrapper.hide = function () {
+				var _this = listWrapper;
+				_this.setAppearance({classes: {add: ['hidden']}});
+			}
+
+			listLoadingIcon.fade = function () {
+				var _this = listLoadingIcon;
+				_this.model().fade();
+			}
+
+			filterWrapper.show = function () {
+				var _this = filterWrapper;
+				_this.setAppearance({classes: {remove: ['hidden']}});
+			}
+			filterWrapper.hide = function () {
+				var _this = filterWrapper;
+				_this.setAppearance({classes: {add: ['hidden']}});
+			}
+
 			// SET PROPERTIES AND METHODS
 			// set bindings, children, etc.
 			// TITLE
@@ -219,7 +257,7 @@ var Components = {
 							return result.main.indexOf(query) === 0;
 						}).map(args.options.display.list(_this, query)));
 					}).then(function () {
-						listLoadingIcon.model().fade();
+						listLoadingIcon.fade();
 					});
 				}
 			}
@@ -240,10 +278,10 @@ var Components = {
 					}));
 					filter.set = function (target) {
 						filter.active = target;
-						searchInput.model().focus();
-						listWrapper.setAppearance({classes: {remove: ['hidden']}});
-						searchButton.setAppearance({classes: {remove: ['hidden']}, html: target.filter.button});
-						filterWrapper.setAppearance({classes: {add: ['hidden']}});
+						searchInput.focus();
+						listWrapper.show();
+						searchButton.show(target);
+						filterWrapper.hide();
 					}
 					filter.defaults = Object.keys(args.options.targets).filter(function (key) {
 						return args.options.targets[key].default;
@@ -267,19 +305,19 @@ var Components = {
 						// FOCUS INPUT
 						// autocomplete ? show filter : hide filter
 						'focus': function (_this) {
-							listWrapper.setAppearance({classes: {add: ['hidden']}});
-							searchButton.setAppearance({classes: {add: ['hidden']}});
-							filterWrapper.setAppearance({classes: {remove: ['hidden']}});
+							listWrapper.hide();
+							searchButton.hide();
+							filterWrapper.show();
 						},
 
 						// BLUR INPUT:
 						'blur': function (_this) {
 							if (search.autocomplete !== undefined && search.autocomplete) {
-								filterWrapper.setAppearance({classes: {remove: ['hidden']}});
-								listWrapper.setAppearance({classes: {add: ['hidden']}});
+								filterWrapper.show();
+								listWrapper.hide();
 							} else {
-								filterWrapper.setAppearance({classes: {add: ['hidden']}});
-								listWrapper.setAppearance({classes: {remove: ['hidden']}});
+								filterWrapper.hide();
+								listWrapper.show();
 								list.removeChildren().then(function () {
 									var targets = Object.keys(args.options.targets);
 									for (i=0; i<targets.length; i++) {
@@ -287,19 +325,19 @@ var Components = {
 									}
 								})
 							}
-							searchButton.setAppearance({classes: {add: ['hidden']}});
+							searchButton.hide();
 						},
 
 						// handle enter key
 						'keydown': function (_this, event) {
 							// trigger enter function
 							if (event.keyCode === 13) {
-								(_this.enter || function () {})(_this);
+								(base.enter || function () {})(base);
 							}
 
 							// trigger backspace function
 							if (event.keyCode === 8) {
-								(_this.backspace || function () {})(_this);
+								(base.backspace || function () {})(base);
 							}
 						},
 
@@ -353,13 +391,13 @@ var Components = {
 									});
 								}
 							} else {
-								listWrapper.setAppearance({classes: {add: ['hidden']}});
-								filterWrapper.setAppearance({classes: {remove: ['hidden']}});
+								listWrapper.hide();
+								filterWrapper.show();
 								list.removeChildren();
 							}
 
-							if (_this.external !== undefined) {
-								_this.external(_this, query, type);
+							if (base.input !== undefined) {
+								base.input(base, type, query, query.slice(-1));
 							}
 						}
 					});
@@ -372,20 +410,14 @@ var Components = {
 					});
 
 					// Autocomplete mode only affects present elements, it does not add any.
-					searchButton.setAppearance({
-						classes: ['hidden'],
-					});
+					searchButton.hide();
 					if (search.autocomplete !== undefined && search.autocomplete) {
 						// autocomplete mode: display filter first
-						listWrapper.setAppearance({
-							classes: ['hidden'],
-						});
+						listWrapper.hide();
 
 					} else {
 						// display data first, display filter panel upon focussing input, hide again on input.
-						filterWrapper.setAppearance({
-							classes: ['hidden'],
-						});
+						filterWrapper.hide();
 						args.options.reset.forEach(function (state) {
 							list.addState({
 								name: state,
@@ -438,9 +470,7 @@ var Components = {
 						// BLUR INPUT:
 						'blur': function (_this) {
 							if (search.autocomplete !== undefined && search.autocomplete) {
-								listWrapper.setAppearance({
-									classes: {add: ['hidden']},
-								});
+								listWrapper.hide();
 							}
 						},
 
@@ -452,9 +482,7 @@ var Components = {
 
 							if (tokens.length !== 0) {
 								// show or hide
-								listWrapper.setAppearance({
-									classes: {remove: ['hidden']},
-								});
+								listWrapper.show();
 
 								// Materials
 								// 1. tokens or value -> filters values
@@ -490,10 +518,7 @@ var Components = {
 
 					if (search.autocomplete !== undefined && search.autocomplete) {
 						// autocomplete mode: show no data until search query is entered.
-						listWrapper.setAppearance({
-							classes: ['ie', 'hidden'],
-						});
-
+						listWrapper.hide();
 					} else {
 						// data is displayed first and filtered when search query is entered.
 
