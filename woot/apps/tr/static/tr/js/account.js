@@ -93,7 +93,7 @@ UI.app('hook', [
 							path: function () {
 								return Active.get('client').then(function (client) {
 									return 'user.clients.{client}.roles'.format({client: client});
-								})
+								});
 							},
 
 							// filter to apply to request

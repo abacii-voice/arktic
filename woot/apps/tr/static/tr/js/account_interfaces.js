@@ -118,9 +118,6 @@ var AccountInterfaces = {
 				// modifiers and features
 				options: {
 
-					// Simple text title
-					title: 'Title',
-
 					// If the data is to be sorted.
 					sort: true,
 
@@ -183,6 +180,21 @@ var AccountInterfaces = {
 
 						// Filter tells the element what structure to give to the filter panel, buttons, etc.
 						filter: true,
+					},
+
+					info: function (id) {
+						return UI.createComponent('{id}-info-content'.format({id: id}), {
+							template: UI.template('div', 'ie'),
+							appearance: {
+								style: {
+									'height': '100%',
+									'width': '100%',
+								},
+							},
+							children: [
+
+							],
+						});
 					},
 
 					// Define a way of display individual list items
@@ -511,15 +523,15 @@ var AccountInterfaces = {
 
 			// add methods and properties
 			scroll.backspace = function (_this) {
-				tokens.removeToken();
-				modifiedCaption.removeToken();
+				// tokens.removeToken();
+				// modifiedCaption.removeToken();
 			}
 			scroll.enter = function (_this) {
-				_this.clear();
+				// _this.clear();
 			}
 			scroll.input = function (_this, type, query, last) {
-				tokens.addToken();
-				modifiedCaption.addToken();
+				// tokens.addToken();
+				// modifiedCaption.addToken();
 			}
 
 			// 1. search input to text field transfer
