@@ -451,7 +451,6 @@ var AccountInterfaces = {
 						'height': '100%',
 						'width': '50px',
 						'float': 'left',
-						'margin-left': '10px',
 					},
 				},
 			}),
@@ -527,11 +526,11 @@ var AccountInterfaces = {
 				// modifiedCaption.removeToken();
 			}
 			scroll.enter = function (_this) {
-				// _this.clear();
+				_this.clear();
 			}
 			scroll.input = function (_this, type, query, last) {
-				// tokens.addToken();
-				// modifiedCaption.addToken();
+				tokens.input(type, query, last);
+				modifiedCaption.input(type, query, last);
 			}
 
 			// 1. search input to text field transfer
@@ -575,11 +574,11 @@ var AccountInterfaces = {
 			]);
 
 			base.setChildren([
+				controlPanel,
 				counter,
 				scroll,
 				transcriptionPanel,
 				infoPanel,
-				controlPanel,
 			]);
 
 			// return base
