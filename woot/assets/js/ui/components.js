@@ -149,7 +149,7 @@ var Components = {
 				template: UI.templates.loadingIcon,
 			}),
 
-			// FILTER GROUP
+			// FILTER
 			// filter wrapper
 			UI.createComponent('{id}-filter-wrapper'.format({id: id}), {
 				template: UI.template('div', 'ie'),
@@ -157,6 +157,7 @@ var Components = {
 					style: {
 						'width': '100%',
 						'height': listHeight,
+						'overflow': 'hidden',
 					},
 				},
 			}),
@@ -166,19 +167,17 @@ var Components = {
 				template: UI.template('div', 'ie'),
 				appearance: {
 					style: {
-						'width': '100%',
+						'width': 'calc(100% + 20px)',
+						'height': listHeight,
+						'padding-right': '20px',
+						'overflow-y': 'scroll',
 					},
 				},
 			}),
 
-			// filter info
-			UI.createComponent('{id}-filter-info'.format({id: id}), {
-				template: UI.template('div', 'ie'),
-				appearance: {
-					style: {
-						'width': '100%',
-					},
-				},
+			// INFO
+			UI.createComponent('{id}-info'.format({id: id}), {
+
 			}),
 
 		]).then(function (components) {
@@ -201,7 +200,9 @@ var Components = {
 			// FILTER GROUP
 			var filterWrapper = components[8];
 			var filter = components[9];
-			var filterInfo = components[10];
+
+			// INFO
+			var info = components[10];
 
 			// SET PROPERTIES AND METHODS
 			// set bindings, children, etc.
@@ -210,29 +211,16 @@ var Components = {
 
 			list.runDisplay = function (details, query) {
 				var _this = list;
+				query = query || '';
 				var fltr = details.fltr !== undefined ? {options: {filter: details.fltr()}} : {};
-				query = query !== undefined ? query : '';
 				if (details.path !== undefined) {
-					var path = details.path();
-					if (path.then !== undefined) {
-						path.then(function (calculatedPath) {
-							return Context.get(calculatedPath, fltr).then(details.process).then(function (results) {
-								return Promise.all(results.filter(function (result) {
-									return result.main.indexOf(query) === 0;
-								}).map(args.options.display.list(_this, query)));
-							}).then(function () {
-								listLoadingIcon.model().fade();
-							});
-						});
-					} else {
-						Context.get(details.path(), fltr).then(details.process).then(function (results) {
-							return Promise.all(results.filter(function (result) {
-								return result.main.indexOf(query) === 0;
-							}).map(args.options.display.list(_this, query)));
-						}).then(function () {
-							listLoadingIcon.model().fade();
-						});
-					}
+					Context.get(details.path(), fltr).then(details.process).then(function (results) {
+						return Promise.all(results.filter(function (result) {
+							return result.main.indexOf(query) === 0;
+						}).map(args.options.display.list(_this, query)));
+					}).then(function () {
+						listLoadingIcon.model().fade();
+					});
 				}
 			}
 
@@ -269,7 +257,7 @@ var Components = {
 					// set filterWrapper
 					filterWrapper.setChildren([
 						filter,
-						filterInfo,
+						// filterInfo,
 					]);
 
 					// INPUT: if search, define input field
