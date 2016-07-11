@@ -182,9 +182,9 @@ var Components = {
 			}),
 
 		]).then(function (components) {
+			// unpack components
 			var base = components[0];
 
-			// unpack components
 			// title
 			var title = components[1];
 
