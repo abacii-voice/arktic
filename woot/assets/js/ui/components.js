@@ -177,7 +177,14 @@ var Components = {
 
 			// INFO
 			UI.createComponent('{id}-info'.format({id: id}), {
-
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': listHeight,
+						'overflow': 'hidden',
+					},
+				},
 			}),
 
 		]).then(function (components) {
@@ -242,6 +249,15 @@ var Components = {
 				_this.setAppearance({classes: {add: ['hidden']}});
 			}
 
+			info.show = function () {
+				var _this = info;
+				_this.setAppearance({classes: {remove: ['hidden']}});
+			}
+			info.hide = function () {
+				var _this = info;
+				_this.setAppearance({classes: {add: ['hidden']}});
+			}
+
 			// SET PROPERTIES AND METHODS
 			// set bindings, children, etc.
 			// TITLE
@@ -268,6 +284,12 @@ var Components = {
 				// search functions engaged. can be in autocomplete mode and include filter panel.
 
 				if (search.filter !== undefined && search.filter) {
+					if (args.options.info !== undefined) {
+						info.setChildren([
+							args.options.info(id),
+						]);
+					}
+
 					// the filter panel will be displayed
 					// autocomplete will decide whether the panel is displayed before the list of data.
 					// FILTER: if filter, define filter panel
@@ -282,6 +304,7 @@ var Components = {
 						listWrapper.show();
 						searchButton.show(target);
 						filterWrapper.hide();
+						info.hide();
 					}
 					filter.defaults = Object.keys(args.options.targets).filter(function (key) {
 						return args.options.targets[key].default;
@@ -295,11 +318,9 @@ var Components = {
 					// set filterWrapper
 					filterWrapper.setChildren([
 						filter,
-						// filterInfo,
 					]);
 
 					// INPUT: if search, define input field
-					searchInput.list = listWrapper;
 					searchInput.setBindings({
 
 						// FOCUS INPUT
@@ -307,16 +328,24 @@ var Components = {
 						'focus': function (_this) {
 							listWrapper.hide();
 							searchButton.hide();
+							info.hide();
 							filterWrapper.show();
 						},
 
 						// BLUR INPUT:
 						'blur': function (_this) {
 							if (search.autocomplete !== undefined && search.autocomplete) {
-								filterWrapper.show();
+								if (args.options.info !== undefined) {
+									info.show();
+									filterWrapper.hide();
+								} else {
+									info.hide();
+									filterWrapper.show();
+								}
 								listWrapper.hide();
 							} else {
 								filterWrapper.hide();
+								info.hide();
 								listWrapper.show();
 								list.removeChildren().then(function () {
 									var targets = Object.keys(args.options.targets);
@@ -565,8 +594,12 @@ var Components = {
 			]);
 
 			// return elements as they entered to be added to the base
-			base.input = searchInput;
-			base.setChildren([title, searchWrapper, listWrapper, filterWrapper].filter(function (child) {
+			if (args.options.info !== undefined) {
+				info.show();
+				filterWrapper.hide();
+				info.defined = true;
+			}
+			base.setChildren([title, searchWrapper, listWrapper, filterWrapper, info].filter(function (child) {
 				return child.defined;
 			}));
 
