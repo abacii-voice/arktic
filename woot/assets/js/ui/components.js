@@ -380,7 +380,7 @@ var Components = {
 							// get words
 							var query = _this.model().val();
 							var tokens = query.split('');
-							var type = '';
+							var type = 'normal';
 
 							// show or hide
 							if (tokens.length !== 0) {
@@ -1511,9 +1511,13 @@ var Components = {
 				// if an active token exists, the last char should be added to it.
 				// if the last char is a space, The current token should be made inactive.
 				// if no token exists, it should be created and made the active token.
-				(_this.activeToken !== undefined ? _this.getActiveToken() : _this.addToken(type, query)).then(function (token) {
+				if (last !== ' ' && ['tag', 'normal'].indexOf(type) !== -1) {
+					(_this.activeToken !== undefined ? _this.getActiveToken() : _this.addToken(type, query)).then(function (token) {
 
-				});
+					});
+				} else {
+					_this.activeToken = undefined;
+				}
 			}
 			list.currentIndex = 0;
 			list.getActiveToken = function () {
@@ -1531,10 +1535,10 @@ var Components = {
 					template: UI.template('div', 'ie token'),
 				}).then(function (token) {
 					return new Promise(function(resolve, reject) {
-						token.focus = function () {
+						token.activate = function () {
 
 						}
-						token.blur = function () {
+						token.deactivate = function () {
 
 						}
 						token.input = function () {
