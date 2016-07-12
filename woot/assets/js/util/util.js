@@ -163,3 +163,7 @@ function onOff (onOff) {
 		},
 	}
 }
+
+Array.prototype.contains = function (object) {
+	return this.indexOf(object) !== -1;
+}

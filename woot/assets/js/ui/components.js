@@ -1511,57 +1511,52 @@ var Components = {
 				// if an active token exists, the last char should be added to it.
 				// if the last char is a space, The current token should be made inactive.
 				// if no token exists, it should be created and made the active token.
-				if (last !== ' ' && ['tag', 'normal'].indexOf(type) !== -1) {
-					(_this.activeToken !== undefined ? _this.getActiveToken() : _this.addToken(type, query)).then(function (token) {
-
+				if (last !== ' ' && ['tag', 'normal'].contains(type)) {
+					_this.token().then(function (token) {
+						// token.activeStyle =
+						// token.inactiveStyle =
 					});
-				} else {
+				} else if (last === ' ') {
 					_this.activeToken = undefined;
 				}
 			}
 			list.currentIndex = 0;
-			list.getActiveToken = function () {
+			list.token = function () {
 				var _this = list;
-				return new Promise(function(resolve, reject) {
-					resolve(_this.activeToken);
-				});
-			}
-			list.addToken = function (type, query) {
-				var _this = list;
-				var isTag = type === 'tag';
+				if (_this.activeToken === undefined) {
+					return UI.createComponent('{id}-token-{index}'.format({id: _this.id, index: _this.currentIndex}), {
+						template: UI.template('div', 'ie token'),
+					}).then(function (token) {
+						return new Promise(function(resolve, reject) {
+							token.activate = function () {
+								_this.activeToken = token;
+								token.setAppearance({
+									style: token.activeStyle,
+								});
+							}
+							token.deactivate = function () {
+								_this.activeToken = undefined;
+								token.setAppearance({
+									style: token.inactiveStyle,
+								});
+							}
 
-				var tokenId = '{list_id}-token-{index}'.format({list_id: _this.id, index: _this.currentIndex});
-				return UI.createComponent(tokenId, {
-					template: UI.template('div', 'ie token'),
-				}).then(function (token) {
-					return new Promise(function(resolve, reject) {
-						token.activate = function () {
-
-						}
-						token.deactivate = function () {
-
-						}
-						token.input = function () {
-
-						}
-
-						_this.activeToken = token;
-						resolve(token);
+							_this.activeToken = token;
+							resolve(token);
+						});
+					}).then(function (token) {
+						_this.currentIndex++;
+						return _this.setChildren([
+							token,
+						]);
+					}).then(function () {
+						return _this.fitToTokens();
 					});
-				}).then(function (token) {
-					_this.currentIndex++;
-					return _this.setChildren([
-						token,
-					]);
-				}).then(function () {
-					return _this.fitToTokens();
-				});
-			}
-			list.removeToken = function () {
-				var _this = list;
-			}
-			list.highlightToken = function () {
-				var _this = list;
+				} else {
+					return new Promise(function(resolve, reject) {
+						resolve(_this.activeToken);
+					});
+				}
 			}
 			list.scrollToToken = function () {
 				var _this = list;
