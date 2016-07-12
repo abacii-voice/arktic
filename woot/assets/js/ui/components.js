@@ -149,7 +149,7 @@ var Components = {
 				template: UI.templates.loadingIcon,
 			}),
 
-			// FILTER GROUP
+			// FILTER
 			// filter wrapper
 			UI.createComponent('{id}-filter-wrapper'.format({id: id}), {
 				template: UI.template('div', 'ie'),
@@ -157,6 +157,7 @@ var Components = {
 					style: {
 						'width': '100%',
 						'height': listHeight,
+						'overflow': 'hidden',
 					},
 				},
 			}),
@@ -166,17 +167,22 @@ var Components = {
 				template: UI.template('div', 'ie'),
 				appearance: {
 					style: {
-						'width': '100%',
+						'width': 'calc(100% + 20px)',
+						'height': listHeight,
+						'padding-right': '20px',
+						'overflow-y': 'scroll',
 					},
 				},
 			}),
 
-			// filter info
-			UI.createComponent('{id}-filter-info'.format({id: id}), {
+			// INFO
+			UI.createComponent('{id}-info'.format({id: id}), {
 				template: UI.template('div', 'ie'),
 				appearance: {
 					style: {
 						'width': '100%',
+						'height': listHeight,
+						'overflow': 'hidden',
 					},
 				},
 			}),
@@ -201,7 +207,63 @@ var Components = {
 			// FILTER GROUP
 			var filterWrapper = components[8];
 			var filter = components[9];
-			var filterInfo = components[10];
+
+			// INFO
+			var info = components[10];
+
+			// Basic appearance methods
+			searchInput.focus = function () {
+				var _this = searchInput;
+				_this.model().focus();
+			}
+
+			searchButton.show = function (target) {
+				var _this = searchButton;
+				_this.setAppearance({classes: {remove: ['hidden']}, html: target.filter.button});
+			}
+			searchButton.hide = function () {
+				var _this = searchButton;
+				_this.setAppearance({classes: {add: ['hidden']}, html: ''});
+			}
+
+			listWrapper.show = function () {
+				var _this = listWrapper;
+				_this.setAppearance({classes: {remove: ['hidden']}});
+			}
+			listWrapper.hide = function () {
+				var _this = listWrapper;
+				_this.setAppearance({classes: {add: ['hidden']}});
+			}
+
+			listLoadingIcon.fade = function () {
+				var _this = listLoadingIcon;
+				_this.model().fade();
+			}
+
+			filterWrapper.show = function () {
+				var _this = filterWrapper;
+				_this.setAppearance({classes: {remove: ['hidden']}});
+			}
+			filterWrapper.hide = function () {
+				var _this = filterWrapper;
+				_this.setAppearance({classes: {add: ['hidden']}});
+			}
+
+			info.show = function () {
+				var _this = info;
+				_this.setAppearance({classes: {remove: ['hidden']}});
+			}
+			info.hide = function () {
+				var _this = info;
+				_this.setAppearance({classes: {add: ['hidden']}});
+			}
+
+			// base methods
+			base.clear = function () {
+				searchButton.hide();
+				searchInput.model().val('');
+				searchInput.model().trigger('focus');
+			}
 
 			// SET PROPERTIES AND METHODS
 			// set bindings, children, etc.
@@ -210,29 +272,16 @@ var Components = {
 
 			list.runDisplay = function (details, query) {
 				var _this = list;
+				query = query || '';
 				var fltr = details.fltr !== undefined ? {options: {filter: details.fltr()}} : {};
-				query = query !== undefined ? query : '';
 				if (details.path !== undefined) {
-					var path = details.path();
-					if (path.then !== undefined) {
-						path.then(function (calculatedPath) {
-							return Context.get(calculatedPath, fltr).then(details.process).then(function (results) {
-								return Promise.all(results.filter(function (result) {
-									return result.main.indexOf(query) === 0;
-								}).map(args.options.display.list(_this, query)));
-							}).then(function () {
-								listLoadingIcon.model().fade();
-							});
-						});
-					} else {
-						Context.get(details.path(), fltr).then(details.process).then(function (results) {
-							return Promise.all(results.filter(function (result) {
-								return result.main.indexOf(query) === 0;
-							}).map(args.options.display.list(_this, query)));
-						}).then(function () {
-							listLoadingIcon.model().fade();
-						});
-					}
+					Context.get(details.path(), fltr).then(details.process).then(function (results) {
+						return Promise.all(results.filter(function (result) {
+							return result.main.indexOf(query) === 0;
+						}).map(args.options.display.list(_this, query)));
+					}).then(function () {
+						listLoadingIcon.fade();
+					});
 				}
 			}
 
@@ -242,6 +291,10 @@ var Components = {
 				// search functions engaged. can be in autocomplete mode and include filter panel.
 
 				if (search.filter !== undefined && search.filter) {
+					if (args.options.info !== undefined) {
+						info.setChildren([args.options.info(id)]);
+					}
+
 					// the filter panel will be displayed
 					// autocomplete will decide whether the panel is displayed before the list of data.
 					// FILTER: if filter, define filter panel
@@ -252,10 +305,11 @@ var Components = {
 					}));
 					filter.set = function (target) {
 						filter.active = target;
-						searchInput.model().focus();
-						listWrapper.setAppearance({classes: {remove: ['hidden']}});
-						searchButton.setAppearance({classes: {remove: ['hidden']}, html: target.filter.button});
-						filterWrapper.setAppearance({classes: {add: ['hidden']}});
+						searchInput.focus();
+						listWrapper.show();
+						searchButton.show(target);
+						filterWrapper.hide();
+						info.hide();
 					}
 					filter.defaults = Object.keys(args.options.targets).filter(function (key) {
 						return args.options.targets[key].default;
@@ -269,29 +323,35 @@ var Components = {
 					// set filterWrapper
 					filterWrapper.setChildren([
 						filter,
-						filterInfo,
 					]);
 
 					// INPUT: if search, define input field
-					searchInput.list = listWrapper;
 					searchInput.setBindings({
 
 						// FOCUS INPUT
 						// autocomplete ? show filter : hide filter
 						'focus': function (_this) {
-							listWrapper.setAppearance({classes: {add: ['hidden']}});
-							searchButton.setAppearance({classes: {add: ['hidden']}});
-							filterWrapper.setAppearance({classes: {remove: ['hidden']}});
+							listWrapper.hide();
+							searchButton.hide();
+							info.hide();
+							filterWrapper.show();
 						},
 
 						// BLUR INPUT:
 						'blur': function (_this) {
 							if (search.autocomplete !== undefined && search.autocomplete) {
-								filterWrapper.setAppearance({classes: {remove: ['hidden']}});
-								listWrapper.setAppearance({classes: {add: ['hidden']}});
+								if (args.options.info !== undefined) {
+									info.show();
+									filterWrapper.hide();
+								} else {
+									info.hide();
+									filterWrapper.show();
+								}
+								listWrapper.hide();
 							} else {
-								filterWrapper.setAppearance({classes: {add: ['hidden']}});
-								listWrapper.setAppearance({classes: {remove: ['hidden']}});
+								filterWrapper.hide();
+								info.hide();
+								listWrapper.show();
 								list.removeChildren().then(function () {
 									var targets = Object.keys(args.options.targets);
 									for (i=0; i<targets.length; i++) {
@@ -299,19 +359,19 @@ var Components = {
 									}
 								})
 							}
-							searchButton.setAppearance({classes: {add: ['hidden']}});
+							searchButton.hide();
 						},
 
 						// handle enter key
 						'keydown': function (_this, event) {
 							// trigger enter function
 							if (event.keyCode === 13) {
-								(_this.enter || function () {})(_this);
+								(base.enter || function () {})(base);
 							}
 
 							// trigger backspace function
 							if (event.keyCode === 8) {
-								(_this.backspace || function () {})(_this);
+								(base.backspace || function () {})(base);
 							}
 						},
 
@@ -365,13 +425,13 @@ var Components = {
 									});
 								}
 							} else {
-								listWrapper.setAppearance({classes: {add: ['hidden']}});
-								filterWrapper.setAppearance({classes: {remove: ['hidden']}});
+								listWrapper.hide();
+								filterWrapper.show();
 								list.removeChildren();
 							}
 
-							if (_this.external !== undefined) {
-								_this.external(_this, query, type);
+							if (base.input !== undefined) {
+								base.input(base, type, query, query.slice(-1));
 							}
 						}
 					});
@@ -384,20 +444,14 @@ var Components = {
 					});
 
 					// Autocomplete mode only affects present elements, it does not add any.
-					searchButton.setAppearance({
-						classes: ['hidden'],
-					});
+					searchButton.hide();
 					if (search.autocomplete !== undefined && search.autocomplete) {
 						// autocomplete mode: display filter first
-						listWrapper.setAppearance({
-							classes: ['hidden'],
-						});
+						listWrapper.hide();
 
 					} else {
 						// display data first, display filter panel upon focussing input, hide again on input.
-						filterWrapper.setAppearance({
-							classes: ['hidden'],
-						});
+						filterWrapper.hide();
 						args.options.reset.forEach(function (state) {
 							list.addState({
 								name: state,
@@ -450,9 +504,7 @@ var Components = {
 						// BLUR INPUT:
 						'blur': function (_this) {
 							if (search.autocomplete !== undefined && search.autocomplete) {
-								listWrapper.setAppearance({
-									classes: {add: ['hidden']},
-								});
+								listWrapper.hide();
 							}
 						},
 
@@ -464,9 +516,7 @@ var Components = {
 
 							if (tokens.length !== 0) {
 								// show or hide
-								listWrapper.setAppearance({
-									classes: {remove: ['hidden']},
-								});
+								listWrapper.show();
 
 								// Materials
 								// 1. tokens or value -> filters values
@@ -502,10 +552,7 @@ var Components = {
 
 					if (search.autocomplete !== undefined && search.autocomplete) {
 						// autocomplete mode: show no data until search query is entered.
-						listWrapper.setAppearance({
-							classes: ['ie', 'hidden'],
-						});
-
+						listWrapper.hide();
 					} else {
 						// data is displayed first and filtered when search query is entered.
 
@@ -552,8 +599,12 @@ var Components = {
 			]);
 
 			// return elements as they entered to be added to the base
-			base.input = searchInput;
-			base.setChildren([title, searchWrapper, listWrapper, filterWrapper].filter(function (child) {
+			if (args.options.info !== undefined) {
+				info.show();
+				filterWrapper.hide();
+				info.defined = true;
+			}
+			base.setChildren([title, searchWrapper, listWrapper, filterWrapper, info].filter(function (child) {
 				return child.defined;
 			}));
 
@@ -1455,6 +1506,12 @@ var Components = {
 			var list = components[2];
 
 			// methods and properties
+			base.input = function (type, query, last) {
+				var _this = list;
+				// if an active token exists, the last char should be added to it.
+				// if the last char is a space, The current token should be made inactive.
+				// if no token exists, it should be created and made the active token.
+			}
 			list.addToken = function (text, isTag) {
 				var lastChar = text.slice(-1);
 				var isSpace = (lastChar === ' ');
@@ -1526,12 +1583,6 @@ var Components = {
 			}
 			list.exportTokens = function () {
 				var _this = list;
-			}
-
-			base.list = list;
-			base.input = function (text) {
-				// used to add text
-				var _this = base;
 			}
 
 			// associate components
@@ -1637,5 +1688,4 @@ var Components = {
 			});
 		});
 	},
-
 }

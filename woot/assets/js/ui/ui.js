@@ -649,23 +649,27 @@ var Context = {
 		var force = args !== undefined ? (args.force !== undefined ? args.force : false) : false;
 		var options = args !== undefined ? (args.options !== undefined ? args.options : {}) : {};
 
-		return new Promise(function(resolve, reject) {
-			// proceed to get from context object
-			context_path = path.split('.');
-			sub = Context.context;
-			if (context_path[0] !== '') {
-				for (i=0; i<context_path.length; i++) {
-					sub = sub[context_path[i]];
-					if (sub === undefined) {
-						break;
+		return (path.then !== undefined ? path : new Promise(function(resolve, reject) {
+			resolve(path);
+		})).then(function (calculatedPath) {
+			return new Promise(function(resolve, reject) {
+				// proceed to get from context object
+				context_path = calculatedPath.split('.');
+				sub = Context.context;
+				if (context_path[0] !== '') {
+					for (i=0; i<context_path.length; i++) {
+						sub = sub[context_path[i]];
+						if (sub === undefined) {
+							break;
+						}
 					}
+				} else {
+					sub = Object.keys(sub).length !== 0 ? sub : undefined; // empty context
 				}
-			} else {
-				sub = Object.keys(sub).length !== 0 ? sub : undefined; // empty context
-			}
 
-			resolve(sub);
+				resolve(sub);
 
+			});
 		}).then(function (data) {
 			if (data === undefined || force) {
 				return Context.load(path, options).then(function (data) {
@@ -680,50 +684,58 @@ var Context = {
 	// The load method gets the requested path from the server if it does not exist locally.
 	// This operation can be forced from the get method.
 	load: function (path, options) {
-		return Permission.permit(options).then(function (data) {
-			var ajax_data = {
-				type: 'post',
-				data: data,
-				url: '/context/{path}'.format({path: path}),
-				error: function (xhr, ajaxOptions, thrownError) {
-					if (xhr.status === 404 || xhr.status === 0) {
-						Context.load(path, options);
+		return (path.then !== undefined ? path : new Promise(function(resolve, reject) {
+			resolve(path);
+		})).then(function (calculatedPath) {
+			return Permission.permit(options).then(function (data) {
+				var ajax_data = {
+					type: 'post',
+					data: data,
+					url: '/context/{path}'.format({path: calculatedPath}),
+					error: function (xhr, ajaxOptions, thrownError) {
+						if (xhr.status === 404 || xhr.status === 0) {
+							Context.load(path, options);
+						}
 					}
 				}
-			}
 
-			return $.ajax(ajax_data);
+				return $.ajax(ajax_data);
+			});
 		});
 	},
 
 	// SET
 	// Sets the value of a path in the store. If the value changes, a request is sent to change this piece of data.
 	set: function (path, value) {
-		return new Promise(function (resolve, reject) {
-			context_path = path.split('.');
-			sub = Context.context;
-			if (context_path[0] !== '') {
-				for (i=0; i<context_path.length; i++) {
-					if (i+1 === context_path.length) {
+		return (path.then !== undefined ? path : new Promise(function(resolve, reject) {
+			resolve(path);
+		})).then(function (calculatedPath) {
+			return new Promise(function (resolve, reject) {
+				context_path = calculatedPath.split('.');
+				sub = Context.context;
+				if (context_path[0] !== '') {
+					for (i=0; i<context_path.length; i++) {
+						if (i+1 === context_path.length) {
 
-						// Here, the value can be an object, it should be merged with any existing object or overwritten if keys match.
-						// if (typeof value === 'object' && typeof sub[context_path[i]] === 'object') {
-						//
-						// } else {
-						sub[context_path[i]] = value;
-						// }
-					} else {
-						if (sub[context_path[i]] === undefined) {
-							sub[context_path[i]] = {};
+							// Here, the value can be an object, it should be merged with any existing object or overwritten if keys match.
+							// if (typeof value === 'object' && typeof sub[context_path[i]] === 'object') {
+							//
+							// } else {
+							sub[context_path[i]] = value;
+							// }
+						} else {
+							if (sub[context_path[i]] === undefined) {
+								sub[context_path[i]] = {};
+							}
 						}
+						sub = sub[context_path[i]];
 					}
-					sub = sub[context_path[i]];
+					resolve(sub);
+				} else {
+					Context.context = value;
+					resolve(Context.context);
 				}
-				resolve(sub);
-			} else {
-				Context.context = value;
-				resolve(Context.context);
-			}
+			});
 		});
 	},
 }
