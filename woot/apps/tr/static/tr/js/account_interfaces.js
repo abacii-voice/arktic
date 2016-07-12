@@ -312,16 +312,28 @@ var AccountInterfaces = {
 					horizontal: true,
 
 					// how to display data
-					display: function (text, isTag) {
+					display: function (id, args, index, text) {
+						return UI.createComponent('{id}-token-{index}'.format({id: id, index: index}), args).then(function (component) {
 
+						});
 					},
 
-					style: {
+					appearance: {
 						normal: {
+							active: {
 
+							},
+							inactive: {
+
+							}
 						},
 						tag: {
+							active: {
 
+							},
+							inactive: {
+
+							}
 						},
 					},
 				},
