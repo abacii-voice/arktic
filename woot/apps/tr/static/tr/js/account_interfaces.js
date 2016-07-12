@@ -312,13 +312,7 @@ var AccountInterfaces = {
 					horizontal: true,
 
 					// how to display data
-					display: function (id, args, index, text) {
-						return UI.createComponent('{id}-token-{index}'.format({id: id, index: index}), args).then(function (component) {
-
-						});
-					},
-
-					appearance: {
+					style: {
 						normal: {
 							active: {
 
@@ -419,10 +413,23 @@ var AccountInterfaces = {
 					horizontal: true,
 
 					// how to display data
-					display: function (_this, text) {
-						return function (display) {
+					style: {
+						normal: {
+							active: {
 
-						}
+							},
+							inactive: {
+
+							}
+						},
+						tag: {
+							active: {
+
+							},
+							inactive: {
+
+							}
+						},
 					},
 				},
 			}),
@@ -444,10 +451,23 @@ var AccountInterfaces = {
 					horizontal: true,
 
 					// how to display data
-					display: function (_this, text) {
-						return function (display) {
+					style: {
+						normal: {
+							active: {
 
-						}
+							},
+							inactive: {
+
+							}
+						},
+						tag: {
+							active: {
+
+							},
+							inactive: {
+
+							}
+						},
 					},
 				},
 			}),

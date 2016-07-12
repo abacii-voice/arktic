@@ -1513,8 +1513,9 @@ var Components = {
 				// if no token exists, it should be created and made the active token.
 				if (last !== ' ' && ['tag', 'normal'].contains(type)) {
 					_this.token().then(function (token) {
-						// token.activeStyle =
-						// token.inactiveStyle =
+						token.activeStyle = args.options.style[type].active;
+						token.inactiveStyle = args.options.style[type].inactive;
+						token.setAppearance({html: query});
 					});
 				} else if (last === ' ') {
 					_this.activeToken = undefined;
@@ -1525,7 +1526,7 @@ var Components = {
 				var _this = list;
 				if (_this.activeToken === undefined) {
 					return UI.createComponent('{id}-token-{index}'.format({id: _this.id, index: _this.currentIndex}), {
-						template: UI.template('div', 'ie token'),
+						template: UI.template('span', 'ie token'),
 					}).then(function (token) {
 						return new Promise(function(resolve, reject) {
 							token.activate = function () {
@@ -1542,15 +1543,11 @@ var Components = {
 							}
 
 							_this.activeToken = token;
+							_this.currentIndex++;
+							_this.setChildren([token]);
+							_this.fitToTokens();
 							resolve(token);
 						});
-					}).then(function (token) {
-						_this.currentIndex++;
-						return _this.setChildren([
-							token,
-						]);
-					}).then(function () {
-						return _this.fitToTokens();
 					});
 				} else {
 					return new Promise(function(resolve, reject) {
