@@ -1511,47 +1511,37 @@ var Components = {
 				// if an active token exists, the last char should be added to it.
 				// if the last char is a space, The current token should be made inactive.
 				// if no token exists, it should be created and made the active token.
+				(_this.activeToken !== undefined ? _this.getActiveToken() : _this.addToken(type, query)).then(function (token) {
+
+				});
 			}
-			list.addToken = function (text, isTag) {
-				var lastChar = text.slice(-1);
-				var isSpace = (lastChar === ' ');
+			list.currentIndex = 0;
+			list.getActiveToken = function () {
 				var _this = list;
-
-				// get active token
-				if (_this.activeToken !== undefined && !isSpace) {
-
-				} else {
-					var tokenId = '{list_id}-token-{index}'.format({list_id: _this.id, index: Object.keys(_this.children).length});
-					UI.createComponent(tokenId, args.options.display(text, isTag)).then(function (token) {
-
-					});
-				}
+				return new Promise(function(resolve, reject) {
+					resolve(_this.activeToken);
+				});
 			}
-			this.addToken = function (text, tag) {
-				var _this = tokenList;
-				return UI.createComponent('{id}-token-{index}'.format({id: id, index: _this.currentIndex}), {
-					appearance: {
-						style: {
-							'box-sizing': 'border-box',
-							'display': 'inline-block',
-							'float': 'left',
-							'height': '100%',
-							'padding': '5px',
-							'border-right': '1px solid #ccc',
-						},
-						html: text,
-					},
+			list.addToken = function (type, query) {
+				var _this = list;
+				var isTag = type === 'tag';
+
+				var tokenId = '{list_id}-token-{index}'.format({list_id: _this.id, index: _this.currentIndex});
+				return UI.createComponent(tokenId, {
+					template: UI.template('div', 'ie token'),
 				}).then(function (token) {
-					// add methods and properties
 					return new Promise(function(resolve, reject) {
-						token.tag = tag || false;
 						token.focus = function () {
+
+						}
+						token.blur = function () {
 
 						}
 						token.input = function () {
 
 						}
 
+						_this.activeToken = token;
 						resolve(token);
 					});
 				}).then(function (token) {
@@ -1564,12 +1554,6 @@ var Components = {
 				});
 			}
 			list.removeToken = function () {
-				var _this = list;
-			}
-			list.openToken = function () {
-				var _this = list;
-			}
-			list.closeToken = function () {
 				var _this = list;
 			}
 			list.highlightToken = function () {
