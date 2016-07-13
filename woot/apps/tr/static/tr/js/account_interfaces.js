@@ -327,6 +327,9 @@ var AccountInterfaces = {
 					'transcription-state': {
 						path: 'clients',
 						fn: function (_this) {
+							// _this.canvas.height = parseInt(audioTrack.model().css('height'));
+							// _this.canvas.width = parseInt(audioTrack.model().css('width'));
+							console.log(parseInt(_this.model().css('height')), parseInt(_this.model().css('width')));
 							_this.canvas.start();
 							_this.update();
 						}

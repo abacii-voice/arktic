@@ -854,6 +854,7 @@ var Components = {
 						});
 					}
 				})).then(function () {
+					// get current operation
 					return _this.current().then(function (current) {
 						return new Promise(function(resolve, reject) {
 							audioTrackCanvas.data = current.data;
@@ -1013,6 +1014,8 @@ var Components = {
 				} else {
 					_this.waveform = _this.data.getChannelData(0);
 					_this.sample = getAbsNormalised(interpolateArray(_this.waveform, _this.canvas.width / _this.barWidth), _this.canvas.height);
+					// console.log(_this.waveform, _this.canvas.width, _this.barWidth, _this.canvas.height);
+					// debugger;
 				}
 				// ANIMATING https://www.kirupa.com/html5/animating_many_things_on_a_canvas.htm
 
@@ -1056,6 +1059,7 @@ var Components = {
 			}
 			audioTrackCanvas.getMousePosition = function (event) {
 				var _this = audioTrackCanvas;
+				console.log(_this.canvas);
 				var rect = _this.canvas.getBoundingClientRect();
 
 				return {
