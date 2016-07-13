@@ -327,8 +327,11 @@ var AccountInterfaces = {
 					states: [
 						{name: 'transcription-state', args: {
 							fn: function (_this) {
-								_this.canvas.start();
-								_this.update();
+								return function (resolve, reject) {
+									_this.canvas.start();
+									_this.update();
+									resolve();
+								}
 							},
 						}},
 					],
