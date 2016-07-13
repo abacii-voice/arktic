@@ -1551,13 +1551,13 @@ var Components = {
 								token.setChildren([span]);
 								token.activate = function () {
 									_this.activeToken = token;
-									token.setAppearance({
+									token.span.setAppearance({
 										style: token.activeStyle,
 									});
 								}
 								token.deactivate = function () {
 									_this.activeToken = undefined;
-									token.setAppearance({
+									token.span.setAppearance({
 										style: token.inactiveStyle,
 									});
 								}
