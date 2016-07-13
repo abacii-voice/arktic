@@ -40,9 +40,9 @@ class Role(models.Model):
 				'supervisor': self.supervisor.id,
 			})
 
-		if self.project is not None and (permission.is_moderator or permission.is_productionadmin):
+		if (permission.is_moderator or permission.is_productionadmin or permission.check_user(self.user)) and (self.type == 'worker' or self.type == 'moderator'):
 			data.update({
-				'project': self.project.id,
+				'project': self.auto_project_assign().id,
 			})
 
 		if path.check('stats') and (permission.is_moderator or permission.is_productionadmin or permission.check_user(self.user)):
@@ -72,6 +72,13 @@ class Role(models.Model):
 			})
 
 		return data
+
+	# project
+	def auto_project_assign(self):
+		if self.project is None and (self.type == 'worker' or self.type == 'moderator'):
+			self.project = Project.objects.earliest()
+
+		return self.project
 
 	# threshold
 	def add_threshold(self, project):

@@ -16,12 +16,16 @@ class Project(models.Model):
 	# Identification
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	name = models.CharField(max_length=255)
+	date_created = models.DateTimeField(auto_now_add=True)
 	description = models.TextField(default='')
 	combined_priority_index = models.PositiveIntegerField(default=0)
 
 	# Statistics
 	completion_percentage = models.FloatField(default=0.0)
 	redundancy_percentage = models.FloatField(default=0.0)
+
+	class Meta():
+		get_latest_by = 'date_created'
 
 	### Methods
 	# data
@@ -78,11 +82,15 @@ class Project(models.Model):
 
 		'''
 
-		transcription = self.transcriptions.filter(is_active=True, is_available=True).order_by('original_caption', 'date_created')[0]
-		transcription.is_available = False
-		transcription.save()
+		transcriptions = self.transcriptions.filter(is_active=True, is_available=True).order_by('original_caption', 'date_created')
+		if transcriptions.count() > 0:
+			transcription = transcriptions[0]
+			transcription.is_available = False
+			transcription.save()
 
-		return transcription
+			return transcription
+		else:
+			return None
 
 	def get_moderation(self):
 
@@ -91,7 +99,15 @@ class Project(models.Model):
 
 		'''
 
-		return self.moderations.filter(is_active=True, is_available=True).order_by('date_created')[0]
+		moderations = self.moderations.filter(is_active=True, is_available=True).order_by('date_created')
+		if moderations.count() > 0:
+			moderation = moderations[0]
+			moderation.is_available = False
+			moderation.save()
+
+			return moderation
+		else:
+			return None
 
 class Batch(models.Model):
 
