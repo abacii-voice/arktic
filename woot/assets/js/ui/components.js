@@ -1058,7 +1058,6 @@ var Components = {
 			}
 			audioTrackCanvas.getMousePosition = function (event) {
 				var _this = audioTrackCanvas;
-				console.log(_this.canvas);
 				var rect = _this.canvas.getBoundingClientRect();
 
 				return {
@@ -1540,6 +1539,8 @@ var Components = {
 									'width': 'auto',
 									'float': 'left',
 									'height': '100%',
+									'border-right': '1px solid #ccc',
+									'padding': '10px',
 								},
 							},
 						}),
