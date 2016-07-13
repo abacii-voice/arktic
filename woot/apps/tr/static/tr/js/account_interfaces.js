@@ -323,26 +323,15 @@ var AccountInterfaces = {
 						'margin-bottom': '10px',
 					},
 				},
-
-				// INVESTIGATE DIFFERENCE IN HANDLING HERE
-				// registry: {
-				// 	'transcription-state': {
-				// 		path: 'clients',
-				// 		fn: function (_this) {
-				// 			// _this.canvas.height = parseInt(audioTrack.model().css('height'));
-				// 			// _this.canvas.width = parseInt(audioTrack.model().css('width'));
-				// 			console.log(parseInt(_this.model().css('height')), parseInt(_this.model().css('width')));
-				// 			_this.canvas.start();
-				// 			_this.update();
-				// 		}
-				// 	},
-				// },
 				state: {
 					states: [
 						{name: 'transcription-state', args: {
 							fn: function (_this) {
-								_this.canvas.start();
-								_this.update();
+								return function (resolve, reject) {
+									_this.canvas.start();
+									_this.update();
+									resolve();
+								}
 							},
 						}},
 					],
