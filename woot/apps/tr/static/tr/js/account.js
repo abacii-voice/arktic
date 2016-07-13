@@ -152,6 +152,12 @@ UI.app('hook', [
 									bindings: {
 										'click': function (_this) {
 											Permission.set(display.id).then(function () {
+												return Active.get('client');
+											}).then(function (clientId) {
+												return Context.get('user.clients.{client}.roles.{role}.project'.format({client: clientId, role: display.id}));
+											}).then(function (projectId) {
+												return Active.set('project', projectId);
+											}).then(function () {
 												return _this.triggerState();
 											});
 										},
@@ -359,7 +365,7 @@ UI.app('hook', [
 		}),
 	]);
 }).then(function () {
-	return UI.changeState('transcription-state');
+	return UI.changeState('client-state');
 }).catch(function (error) {
 	console.log(error);
 });
