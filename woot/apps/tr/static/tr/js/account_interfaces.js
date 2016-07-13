@@ -315,10 +315,12 @@ var AccountInterfaces = {
 					style: {
 						normal: {
 							active: {
-
+								'border-right': '1px solid #ccc',
+								'padding': '8px',
 							},
 							inactive: {
-
+								'border-right': '1px solid #ccc',
+								'padding': '8px',
 							}
 						},
 						tag: {
@@ -559,6 +561,11 @@ var AccountInterfaces = {
 			}
 			scroll.enter = function (_this) {
 				_this.clear();
+				_this.input(_this, 'normal', ' ', ' ');
+			}
+			scroll.space = function (_this) {
+				_this.clear();
+				_this.input(_this, 'normal', ' ', ' ');
 			}
 			scroll.input = function (_this, type, query, last) {
 				tokens.input(type, query, last);
@@ -569,27 +576,6 @@ var AccountInterfaces = {
 			// 2. connection between modified caption and tokens (scroll to)
 			// 3. connection between original caption and modified/tokens (copy)
 			// 4. connection between done button and counter (increment)/tokens (export)
-			scroll.input.enter = function (_this) {
-				// 1. send a single space to the text fields
-				tokens.list.addToken(' ', false);
-				modifiedCaption.list.addToken(' ', false);
-
-				// 2. clear input
-				_this.model().val('');
-
-				// 3. hide autocomplete
-				_this.list.setAppearance({classes: {add: ['hidden']}});
-			}
-			scroll.input.external = function (_this, query, type) {
-				var isTag = (type === 'tag');
-
-				// 1. add token to token field
-				tokens.list.addToken(query, isTag);
-
-				// 2. add token to modified field
-				modifiedCaption.list.addToken(query, isTag);
-			}
-
 			// associate components
 			transcriptionPanel.setChildren([
 				tokens,

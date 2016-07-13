@@ -373,6 +373,11 @@ var Components = {
 							if (event.keyCode === 8) {
 								(base.backspace || function () {})(base);
 							}
+
+							// trigger space function
+							if (event.keyCode === 32) {
+								(base.space || function () {})(base);
+							}
 						},
 
 						// TYPE INPUT:
@@ -1515,7 +1520,7 @@ var Components = {
 					_this.token().then(function (token) {
 						token.activeStyle = args.options.style[type].active;
 						token.inactiveStyle = args.options.style[type].inactive;
-						token.setAppearance({html: query});
+						token.span.setAppearance({html: query.trim(), style: token.activeStyle});
 					});
 				} else if (last === ' ') {
 					_this.activeToken = undefined;
@@ -1525,28 +1530,50 @@ var Components = {
 			list.token = function () {
 				var _this = list;
 				if (_this.activeToken === undefined) {
-					return UI.createComponent('{id}-token-{index}'.format({id: _this.id, index: _this.currentIndex}), {
-						template: UI.template('span', 'ie token'),
-					}).then(function (token) {
-						return new Promise(function(resolve, reject) {
-							token.activate = function () {
-								_this.activeToken = token;
-								token.setAppearance({
-									style: token.activeStyle,
-								});
-							}
-							token.deactivate = function () {
-								_this.activeToken = undefined;
-								token.setAppearance({
-									style: token.inactiveStyle,
-								});
-							}
+					return Promise.all([
+						// token
+						UI.createComponent('{id}-token-{index}-wrapper'.format({id: _this.id, index: _this.currentIndex}), {
+							template: UI.template('div', 'ie token'),
+						}),
 
-							_this.activeToken = token;
-							_this.currentIndex++;
-							_this.setChildren([token]);
-							_this.fitToTokens();
-							resolve(token);
+						// span
+						UI.createComponent('{id}-token-{index}-span'.format({id: _this.id, index: _this.currentIndex}), {
+							template: UI.template('span', 'ie token span'),
+						}),
+					]).then(function (tokenComponents) {
+							// unpack
+							var token = tokenComponents[0];
+							var span = tokenComponents[1];
+
+							// methods and associations
+							return new Promise(function(resolve, reject) {
+								token.span = span;
+								token.setChildren([span]);
+								token.activate = function () {
+									_this.activeToken = token;
+									token.setAppearance({
+										style: token.activeStyle,
+									});
+								}
+								token.deactivate = function () {
+									_this.activeToken = undefined;
+									token.setAppearance({
+										style: token.inactiveStyle,
+									});
+								}
+
+								// return
+								resolve(token);
+							});
+					}).then(function (token) {
+						_this.activeToken = token;
+						_this.currentIndex++;
+						return _this.setChildren([token]);
+					}).then(function () {
+						return _this.fitToTokens();
+					}).then(function () {
+						return new Promise(function(resolve, reject) {
+							resolve(_this.activeToken);
 						});
 					});
 				} else {
