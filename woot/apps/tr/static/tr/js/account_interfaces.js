@@ -310,28 +310,6 @@ var AccountInterfaces = {
 
 					// horizontal scroll
 					horizontal: true,
-
-					// how to display data
-					style: {
-						normal: {
-							active: {
-								'border-right': '1px solid #ccc',
-								'padding': '8px',
-							},
-							inactive: {
-								'border-right': '1px solid #ccc',
-								'padding': '8px',
-							}
-						},
-						tag: {
-							active: {
-
-							},
-							inactive: {
-
-							}
-						},
-					},
 				},
 			}),
 
@@ -413,26 +391,6 @@ var AccountInterfaces = {
 
 					// horizontal scroll
 					horizontal: true,
-
-					// how to display data
-					style: {
-						normal: {
-							active: {
-
-							},
-							inactive: {
-
-							}
-						},
-						tag: {
-							active: {
-
-							},
-							inactive: {
-
-							}
-						},
-					},
 				},
 			}),
 
@@ -451,26 +409,6 @@ var AccountInterfaces = {
 
 					// horizontal scroll
 					horizontal: true,
-
-					// how to display data
-					style: {
-						normal: {
-							active: {
-
-							},
-							inactive: {
-
-							}
-						},
-						tag: {
-							active: {
-
-							},
-							inactive: {
-
-							}
-						},
-					},
 				},
 			}),
 

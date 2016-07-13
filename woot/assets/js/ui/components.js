@@ -1518,9 +1518,7 @@ var Components = {
 				// if no token exists, it should be created and made the active token.
 				if (last !== ' ' && ['tag', 'normal'].contains(type)) {
 					_this.token().then(function (token) {
-						token.activeStyle = args.options.style[type].active;
-						token.inactiveStyle = args.options.style[type].inactive;
-						token.span.setAppearance({html: query.trim(), style: token.activeStyle});
+						token.span.setAppearance({html: query.trim()});
 					});
 				} else if (last === ' ') {
 					_this.activeToken = undefined;
@@ -1534,6 +1532,13 @@ var Components = {
 						// token
 						UI.createComponent('{id}-token-{index}-wrapper'.format({id: _this.id, index: _this.currentIndex}), {
 							template: UI.template('div', 'ie token'),
+							appearance: {
+								style: {
+									'width': 'auto',
+									'float': 'left',
+									'height': '100%',
+								},
+							},
 						}),
 
 						// span
@@ -1551,15 +1556,11 @@ var Components = {
 								token.setChildren([span]);
 								token.activate = function () {
 									_this.activeToken = token;
-									token.span.setAppearance({
-										style: token.activeStyle,
-									});
+									token.setAppearance({classes: {add: 'active'}});
 								}
 								token.deactivate = function () {
 									_this.activeToken = undefined;
-									token.span.setAppearance({
-										style: token.inactiveStyle,
-									});
+									token.setAppearance({classes: {remove: 'active'}});
 								}
 
 								// return
