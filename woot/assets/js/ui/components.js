@@ -975,6 +975,7 @@ var Components = {
 			}
 
 			audioTrack.setRegistry(args.registry);
+			audioTrack.setState(args.state);
 
 			//// CANVAS
 			audioTrackCanvas.is_running = false;
@@ -1014,8 +1015,6 @@ var Components = {
 				} else {
 					_this.waveform = _this.data.getChannelData(0);
 					_this.sample = getAbsNormalised(interpolateArray(_this.waveform, _this.canvas.width / _this.barWidth), _this.canvas.height);
-					// console.log(_this.waveform, _this.canvas.width, _this.barWidth, _this.canvas.height);
-					// debugger;
 				}
 				// ANIMATING https://www.kirupa.com/html5/animating_many_things_on_a_canvas.htm
 
