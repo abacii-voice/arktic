@@ -376,6 +376,7 @@ var Components = {
 
 							// trigger space function
 							if (event.keyCode === 32) {
+								event.preventDefault();
 								(base.space || function () {})(base);
 							}
 						},
@@ -1487,7 +1488,7 @@ var Components = {
 		return Promise.all([
 			// base
 			UI.createComponent(id, {
-				template: UI.template('div', 'ie border'),
+				template: UI.template('div', 'ie'),
 				appearance: args.appearance,
 			}),
 
@@ -1528,10 +1529,13 @@ var Components = {
 						});
 					});
 				} else if (last === ' ') {
+					_this.baseWidth += _this.activeWidth;
 					_this.activeToken = undefined;
 				}
 			}
 			list.currentIndex = 0;
+			list.baseWidth = 0;
+			list.width = 0;
 			list.token = function () {
 				var _this = list;
 				if (_this.activeToken === undefined) {
@@ -1598,11 +1602,9 @@ var Components = {
 			list.fitToTokens = function () {
 				var _this = list;
 				return new Promise(function(resolve, reject) {
-					var width = Object.keys(_this.children).map(function (key) {
-						return parseInt(_this.children[key].model().css('width'));
-					}).sum();
-
-					_this.model().css({'width': '{width}px'.format({width: width})});
+					_this.activeWidth = parseInt(_this.activeToken.model().css('width'));
+					_this.width = _this.baseWidth + _this.activeWidth + 1;
+					_this.model().css({'width': '{width}px'.format({width: _this.width})});
 					resolve();
 				});
 			}
