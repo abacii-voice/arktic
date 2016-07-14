@@ -1520,7 +1520,12 @@ var Components = {
 				// if no token exists, it should be created and made the active token.
 				if (last !== ' ' && ['tag', 'normal'].contains(type)) {
 					_this.token().then(function (token) {
-						token.span.setAppearance({html: query.trim()});
+						return new Promise(function(resolve, reject) {
+							token.span.setAppearance({html: query.trim()});
+							resolve();
+						}).then(function () {
+							return _this.fitToTokens();
+						});
 					});
 				} else if (last === ' ') {
 					_this.activeToken = undefined;
@@ -1592,6 +1597,14 @@ var Components = {
 			}
 			list.fitToTokens = function () {
 				var _this = list;
+				return new Promise(function(resolve, reject) {
+					var width = Object.keys(_this.children).map(function (key) {
+						return parseInt(_this.children[key].model().css('width'));
+					}).sum();
+
+					_this.model().css({'width': '{width}px'.format({width: width})});
+					resolve();
+				});
 			}
 			list.exportTokens = function () {
 				var _this = list;
