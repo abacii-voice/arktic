@@ -741,12 +741,25 @@ var Test = {
 			}).catch(function (error) {
 				console.log(error);
 			});
-		}
+		},
+
+		test_when: function () {
+			$.when(
+				new Promise(function(resolve, reject) {
+					resolve('hello1');
+				}),
+				new Promise(function(resolve, reject) {
+					resolve('hello2');
+				})
+			).done(function (p1, p2) {
+				console.log(p1, p2);
+			});
+		},
 	},
 
 	test: function () {
 
-		Test.tests.test_audio_app();
+		Test.tests.test_when();
 
 		// all
 		// Object.keys(Test.tests).forEach(function (test) {
