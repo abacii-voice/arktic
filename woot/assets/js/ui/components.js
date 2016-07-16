@@ -633,32 +633,19 @@ var Components = {
 				appearance: args.appearance,
 			}),
 
-			// BUTTON GROUP
-			// button wrapper
-			UI.createComponent('{id}-button-wrapper'.format({id: id}), {
-				template: UI.template('div', 'ie abs'),
-				appearance: {
-					style: {
-						'height': '50px',
-						'width': '50px',
-					},
-				},
-			}),
-
 			// play button
 			UI.createComponent('{id}-play-button'.format({id: id}), {
 				template: UI.template('div', 'ie button border abs'),
 				appearance: {
 					style: {
-						'height': '50px',
-						'width': '50px',
+						'height': '60px',
+						'width': '60px',
 						'top': '0px',
 						'left': '0px',
-						'border-radius': '25px',
+						'border-radius': '5px',
 					},
 				},
 			}),
-
 
 			// AUDIO GROUP
 			// audio wrapper
@@ -667,9 +654,9 @@ var Components = {
 				appearance: {
 					style: {
 						'border-left': '0px',
-						'height': '50px',
-						'width': 'calc(100% - 25px)',
-						'left': '25px',
+						'height': '60px',
+						'width': 'calc(100% - 55px)',
+						'left': '55px',
 						'border-top-right-radius': '5px',
 						'border-bottom-right-radius': '5px',
 					},
@@ -683,7 +670,7 @@ var Components = {
 					style: {
 						'height': '100%',
 						'width': '100%',
-						'left': '25px',
+						'left': '5px',
 					},
 				},
 			}),
@@ -694,7 +681,7 @@ var Components = {
 				appearance: {
 					style: {
 						'height': '100%',
-						'width': 'calc(100% - 25px)',
+						'width': '100%',
 					},
 				},
 			}),
@@ -720,15 +707,14 @@ var Components = {
 
 			// unpack components
 			// BUTTON GROUP
-			var buttonWrapper = components[1];
-			var playButton = components[2];
+			var playButton = components[1];
 
 			// AUDIO GROUP
-			var audioWrapper = components[3];
-			var audioTrackWrapper = components[4];
-			var audioTrack = components[5];
-			var audioTrackCanvas = components[6];
-			var audioTrackInfo = components[7];
+			var audioWrapper = components[2];
+			var audioTrackWrapper = components[3];
+			var audioTrack = components[4];
+			var audioTrackCanvas = components[5];
+			var audioTrackInfo = components[6];
 
 			// modify components and add methods etc.
 			// BUTTON GROUP
@@ -748,10 +734,6 @@ var Components = {
 
 				},
 			});
-
-			buttonWrapper.setChildren([
-				playButton,
-			]);
 
 			// AUDIO GROUP
 			// determines which audio references to create as audio tags
@@ -1130,7 +1112,7 @@ var Components = {
 			base.audio = audioTrack;
 			base.setChildren([
 				audioWrapper,
-				buttonWrapper,
+				playButton,
 			]);
 
 			return base;
@@ -1159,8 +1141,8 @@ var Components = {
 				template: UI.template('div', 'ie border border-radius'),
 				appearance: {
 					style: {
-						'height': '80px',
-						'width': '80px',
+						'height': '60px',
+						'width': '60px',
 					},
 				},
 			}),

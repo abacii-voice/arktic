@@ -53,7 +53,7 @@ var AccountInterfaces = {
 				appearance: {
 					style: {
 						'height': '100%',
-						'width': '80px',
+						'width': '60px',
 						'float': 'left',
 					},
 				},
@@ -318,7 +318,7 @@ var AccountInterfaces = {
 			Components.audio('{id}-audio'.format({id: id}), {
 				appearance: {
 					style: {
-						'height': '50px',
+						'height': '60px',
 						'width': '100%',
 						'margin-bottom': '10px',
 					},
@@ -425,7 +425,8 @@ var AccountInterfaces = {
 				appearance: {
 					style: {
 						'height': '100%',
-						'width': '50px',
+						'width': '60px',
+						'margin-left': '10px',
 						'float': 'left',
 					},
 				},
@@ -436,8 +437,8 @@ var AccountInterfaces = {
 				template: UI.template('div', 'ie button border border-radius'),
 				appearance: {
 					style: {
-						'height': '40px',
-						'width': '40px',
+						'height': '60px',
+						'width': '60px',
 						'margin-bottom': '10px',
 					},
 				},
@@ -448,8 +449,8 @@ var AccountInterfaces = {
 				template: UI.template('div', 'ie button border border-radius'),
 				appearance: {
 					style: {
-						'height': '40px',
-						'width': '40px',
+						'height': '60px',
+						'width': '60px',
 						'margin-bottom': '10px',
 					},
 				},
@@ -460,20 +461,8 @@ var AccountInterfaces = {
 				template: UI.template('div', 'ie button border border-radius'),
 				appearance: {
 					style: {
-						'height': '40px',
-						'width': '40px',
-						'margin-bottom': '10px',
-					},
-				},
-			}),
-
-			// shows flags assigned to the transcription
-			UI.createComponent('{id}-flags-button'.format({id: id}), {
-				template: UI.template('div', 'ie button border border-radius'),
-				appearance: {
-					style: {
-						'height': '40px',
-						'width': '40px',
+						'height': '60px',
+						'width': '60px',
 						'margin-bottom': '10px',
 					},
 				},
@@ -494,7 +483,6 @@ var AccountInterfaces = {
 			var previousButton = components[10];
 			var nextButton = components[11];
 			var doneButton = components[12];
-			var flagsButton = components[13];
 
 			// add methods and properties
 			scroll.backspace = function (_this) {
@@ -520,23 +508,20 @@ var AccountInterfaces = {
 			// 4. connection between done button and counter (increment)/tokens (export)
 			// associate components
 			transcriptionPanel.setChildren([
-				tokens,
 				audio,
 				originalCaption,
-				modifiedCaption,
+				// modifiedCaption,
 			]);
 
 			controlPanel.setChildren([
 				previousButton,
 				nextButton,
 				doneButton,
-				flagsButton,
 			]);
 
 			base.setChildren([
-				controlPanel,
 				counter,
-				scroll,
+				controlPanel,
 				transcriptionPanel,
 				infoPanel,
 			]);
