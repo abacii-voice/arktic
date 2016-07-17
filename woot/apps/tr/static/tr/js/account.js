@@ -1,5 +1,11 @@
 UI.app('hook', [
-	AccountInterfaces.transcriptionInterface(),
+	AccountInterfaces.transcriptionInterface('transcription-interface', {
+		interface: {
+			size: 60,
+			margin: 10,
+			corner: 5,
+		}
+	}),
 	Components.sidebar('control-sidebar', {
 		children: [
 			Components.scroll('cs-controls', {
