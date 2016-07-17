@@ -842,6 +842,9 @@ var Components = {
 						return new Promise(function(resolve, reject) {
 							audioTrackCanvas.data = current.data;
 							audioTrackCanvas.duration = current.data.duration;
+							if (base.current !== undefined) {
+								base.current(current);
+							}
 							resolve();
 						});
 					});
@@ -1326,119 +1329,6 @@ var Components = {
 		});
 	},
 
-	//////////// TOKEN TEXT FIELD
-	// Displays tokens for each word that can react to user input.
-	// Features:
-	// 1. Tokens can be added or removed
-	// 2. Tokens can be selected and deleted.
-	// 3. Tokens can be converted into inputs for quick changing
-	// 4. Tags are coloured differently
-	// 5. A dropdown can add modifiers; best guess, etc.
-	// 6. Tokens can be exported.
-	tokenTextField: function (id, args) {
-		// styling
-
-		// components
-		return Promise.all([
-
-
-		]).then(function (components) {
-			// unpack components
-			var tokenWrapper = components[0];
-			var tokenList = components[1];
-
-			// config and combination
-			return new Promise(function(resolve, reject) {
-
-				tokenList.currentIndex = 0;
-				tokenList.addToken = function (text, tag) {
-					var _this = tokenList;
-					return UI.createComponent('{id}-token-{index}'.format({id: id, index: _this.currentIndex}), {
-						appearance: {
-							style: {
-								'box-sizing': 'border-box',
-								'display': 'inline-block',
-								'float': 'left',
-								'height': '100%',
-								'padding': '5px',
-								'border-right': '1px solid #ccc',
-							},
-							html: text,
-						},
-					}).then(function (token) {
-						// add methods and properties
-						return new Promise(function(resolve, reject) {
-							token.tag = tag || false;
-							token.focus = function () {
-
-							}
-							token.input = function () {
-
-							}
-
-							resolve(token);
-						});
-					}).then(function (token) {
-						_this.currentIndex++;
-						return _this.setChildren([
-							token,
-						]);
-					}).then(function () {
-						return _this.fitToTokens();
-					});
-				}
-				tokenList.removeToken = function (index) {
-					var _this = tokenList;
-					return Promise.all(Object.keys(_this.children).map(function (childId) {
-						return UI.getComponent(childId).then(function (component) {
-							if (component.index === index) {
-								return _this.removeChild(component.id);
-							}
-						});
-					})).then(function () {
-						return _this.fitToTokens();
-					});
-				}
-				tokenList.fitToTokens = function () {
-					var _this = tokenList;
-					return new Promise(function(resolve, reject) {
-						// fit container to width of all tokens
-						var totalWidth = 0;
-						_this.model().children().each(function () {
-							totalWidth += $(this).outerWidth();
-						})
-						_this.model().css({'width': '{width}px'.format({width: totalWidth})});
-					});
-				}
-				tokenList.scrollToToken = function (index) {
-
-				}
-				tokenList.exportTokens = function () {
-					// index
-					// value
-					// any properties like "best guess", "tag"
-				}
-
-				// tokens can have "best guess" and "fragment" properties
-
-
-				// final
-				tokenWrapper.setChildren([
-					tokenList,
-				]);
-
-				resolve([tokenWrapper]);
-			});
-		}).then(function (components) {
-			// base
-			return UI.createComponent('{id}-base'.format({id: id}), {
-				template: UI.template('div', 'ie border'),
-				appearance: args.appearance,
-				children: components,
-			});
-		});
-	},
-
 	//////////// RENDERED TEXT FIELD
 	// Displays the rendered version of a token field
 	// Features:
@@ -1446,29 +1336,15 @@ var Components = {
 	// 2. Clicking on a word will take you to the token
 	renderedTextField: function (id, args) {
 		// styling
-		var wrapperStyle, listStyle;
-		if (args.options.horizontal) {
-			wrapperStyle = {
-				'height': 'calc(100% + 20px);',
-				'width': 'auto',
-				'overflow-x': 'scroll',
-			}
-			listStyle = {
-				'width': 'auto',
-				'height': '100%',
-				'padding-bottom': '20px',
-			}
-		} else {
-			wrapperStyle = {
-				'height': '100%',
-				'width': '100%',
-				'overflow-y': 'hidden',
-			}
-			listStyle = {
-				'width': 'calc(100% + 20px)',
-				'padding-right': '20px',
-				'overflow-y': 'scroll',
-			}
+		var wrapperStyle = {
+			'height': '100%',
+			'width': '100%',
+			'overflow-y': 'hidden',
+		}
+		var listStyle = {
+			'width': 'calc(100% + 20px)',
+			'padding-right': '20px',
+			'overflow-y': 'scroll',
 		}
 
 		// components
@@ -1507,7 +1383,7 @@ var Components = {
 				// if the last char is a space, The current token should be made inactive.
 				// if no token exists, it should be created and made the active token.
 				if (last !== ' ' && ['tag', 'normal'].contains(type)) {
-					_this.token().then(function (token) {
+					return _this.token().then(function (token) {
 						return new Promise(function(resolve, reject) {
 							token.span.setAppearance({html: query.trim()});
 							resolve();
@@ -1516,10 +1392,28 @@ var Components = {
 						});
 					});
 				} else if (last === ' ') {
-					_this.baseWidth += _this.activeWidth;
-					_this.activeToken = undefined;
+					return new Promise(function(resolve, reject) {
+						_this.baseWidth += _this.activeWidth;
+						_this.activeToken = undefined;
+						resolve();
+					});
 				}
 			}
+			base.load = function (caption) {
+				var _this = base;
+				Promise.ordered(caption.split(' ').map(function (word) {
+					return _this.input('normal', word, word.slice(-1)).then(function () {
+						console.log(list.currentIndex);
+					});
+				}));
+				//
+				// console.log(map(function (word) {
+				// 	return _this.input('normal', word, word.slice(-1)).then(function () {
+				// 		return _this.input('normal', ' ', ' ');
+				// 	});
+				// }));
+			}
+			base.setState(args.state);
 			list.currentIndex = 0;
 			list.baseWidth = 0;
 			list.width = 0;
@@ -1583,15 +1477,12 @@ var Components = {
 					});
 				}
 			}
-			list.scrollToToken = function () {
-				var _this = list;
-			}
 			list.fitToTokens = function () {
 				var _this = list;
 				return new Promise(function(resolve, reject) {
-					_this.activeWidth = parseInt(_this.activeToken.model().css('width'));
-					_this.width = _this.baseWidth + _this.activeWidth + 1;
-					_this.model().css({'width': '{width}px'.format({width: _this.width})});
+					// _this.activeHeight = parseInt(_this.activeToken.model().css('width'));
+					// _this.width = _this.baseWidth + _this.activeWidth + 1;
+					// _this.model().css({'width': '{width}px'.format({width: _this.width})});
 					resolve();
 				});
 			}
@@ -1702,4 +1593,5 @@ var Components = {
 			});
 		});
 	},
+
 }

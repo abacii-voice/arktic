@@ -1,6 +1,5 @@
 var AccountInterfaces = {
-	transcriptionInterface: function () {
-		var id = 'transcription-interface';
+	transcriptionInterface: function (id, args) {
 
 		return Promise.all([
 			// base component
@@ -53,7 +52,7 @@ var AccountInterfaces = {
 				appearance: {
 					style: {
 						'height': '100%',
-						'width': '60px',
+						'width': '{size}px'.format({size: args.interface.size}),
 						'float': 'left',
 					},
 				},
@@ -111,7 +110,7 @@ var AccountInterfaces = {
 						'height': '100%',
 						'width': '300px',
 						'float': 'left',
-						'margin-left': '10px',
+						'margin-left': '{margin}px'.format({margin: args.interface.margin}),
 					}
 				},
 
@@ -289,7 +288,7 @@ var AccountInterfaces = {
 						'height': '100%',
 						'width': '300px',
 						'float': 'left',
-						'margin-left': '10px',
+						'margin-left': '{margin}px'.format({margin: args.interface.margin}),
 					}
 				},
 			}),
@@ -299,9 +298,9 @@ var AccountInterfaces = {
 			Components.audio('{id}-audio'.format({id: id}), {
 				appearance: {
 					style: {
-						'height': '60px',
+						'height': '{size}px'.format({size: args.interface.size}),
 						'width': '100%',
-						'margin-bottom': '10px',
+						'margin-bottom': '{margin}px'.format({margin: args.interface.margin}),
 					},
 				},
 				state: {
@@ -369,13 +368,13 @@ var AccountInterfaces = {
 						'height': '40px',
 						'width': '100%',
 						'overflow': 'hidden',
-						'margin-bottom': '10px',
+						'margin-bottom': '{margin}px'.format({margin: args.interface.margin}),
 					},
 				},
 				options: {
+					source: {
 
-					// horizontal scroll
-					horizontal: true,
+					},
 				},
 			}),
 
@@ -387,7 +386,7 @@ var AccountInterfaces = {
 						'height': '40px',
 						'width': '100%',
 						'overflow': 'hidden',
-						'margin-bottom': '10px',
+						'margin-bottom': '{margin}px'.format({margin: args.interface.margin}),
 					},
 				},
 				options: {
@@ -406,8 +405,8 @@ var AccountInterfaces = {
 				appearance: {
 					style: {
 						'height': '100%',
-						'width': '60px',
-						'margin-left': '10px',
+						'width': '{width}px'.format({width: args.interface.size}),
+						'margin-left': '{margin}px'.format({margin: args.interface.margin}),
 						'float': 'left',
 					},
 				},
@@ -418,9 +417,9 @@ var AccountInterfaces = {
 				template: UI.template('div', 'ie button border border-radius'),
 				appearance: {
 					style: {
-						'height': '60px',
-						'width': '60px',
-						'margin-bottom': '10px',
+						'height': '{height}px'.format({height: args.interface.size}),
+						'width': '{width}px'.format({width: args.interface.size}),
+						'margin-bottom': '{margin}px'.format({margin: args.interface.margin}),
 					},
 				},
 			}),
@@ -430,9 +429,9 @@ var AccountInterfaces = {
 				template: UI.template('div', 'ie button border border-radius'),
 				appearance: {
 					style: {
-						'height': '60px',
-						'width': '60px',
-						'margin-bottom': '10px',
+						'height': '{height}px'.format({height: args.interface.size}),
+						'width': '{width}px'.format({width: args.interface.size}),
+						'margin-bottom': '{margin}px'.format({margin: args.interface.margin}),
 					},
 				},
 			}),
@@ -442,12 +441,37 @@ var AccountInterfaces = {
 				template: UI.template('div', 'ie button border border-radius'),
 				appearance: {
 					style: {
-						'height': '60px',
-						'width': '60px',
-						'margin-bottom': '10px',
+						'height': '{height}px'.format({height: args.interface.size}),
+						'width': '{width}px'.format({width: args.interface.size}),
+						'margin-bottom': '{margin}px'.format({margin: args.interface.margin}),
 					},
 				},
 			}),
+
+			// flags cited
+			UI.createComponent('{id}-flags-button'.format({id: id}), {
+				template: UI.template('div', 'ie button border border-radius'),
+				appearance: {
+					style: {
+						'height': '{height}px'.format({height: args.interface.size}),
+						'width': '{width}px'.format({width: args.interface.size}),
+						'margin-bottom': '{margin}px'.format({margin: args.interface.margin}),
+					},
+				},
+			}),
+
+			// rules cited
+			UI.createComponent('{id}-rules-button'.format({id: id}), {
+				template: UI.template('div', 'ie button border border-radius'),
+				appearance: {
+					style: {
+						'height': '{height}px'.format({height: args.interface.size}),
+						'width': '{width}px'.format({width: args.interface.size}),
+						'margin-bottom': '{margin}px'.format({margin: args.interface.margin}),
+					},
+				},
+			}),
+
 		]).then(function (components) {
 
 			// unpack components
@@ -478,8 +502,10 @@ var AccountInterfaces = {
 				_this.input(_this, 'normal', ' ', ' ');
 			}
 			scroll.input = function (_this, type, query, last) {
-				tokens.input(type, query, last);
 				modifiedCaption.input(type, query, last);
+			}
+			audio.current = function (current) {
+				originalCaption.load(current.original_caption);
 			}
 
 			// 1. search input to text field transfer
