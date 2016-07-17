@@ -638,8 +638,8 @@ var Components = {
 				template: UI.template('div', 'ie button border abs'),
 				appearance: {
 					style: {
-						'height': '60px',
-						'width': '60px',
+						'height': args.appearance.style.height,
+						'width': args.appearance.style.height,
 						'top': '0px',
 						'left': '0px',
 						'border-radius': '5px',
@@ -654,9 +654,9 @@ var Components = {
 				appearance: {
 					style: {
 						'border-left': '0px',
-						'height': '60px',
-						'width': 'calc(100% - 55px)',
-						'left': '55px',
+						'height': '100%',
+						'width': 'calc(100% - {height}px)'.format({height: parseInt(args.appearance.style.height) - 5}),
+						'left': '{px}px'.format({px: parseInt(args.appearance.style.height) - 5}),
 						'border-top-right-radius': '5px',
 						'border-bottom-right-radius': '5px',
 					},
@@ -669,7 +669,7 @@ var Components = {
 				appearance: {
 					style: {
 						'height': '100%',
-						'width': '100%',
+						'width': 'calc(100% - 5px)',
 						'left': '5px',
 					},
 				},
@@ -1141,8 +1141,11 @@ var Components = {
 				template: UI.template('div', 'ie border border-radius'),
 				appearance: {
 					style: {
-						'height': '60px',
-						'width': '60px',
+						'height': args.appearance.style.width,
+						'width': args.appearance.style.width,
+						'border-bottom-left-radius': '0px',
+						'border-bottom-right-radius': '0px',
+						'border-bottom': '0px',
 					},
 				},
 			}),
@@ -1159,11 +1162,13 @@ var Components = {
 
 			// counter wrapper
 			UI.createComponent('{id}-counter-wrapper'.format({id: id}), {
-				template: UI.template('div', 'ie'),
+				template: UI.template('div', 'ie border'),
 				appearance: {
 					style: {
-						'height': 'calc(100% - 80px)',
-						'width': '100px',
+						'height': 'calc(100% - {width}px)'.format({width: parseInt(args.appearance.style.width)}),
+						'width': args.appearance.style.width,
+						'border-bottom-left-radius': '5px',
+						'border-bottom-right-radius': '5px',
 					},
 				},
 			}),

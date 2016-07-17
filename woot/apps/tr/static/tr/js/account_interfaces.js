@@ -282,34 +282,15 @@ var AccountInterfaces = {
 			}),
 
 			// This holds tokens, audio, original, and modified
-			UI.createComponent('{id}-transcription-panel'.format({id: id}), {
+			UI.createComponent('{id}-original-panel'.format({id: id}), {
 				template: UI.template('div', 'ie'),
 				appearance: {
 					style: {
 						'height': '100%',
-						'width': '492px',
+						'width': '300px',
 						'float': 'left',
 						'margin-left': '10px',
 					}
-				},
-			}),
-
-			// TOKEN FIELD
-			// The token field is one of only two components that are directly affected by the search input
-			// tokens are separated by spaces, but spaces are not directly rendered.
-			Components.renderedTextField('{id}-tokens'.format({id: id}), {
-				appearance: {
-					style: {
-						'height': '40px',
-						'width': '100%',
-						'overflow': 'hidden',
-						'margin-bottom': '10px',
-					},
-				},
-				options: {
-
-					// horizontal scroll
-					horizontal: true,
 				},
 			}),
 
@@ -474,15 +455,14 @@ var AccountInterfaces = {
 			var counter = components[1];
 			var scroll = components[2];
 			var transcriptionPanel = components[3];
-			var tokens = components[4];
-			var audio = components[5];
-			var originalCaption = components[6];
-			var modifiedCaption = components[7];
-			var infoPanel = components[8];
-			var controlPanel = components[9];
-			var previousButton = components[10];
-			var nextButton = components[11];
-			var doneButton = components[12];
+			var audio = components[4];
+			var originalCaption = components[5];
+			var modifiedCaption = components[6];
+			var infoPanel = components[7];
+			var controlPanel = components[8];
+			var previousButton = components[9];
+			var nextButton = components[10];
+			var doneButton = components[11];
 
 			// add methods and properties
 			scroll.backspace = function (_this) {
