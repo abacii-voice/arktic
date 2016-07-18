@@ -1402,10 +1402,11 @@ var Components = {
 			base.load = function (caption) {
 				var _this = base;
 				Promise.ordered(caption.split(' ').map(function (word) {
-					// return _this.input('normal', word, word.slice(-1)).then(function () {
-					// 	return _this.input('normal', ' ', ' ');
-					// });
-					return _this.input('normal', word, word.slice(-1));
+					return function () {
+						return _this.input('normal', word, word.slice(-1)).then(function () {
+							return _this.input('normal', ' ', ' ');
+						});
+					}
 				}));
 			}
 			base.setState(args.state);
