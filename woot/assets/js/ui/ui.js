@@ -445,13 +445,25 @@ var UI = {
 			}).then(function () {
 				return _this.setBindings(_this.bindings);
 			}).then(function () {
+				var a = Object.keys(_this.children).sort(function (first, second) {
+					return _this.children[first].index - _this.children[second].index;
+				}).map(function (key) {
+					return function () {
+						return UI.getComponent(key).then(function (child) {
+							child.root = _this.id;
+							return child.render();
+						});
+					}
+				})
 				return Promise.ordered(Object.keys(_this.children).sort(function (first, second) {
 					return _this.children[first].index - _this.children[second].index;
 				}).map(function (key) {
-					return UI.getComponent(key).then(function (child) {
-						child.root = _this.id;
-						return child.render();
-					});
+					return function () {
+						return UI.getComponent(key).then(function (child) {
+							child.root = _this.id;
+							return child.render();
+						});
+					}
 				}));
 			}).then(function () {
 				return _this;
