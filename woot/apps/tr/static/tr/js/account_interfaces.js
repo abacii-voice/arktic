@@ -508,6 +508,17 @@ var AccountInterfaces = {
 				originalCaption.load(current.original_caption);
 			}
 
+			previousButton.setBindings({
+				'click': function (_this) {
+					audio.previous();
+				},
+			});
+			nextButton.setBindings({
+				'click': function (_this) {
+					audio.next();
+				},
+			});
+
 			// 1. search input to text field transfer
 			// 2. connection between modified caption and tokens (scroll to)
 			// 3. connection between original caption and modified/tokens (copy)
