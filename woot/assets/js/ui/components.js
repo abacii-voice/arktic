@@ -1401,13 +1401,15 @@ var Components = {
 			}
 			base.load = function (caption) {
 				var _this = base;
-				Promise.ordered(caption.split(' ').map(function (word) {
-					return function () {
-						return _this.input('normal', word, word.slice(-1)).then(function () {
-							return _this.input('normal', ' ', ' ');
-						});
-					}
-				}));
+				list.removeChildren().then(function () {
+					return Promise.ordered(caption.split(' ').map(function (word) {
+						return function () {
+							return _this.input('normal', word, word.slice(-1)).then(function () {
+								return _this.input('normal', ' ', ' ');
+							});
+						}
+					}));
+				})
 			}
 			base.setState(args.state);
 			list.currentIndex = 0;
@@ -1416,7 +1418,6 @@ var Components = {
 			list.token = function () {
 				var _this = list;
 				if (_this.activeToken === undefined) {
-					console.log('create token');
 					return Promise.all([
 						// token
 						UI.createComponent('{id}-token-{index}-wrapper'.format({id: _this.id, index: _this.currentIndex}), {
@@ -1437,7 +1438,6 @@ var Components = {
 							template: UI.template('span', 'ie token span'),
 						}),
 					]).then(function (tokenComponents) {
-						console.log('unpack');
 							// unpack
 							var token = tokenComponents[0];
 							var span = tokenComponents[1];
@@ -1459,15 +1459,12 @@ var Components = {
 								resolve(token);
 							});
 					}).then(function (token) {
-						console.log('update active token');
 						_this.activeToken = token;
 						_this.currentIndex++;
 						return _this.setChildren([token]);
 					}).then(function () {
-						console.log('fit');
 						return _this.fitToTokens();
 					}).then(function () {
-						console.log('return');
 						return new Promise(function(resolve, reject) {
 							resolve(_this.activeToken);
 						});
