@@ -1112,7 +1112,12 @@ var Components = {
 			]);
 
 			// resolve list of components to be rendered.
-			base.audio = audioTrack;
+			base.next = function () {
+				audioTrack.next();
+			}
+			base.previous = function () {
+				audioTrack.previous();
+			}
 			base.setChildren([
 				audioWrapper,
 				playButton,
