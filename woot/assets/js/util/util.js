@@ -77,17 +77,19 @@ function alphaSort(key) {
 }
 
 // Ordered promises
-Promise.ordered = function (promises) {
-	var result = promises[0];
-	promises.forEach(function (promise, index) {
-		if (index > 0) {
-			result = result.then(function () {
-				return promise;
-			});
-		}
-	});
+Promise.ordered = function (promiseFunctions, input) {
+	if (promiseFunctions.length !== 0) {
+		var result = promiseFunctions[0](input);
+		promiseFunctions.forEach(function (promiseFunction, index) {
+			if (index > 0) {
+				result = result.then(promiseFunction);
+			}
+		});
 
-	return result;
+		return result;
+	} else {
+		return new Promise(function(resolve, reject) {resolve()});
+	}
 }
 
 // Trim string
