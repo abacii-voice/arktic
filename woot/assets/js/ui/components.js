@@ -189,27 +189,29 @@ var Components = {
 
 		]).then(function (components) {
 			// unpack components
-			var base = components[0];
+			var [
+				base,
 
-			// title
-			var title = components[1];
+				// title
+				title,
 
-			// SEARCH GROUP
-			var searchWrapper = components[2];
-			var searchInput = components[3];
-			var searchButton = components[4];
+				// SEARCH GROUP
+				searchWrapper,
+				searchInput,
+				searchButton,
 
-			// LIST GROUP
-			var listWrapper = components[5];
-			var list = components[6];
-			var listLoadingIcon =  components[7];
+				// LIST GROUP
+				listWrapper,
+				list,
+				listLoadingIcon,
 
-			// FILTER GROUP
-			var filterWrapper = components[8];
-			var filter = components[9];
+				// FILTER GROUP
+				filterWrapper,
+				filter,
 
-			// INFO
-			var info = components[10];
+				// INFO
+				info,
+			] = components;
 
 			// Basic appearance methods
 			searchInput.focus = function () {
@@ -703,18 +705,21 @@ var Components = {
 			}),
 
 		]).then(function (components) {
-			var base = components[0];
 
 			// unpack components
-			// BUTTON GROUP
-			var playButton = components[1];
+			var [
+				base,
 
-			// AUDIO GROUP
-			var audioWrapper = components[2];
-			var audioTrackWrapper = components[3];
-			var audioTrack = components[4];
-			var audioTrackCanvas = components[5];
-			var audioTrackInfo = components[6];
+				// BUTTON GROUP
+				playButton,
+
+				// AUDIO GROUP
+				audioWrapper,
+				audioTrackWrapper,
+				audioTrack,
+				audioTrackCanvas,
+				audioTrackInfo,
+			] = components;
 
 			// modify components and add methods etc.
 			// BUTTON GROUP
@@ -1218,13 +1223,15 @@ var Components = {
 
 		]).then(function (components) {
 			// unpack components
-			var base = components[0];
-			var headerWrapper = components[1];
-			var dailyHeader = components[2];
-			var cycleHeader = components[3];
-			var counterWrapper = components[4];
-			var leftColumn = components[5];
-			var rightColumn = components[6];
+			var [
+				base,
+				headerWrapper,
+				dailyHeader,
+				cycleHeader,
+				counterWrapper,
+				leftColumn,
+				rightColumn,
+			] = components;
 
 			// COMBINE
 
@@ -1388,9 +1395,11 @@ var Components = {
 
 		]).then(function (components) {
 			// unpack components
-			var base = components[0];
-			var wrapper = components[1];
-			var list = components[2];
+			var [
+				base,
+				wrapper,
+				list,
+			] = components;
 
 			// methods and properties
 			base.input = function (type, query, last) {
@@ -1566,8 +1575,10 @@ var Components = {
 
 		]).then(function (components) {
 			// unpack components
-			var main = components[0];
-			var back = components[1];
+			var [
+				main,
+				back,
+			] = components;
 
 			return new Promise(function(resolve, reject) {
 
