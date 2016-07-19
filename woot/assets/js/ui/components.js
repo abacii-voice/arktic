@@ -987,6 +987,8 @@ var Components = {
 			audioTrackCanvas.draw = function () {
 				var _this = audioTrackCanvas;
 				requestAnimationFrame(_this.draw);
+				_this.canvas.height = parseInt(audioTrack.model().css('height'));
+				_this.canvas.width = parseInt(audioTrack.model().css('width'));
 				_this.time = (audioTrack.controller.context.currentTime - _this.startTime + _this.position) || 0;
 				if (_this.duration !== undefined) {
 					if (_this.time > _this.duration) {
@@ -1044,11 +1046,15 @@ var Components = {
 			}
 			audioTrackCanvas.getMousePosition = function (event) {
 				var _this = audioTrackCanvas;
-				var rect = _this.canvas.getBoundingClientRect();
+				if (_this.canvas !== undefined) {
+					var rect = _this.canvas.getBoundingClientRect();
 
-				return {
-					x: Math.floor((event.clientX - rect.left) / (rect.right - rect.left) * _this.canvas.width),
-					y: Math.floor((event.clientY-rect.top) / (rect.bottom - rect.top) * _this.canvas.height),
+					return {
+						x: Math.floor((event.clientX - rect.left) / (rect.right - rect.left) * _this.canvas.width),
+						y: Math.floor((event.clientY-rect.top) / (rect.bottom - rect.top) * _this.canvas.height),
+					}
+				} else {
+					return {x: 0, y: 0}
 				}
 			}
 			audioTrackCanvas.removeCut = function () {
@@ -1117,6 +1123,11 @@ var Components = {
 			}
 			base.previous = function () {
 				audioTrack.previous();
+			}
+			base.components = {
+				playButton: playButton,
+				audioWrapper: audioWrapper,
+				audioTrackWrapper: audioTrackWrapper,
 			}
 			base.setChildren([
 				audioWrapper,

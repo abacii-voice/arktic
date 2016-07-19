@@ -472,13 +472,54 @@ var AccountInterfaces = {
 				},
 			}),
 
+			// expand panel
+			UI.createComponent('{id}-expand-panel'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': '{width}px'.format({width: args.interface.size}),
+						'height': '100%',
+						'margin-left': '{margin}px'.format({margin: args.interface.margin}),
+						'float': 'left',
+					},
+				},
+			}),
+
+			// expand button
+			UI.createComponent('{id}-expand-button'.format({id: id}), {
+				template: UI.template('div', 'ie button border border-radius'),
+				appearance: {
+					style: {
+						'width': '{width}px'.format({width: args.interface.size}),
+						'height': '{height}px'.format({height: args.interface.size}),
+						'float': 'left',
+					},
+				},
+				state: {
+					stateMap: 'transcription-state-modify',
+					states: [
+						{name: 'transcription-state', args: {
+
+						}},
+						{name: 'transcription-state-modify', args: {
+
+						}},
+					],
+				},
+				bindings: {
+					'click': function (_this) {
+						_this.triggerState();
+					},
+				},
+			})
+
 		]).then(function (components) {
 
 			// unpack components
 			var base = components[0];
 			var counter = components[1];
 			var scroll = components[2];
-			var transcriptionPanel = components[3];
+			var originalPanel = components[3];
 			var audio = components[4];
 			var originalCaption = components[5];
 			var modifiedCaption = components[6];
@@ -487,6 +528,10 @@ var AccountInterfaces = {
 			var previousButton = components[9];
 			var nextButton = components[10];
 			var doneButton = components[11];
+			var flagsButton = components[12];
+			var rulesButton = components[13];
+			var expandPanel = components[14];
+			var expandButton = components[15];
 
 			// add methods and properties
 			scroll.backspace = function (_this) {
@@ -524,7 +569,7 @@ var AccountInterfaces = {
 			// 3. connection between original caption and modified/tokens (copy)
 			// 4. connection between done button and counter (increment)/tokens (export)
 			// associate components
-			transcriptionPanel.setChildren([
+			originalPanel.setChildren([
 				audio,
 				originalCaption,
 				// modifiedCaption,
@@ -536,10 +581,36 @@ var AccountInterfaces = {
 				doneButton,
 			]);
 
+			expandPanel.setChildren([
+				expandButton
+			]);
+
+			audio.setState({
+				states: [
+					{name: 'transcription-state', args: {
+						fn: function (_this) {
+							// 1. add play button
+							// 2. expand to 400px
+							// 3. rescale canvas container
+						},
+					}},
+					{name: 'transcription-state-modify', args: {
+						fn: function (_this) {
+							// 1. remove play button
+							_this.components.playButton.model().animate({'left': '-100px'});
+
+							// 2. shrink to 200px
+							// 3. rescale canvas container
+						},
+					}},
+				],
+			});
+
 			base.setChildren([
 				counter,
 				controlPanel,
-				transcriptionPanel,
+				originalPanel,
+				expandPanel,
 				infoPanel,
 			]);
 
