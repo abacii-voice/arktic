@@ -1,7 +1,7 @@
 UI.app('hook', [
 	AccountInterfaces.transcriptionInterface('transcription-interface', {
 		interface: {
-			size: 60,
+			size: 50,
 			margin: 10,
 			corner: 5,
 		}

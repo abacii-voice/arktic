@@ -113,6 +113,7 @@ var AccountInterfaces = {
 						'margin-left': '{margin}px'.format({margin: args.interface.margin}),
 					}
 				},
+				interface: args.interface,
 
 				// modifiers and features
 				options: {
@@ -286,7 +287,7 @@ var AccountInterfaces = {
 				appearance: {
 					style: {
 						'height': '100%',
-						'width': '300px',
+						'width': '400px',
 						'float': 'left',
 						'margin-left': '{margin}px'.format({margin: args.interface.margin}),
 					}
@@ -472,7 +473,7 @@ var AccountInterfaces = {
 				flagsButton,
 				rulesButton,
 			] = components;
-			
+
 			// add methods and properties
 			scroll.backspace = function (_this) {
 				// tokens.removeToken();
@@ -487,7 +488,7 @@ var AccountInterfaces = {
 				_this.input(_this, 'normal', ' ', ' ');
 			}
 			scroll.input = function (_this, type, query, last) {
-				modifiedCaption.input(type, query, last);
+				// modifiedCaption.input(type, query, last);
 			}
 			audio.current = function (current) {
 				originalCaption.load(current.original_caption);
@@ -516,35 +517,17 @@ var AccountInterfaces = {
 			]);
 
 			controlPanel.setChildren([
+				doneButton,
 				previousButton,
 				nextButton,
-				doneButton,
 			]);
-
-			audio.setState({
-				states: [
-					{name: 'transcription-state', args: {
-						fn: function (_this) {
-							// 1. add play button
-							// 2. expand to 400px
-							// 3. rescale canvas container
-						},
-					}},
-					{name: 'transcription-state-modify', args: {
-						fn: function (_this) {
-							// 1. remove play button
-							// 2. shrink to 200px
-							// 3. rescale canvas container
-						},
-					}},
-				],
-			});
 
 			base.setChildren([
 				counter,
 				controlPanel,
 				audioPanel,
 				infoPanel,
+				scroll,
 			]);
 
 			// return base
