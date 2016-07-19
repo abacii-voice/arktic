@@ -19,6 +19,7 @@ var Components = {
 		// - if no search is given, leave no room for an input.
 		// - looking for final variable 'listHeight'
 		var listHeight = '100%', offset = 0, titleText, titleCentered, search;
+		var searchHeight = args.interface !== undefined ? args.interface.size : 40;
 		if (args.options !== undefined) {
 			// title
 			if (args.options.title !== undefined) {
@@ -30,7 +31,7 @@ var Components = {
 			// search
 			if (args.options.search !== undefined) {
 				search = args.options.search;
-				offset += 40;
+				offset += searchHeight;
 			}
 
 			// listHeight
@@ -80,7 +81,7 @@ var Components = {
 				appearance: {
 					style: {
 						'width': '100%',
-						'height': '40px',
+						'height': '{height}px'.format({height: searchHeight}),
 					},
 				},
 			}),
