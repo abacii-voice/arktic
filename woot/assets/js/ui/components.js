@@ -292,6 +292,11 @@ var Components = {
 			// If the search option is filled, include a search bar and an optional filter panel
 			if (search !== undefined) {
 				// search functions engaged. can be in autocomplete mode and include filter panel.
+				base.addText = function (text) {
+					searchInput.model().val(text);
+					searchInput.model().focus();
+					searchInput.model().trigger('input');
+				}
 
 				if (search.filter !== undefined && search.filter) {
 					if (args.options.info !== undefined) {
@@ -1411,7 +1416,8 @@ var Components = {
 				if (last !== ' ' && ['tag', 'normal'].contains(type)) {
 					return _this.token().then(function (token) {
 						return new Promise(function(resolve, reject) {
-							token.span.setAppearance({html: query.trim()});
+							token.content = query.trim();
+							token.setAppearance({html: '{query} '.format({query: token.content})});
 							resolve();
 						}).then(function () {
 							return _this.fitToTokens();
@@ -1444,47 +1450,7 @@ var Components = {
 			list.token = function () {
 				var _this = list;
 				if (_this.activeToken === undefined) {
-					return Promise.all([
-						// token
-						UI.createComponent('{id}-token-{index}-wrapper'.format({id: _this.id, index: _this.currentIndex}), {
-							template: UI.template('div', 'ie token'),
-							appearance: {
-								style: {
-									'width': 'auto',
-									'float': 'left',
-									'height': '100%',
-									'border-right': '1px solid #ccc',
-									'padding': '10px',
-								},
-							},
-						}),
-
-						// span
-						UI.createComponent('{id}-token-{index}-span'.format({id: _this.id, index: _this.currentIndex}), {
-							template: UI.template('span', 'ie token span'),
-						}),
-					]).then(function (tokenComponents) {
-							// unpack
-							var token = tokenComponents[0];
-							var span = tokenComponents[1];
-
-							// methods and associations
-							return new Promise(function(resolve, reject) {
-								token.span = span;
-								token.setChildren([span]);
-								token.activate = function () {
-									_this.activeToken = token;
-									token.setAppearance({classes: {add: 'active'}});
-								}
-								token.deactivate = function () {
-									_this.activeToken = undefined;
-									token.setAppearance({classes: {remove: 'active'}});
-								}
-
-								// return
-								resolve(token);
-							});
-					}).then(function (token) {
+					return Promise.all(args.options.token.components(_this)).then(base.tokenModifierFunction(_this)).then(function (token) {
 						_this.activeToken = token;
 						_this.currentIndex++;
 						return _this.setChildren([token]);
