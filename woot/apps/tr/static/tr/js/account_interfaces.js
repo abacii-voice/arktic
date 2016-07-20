@@ -373,9 +373,16 @@ var AccountInterfaces = {
 					},
 				},
 				options: {
-					source: {
-
-					},
+					token: {
+						components: function (_this) {
+							return [
+								// span
+								UI.createComponent('{id}-token-{index}-span'.format({id: _this.id, index: _this.currentIndex}), {
+									template: UI.template('span', 'ie token span'),
+								}),
+							]
+						},
+					}
 				},
 			}),
 
@@ -504,6 +511,27 @@ var AccountInterfaces = {
 					audio.next();
 				},
 			});
+
+			originalCaption.tokenModifierFunction = function (_this) {
+				return function (tokenComponents) {
+					// unpack
+					var [
+						token
+					] = tokenComponents;
+
+					// methods and associations
+					return new Promise(function(resolve, reject) {
+						token.setBindings({
+							'click': function (_this) {
+								scroll.addText(token.content);
+							},
+						});
+
+						// return
+						resolve(token);
+					});
+				}
+			}
 
 			// 1. search input to text field transfer
 			// 2. connection between modified caption and tokens (scroll to)
