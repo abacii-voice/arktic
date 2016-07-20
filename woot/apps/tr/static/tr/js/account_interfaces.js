@@ -512,7 +512,7 @@ var AccountInterfaces = {
 				},
 			});
 
-			originalCaption.tokenModifierFunction = function (_this) {
+			originalCaption.tokenModifierFunction = function (list) {
 				return function (tokenComponents) {
 					// unpack
 					var [
@@ -524,8 +524,21 @@ var AccountInterfaces = {
 						token.setBindings({
 							'click': function (_this) {
 								scroll.addText(token.content);
+								_this.activate();
 							},
 						});
+
+						token.activate = function () {
+							token.model().css({'color': '#fff'});
+							if (list.activeToken !== undefined) {
+								list.activeToken.deactivate();
+							}
+							list.activeToken = token;
+						}
+
+						token.deactivate = function () {
+							token.model().css({'color': '#ccc'});
+						}
 
 						// return
 						resolve(token);
