@@ -495,7 +495,7 @@ var AccountInterfaces = {
 				_this.input(_this, 'normal', ' ', ' ');
 			}
 			scroll.input = function (_this, type, query, last) {
-				// modifiedCaption.input(type, query, last);
+				originalCaption.input(type, query, last);
 			}
 			audio.current = function (current) {
 				originalCaption.load(current.original_caption);
@@ -523,8 +523,8 @@ var AccountInterfaces = {
 					return new Promise(function(resolve, reject) {
 						token.setBindings({
 							'click': function (_this) {
-								scroll.addText(token.content);
 								_this.activate();
+								scroll.addText(token.content);
 							},
 						});
 
