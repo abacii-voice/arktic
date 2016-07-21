@@ -1425,8 +1425,7 @@ var Components = {
 					});
 				} else if (last === ' ') {
 					return new Promise(function(resolve, reject) {
-						_this.baseWidth += _this.activeWidth;
-						_this.activeToken = undefined;
+						_this.switch = true;
 						resolve();
 					});
 				}
@@ -1445,12 +1444,17 @@ var Components = {
 			}
 			base.setState(args.state);
 			list.currentIndex = 0;
-			list.baseWidth = 0;
-			list.width = 0;
+			list.switch = true;
 			list.token = function () {
 				var _this = list;
-				if (_this.activeToken === undefined) {
+				if (_this.switch) {
+					_this.switch = false;
 					return Promise.all(args.options.token.components(_this)).then(base.tokenModifierFunction(_this)).then(function (token) {
+						if (_this.activeToken !== undefined) {
+							token.setAfter(_this.activeToken.id);
+							_this.activeToken.deactivate();
+							token.activate();
+						}
 						_this.activeToken = token;
 						_this.currentIndex++;
 						return _this.setChildren([token]);
@@ -1470,9 +1474,6 @@ var Components = {
 			list.fitToTokens = function () {
 				var _this = list;
 				return new Promise(function(resolve, reject) {
-					// _this.activeHeight = parseInt(_this.activeToken.model().css('width'));
-					// _this.width = _this.baseWidth + _this.activeWidth + 1;
-					// _this.model().css({'width': '{width}px'.format({width: _this.width})});
 					resolve();
 				});
 			}

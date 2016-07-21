@@ -523,8 +523,13 @@ var AccountInterfaces = {
 					return new Promise(function(resolve, reject) {
 						token.setBindings({
 							'click': function (_this) {
-								_this.activate();
-								scroll.addText(token.content);
+								new Promise(function(resolve, reject) {
+									_this.activate();
+									list.switch = false;
+									resolve();
+								}).then(function () {
+									scroll.addText(token.content);
+								});
 							},
 						});
 
