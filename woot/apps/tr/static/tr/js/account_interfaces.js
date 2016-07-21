@@ -593,6 +593,11 @@ var AccountInterfaces = {
 			// base
 			UI.createComponent('{id}-base'.format({id: id}), {
 				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': '100%',
+					},
+				},
 			}),
 
 			// transcription interface
