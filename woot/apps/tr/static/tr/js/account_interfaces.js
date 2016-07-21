@@ -377,7 +377,7 @@ var AccountInterfaces = {
 						components: function (_this) {
 							return [
 								// span
-								UI.createComponent('{id}-token-{index}-span'.format({id: _this.id, index: _this.currentIndex}), {
+								UI.createComponent('{id}-token-{index}'.format({id: _this.id, index: _this.currentIndex}), {
 									template: UI.template('span', 'ie token span'),
 								}),
 							]
@@ -534,15 +534,23 @@ var AccountInterfaces = {
 						});
 
 						token.activate = function () {
-							token.model().css({'color': '#fff'});
-							if (list.activeToken !== undefined) {
+							if (list.activeToken !== undefined && list.activeToken.id !== token.id) {
 								list.activeToken.deactivate();
 							}
+							token.setAppearance({
+								style: {
+									'color': '#fff',
+								},
+							});
 							list.activeToken = token;
 						}
 
 						token.deactivate = function () {
-							token.model().css({'color': '#ccc'});
+							token.setAppearance({
+								style: {
+									'color': '#ccc',
+								},
+							});
 						}
 
 						// return
@@ -579,5 +587,8 @@ var AccountInterfaces = {
 			// return base
 			return base;
 		});
+	},
+	unifiedInterface: function (id) {
+		
 	},
 }

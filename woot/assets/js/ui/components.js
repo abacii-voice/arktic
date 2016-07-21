@@ -1452,10 +1452,8 @@ var Components = {
 					return Promise.all(args.options.token.components(_this)).then(base.tokenModifierFunction(_this)).then(function (token) {
 						if (_this.activeToken !== undefined) {
 							token.setAfter(_this.activeToken.id);
-							_this.activeToken.deactivate();
-							token.activate();
 						}
-						_this.activeToken = token;
+						token.activate();
 						_this.currentIndex++;
 						return _this.setChildren([token]);
 					}).then(function () {
