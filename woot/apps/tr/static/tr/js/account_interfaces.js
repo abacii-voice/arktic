@@ -960,7 +960,22 @@ var AccountInterfaces = {
 				clientSidebar,
 			] = components;
 
-			// associate
+			// ASSOCIATE
+			// key bindings
+			Mousetrap.bind('left', function () {
+
+			});
+			Mousetrap.bind('right', function () {
+
+			});
+			Mousetrap.bind('up', function () {
+
+			});
+			Mousetrap.bind('down', function () {
+
+			});
+
+			// base children
 			base.setChildren([
 				transcriptionInterface,
 				controlSidebar,
