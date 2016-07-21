@@ -432,7 +432,8 @@ var UI = {
 				return new Promise(function(resolve, reject) {
 					if (root.children().length !== 0) {
 						if (_this.after !== undefined) {
-							root.children().find('#{id}'.format({id: _this.after})).after(renderedTemplate); // add as child after 'after'.
+
+							root.children('#{id}'.format({id: _this.after})).after(renderedTemplate); // add as child after 'after'.
 						} else {
 							root.children().last().after(renderedTemplate); // add as child after last child.
 						}
