@@ -471,7 +471,7 @@ var AccountInterfaces = {
 				scroll,
 				audioPanel,
 				audio,
-				originalCaption,
+				caption,
 				infoPanel,
 				controlPanel,
 				previousButton,
@@ -484,7 +484,6 @@ var AccountInterfaces = {
 			// add methods and properties
 			scroll.backspace = function (_this) {
 				// tokens.removeToken();
-				// modifiedCaption.removeToken();
 			}
 			scroll.enter = function (_this) {
 				_this.clear();
@@ -495,10 +494,10 @@ var AccountInterfaces = {
 				_this.input(_this, 'normal', ' ', ' ');
 			}
 			scroll.input = function (_this, type, query, last) {
-				originalCaption.input(type, query, last);
+				caption.input(type, query, last);
 			}
 			audio.current = function (current) {
-				originalCaption.load(current.original_caption);
+				caption.load(current.original_caption);
 			}
 
 			previousButton.setBindings({
@@ -512,7 +511,7 @@ var AccountInterfaces = {
 				},
 			});
 
-			originalCaption.tokenModifierFunction = function (list) {
+			caption.tokenModifierFunction = function (list) {
 				return function (tokenComponents) {
 					// unpack
 					var [
@@ -566,8 +565,7 @@ var AccountInterfaces = {
 			// associate components
 			audioPanel.setChildren([
 				audio,
-				originalCaption,
-				// modifiedCaption,
+				caption,
 			]);
 
 			controlPanel.setChildren([
@@ -576,6 +574,12 @@ var AccountInterfaces = {
 				nextButton,
 			]);
 
+			base.components = {
+				counter: counter,
+				audio: audio,
+				caption: caption,
+				scroll: scroll,
+			}
 			base.setChildren([
 				counter,
 				controlPanel,
@@ -963,10 +967,20 @@ var AccountInterfaces = {
 			// ASSOCIATE
 			// key bindings
 			Mousetrap.bind('left', function () {
-
+				var tiComponents = base.components.transcriptionInterface.components;
+				if (UI.globalState === 'transcription-state') {
+					if (tiComponents.scroll.components.searchInput.model().val() === '') {
+						tiComponents.caption.previous();
+					}
+				}
 			});
 			Mousetrap.bind('right', function () {
-
+				var tiComponents = base.components.transcriptionInterface.components;
+				if (UI.globalState === 'transcription-state') {
+					if (tiComponents.scroll.components.searchInput.model().val() === '') {
+						tiComponents.caption.next();
+					}
+				}
 			});
 			Mousetrap.bind('up', function () {
 
@@ -976,6 +990,12 @@ var AccountInterfaces = {
 			});
 
 			// base children
+			base.components = {
+				transcriptionInterface: transcriptionInterface,
+				controlSidebar: controlSidebar,
+				roleSidebar: roleSidebar,
+				clientSidebar: clientSidebar,
+			}
 			base.setChildren([
 				transcriptionInterface,
 				controlSidebar,

@@ -73,6 +73,8 @@ var UI = {
 								_this.model().insertAfter(before.model());
 								resolve();
 							});
+						}).then(function () {
+
 						});
 					});
 				} else {
@@ -357,33 +359,34 @@ var UI = {
 			}));
 		}
 		this.setChildren = function (children) {
-			this.children = this.children !== undefined ? this.children : {};
 			var _this = this;
+			_this.children = _this.children !== undefined ? _this.children : {};
 			if (children !== undefined) {
-				return Promise.all(children.map(function (child, index) {
-					index = Object.keys(_this.children).length + index;
-					if (child.then !== undefined) { // is an unevaluated promise
-						return child.then(function (component) {
-							component.index = index;
-							return _this.addChild(component);
-						}).then(function (final) {
-							if (_this.isRendered) {
-								final.root = _this.id;
-								return final.render();
-							} else {
-								return final;
-							}
-						});
-					} else {
-						child.index = index;
-						return _this.addChild(child).then(function (final) {
-							if (_this.isRendered) {
-								final.root = _this.id;
-								return final.render();
-							}
-						});
+				return Promise.ordered(children.map(function (child) {
+					return function () {
+						if (child.then !== undefined) { // is an unevaluated promise
+							return child.then(function (component) {
+								return _this.addChild(component);
+							}).then(function (final) {
+								if (_this.isRendered) {
+									final.root = _this.id;
+									return final.render();
+								} else {
+									return final;
+								}
+							});
+						} else {
+							return _this.addChild(child).then(function (final) {
+								if (_this.isRendered) {
+									final.root = _this.id;
+									return final.render();
+								}
+							});
+						}
 					}
-				}));
+				})).then(function () {
+					return _this.setChildIndexes();
+				});
 			} else {
 				return this.children;
 			}
@@ -446,16 +449,6 @@ var UI = {
 			}).then(function () {
 				return _this.setBindings(_this.bindings);
 			}).then(function () {
-				var a = Object.keys(_this.children).sort(function (first, second) {
-					return _this.children[first].index - _this.children[second].index;
-				}).map(function (key) {
-					return function () {
-						return UI.getComponent(key).then(function (child) {
-							child.root = _this.id;
-							return child.render();
-						});
-					}
-				})
 				return Promise.ordered(Object.keys(_this.children).sort(function (first, second) {
 					return _this.children[first].index - _this.children[second].index;
 				}).map(function (key) {

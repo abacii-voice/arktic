@@ -11,7 +11,7 @@ var Components = {
 	// 4. A small info line showing the currently selected command or filter
 	// 5. An optional title
 	// 6. An optional loading icon
-	scroll: function (id, args) {
+ scroll: function (id, args) {
 
 		// SETUP
 		// arg setup and initialisation
@@ -88,7 +88,7 @@ var Components = {
 
 			// search input
 			UI.createComponent('{id}-search-input'.format({id: id}), {
-				template: UI.template('input', 'ie input abs'),
+				template: UI.template('input', 'ie input abs mousetrap'),
 				appearance: {
 					style: {
 						'width': '100%',
@@ -292,9 +292,10 @@ var Components = {
 			// If the search option is filled, include a search bar and an optional filter panel
 			if (search !== undefined) {
 				// search functions engaged. can be in autocomplete mode and include filter panel.
+				searchInput.isFocussed = false;
 				base.addText = function (text) {
 					searchInput.model().val(text);
-					searchInput.model().focus();
+					searchInput.focus();
 					searchInput.model().trigger('input');
 				}
 
@@ -343,6 +344,7 @@ var Components = {
 							searchButton.hide();
 							info.hide();
 							filterWrapper.show();
+							_this.isFocussed = true;
 						},
 
 						// BLUR INPUT:
@@ -368,6 +370,7 @@ var Components = {
 								})
 							}
 							searchButton.hide();
+							_this.isFocussed = false;
 						},
 
 						// handle enter key
@@ -617,6 +620,16 @@ var Components = {
 				info.show();
 				filterWrapper.hide();
 				info.defined = true;
+			}
+
+			base.components = {
+				title: title,
+				searchInput: searchInput,
+				searchButton: searchButton,
+				list: list,
+				listLoadingIcon: listLoadingIcon,
+				filter: filter,
+				info: info,
 			}
 			base.setChildren([title, searchWrapper, listWrapper, filterWrapper, info].filter(function (child) {
 				return child.defined;
@@ -1442,6 +1455,35 @@ var Components = {
 					}));
 				})
 			}
+			base.next = function () {
+				// get index of active token
+				var activeIndexIncrement = list.activeToken.index + 1;
+
+				// find token with this index and activate it.
+				var ids = Object.keys(list.children).filter(function (childId) {
+					return list.children[childId].index == activeIndexIncrement;
+				});
+
+				if (ids.length > 0) {
+					var active = list.children[ids[0]];
+					active.activate();
+					list.switch = false;
+				}
+			}
+			base.previous = function () {
+				// get index of active token
+				var activeIndexIncrement = list.activeToken.index - 1;
+
+				// find token with this index and activate it.
+				var ids = Object.keys(list.children).filter(function (childId) {
+					return list.children[childId].index == activeIndexIncrement;
+				});
+
+				if (ids.length > 0) {
+					var active = list.children[ids[0]];
+					active.activate();
+				}
+			}
 			base.setState(args.state);
 			list.currentIndex = 0;
 			list.switch = true;
@@ -1454,6 +1496,7 @@ var Components = {
 							token.setAfter(_this.activeToken.id);
 						}
 						token.activate();
+						// token.index = _this.currentIndex;
 						_this.currentIndex++;
 						return _this.setChildren([token]);
 					}).then(function () {
@@ -1484,6 +1527,7 @@ var Components = {
 				list,
 			]);
 
+			base.list = list;
 			base.setChildren([
 				wrapper,
 			]);
