@@ -612,6 +612,9 @@ var AccountInterfaces = {
 				},
 				bindings: [
 					UI.createBinding('hover', {
+						'transcription-state': {
+
+						},
 						state: 'transcription-state',
 						fn: function (_this, event) {
 
