@@ -600,6 +600,36 @@ var AccountInterfaces = {
 				},
 			}),
 
+			UI.createComponent('keybinding-test', {
+				template: UI.template('div', 'ie abs border border-radius'),
+				appearance: {
+					style: {
+						'height': '100px',
+						'width': '100px',
+						'top': '400px',
+						'left': '400px',
+					},
+				},
+				bindings: [
+					UI.createBinding('hover', {
+						state: 'transcription-state',
+						fn: function (_this, event) {
+
+						},
+						fn2: function (_this, event) {
+
+						},
+					}),
+				],
+				state: {
+					states: [
+						UI.createState('transcription-state', {
+
+						}),
+					],
+				},
+			}),
+
 			// transcription interface
 			AccountInterfaces.transcriptionInterface('transcription-interface', {
 				interface: args.interface,
@@ -954,6 +984,7 @@ var AccountInterfaces = {
 			// unpack components
 			var [
 				base,
+				keybindingTest,
 				transcriptionInterface,
 				controlSidebar,
 				roleSidebar,
@@ -977,6 +1008,7 @@ var AccountInterfaces = {
 
 			// base children
 			base.setChildren([
+				keybindingTest,
 				transcriptionInterface,
 				controlSidebar,
 				roleSidebar,

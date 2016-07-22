@@ -256,13 +256,12 @@ var UI = {
 		// state
 		this.setState = function (state) {
 			if (state !== undefined) {
-				var currentDefaultState = this.defaultState !== undefined ? this.defaultState : {};
-				this.defaultState = state.defaultState !== undefined ? state.defaultState : currentDefaultState;
 				var _this = this;
+				_this.defaultState = (state.defaultState || (_this.defaultState || {}));
 
 				return Promise.all([
-					this.addStates(state.states),
-					this.addStateMap(state.stateMap),
+					_this.addStates(state.states),
+					_this.addStateMap(state.stateMap),
 				]);
 			}
 		}
