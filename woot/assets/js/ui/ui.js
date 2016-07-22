@@ -360,7 +360,7 @@ var UI = {
 		}
 		this.setChildren = function (children) {
 			var _this = this;
-			_this.children = _this.children !== undefined ? _this.children : {};
+			_this.children = _this.children !== undefined ? _this.children : [];
 			if (children !== undefined) {
 				return Promise.ordered(children.map(function (child) {
 					return function () {
@@ -384,9 +384,7 @@ var UI = {
 							});
 						}
 					}
-				})).then(function () {
-					return _this.setChildIndexes();
-				});
+				}));
 			} else {
 				return this.children;
 			}
