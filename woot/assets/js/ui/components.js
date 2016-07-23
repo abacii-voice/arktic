@@ -291,7 +291,6 @@ var Components = {
 			// SEARCH
 			// If the search option is filled, include a search bar and an optional filter panel
 			var infoChildren = blankFunction,
-			 		filterChildren = blankFunction,
 					filterWrapperChildren = blankFunction,
 					searchWrapperChildren = blankFunction,
 					listChildren = blankFunction;
@@ -315,12 +314,6 @@ var Components = {
 					// autocomplete will decide whether the panel is displayed before the list of data.
 					// FILTER: if filter, define filter panel
 					filterWrapper.defined = true;
-					filterChildren = function () {
-						return filter.setChildren(Object.keys(args.options.targets).map(function (key, index) {
-							var display = args.options.display.filter(filter.id);
-							return display(args.options.targets[key], index);
-						}));
-					}
 					filter.set = function (target) {
 						filter.active = target;
 						searchInput.focus();
@@ -340,7 +333,11 @@ var Components = {
 
 					// set filterWrapper
 					filterWrapperChildren = function () {
-						return filterChildren().then(function () {
+						return filter.setChildren(Object.keys(args.options.targets).map(function (key, index) {
+							var display = args.options.display.filter(filter.id);
+							return display(args.options.targets[key], index);
+						})).then(function () {
+							console.log(filter.children);
 							return filterWrapper.setChildren([filter]);
 						});
 					}
@@ -650,8 +647,6 @@ var Components = {
 					filter: filter,
 					info: info,
 				}
-				console.log(filterWrapper);
-				console.log('base');
 				return base.setChildren([title, searchWrapper, listWrapper, filterWrapper, info].filter(function (child) {
 					return child.defined;
 				}));
