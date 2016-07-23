@@ -356,9 +356,15 @@ var UI = {
 		}
 		this.setChildren = function (children) {
 			var _this = this;
+			if (_this.id.includes('search-filter')) {
+				console.log('set children', _this.id, children, _this.isRendered);
+			}
 			_this.children = _this.children !== undefined ? _this.children : [];
 			if (children !== undefined) {
 				return Promise.ordered(children.map(function (child, index) {
+					if (_this.id.includes('search-filter')) {
+						// console.log(_this.id, index);
+					}
 					var placementIndex = _this.children.length + index;
 					return function () {
 						if (child.then !== undefined) { // is an unevaluated promise
@@ -471,9 +477,6 @@ var UI = {
 				}).map(function (child) {
 					return function () {
 						child.root = _this.id;
-						if (child.id.includes('slash')) {
-							console.log(_this.id, child.id, child.isRendered);
-						}
 						return child.render();
 					}
 				}));
