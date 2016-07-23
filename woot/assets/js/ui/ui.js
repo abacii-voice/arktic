@@ -357,13 +357,17 @@ var UI = {
 		this.setChildren = function (children) {
 			var _this = this;
 			_this.children = _this.children !== undefined ? _this.children : [];
-			// console.log(_this.id, children);
 			if (children !== undefined) {
-				return Promise.ordered(children.map(function (child) {
+				return Promise.ordered(children.map(function (child, index) {
+					var placementIndex = _this.children.length + index;
 					return function () {
 						if (child.then !== undefined) { // is an unevaluated promise
 							return child.then(function (component) {
-								console.log(_this.id, component.id, component.index);
+								return component.childIndexFromAfter(placementIndex);
+							}).then(function (component) {
+								if (_this.id.includes('unified')) {
+									console.log(component.id, component.index);
+								}
 								return _this.addChild(component);
 							}).then(function (final) {
 								if (_this.isRendered) {
@@ -374,8 +378,12 @@ var UI = {
 								}
 							});
 						} else {
-							console.log(_this.id, child.id, child.index);
-							return _this.addChild(child).then(function (final) {
+							return child.childIndexFromAfter(placementIndex).then(function (component) {
+								if (_this.id.includes('unified')) {
+									console.log(component.id, component.index);
+								}
+								return _this.addChild(component);
+							}).then(function (final) {
 								if (_this.isRendered) {
 									final.root = _this.id;
 									return final.render();
@@ -389,7 +397,25 @@ var UI = {
 			}
 		}
 		this.setChildIndexes = function () {
+			// set index from position in children array
 
+		}
+		this.childIndexFromAfter = function (placementIndex) {
+			// find index from after key
+			var _this = this;
+			if (_this.after !== undefined) {
+				return UI.getComponent(_this.after).then(function (component) {
+					return new Promise(function(resolve, reject) {
+						_this.index = component.index + 1;
+						resolve(_this);
+					});
+				});
+			} else {
+				return new Promise(function(resolve, reject) {
+					_this.index = placementIndex;
+					resolve(_this);
+				});
+			}
 		}
 		this.update = function (args) {
 			args = args !== undefined ? args : {};
@@ -434,7 +460,6 @@ var UI = {
 				return new Promise(function(resolve, reject) {
 					if (root.children().length !== 0) {
 						if (_this.after !== undefined) {
-
 							root.children('#{id}'.format({id: _this.after})).after(renderedTemplate); // add as child after 'after'.
 						} else {
 							root.children().last().after(renderedTemplate); // add as child after last child.
