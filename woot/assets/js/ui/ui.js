@@ -145,12 +145,10 @@ var UI = {
 					});
 				}).then(function () {
 					if (_this.isRendered) {
-						return Promise.all(Object.keys(_this.children).map(function (key) {
-							return UI.getComponent(key).then(function (child) {
-								return new Promise(function(resolve, reject) {
-									child.model().appendTo('#{id}'.format({id: _this.id}));
-									resolve();
-								});
+						return Promise.all(_this.children.map(function (child) {
+							return new Promise(function(resolve, reject) {
+								child.model().appendTo('#{id}'.format({id: _this.id}));
+								resolve();
 							});
 						}));
 					}
@@ -334,38 +332,38 @@ var UI = {
 		this.addChild = function (child) {
 			var _this = this;
 			return new Promise(function(resolve, reject) {
-				_this.children[child.id] = child;
+				_this.children.splice((child.index || _this.children.length), 0, child);
 				resolve(child);
 			});
 		}
 		this.removeChild = function (id) {
 			var _this = this;
-			return new Promise(function(resolve, reject) {
-				delete _this.children[id];
-				resolve(id);
+			return UI.getComponent(id).then(function (child) {
+				return new Promise(function(resolve, reject) {
+					_this.children.splice(child.index, 1);
+					resolve(id);
+				})
 			}).then(UI.removeComponent).then(function () {
 				// renumber children
-				return Promise.all(Object.keys(_this.children).map(function (childId, index) {
-					return UI.getComponent(childId).then(function (child) {
-						child.index = index;
-					});
-				}));
+				return _this.setChildIndexes();
 			});
 		}
 		this.removeChildren = function () {
 			var _this = this;
-			return Promise.all(Object.keys(_this.children).map(function (child) {
-				return _this.removeChild(child);
+			return Promise.all(_this.children.map(function (child) {
+				return _this.removeChild(child.id);
 			}));
 		}
 		this.setChildren = function (children) {
 			var _this = this;
 			_this.children = _this.children !== undefined ? _this.children : [];
+			console.log(_this.id, children);
 			if (children !== undefined) {
 				return Promise.ordered(children.map(function (child) {
 					return function () {
 						if (child.then !== undefined) { // is an unevaluated promise
 							return child.then(function (component) {
+								// console.log(_this.id, component.id);
 								return _this.addChild(component);
 							}).then(function (final) {
 								if (_this.isRendered) {
@@ -376,6 +374,7 @@ var UI = {
 								}
 							});
 						} else {
+							// console.log(_this.id, child.id);
 							return _this.addChild(child).then(function (final) {
 								if (_this.isRendered) {
 									final.root = _this.id;
@@ -386,8 +385,11 @@ var UI = {
 					}
 				}));
 			} else {
-				return this.children;
+				return _this.children;
 			}
+		}
+		this.setChildIndexes = function () {
+
 		}
 		this.update = function (args) {
 			args = args !== undefined ? args : {};
@@ -447,14 +449,12 @@ var UI = {
 			}).then(function () {
 				return _this.setBindings(_this.bindings);
 			}).then(function () {
-				return Promise.ordered(Object.keys(_this.children).sort(function (first, second) {
-					return _this.children[first].index - _this.children[second].index;
-				}).map(function (key) {
+				return Promise.ordered(_this.children.sort(function (first, second) {
+					return first.index - second.index;
+				}).map(function (child) {
 					return function () {
-						return UI.getComponent(key).then(function (child) {
-							child.root = _this.id;
-							return child.render();
-						});
+						child.root = _this.id;
+						return child.render();
 					}
 				}));
 			}).then(function () {
