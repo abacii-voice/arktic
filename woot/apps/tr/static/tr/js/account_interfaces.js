@@ -563,33 +563,33 @@ var AccountInterfaces = {
 			// 3. connection between original caption and modified/tokens (copy)
 			// 4. connection between done button and counter (increment)/tokens (export)
 			// associate components
-			audioPanel.setChildren([
-				audio,
-				caption,
-			]);
-
-			controlPanel.setChildren([
-				doneButton,
-				previousButton,
-				nextButton,
-			]);
-
-			base.components = {
-				counter: counter,
-				audio: audio,
-				caption: caption,
-				scroll: scroll,
-			}
-			base.setChildren([
-				counter,
-				controlPanel,
-				audioPanel,
-				infoPanel,
-				scroll,
-			]);
-
-			// return base
-			return base;
+			return Promise.all([
+				audioPanel.setChildren([
+					audio,
+					caption,
+				]),
+				controlPanel.setChildren([
+					doneButton,
+					previousButton,
+					nextButton,
+				]),
+			]).then(function () {
+				base.components = {
+					counter: counter,
+					audio: audio,
+					caption: caption,
+					scroll: scroll,
+				}
+				return base.setChildren([
+					counter,
+					controlPanel,
+					audioPanel,
+					infoPanel,
+					scroll,
+				]);
+			}).then(function () {
+				return base;
+			});
 		});
 	},
 	unifiedInterface: function (id, args) {
@@ -953,7 +953,6 @@ var AccountInterfaces = {
 					},
 				},
 			}),
-
 		]).then(function (components) {
 			// unpack components
 			var [
@@ -996,15 +995,14 @@ var AccountInterfaces = {
 				roleSidebar: roleSidebar,
 				clientSidebar: clientSidebar,
 			}
-			base.setChildren([
+			return base.setChildren([
 				transcriptionInterface,
 				controlSidebar,
 				roleSidebar,
 				clientSidebar,
-			]);
-
-			// return
-			return base;
+			]).then(function () {
+				return base;
+			});
 		});
 	},
 }
