@@ -158,6 +158,8 @@ function emptyPromiseFunction () {
 	}
 }
 
+function blankFunction () {}
+
 function onOff (onOff) {
 	return {
 		style: {

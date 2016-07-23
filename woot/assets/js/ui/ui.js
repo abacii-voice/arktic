@@ -471,6 +471,9 @@ var UI = {
 				}).map(function (child) {
 					return function () {
 						child.root = _this.id;
+						if (child.id.includes('slash')) {
+							console.log(_this.id, child.id, child.isRendered);
+						}
 						return child.render();
 					}
 				}));
