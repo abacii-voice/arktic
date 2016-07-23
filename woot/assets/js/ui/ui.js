@@ -357,13 +357,13 @@ var UI = {
 		this.setChildren = function (children) {
 			var _this = this;
 			_this.children = _this.children !== undefined ? _this.children : [];
-			console.log(_this.id, children);
+			// console.log(_this.id, children);
 			if (children !== undefined) {
 				return Promise.ordered(children.map(function (child) {
 					return function () {
 						if (child.then !== undefined) { // is an unevaluated promise
 							return child.then(function (component) {
-								// console.log(_this.id, component.id);
+								console.log(_this.id, component.id, component.index);
 								return _this.addChild(component);
 							}).then(function (final) {
 								if (_this.isRendered) {
@@ -374,7 +374,7 @@ var UI = {
 								}
 							});
 						} else {
-							// console.log(_this.id, child.id);
+							console.log(_this.id, child.id, child.index);
 							return _this.addChild(child).then(function (final) {
 								if (_this.isRendered) {
 									final.root = _this.id;
@@ -394,7 +394,6 @@ var UI = {
 		this.update = function (args) {
 			args = args !== undefined ? args : {};
 			var _this = this;
-			_this.index = args.index !== undefined ? args.index : -1;
 			return Promise.all([
 				// id, root, after, template
 				_this.setId(args.id),
