@@ -365,9 +365,6 @@ var UI = {
 							return child.then(function (component) {
 								return component.childIndexFromAfter(placementIndex);
 							}).then(function (component) {
-								if (_this.id.includes('unified')) {
-									console.log(component.id, component.index);
-								}
 								return _this.addChild(component);
 							}).then(function (final) {
 								if (_this.isRendered) {
@@ -379,9 +376,6 @@ var UI = {
 							});
 						} else {
 							return child.childIndexFromAfter(placementIndex).then(function (component) {
-								if (_this.id.includes('unified')) {
-									console.log(component.id, component.index);
-								}
 								return _this.addChild(component);
 							}).then(function (final) {
 								if (_this.isRendered) {
@@ -455,7 +449,6 @@ var UI = {
 		this.render = function () {
 			var _this = this;
 			var root = $('#{id}'.format({id: _this.root}));
-
 			return _this.renderTemplate().then(function (renderedTemplate) {
 				return new Promise(function(resolve, reject) {
 					if (root.children().length !== 0) {
