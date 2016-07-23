@@ -333,11 +333,9 @@ var Components = {
 
 					// set filterWrapper
 					filterWrapperChildren = function () {
-						return filter.setChildren(Object.keys(args.options.targets).map(function (key, index) {
-							var display = args.options.display.filter(filter.id);
-							return display(args.options.targets[key], index);
+						return filter.setChildren(Object.keys(args.options.targets).map(function (key) {
+							return args.options.display.filter(filter.id, args.options.targets[key]);
 						})).then(function () {
-							console.log(filter.children);
 							return filterWrapper.setChildren([filter]);
 						});
 					}
@@ -651,6 +649,9 @@ var Components = {
 					return child.defined;
 				}));
 			}).then(function () {
+				if (base.id.includes('search')) {
+					// console.log(base.children[2].children[0].children[1], base.components.filter.children[1]);
+				}
 				return base;
 			});
 		});
