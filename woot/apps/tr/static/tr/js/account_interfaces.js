@@ -243,39 +243,35 @@ var AccountInterfaces = {
 								});
 							}
 						},
-						filter: function (id) {
-							return function (target, index) {
-								var display = target.filter;
-								return UI.createComponent('{id}-{key}'.format({id: id, key: display.key}), {
-									index: index,
-									root: id,
-									template: UI.template('div', 'ie button border-bottom'),
-									appearance: {
-										style: {
-											'width': '100%',
-											'height': '60px',
-											'padding-top': '20px',
-										},
+						filter: function (id, target) {
+							var display = target.filter;
+							return UI.createComponent('{id}-{key}'.format({id: id, key: display.key}), {
+								template: UI.template('div', 'ie button border-bottom'),
+								appearance: {
+									style: {
+										'width': '100%',
+										'height': '60px',
+										'padding-top': '20px',
 									},
-									bindings: {
-										// 'click' occurs on mouseup, so any blur will happen before it.
-										// 'mousedown' occurs before 'blur'.
-										'mousedown': function (_this) {
-											_this.parent().then(function (parent) {
-												parent.set(target);
-											});
-										},
+								},
+								bindings: {
+									// 'click' occurs on mouseup, so any blur will happen before it.
+									// 'mousedown' occurs before 'blur'.
+									'mousedown': function (_this) {
+										_this.parent().then(function (parent) {
+											parent.set(target);
+										});
 									},
-									children: [
-										UI.createComponent('{id}-{key}-text'.format({id: id, key: display.key}), {
-											template: UI.template('span'),
-											appearance: {
-												html: '"{char}" : {main}'.format({char: display.char, main: display.display}),
-											},
-										}),
-									],
-								});
-							}
+								},
+								children: [
+									UI.createComponent('{id}-{key}-text'.format({id: id, key: display.key}), {
+										template: UI.template('span'),
+										appearance: {
+											html: '"{char}" : {main}'.format({char: display.char, main: display.display}),
+										},
+									}),
+								],
+							});
 						},
 					},
 				},

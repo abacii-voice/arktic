@@ -356,19 +356,19 @@ var UI = {
 		}
 		this.setChildren = function (children) {
 			var _this = this;
-			if (_this.id.includes('search-filter')) {
-				console.log('set children', _this.id, children, _this.isRendered);
+			if (_this.id === 'transcription-interface-search-filter' && children !== undefined) {
+				console.log(_this.id, children);
 			}
 			_this.children = _this.children !== undefined ? _this.children : [];
 			if (children !== undefined) {
 				return Promise.ordered(children.map(function (child, index) {
-					if (_this.id.includes('search-filter')) {
-						// console.log(_this.id, index);
-					}
 					var placementIndex = _this.children.length + index;
 					return function () {
 						if (child.then !== undefined) { // is an unevaluated promise
 							return child.then(function (component) {
+								if (_this.id === 'transcription-interface-search-filter' && children !== undefined) {
+									console.log(_this.id, component);
+								}
 								return component.childIndexFromAfter(placementIndex);
 							}).then(function (component) {
 								return _this.addChild(component);
