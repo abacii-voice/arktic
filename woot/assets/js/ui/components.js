@@ -1460,8 +1460,8 @@ var Components = {
 				var activeIndexIncrement = list.activeToken.index + 1;
 
 				// find token with this index and activate it.
-				var ids = Object.keys(list.children).filter(function (childId) {
-					return list.children[childId].index == activeIndexIncrement;
+				var ids = list.children.filter(function (child) {
+					return child.index == activeIndexIncrement;
 				});
 
 				if (ids.length > 0) {
@@ -1475,12 +1475,12 @@ var Components = {
 				var activeIndexIncrement = list.activeToken.index - 1;
 
 				// find token with this index and activate it.
-				var ids = Object.keys(list.children).filter(function (childId) {
-					return list.children[childId].index == activeIndexIncrement;
+				var children = list.children.filter(function (child) {
+					return child.index == activeIndexIncrement;
 				});
 
 				if (ids.length > 0) {
-					var active = list.children[ids[0]];
+					var active = children[0];
 					active.activate();
 				}
 			}
