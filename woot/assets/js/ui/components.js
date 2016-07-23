@@ -290,6 +290,11 @@ var Components = {
 
 			// SEARCH
 			// If the search option is filled, include a search bar and an optional filter panel
+			var infoChildren = blankFunction,
+			 		filterChildren = blankFunction,
+					filterWrapperChildren = blankFunction,
+					searchWrapperChildren = blankFunction,
+					listChildren = blankFunction;
 			if (search !== undefined) {
 				// search functions engaged. can be in autocomplete mode and include filter panel.
 				searchInput.isFocussed = false;
@@ -301,17 +306,21 @@ var Components = {
 
 				if (search.filter !== undefined && search.filter) {
 					if (args.options.info !== undefined) {
-						info.setChildren([args.options.info(id)]);
+						infoChildren = function () {
+							return info.setChildren([args.options.info(id)]);
+						}
 					}
 
 					// the filter panel will be displayed
 					// autocomplete will decide whether the panel is displayed before the list of data.
 					// FILTER: if filter, define filter panel
 					filterWrapper.defined = true;
-					filter.setChildren(Object.keys(args.options.targets).map(function (key, index) {
-						var display = args.options.display.filter(filter.id);
-						return display(args.options.targets[key], index);
-					}));
+					filterChildren = function () {
+						return filter.setChildren(Object.keys(args.options.targets).map(function (key, index) {
+							var display = args.options.display.filter(filter.id);
+							return display(args.options.targets[key], index);
+						}));
+					}
 					filter.set = function (target) {
 						filter.active = target;
 						searchInput.focus();
@@ -330,9 +339,11 @@ var Components = {
 					});
 
 					// set filterWrapper
-					filterWrapper.setChildren([
-						filter,
-					]);
+					filterWrapperChildren = function () {
+						return filterChildren().then(function () {
+							return filterWrapper.setChildren([filter]);
+						});
+					}
 
 					// INPUT: if search, define input field
 					searchInput.setBindings({
@@ -489,10 +500,12 @@ var Components = {
 
 					// DEFINE INPUT GROUP
 					searchWrapper.defined = true;
-					searchWrapper.setChildren([
-						searchInput,
-						searchButton
-					]);
+					searchWrapperChildren = function () {
+						return searchWrapper.setChildren([
+							searchInput,
+							searchButton,
+						]);
+					}
 
 				} else {
 					// No filter panel
@@ -563,9 +576,11 @@ var Components = {
 
 					// DEFINE INPUT GROUP
 					searchWrapper.defined = true;
-					searchWrapper.setChildren([
-						searchInput,
-					]);
+					searchWrapperChildren = function () {
+						return searchWrapper.setChildren([
+							searchInput,
+						]);
+					}
 
 					if (search.autocomplete !== undefined && search.autocomplete) {
 						// autocomplete mode: show no data until search query is entered.
@@ -582,7 +597,9 @@ var Components = {
 				searchWrapper.defined = false;
 
 				if (args.children !== undefined) {
-					list.setChildren(args.children);
+					listChildren = function () {
+						return list.setChildren(args.children);
+					}
 				} else {
 					args.options.reset.forEach(function (state) {
 						list.addState({
@@ -606,14 +623,6 @@ var Components = {
 			// LIST
 			listWrapper.defined = true;
 			list.display = args.options.display;
-			// list.activate = args.options.activate(list);
-			// list.up = args.options.up(list);
-			// list.down = args.options.down(list);
-
-			listWrapper.setChildren([
-				list,
-				listLoadingIcon,
-			]);
 
 			// return elements as they entered to be added to the base
 			if (args.options.info !== undefined) {
@@ -622,20 +631,33 @@ var Components = {
 				info.defined = true;
 			}
 
-			base.components = {
-				title: title,
-				searchInput: searchInput,
-				searchButton: searchButton,
-				list: list,
-				listLoadingIcon: listLoadingIcon,
-				filter: filter,
-				info: info,
-			}
-			base.setChildren([title, searchWrapper, listWrapper, filterWrapper, info].filter(function (child) {
-				return child.defined;
-			}));
-
-			return base;
+			return Promise.all([
+				listWrapper.setChildren([
+					list,
+					listLoadingIcon,
+				]),
+				infoChildren(),
+				filterWrapperChildren(),
+				searchWrapperChildren(),
+				listChildren(),
+			]).then(function () {
+				base.components = {
+					title: title,
+					searchInput: searchInput,
+					searchButton: searchButton,
+					list: list,
+					listLoadingIcon: listLoadingIcon,
+					filter: filter,
+					info: info,
+				}
+				console.log(filterWrapper);
+				console.log('base');
+				return base.setChildren([title, searchWrapper, listWrapper, filterWrapper, info].filter(function (child) {
+					return child.defined;
+				}));
+			}).then(function () {
+				return base;
+			});
 		});
 	},
 
