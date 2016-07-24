@@ -73,8 +73,6 @@ var UI = {
 								_this.model().insertAfter(before.model());
 								resolve();
 							});
-						}).then(function () {
-
 						});
 					});
 				} else {
@@ -90,11 +88,11 @@ var UI = {
 			}
 		}
 		this.setRoot = function (root) {
-			var currentRoot = this.root !== undefined ? this.root : 'hook'; // this should be 'app' when making an app
-			root = root !== undefined ? root : currentRoot;
+			var _this = this;
+			var currentRoot = (_this.root || 'hook'); // this should be 'app' when making an app
+			root = (root || currentRoot);
 
 			if (root !== currentRoot) {
-				var _this = this;
 				_this.root = _this.root !== undefined ? _this.root : root;
 				// 1. get the current parent.
 				// 2.	remove the child from the current parent.
@@ -103,9 +101,7 @@ var UI = {
 				// 5. get the new parent.
 				// 6. add the child to new parent.
 				return _this.parent().then(function (parent) {
-					if (_this.isRendered) {
-						return parent.removeChild(_this.id);
-					}
+					return parent.removeChild(_this.id);
 				}).then(function () {
 					return new Promise(function(resolve, reject) {
 						_this.root = root;
@@ -118,9 +114,9 @@ var UI = {
 					return newParent.addChild(_this);
 				});
 			} else {
-				this.root = root;
+				_this.root = root;
 				return new Promise(function(resolve, reject) {
-					resolve(this.root);
+					resolve(_this.root);
 				});
 			}
 		}
@@ -356,20 +352,13 @@ var UI = {
 		}
 		this.setChildren = function (children) {
 			var _this = this;
-			if (_this.id === 'transcription-interface-search-filter' && children !== undefined) {
-				console.log(_this.id, children);
-			}
 			_this.children = _this.children !== undefined ? _this.children : [];
 			if (children !== undefined) {
-				return Promise.ordered(children.map(function (child, index) {
-					var placementIndex = _this.children.length + index;
+				return Promise.ordered(children.map(function (child) {
 					return function () {
 						if (child.then !== undefined) { // is an unevaluated promise
 							return child.then(function (component) {
-								if (_this.id === 'transcription-interface-search-filter' && children !== undefined) {
-									console.log(_this.id, component);
-								}
-								return component.childIndexFromAfter(placementIndex);
+								return component.childIndexFromAfter();
 							}).then(function (component) {
 								return _this.addChild(component);
 							}).then(function (final) {
@@ -381,7 +370,7 @@ var UI = {
 								}
 							});
 						} else {
-							return child.childIndexFromAfter(placementIndex).then(function (component) {
+							return child.childIndexFromAfter().then(function (component) {
 								return _this.addChild(component);
 							}).then(function (final) {
 								if (_this.isRendered) {
@@ -391,14 +380,22 @@ var UI = {
 							});
 						}
 					}
-				}));
+				})).then(function () {
+					return _this.setChildIndexes();
+				});
 			} else {
 				return _this.children;
 			}
 		}
 		this.setChildIndexes = function () {
 			// set index from position in children array
-
+			var _this = this;
+			return Promise.all(_this.children.map(function (child, index) {
+				return new Promise(function(resolve, reject) {
+					child.index = index;
+					resolve();
+				});
+			}));
 		}
 		this.childIndexFromAfter = function (placementIndex) {
 			// find index from after key
