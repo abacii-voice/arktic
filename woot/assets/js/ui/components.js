@@ -11,7 +11,7 @@ var Components = {
 	// 4. A small info line showing the currently selected command or filter
 	// 5. An optional title
 	// 6. An optional loading icon
- scroll: function (id, args) {
+	scroll: function (id, args) {
 
 		// SETUP
 		// arg setup and initialisation
@@ -1478,12 +1478,12 @@ var Components = {
 				var activeIndexIncrement = list.activeToken.index + 1;
 
 				// find token with this index and activate it.
-				var ids = list.children.filter(function (child) {
+				var children = list.children.filter(function (child) {
 					return child.index == activeIndexIncrement;
 				});
 
-				if (ids.length > 0) {
-					var active = list.children[ids[0]];
+				if (children.length > 0) {
+					var active = children[0];
 					active.activate();
 					list.switch = false;
 				}
@@ -1497,9 +1497,10 @@ var Components = {
 					return child.index == activeIndexIncrement;
 				});
 
-				if (ids.length > 0) {
+				if (children.length > 0) {
 					var active = children[0];
 					active.activate();
+					list.switch = false;
 				}
 			}
 			base.setState(args.state);
@@ -1514,7 +1515,6 @@ var Components = {
 							token.setAfter(_this.activeToken.id);
 						}
 						token.activate();
-						// token.index = _this.currentIndex;
 						_this.currentIndex++;
 						return _this.setChildren([token]);
 					}).then(function () {
@@ -1546,12 +1546,11 @@ var Components = {
 			]);
 
 			base.list = list;
-			base.setChildren([
+			return base.setChildren([
 				wrapper,
-			]);
-
-			// final
-			return base;
+			]).then(function () {
+				return base;
+			});
 		});;
 	},
 
