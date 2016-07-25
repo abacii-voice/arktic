@@ -350,7 +350,6 @@ var UI = {
 		}
 		this.removeChildren = function () {
 			var _this = this;
-			console.log(_this.id, _this.children);
 			return Promise.ordered(_this.children.map(function (child) {
 				return function () {
 					return _this.removeChild(child.id);
