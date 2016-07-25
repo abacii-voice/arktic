@@ -281,7 +281,7 @@ var Components = {
 						return Context.get(path, fltr);
 					}).then(details.process).then(function (results) {
 						return _this.setChildren(results.filter(function (result) {
-							return (query || result.main).indexOf(result.main) === 0;
+							return result.main.indexOf((query || result.main)) === 0;
 						}).map(args.options.display.list(_this, query)));
 					}).then(function () {
 						listLoadingIcon.fade();
@@ -428,6 +428,7 @@ var Components = {
 									// 3. sources: paths and urls
 
 									// remove all previous results (this is before buffer is implemented)
+									console.log(query);
 									list.removeChildren().then(function () {
 										// Steps
 										// 1. If active filter is set, use only the url/path of that filter.
