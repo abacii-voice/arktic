@@ -130,7 +130,9 @@ var AccountInterfaces = {
 
 							// path in Context
 							path: function () {
-								return 'clients';
+								return new Promise(function(resolve, reject) {
+									resolve('clients');
+								});
 							},
 
 							// filter to apply to request
