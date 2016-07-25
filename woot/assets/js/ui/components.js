@@ -278,7 +278,9 @@ var Components = {
 				query = query || '';
 				var fltr = details.fltr !== undefined ? {options: {filter: details.fltr()}} : {};
 				if (details.path !== undefined) {
-					Context.get(details.path(), fltr).then(details.process).then(function (results) {
+					details.path().then(function (path) {
+						return Context.get(path, fltr);
+					}).then(details.process).then(function (results) {
 						return Promise.all(results.filter(function (result) {
 							return result.main.indexOf(query) === 0;
 						}).map(args.options.display.list(_this, query)));
