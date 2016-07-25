@@ -1470,6 +1470,7 @@ var Components = {
 			}
 			base.load = function (caption) {
 				var _this = base;
+				console.log(list.children);
 				list.removeChildren().then(function () {
 					return Promise.ordered(caption.split(' ').map(function (word) {
 						return function () {
@@ -1478,7 +1479,9 @@ var Components = {
 							});
 						}
 					}));
-				})
+				}).catch(function (error) {
+					console.log(error);
+				});
 			}
 			base.next = function () {
 				// get index of active token
