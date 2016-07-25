@@ -100,17 +100,23 @@ var UI = {
 				// 4. change the root value.
 				// 5. get the new parent.
 				// 6. add the child to new parent.
+				if (_this.id.includes('role')) {
+					console.log(_this.id);
+				}
 				return _this.parent().then(function (parent) {
 					return parent.removeChild(_this.id);
 				}).then(function () {
+					console.log(root);
 					return new Promise(function(resolve, reject) {
 						_this.root = root;
+
 						if (_this.isRendered) {
 							_this.model().appendTo('#{id}'.format({id: root}));
 						}
 						resolve(root);
 					});
 				}).then(UI.getComponent).then(function (newParent) {
+					console.log(newParent.id);
 					return newParent.addChild(_this);
 				});
 			} else {
@@ -335,11 +341,13 @@ var UI = {
 		this.removeChild = function (id) {
 			var _this = this;
 			return UI.getComponent(id).then(function (child) {
+				console.log(child.index);
 				return new Promise(function(resolve, reject) {
 					_this.children.splice(child.index, 1);
 					resolve(id);
 				})
 			}).then(UI.removeComponent).then(function () {
+				console.log(_this.id);
 				// renumber children
 				return _this.setChildIndexes();
 			});
