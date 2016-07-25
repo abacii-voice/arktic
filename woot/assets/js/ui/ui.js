@@ -409,7 +409,7 @@ var UI = {
 			if (_this.after !== undefined) {
 				return UI.getComponent(_this.after).then(function (component) {
 					return new Promise(function(resolve, reject) {
-						_this.index = component.index + 1;
+						_this.index = component !== undefined ? component.index + 1 : 0;
 						resolve(_this);
 					});
 				});
