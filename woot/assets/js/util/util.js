@@ -152,10 +152,10 @@ function reduceSum (previous, next) {
 	return previous + next;
 }
 
-function emptyPromiseFunction () {
-	return function (resolve, reject) {
+function emptyPromise () {
+	return new Promise(function(resolve, reject) {
 		resolve();
-	}
+	});
 }
 
 function blankFunction () {}
