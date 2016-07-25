@@ -20,19 +20,19 @@ var AccountInterfaces = {
 							'left': '0px',
 						},
 						fn: function (_this) {
-							return function (resolve, reject) {
+							return new Promise(function(resolve, reject) {
 								_this.model().css({'display': 'none'});
 								resolve();
-							}
+							});
 						},
 					},
 					states: [
 						{name: 'transcription-state', args: {
 							preFn: function (_this) {
-								return function (resolve, reject) {
+								return new Promise(function(resolve, reject) {
 									_this.model().css({'display': 'block'});
 									resolve();
-								}
+								});
 							},
 							style: {
 								'left': '60px',
@@ -238,8 +238,6 @@ var AccountInterfaces = {
 											},
 										}),
 									],
-								}).then(function (unit) {
-									return unit.render();
 								});
 							}
 						},
@@ -304,11 +302,11 @@ var AccountInterfaces = {
 					states: [
 						{name: 'transcription-state', args: {
 							fn: function (_this) {
-								return function (resolve, reject) {
+								return new Promise(function(resolve, reject) {
 									_this.canvas.start();
 									_this.update();
 									resolve();
-								}
+								});
 							},
 						}},
 					],
@@ -782,8 +780,6 @@ var AccountInterfaces = {
 													},
 												}),
 											],
-										}).then(function (unit) {
-											return unit.render();
 										});
 									}
 								},
@@ -839,7 +835,9 @@ var AccountInterfaces = {
 
 									// path in Context
 									path: function () {
-										return 'clients';
+										return new Promise(function(resolve, reject) {
+											resolve('clients');
+										});
 									},
 
 									// filter to apply to request
@@ -916,8 +914,6 @@ var AccountInterfaces = {
 													},
 												}),
 											],
-										}).then(function (unit) {
-											return unit.render();
 										});
 									}
 								},

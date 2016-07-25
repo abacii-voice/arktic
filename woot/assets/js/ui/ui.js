@@ -89,38 +89,35 @@ var UI = {
 		}
 		this.setRoot = function (root) {
 			var _this = this;
-			var currentRoot = (_this.root || 'hook'); // this should be 'app' when making an app
-			root = (root || currentRoot);
+			var currentRoot = (_this.root || 'hook');
+			newRoot = (root || currentRoot);
 
-			if (root !== currentRoot) {
-				_this.root = _this.root !== undefined ? _this.root : root;
+			console.log(_this.id, root, currentRoot);
+			if (newRoot !== currentRoot) {
+				_this.root = (_this.root || root);
 				// 1. get the current parent.
 				// 2.	remove the child from the current parent.
 				// 3. append to new parent model.
 				// 4. change the root value.
 				// 5. get the new parent.
 				// 6. add the child to new parent.
-				if (_this.id.includes('role')) {
-					console.log(_this.id);
-				}
 				return _this.parent().then(function (parent) {
+					console.log(_this.id);
 					return parent.removeChild(_this.id);
 				}).then(function () {
-					console.log(root);
 					return new Promise(function(resolve, reject) {
-						_this.root = root;
-
+						_this.root = newRoot;
 						if (_this.isRendered) {
-							_this.model().appendTo('#{id}'.format({id: root}));
+							_this.model().appendTo('#{id}'.format({id: newRoot}));
 						}
-						resolve(root);
+						resolve(newRoot);
 					});
 				}).then(UI.getComponent).then(function (newParent) {
-					console.log(newParent.id);
+					console.log(_this.id);
 					return newParent.addChild(_this);
 				});
 			} else {
-				_this.root = root;
+				_this.root = newRoot;
 				return new Promise(function(resolve, reject) {
 					resolve(_this.root);
 				});
@@ -334,33 +331,35 @@ var UI = {
 		this.addChild = function (child) {
 			var _this = this;
 			return new Promise(function(resolve, reject) {
-				_this.children.splice((child.index || _this.children.length), 0, child);
+				child.index = (child.index || _this.children.length);
+				console.log(_this.id, child.id, child.index);
+				_this.children.splice(child.index, 0, child);
 				resolve(child);
 			});
 		}
 		this.removeChild = function (id) {
 			var _this = this;
 			return UI.getComponent(id).then(function (child) {
-				console.log(child.index);
 				return new Promise(function(resolve, reject) {
 					_this.children.splice(child.index, 1);
 					resolve(id);
 				})
 			}).then(UI.removeComponent).then(function () {
-				console.log(_this.id);
 				// renumber children
 				return _this.setChildIndexes();
 			});
 		}
 		this.removeChildren = function () {
 			var _this = this;
+			console.log(_this.id, _this.children);
+			_this.children = (_this.children || []);
 			return Promise.all(_this.children.map(function (child) {
 				return _this.removeChild(child.id);
 			}));
 		}
 		this.setChildren = function (children) {
 			var _this = this;
-			_this.children = _this.children !== undefined ? _this.children : [];
+			_this.children = (_this.children || []);
 			if (children !== undefined) {
 				return Promise.ordered(children.map(function (child) {
 					return function () {
@@ -501,7 +500,7 @@ var UI = {
 			var model = _this.model();
 
 			// 3. run pre FN
-			return new Promise((_this.state.preFn || emptyPromiseFunction)(_this)).then(function () {
+			return (_this.state.preFn || emptyPromise)(_this).then(function () {
 				return Promise.all((_this.stateClasses || []).map(function (className) {
 					return new Promise(function(resolve, reject) {
 						model.removeClass(className);
@@ -527,7 +526,7 @@ var UI = {
 				_this.stateStyle = _this.state.style !== undefined ? _this.state.style : {};
 				return model.animate(_this.stateStyle, 300).promise();
 			}).then(function () {
-				return new Promise((_this.state.fn || emptyPromiseFunction)(_this));
+				return (_this.state.fn || emptyPromise)(_this);
 			});
 		}
 

@@ -275,14 +275,13 @@ var Components = {
 
 			list.runDisplay = function (details, query) {
 				var _this = list;
-				query = query || '';
 				var fltr = details.fltr !== undefined ? {options: {filter: details.fltr()}} : {};
 				if (details.path !== undefined) {
 					details.path().then(function (path) {
 						return Context.get(path, fltr);
 					}).then(details.process).then(function (results) {
-						return Promise.all(results.filter(function (result) {
-							return result.main.indexOf(query) === 0;
+						return _this.setChildren(results.filter(function (result) {
+							return (query || result.main).indexOf(result.main) === 0;
 						}).map(args.options.display.list(_this, query)));
 					}).then(function () {
 						listLoadingIcon.fade();
@@ -482,13 +481,11 @@ var Components = {
 								name: state,
 								args: {
 									preFn: function (_this) {
-										return function (resolve, reject) {
-											_this.removeChildren().then(function () {
-												Object.keys(args.options.targets).forEach(function (target) {
-													_this.runDisplay(args.options.targets[target]);
-												});
+										return _this.removeChildren().then(function () {
+											Object.keys(args.options.targets).forEach(function (target) {
+												_this.runDisplay(args.options.targets[target]);
 											});
-										}
+										});
 									}
 								},
 							});
@@ -514,13 +511,11 @@ var Components = {
 							name: state,
 							args: {
 								preFn: function (_this) {
-									return function (resolve, reject) {
-										_this.removeChildren().then(function () {
-											Object.keys(args.options.targets).forEach(function (target) {
-												_this.runDisplay(args.options.targets[target]);
-											});
+									return _this.removeChildren().then(function () {
+										Object.keys(args.options.targets).forEach(function (target) {
+											_this.runDisplay(args.options.targets[target]);
 										});
-									}
+									});
 								}
 							},
 						});
@@ -603,13 +598,14 @@ var Components = {
 							name: state,
 							args: {
 								preFn: function (_this) {
-									return function (resolve, reject) {
-										_this.removeChildren().then(function () {
-											Object.keys(args.options.targets).forEach(function (target) {
-												_this.runDisplay(args.options.targets[target]);
-											});
+									console.log('remove children');
+									return _this.removeChildren().then(function () {
+										console.log(_this.children);
+										Object.keys(args.options.targets).forEach(function (target) {
+											console.log(target);
+											_this.runDisplay(args.options.targets[target]);
 										});
-									}
+									});
 								}
 							},
 						});
