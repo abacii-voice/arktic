@@ -14,8 +14,6 @@ var UI = {
 			return Promise.all(UI.states.map(function (state) {
 				return state.change();
 			}));
-		}).catch(function (error) {
-			console.log(error);
 		});
 	},
 
@@ -92,30 +90,31 @@ var UI = {
 			var currentRoot = (_this.root || 'hook');
 			newRoot = (root || currentRoot);
 
-			console.log(_this.id, root, currentRoot);
 			if (newRoot !== currentRoot) {
-				_this.root = (_this.root || root);
+				_this.root = newRoot;
 				// 1. get the current parent.
 				// 2.	remove the child from the current parent.
 				// 3. append to new parent model.
 				// 4. change the root value.
 				// 5. get the new parent.
 				// 6. add the child to new parent.
-				return _this.parent().then(function (parent) {
-					console.log(_this.id);
-					return parent.removeChild(_this.id);
-				}).then(function () {
-					return new Promise(function(resolve, reject) {
-						_this.root = newRoot;
-						if (_this.isRendered) {
-							_this.model().appendTo('#{id}'.format({id: newRoot}));
-						}
-						resolve(newRoot);
+				if (_this.isAddedToParent) {
+					return _this.parent().then(function (parent) {
+						return parent.removeChild(_this.id);
+					}).then(function () {
+						return new Promise(function(resolve, reject) {
+							_this.root = newRoot;
+							if (_this.isRendered) {
+								_this.model().appendTo('#{id}'.format({id: newRoot}));
+							}
+							resolve(newRoot);
+						});
+					}).then(UI.getComponent).then(function (newParent) {
+						return newParent.addChild(_this);
 					});
-				}).then(UI.getComponent).then(function (newParent) {
-					console.log(_this.id);
-					return newParent.addChild(_this);
-				});
+				} else {
+					return emptyPromise();
+				}
 			} else {
 				_this.root = newRoot;
 				return new Promise(function(resolve, reject) {
@@ -332,7 +331,7 @@ var UI = {
 			var _this = this;
 			return new Promise(function(resolve, reject) {
 				child.index = (child.index || _this.children.length);
-				console.log(_this.id, child.id, child.index);
+				child.isAddedToParent = true;
 				_this.children.splice(child.index, 0, child);
 				resolve(child);
 			});
@@ -352,9 +351,10 @@ var UI = {
 		this.removeChildren = function () {
 			var _this = this;
 			console.log(_this.id, _this.children);
-			_this.children = (_this.children || []);
-			return Promise.all(_this.children.map(function (child) {
-				return _this.removeChild(child.id);
+			return Promise.ordered(_this.children.map(function (child) {
+				return function () {
+					return _this.removeChild(child.id);
+				}
 			}));
 		}
 		this.setChildren = function (children) {
