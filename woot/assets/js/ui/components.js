@@ -240,7 +240,7 @@ var Components = {
 
 			listLoadingIcon.fade = function () {
 				var _this = listLoadingIcon;
-				_this.model().fade();
+				_this.model().fadeOut();
 			}
 
 			filterWrapper.show = function () {
@@ -277,7 +277,7 @@ var Components = {
 				var _this = list;
 				var fltr = details.fltr !== undefined ? {options: {filter: details.fltr()}} : {};
 				if (details.path !== undefined) {
-					details.path().then(function (path) {
+					return details.path().then(function (path) {
 						return Context.get(path, fltr);
 					}).then(details.process).then(function (results) {
 						return _this.setChildren(results.filter(function (result) {
@@ -370,11 +370,12 @@ var Components = {
 								info.hide();
 								listWrapper.show();
 								list.removeChildren().then(function () {
-									var targets = Object.keys(args.options.targets);
-									for (i=0; i<targets.length; i++) {
-										list.runDisplay(args.options.targets[targets[i]]);
-									}
-								})
+									return Promise.ordered(Object.keys(args.options.targets).map(function (target) {
+										return function () {
+											return list.runDisplay(args.options.targets[target]);
+										}
+									}));
+								});
 							}
 							searchButton.hide();
 							_this.isFocussed = false;
@@ -431,19 +432,22 @@ var Components = {
 										// Steps
 										// 1. If active filter is set, use only the url/path of that filter.
 										if (filter.active !== undefined) {
-											list.runDisplay(filter.active, query);
+											return list.runDisplay(filter.active, query);
 										} else {
 											if (filter.defaults.length !== 0) {
 												// display only defaults
-												for (i=0; i<filter.defaults.length; i++) {
-													list.runDisplay(args.options.targets[filter.defaults[i]], query);
-												}
+												return Promise.ordered(filter.defaults.map(function (def) {
+													return function () {
+														return list.runDisplay(args.options.targets[def], query);
+													}
+												}));
 											} else {
 												// display everything
-												var targets = Object.keys(args.options.targets);
-												for (i=0; i<targets.length; i++) {
-													list.runDisplay(args.options.targets[targets[i]], query);
-												}
+												return Promise.ordered(Object.keys(args.options.targets).map(function (target) {
+													return function () {
+														return list.runDisplay(args.options.targets[target], query);
+													}
+												}));
 											}
 										}
 									});
@@ -481,10 +485,12 @@ var Components = {
 								name: state,
 								args: {
 									preFn: function (_this) {
-										return _this.removeChildren().then(function () {
-											Object.keys(args.options.targets).forEach(function (target) {
-												_this.runDisplay(args.options.targets[target]);
-											});
+										return list.removeChildren().then(function () {
+											return Promise.ordered(Object.keys(args.options.targets).map(function (target) {
+												return function () {
+													return list.runDisplay(args.options.targets[target]);
+												}
+											}));
 										});
 									}
 								},
@@ -512,9 +518,11 @@ var Components = {
 							args: {
 								preFn: function (_this) {
 									return _this.removeChildren().then(function () {
-										Object.keys(args.options.targets).forEach(function (target) {
-											_this.runDisplay(args.options.targets[target]);
-										});
+										return Promise.ordered(Object.keys(args.options.targets).map(function (target) {
+											return function () {
+												return _this.runDisplay(args.options.targets[target]);
+											}
+										}));
 									});
 								}
 							},
@@ -547,19 +555,20 @@ var Components = {
 
 								// remove all previous results (this is before buffer is implemented)
 								list.removeChildren().then(function () {
-									// display everything
-									var targets = Object.keys(args.options.targets);
-									for (i=0; i<targets.length; i++) {
-										list.runDisplay(args.options.targets[targets[i]], query);
-									}
+									return Promise.ordered(Object.keys(args.options.targets).map(function (target) {
+										return function () {
+											return list.runDisplay(args.options.targets[target]);
+										}
+									}));
 								});
 							} else {
 								list.removeChildren().then(function () {
 									if (search.autocomplete === undefined || !search.autocomplete) {
-										var targets = Object.keys(args.options.targets);
-										for (i=0; i<targets.length; i++) {
-											list.runDisplay(args.options.targets[targets[i]]);
-										}
+										return Promise.ordered(Object.keys(args.options.targets).map(function (target) {
+											return function () {
+												return list.runDisplay(args.options.targets[target]);
+											}
+										}));
 									}
 								});
 							}
@@ -598,13 +607,12 @@ var Components = {
 							name: state,
 							args: {
 								preFn: function (_this) {
-									console.log('remove children');
 									return _this.removeChildren().then(function () {
-										console.log(_this.children);
-										Object.keys(args.options.targets).forEach(function (target) {
-											console.log(target);
-											_this.runDisplay(args.options.targets[target]);
-										});
+										return Promise.ordered(Object.keys(args.options.targets).map(function (target) {
+											return function () {
+												return _this.runDisplay(args.options.targets[target]);
+											}
+										}));
 									});
 								}
 							},
