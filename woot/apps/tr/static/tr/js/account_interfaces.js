@@ -375,6 +375,11 @@ var AccountInterfaces = {
 								// span
 								UI.createComponent('{id}-token-{index}'.format({id: _this.id, index: _this.currentIndex}), {
 									template: UI.template('span', 'ie token span'),
+									appearance: {
+										style: {
+											'overflow': 'visible',
+										},
+									},
 								}),
 							]
 						},
@@ -520,6 +525,7 @@ var AccountInterfaces = {
 							'click': function (_this) {
 								new Promise(function(resolve, reject) {
 									_this.activate();
+									_this.setInsert();
 									list.switch = false;
 									resolve();
 								}).then(function () {
@@ -546,6 +552,20 @@ var AccountInterfaces = {
 									'color': '#ccc',
 								},
 							});
+						}
+
+						token.setInsert = function () {
+							// make a small indicator appear on the bottom right to show
+							// that a new word will be created on the right.
+							// http://apps.eky.hk/css-triangle-generator/
+
+							
+						}
+
+						token.setInsertLeft = function () {
+							// only applies to the first token
+
+
 						}
 
 						// return
