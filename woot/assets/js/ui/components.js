@@ -1479,8 +1479,6 @@ var Components = {
 							});
 						}
 					}));
-				}).catch(function (error) {
-					console.log(error);
 				});
 			}
 			base.next = function () {
