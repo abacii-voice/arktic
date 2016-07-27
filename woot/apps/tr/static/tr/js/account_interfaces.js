@@ -537,6 +537,9 @@ var AccountInterfaces = {
 									// scroll.addText(token.content);
 								});
 							},
+							'input': function (_this) {
+								console.log('input');
+							},
 						});
 
 						token.activate = function () {
