@@ -21,6 +21,8 @@ Token
 
 
 /*http://stackoverflow.com/questions/8100770/auto-scaling-inputtype-text-to-width-of-value FOR LATER */
-.token input {
-
+.token span:focus {
+	outline-style: none;
+	outline-width: 0px;
+	outline-color: -webkit-focus-ring-color;
 }

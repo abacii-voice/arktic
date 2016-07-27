@@ -379,6 +379,11 @@ var AccountInterfaces = {
 								// span
 								UI.createComponent('{id}-token-{index}-span'.format({id: _this.id, index: _this.currentIndex}), {
 									template: UI.template('span', 'ie span'),
+									appearance: {
+										properties: {
+											'contenteditable': 'true',
+										},
+									},
 								}),
 							]
 						},
@@ -529,7 +534,7 @@ var AccountInterfaces = {
 									list.switch = false;
 									resolve();
 								}).then(function () {
-									scroll.addText(token.content);
+									// scroll.addText(token.content);
 								});
 							},
 						});
