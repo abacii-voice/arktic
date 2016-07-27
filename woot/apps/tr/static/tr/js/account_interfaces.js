@@ -990,11 +990,12 @@ var AccountInterfaces = {
 					}
 				}
 			});
-			Mousetrap.bind('up', function () {
-
+			Mousetrap.bind('up', function (event) {
+				event.preventDefault();
+				transcriptionInterface.components.scroll.hideSearch();
 			});
 			Mousetrap.bind('down', function () {
-
+				transcriptionInterface.components.scroll.showSearch();
 			});
 
 			// base children

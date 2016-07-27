@@ -239,7 +239,7 @@ var UI = {
 						}
 
 						// style
-						model.css(_this.style);
+						model.animate(_this.style);
 
 						resolve();
 					});
