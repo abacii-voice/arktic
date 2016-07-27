@@ -377,8 +377,8 @@ var AccountInterfaces = {
 								}),
 
 								// span
-								UI.createComponent('{id}-token-{index}-span'.format({id: _this.id, index: _this.currentIndex}), {
-									template: UI.template('span', 'ie span'),
+								UI.createComponent('{id}-token-{index}-input'.format({id: _this.id, index: _this.currentIndex}), {
+									template: UI.template('input', 'ie'),
 								}),
 							]
 						},
@@ -516,7 +516,7 @@ var AccountInterfaces = {
 					// unpack
 					var [
 						token,
-						span,
+						input,
 					] = tokenComponents;
 
 					// methods and associations
@@ -525,11 +525,10 @@ var AccountInterfaces = {
 							'click': function (_this) {
 								new Promise(function(resolve, reject) {
 									_this.activate();
-									_this.setInsert();
 									list.switch = false;
 									resolve();
 								}).then(function () {
-									scroll.addText(token.content);
+									// scroll.addText(token.content);
 								});
 							},
 						});
@@ -560,8 +559,8 @@ var AccountInterfaces = {
 
 						}
 
-						token.span = span;
-						token.setChildren([span]);
+						token.input = input;
+						token.setChildren([input]);
 
 						// return
 						resolve(token);

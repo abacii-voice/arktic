@@ -1472,7 +1472,7 @@ var Components = {
 					return _this.token().then(function (token) {
 						return new Promise(function(resolve, reject) {
 							token.content = query.trim();
-							token.span.setAppearance({html: '{query}&nbsp;'.format({query: token.content})});
+							token.input.model().val('{query} '.format({query: token.content}));
 							resolve();
 						}).then(function () {
 							return _this.fitToTokens();
