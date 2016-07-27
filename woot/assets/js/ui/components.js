@@ -1402,18 +1402,6 @@ var Components = {
 	// 1. Tags are coloured differently
 	// 2. Clicking on a word will take you to the token
 	renderedTextField: function (id, args) {
-		// styling
-		var wrapperStyle = {
-			'height': '100%',
-			'width': '100%',
-			'overflow-y': 'hidden',
-		}
-		var listStyle = {
-			'width': 'calc(100% + 20px)',
-			'padding-right': '20px',
-			'overflow-y': 'scroll',
-		}
-
 		// components
 		return Promise.all([
 			// base
@@ -1426,14 +1414,25 @@ var Components = {
 			UI.createComponent('{id}-wrapper'.format({id: id}), {
 				template: UI.template('div', 'ie'),
 				appearance: {
-					style: wrapperStyle,
+					style: {
+						'width': '100%',
+						'overflow-y': 'hidden',
+					},
 				},
 			}),
 
 			UI.createComponent('{id}-list'.format({id: id}), {
 				template: UI.template('div', 'ie'),
 				appearance: {
-					style: listStyle,
+					style: {
+						'width': 'calc(100% + 20px)',
+						'padding-left': '10px',
+						'padding-top': '10px',
+						'padding-bottom': '2px',
+						'padding-right': '20px',
+						'border-left': '1px solid #ccc',
+						'overflow-y': 'scroll',
+					},
 				},
 			}),
 
@@ -1455,7 +1454,7 @@ var Components = {
 					return _this.token().then(function (token) {
 						return new Promise(function(resolve, reject) {
 							token.content = query.trim();
-							token.setAppearance({html: '{query} '.format({query: token.content})});
+							token.span.setAppearance({html: '{query}&nbsp;'.format({query: token.content})});
 							resolve();
 						}).then(function () {
 							return _this.fitToTokens();
