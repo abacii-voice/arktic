@@ -4,3 +4,17 @@ This is an extension of assets/ui.css. It contains any extensions of the ui styl
 unique to the account app.
 
 */
+
+/*
+
+Token
+
+*/
+.token {
+	height: 25px;
+	float: left;
+}
+
+.token.active {
+	color: #fff;
+}

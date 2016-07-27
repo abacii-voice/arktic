@@ -362,7 +362,6 @@ var AccountInterfaces = {
 			Components.renderedTextField('{id}-original'.format({id: id}), {
 				appearance: {
 					style: {
-						'height': '40px',
 						'width': '100%',
 						'overflow': 'hidden',
 						'margin-bottom': '{margin}px'.format({margin: args.interface.margin}),
@@ -372,14 +371,14 @@ var AccountInterfaces = {
 					token: {
 						components: function (_this) {
 							return [
-								// span
+								// div
 								UI.createComponent('{id}-token-{index}'.format({id: _this.id, index: _this.currentIndex}), {
-									template: UI.template('span', 'ie token span'),
-									appearance: {
-										style: {
-											'overflow': 'visible',
-										},
-									},
+									template: UI.template('div', 'ie token'),
+								}),
+
+								// span
+								UI.createComponent('{id}-token-{index}-span'.format({id: _this.id, index: _this.currentIndex}), {
+									template: UI.template('span', 'ie span'),
 								}),
 							]
 						},
@@ -516,7 +515,8 @@ var AccountInterfaces = {
 				return function (tokenComponents) {
 					// unpack
 					var [
-						token
+						token,
+						span,
 					] = tokenComponents;
 
 					// methods and associations
@@ -538,20 +538,12 @@ var AccountInterfaces = {
 							if (list.activeToken !== undefined && list.activeToken.id !== token.id) {
 								list.activeToken.deactivate();
 							}
-							token.setAppearance({
-								style: {
-									'color': '#fff',
-								},
-							});
+							token.setAppearance({classes: {add: ['active']}});
 							list.activeToken = token;
 						}
 
 						token.deactivate = function () {
-							token.setAppearance({
-								style: {
-									'color': '#ccc',
-								},
-							});
+							token.setAppearance({classes: {remove: ['active']}});
 						}
 
 						token.setInsert = function () {
@@ -559,7 +551,7 @@ var AccountInterfaces = {
 							// that a new word will be created on the right.
 							// http://apps.eky.hk/css-triangle-generator/
 
-							
+
 						}
 
 						token.setInsertLeft = function () {
@@ -567,6 +559,9 @@ var AccountInterfaces = {
 
 
 						}
+
+						token.span = span;
+						token.setChildren([span]);
 
 						// return
 						resolve(token);
