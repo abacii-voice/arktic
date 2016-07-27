@@ -19,7 +19,6 @@ Token
 	color: #fff;
 }
 
-
 /*http://stackoverflow.com/questions/8100770/auto-scaling-inputtype-text-to-width-of-value FOR LATER */
 .token span:focus {
 	outline-style: none;
