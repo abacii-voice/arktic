@@ -267,6 +267,25 @@ var Components = {
 				searchInput.model().val('');
 				searchInput.model().trigger('focus');
 			}
+			base.hideSearch = function () {
+				// 1. slide search input up and hide (and title)
+				// 2. resize list to fit 100% height
+				// use variable "offset"
+				searchWrapper.setAppearance({style: {'top': '-{offset}px'.format({offset: offset}), 'opacity': '0'}});
+				title.setAppearance({style: {'top': '-{offset}px'.format({offset: offset}), 'opacity': '0'}});
+				listWrapper.setAppearance({style: {'top': '-{offset}px'.format({offset: offset}), 'height': '100%'}});
+				filterWrapper.setAppearance({style: {'top': '-{offset}px'.format({offset: offset}), 'height': '100%'}});
+				info.setAppearance({style: {'top': '-{offset}px'.format({offset: offset}), 'height': '100%'}});
+			}
+			base.showSearch = function () {
+				// 1. slide search input down and show (and title)
+				// 2. resize list to fit 100% - search height
+				searchWrapper.setAppearance({style: {'top': '0px', 'opacity': '1'}});
+				title.setAppearance({style: {'top': '0px', 'opacity': '1'}});
+				listWrapper.setAppearance({style: {'top': '0px', 'height': 'calc(100% - {offset}px)'.format({offset: offset})}});
+				filterWrapper.setAppearance({style: {'top': '0px', 'height': 'calc(100% - {offset}px)'.format({offset: offset})}});
+				info.setAppearance({style: {'top': '0px', 'height': 'calc(100% - {offset}px)'.format({offset: offset})}});
+			}
 
 			// SET PROPERTIES AND METHODS
 			// set bindings, children, etc.
@@ -291,10 +310,10 @@ var Components = {
 
 			// SEARCH
 			// If the search option is filled, include a search bar and an optional filter panel
-			var infoChildren = blankFunction,
-					filterWrapperChildren = blankFunction,
-					searchWrapperChildren = blankFunction,
-					listChildren = blankFunction;
+			var infoChildren = emptyPromise,
+					filterWrapperChildren = emptyPromise,
+					searchWrapperChildren = emptyPromise,
+					listChildren = emptyPromise;
 			if (search !== undefined) {
 				// search functions engaged. can be in autocomplete mode and include filter panel.
 				searchInput.isFocussed = false;
@@ -428,7 +447,6 @@ var Components = {
 									// 3. sources: paths and urls
 
 									// remove all previous results (this is before buffer is implemented)
-									console.log(query);
 									list.removeChildren().then(function () {
 										// Steps
 										// 1. If active filter is set, use only the url/path of that filter.
@@ -459,7 +477,7 @@ var Components = {
 								list.removeChildren();
 							}
 
-							if (base.input !== undefined) {
+							if (base.input !== undefined && query !== '') {
 								base.input(base, type, query, query.slice(-1));
 							}
 						}
@@ -1469,7 +1487,6 @@ var Components = {
 			}
 			base.load = function (caption) {
 				var _this = base;
-				console.log(list.children);
 				list.removeChildren().then(function () {
 					return Promise.ordered(caption.split(' ').map(function (word) {
 						return function () {
