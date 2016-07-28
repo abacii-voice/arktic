@@ -1420,6 +1420,10 @@ var Components = {
 	// 1. Tags are coloured differently
 	// 2. Clicking on a word will take you to the token
 	renderedTextField: function (id, args) {
+		args.appearance.properties = {
+			'contenteditable': 'true',
+		}
+
 		// components
 		return Promise.all([
 			// base
@@ -1439,27 +1443,11 @@ var Components = {
 				},
 			}),
 
-			UI.createComponent('{id}-list'.format({id: id}), {
-				template: UI.template('div', 'ie'),
-				appearance: {
-					style: {
-						'width': 'calc(100% + 20px)',
-						'padding-left': '10px',
-						'padding-top': '10px',
-						'padding-bottom': '2px',
-						'padding-right': '20px',
-						'border-left': '1px solid #ccc',
-						'overflow-y': 'scroll',
-					},
-				},
-			}),
-
 		]).then(function (components) {
 			// unpack components
 			var [
 				base,
 				wrapper,
-				list,
 			] = components;
 
 			// methods and properties
