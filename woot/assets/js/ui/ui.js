@@ -452,8 +452,12 @@ var UI = {
 				resolve();
 			});
 		}
-		this.model = function () {
-			return $('#{id}'.format({id: this.id}));
+		this.model = function (single) {
+			if (single !== undefined && single) {
+				return $('#{id}'.format({id: this.id}))[0];
+			} else {
+				return $('#{id}'.format({id: this.id}));
+			}
 		}
 		this.render = function () {
 			var _this = this;

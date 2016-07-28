@@ -367,28 +367,6 @@ var AccountInterfaces = {
 						'margin-bottom': '{margin}px'.format({margin: args.interface.margin}),
 					},
 				},
-				options: {
-					token: {
-						components: function (_this) {
-							return [
-								// div
-								UI.createComponent('{id}-token-{index}'.format({id: _this.id, index: _this.currentIndex}), {
-									template: UI.template('div', 'ie token'),
-								}),
-
-								// span
-								UI.createComponent('{id}-token-{index}-span'.format({id: _this.id, index: _this.currentIndex}), {
-									template: UI.template('span', 'ie span'),
-									appearance: {
-										properties: {
-											'contenteditable': 'true',
-										},
-									},
-								}),
-							]
-						},
-					}
-				},
 			}),
 
 			// This can be triggered by searching for rules, flags, or tags in the search box
@@ -538,7 +516,7 @@ var AccountInterfaces = {
 								});
 							},
 							'input': function (_this) {
-								console.log('input');
+								// console.log(_this.span.model());
 							},
 						});
 
