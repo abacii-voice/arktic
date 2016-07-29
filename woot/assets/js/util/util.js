@@ -120,7 +120,7 @@ function interpolateArray (data, fitCount) {
 };
 
 function getMaxOfArray (numArray) {
-  return Math.max.apply(null, numArray);
+	return Math.max.apply(null, numArray);
 }
 
 function getAbsNormalised (array, max) {
@@ -174,4 +174,28 @@ Array.prototype.contains = function (object) {
 
 Array.prototype.sum = function (object) {
 	return this.reduce(reduceSum);
+}
+
+function getCaretOffsetWithin(element) {
+	var caretOffset = 0;
+	var doc = element.ownerDocument || element.document;
+	var win = doc.defaultView || doc.parentWindow;
+	var sel;
+	if (typeof win.getSelection != "undefined") {
+		sel = win.getSelection();
+		if (sel.rangeCount > 0) {
+			var range = win.getSelection().getRangeAt(0);
+			var preCaretRange = range.cloneRange();
+			preCaretRange.selectNodeContents(element);
+			preCaretRange.setEnd(range.endContainer, range.endOffset);
+			caretOffset = preCaretRange.toString().length;
+		}
+	} else if ( (sel = doc.selection) && sel.type != "Control") {
+		var textRange = sel.createRange();
+		var preCaretTextRange = doc.body.createTextRange();
+		preCaretTextRange.moveToElementText(element);
+		preCaretTextRange.setEndPoint("EndToEnd", textRange);
+		caretOffset = preCaretTextRange.text.length;
+	}
+	return caretOffset;
 }
