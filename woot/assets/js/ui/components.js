@@ -2,27 +2,189 @@
 
 var Components = {
 
-	// CONTENT PANEL
-	// Nested panel components meant to hide scroll bar.
-	contentPanel: function (id, args) {
-		// config
+	//////////// SCROLL
+	// This component is meant to hold related data in a list format.
+	// Has several parts:
+	// 1. A input field
+	// 2. A filter panel that appears when the input is focussed, but disappears when any input is entered.
+	// 3. A list where results appear
+	// 4. A small info line showing the currently selected command or filter
+	// 5. An optional title
+	// 6. An optional loading icon
+	scroll: function (id, args) {
 
-		// set up components
+		// SETUP
+		// arg setup and initialisation
+		// - if no title is given, leave no room for a title.
+		// - if no search is given, leave no room for an input.
+		// - looking for final variable 'listHeight'
+		var listHeight = '100%', offset = 0, titleText, titleCentered, search;
+		var searchHeight = args.interface !== undefined ? args.interface.size : 40;
+		if (args.options !== undefined) {
+			// title
+			if (args.options.title !== undefined) {
+				titleText = args.options.title.text;
+				titleCentered = args.options.title.center;
+				offset += 22;
+			}
+
+			// search
+			if (args.options.search !== undefined) {
+				search = args.options.search;
+				offset += searchHeight;
+			}
+
+			// listHeight
+			listHeight = 'calc(100% - {offset}px)'.format({offset: offset});
+
+			// reset
+			if (!$.isArray(args.options.reset)) {
+				args.options.reset = [args.options.reset];
+			}
+		}
+
+		// default appearance
+		var defaultAppearance = {
+			style: {
+				'height': '100%',
+				'width': '100%',
+			},
+		}
+
+		// CREATE ALL COMPONENTS
+		// create elements in parallel
 		return Promise.all([
-			// base component
-			UI.createComponent('{id}-base'.format({id: id}), {
-				template: UI.template('div', 'ie'),
-				appearance: args.appearance,
+			// base
+			UI.createComponent(id, {
+				template: UI.template('div'),
+				appearance: (args.appearance || defaultAppearance),
 			}),
 
-			// wrapper
-			UI.createComponent('{id}-base'.format({id: id}), {
+			// title
+			UI.createComponent('{id}-title'.format({id: id}), {
+				template: UI.template('h4', 'ie title'),
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': '22px',
+						'font-size': '18px',
+						'text-align': (titleCentered ? 'center' : 'left'),
+					},
+					html: titleText,
+				},
+			}),
+
+			// SEARCH GROUP
+			// search wrapper
+			UI.createComponent('{id}-search-wrapper'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': '{height}px'.format({height: searchHeight}),
+					},
+				},
+			}),
+
+			// search input
+			UI.createComponent('{id}-search-input'.format({id: id}), {
+				template: UI.template('input', 'ie input abs mousetrap'),
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': '100%',
+					},
+					properties: {
+						'autocomplete': 'off',
+					},
+				},
+			}),
+
+			// search button
+			UI.createComponent('{id}-search-button'.format({id: id}), {
+				template: UI.template('div', 'ie button abs border border-radius'),
+				appearance: {
+					style: {
+						'top': '5px',
+						'height': '30px',
+						'width': 'auto',
+						'right': '5px',
+						'padding': '7px',
+						'font-size': '12px',
+					},
+				},
+			}),
+
+			// LIST GROUP
+			// list wrapper
+			UI.createComponent('{id}-list-wrapper'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': listHeight,
+						'overflow': 'hidden',
+					},
+				},
+			}),
+
+			// list
+			UI.createComponent('{id}-list'.format({id: id}), {
+				// in future, allow this to be bound to another element.
 				template: UI.template('div', 'ie'),
 				appearance: {
 					style: {
 						'width': 'calc(100% + 20px)',
+						'height': listHeight,
 						'padding-right': '20px',
-					}
+						'overflow-y': 'scroll',
+					},
+				},
+				// registry: args.options.target.states.map(function (state) {
+				// 	return {state: state, path: args.options.target.path(), args: {}, fn: args.options.target.process};
+				// }),
+			}),
+
+			// list loading icon
+			UI.createComponent('{id}-list-loading-icon'.format({id: id}), {
+				template: UI.templates.loadingIcon,
+			}),
+
+			// FILTER
+			// filter wrapper
+			UI.createComponent('{id}-filter-wrapper'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': listHeight,
+						'overflow': 'hidden',
+					},
+				},
+			}),
+
+			// filter list
+			UI.createComponent('{id}-filter'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': 'calc(100% + 20px)',
+						'height': listHeight,
+						'padding-right': '20px',
+						'overflow-y': 'scroll',
+					},
+				},
+			}),
+
+			// INFO
+			UI.createComponent('{id}-info'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': listHeight,
+						'overflow': 'hidden',
+					},
 				},
 			}),
 
@@ -30,109 +192,500 @@ var Components = {
 			// unpack components
 			var [
 				base,
-				wrapper,
+
+				// title
+				title,
+
+				// SEARCH GROUP
+				searchWrapper,
+				searchInput,
+				searchButton,
+
+				// LIST GROUP
+				listWrapper,
+				list,
+				listLoadingIcon,
+
+				// FILTER GROUP
+				filterWrapper,
+				filter,
+
+				// INFO
+				info,
 			] = components;
 
-			// set up promises to be completed before returning the base.
-
-			// logic, bindings, etc.
-			base.setWrapper = base.setChildren;
-			base.setChildren = function (children) {
-				return wrapper.setChildren(children);
+			// Basic appearance methods
+			searchInput.focus = function () {
+				var _this = searchInput;
+				_this.model().focus();
 			}
 
-			// complete promises.
-			return Promise.all([
+			searchButton.show = function (target) {
+				var _this = searchButton;
+				_this.setAppearance({classes: {remove: ['hidden']}, html: target.filter.button});
+			}
+			searchButton.hide = function () {
+				var _this = searchButton;
+				_this.setAppearance({classes: {add: ['hidden']}, html: ''});
+			}
 
-			]).then(function (results) {
-				base.components = {
-					wrapper: wrapper,
+			listWrapper.show = function () {
+				var _this = listWrapper;
+				_this.setAppearance({classes: {remove: ['hidden']}});
+			}
+			listWrapper.hide = function () {
+				var _this = listWrapper;
+				_this.setAppearance({classes: {add: ['hidden']}});
+			}
+
+			listLoadingIcon.fade = function () {
+				var _this = listLoadingIcon;
+				_this.model().fadeOut();
+			}
+
+			filterWrapper.show = function () {
+				var _this = filterWrapper;
+				_this.setAppearance({classes: {remove: ['hidden']}});
+			}
+			filterWrapper.hide = function () {
+				var _this = filterWrapper;
+				_this.setAppearance({classes: {add: ['hidden']}});
+			}
+
+			info.show = function () {
+				var _this = info;
+				_this.setAppearance({classes: {remove: ['hidden']}});
+			}
+			info.hide = function () {
+				var _this = info;
+				_this.setAppearance({classes: {add: ['hidden']}});
+			}
+
+			// base methods
+			base.clear = function () {
+				searchButton.hide();
+				searchInput.model().val('');
+				searchInput.model().trigger('focus');
+			}
+			base.hideSearch = function () {
+				// 1. slide search input up and hide (and title)
+				// 2. resize list to fit 100% height
+				// use variable "offset"
+				searchWrapper.setAppearance({style: {'top': '-{offset}px'.format({offset: offset}), 'opacity': '0'}});
+				title.setAppearance({style: {'top': '-{offset}px'.format({offset: offset}), 'opacity': '0'}});
+				listWrapper.setAppearance({style: {'top': '-{offset}px'.format({offset: offset}), 'height': '100%'}});
+				filterWrapper.setAppearance({style: {'top': '-{offset}px'.format({offset: offset}), 'height': '100%'}});
+				info.setAppearance({style: {'top': '-{offset}px'.format({offset: offset}), 'height': '100%'}});
+			}
+			base.showSearch = function () {
+				// 1. slide search input down and show (and title)
+				// 2. resize list to fit 100% - search height
+				searchWrapper.setAppearance({style: {'top': '0px', 'opacity': '1'}});
+				title.setAppearance({style: {'top': '0px', 'opacity': '1'}});
+				listWrapper.setAppearance({style: {'top': '0px', 'height': 'calc(100% - {offset}px)'.format({offset: offset})}});
+				filterWrapper.setAppearance({style: {'top': '0px', 'height': 'calc(100% - {offset}px)'.format({offset: offset})}});
+				info.setAppearance({style: {'top': '0px', 'height': 'calc(100% - {offset}px)'.format({offset: offset})}});
+			}
+
+			// SET PROPERTIES AND METHODS
+			// set bindings, children, etc.
+			// TITLE
+			title.defined = titleText !== undefined;
+
+			list.runDisplay = function (details, query) {
+				var _this = list;
+				var fltr = details.fltr !== undefined ? {options: {filter: details.fltr()}} : {};
+				if (details.path !== undefined) {
+					return details.path().then(function (path) {
+						return Context.get(path, fltr);
+					}).then(details.process).then(function (results) {
+						return _this.setChildren(results.filter(function (result) {
+							return result.main.indexOf((query || result.main)) === 0;
+						}).map(args.options.display.list(_this, query)));
+					}).then(function () {
+						listLoadingIcon.fade();
+					});
 				}
-				return base.setWrapper([
-					wrapper,
-				]);
+			}
+
+			// SEARCH
+			// If the search option is filled, include a search bar and an optional filter panel
+			var infoChildren = emptyPromise,
+					filterWrapperChildren = emptyPromise,
+					searchWrapperChildren = emptyPromise,
+					listChildren = emptyPromise;
+			if (search !== undefined) {
+				// search functions engaged. can be in autocomplete mode and include filter panel.
+				searchInput.isFocussed = false;
+				base.addText = function (text) {
+					searchInput.model().val(text);
+					searchInput.focus();
+					searchInput.model().trigger('input');
+				}
+
+				if (search.filter !== undefined && search.filter) {
+					if (args.options.info !== undefined) {
+						infoChildren = function () {
+							return info.setChildren([args.options.info(id)]);
+						}
+					}
+
+					// the filter panel will be displayed
+					// autocomplete will decide whether the panel is displayed before the list of data.
+					// FILTER: if filter, define filter panel
+					filterWrapper.defined = true;
+					filter.set = function (target) {
+						filter.active = target;
+						searchInput.focus();
+						listWrapper.show();
+						searchButton.show(target);
+						filterWrapper.hide();
+						info.hide();
+					}
+					filter.defaults = Object.keys(args.options.targets).filter(function (key) {
+						return args.options.targets[key].default;
+					}).map(function (key) {
+						return key;
+					});
+					filter.keys = Object.keys(args.options.targets).map(function (key) {
+						return args.options.targets[key].filter.char;
+					});
+
+					// set filterWrapper
+					filterWrapperChildren = function () {
+						return filter.setChildren(Object.keys(args.options.targets).map(function (key) {
+							return args.options.display.filter(filter.id, args.options.targets[key]);
+						})).then(function () {
+							return filterWrapper.setChildren([filter]);
+						});
+					}
+
+					// INPUT: if search, define input field
+					searchInput.setBindings({
+
+						// FOCUS INPUT
+						// autocomplete ? show filter : hide filter
+						'focus': function (_this) {
+							listWrapper.hide();
+							searchButton.hide();
+							info.hide();
+							filterWrapper.show();
+							_this.isFocussed = true;
+						},
+
+						// BLUR INPUT:
+						'blur': function (_this) {
+							if (search.autocomplete !== undefined && search.autocomplete) {
+								if (args.options.info !== undefined) {
+									info.show();
+									filterWrapper.hide();
+								} else {
+									info.hide();
+									filterWrapper.show();
+								}
+								listWrapper.hide();
+							} else {
+								filterWrapper.hide();
+								info.hide();
+								listWrapper.show();
+								list.removeChildren().then(function () {
+									return Promise.ordered(Object.keys(args.options.targets).map(function (target) {
+										return function () {
+											return list.runDisplay(args.options.targets[target]);
+										}
+									}));
+								});
+							}
+							searchButton.hide();
+							_this.isFocussed = false;
+						},
+
+						// handle enter key
+						'keydown': function (_this, event) {
+							// trigger enter function
+							if (event.keyCode === 13) {
+								(base.enter || function () {})(base);
+							}
+
+							// trigger backspace function
+							if (event.keyCode === 8) {
+								(base.backspace || function () {})(base);
+							}
+
+							// trigger space function
+							if (event.keyCode === 32) {
+								event.preventDefault();
+								(base.space || function () {})(base);
+							}
+						},
+
+						// TYPE INPUT:
+						'input': function (_this) {
+							// get words
+							var query = _this.model().val();
+							var tokens = query.split('');
+							var type = 'normal';
+
+							// show or hide
+							if (tokens.length !== 0) {
+								listWrapper.setAppearance({classes: {remove: ['hidden']}});
+								filterWrapper.setAppearance({classes: {add: ['hidden']}});
+
+								if (filter.keys.indexOf(tokens[0]) !== -1) {
+									filter.active = args.options.targets[Object.keys(args.options.targets).filter(function (key) {
+										return args.options.targets[key].filter.char === tokens[0];
+									})[0]];
+									type = filter.active.filter.rule;
+									query = tokens.slice(1).join('');
+									filter.set(filter.active);
+								}
+
+								if (query !== '') {
+									// Materials
+									// 1. tokens or value -> filters values
+									// 2. active filter -> filters rules
+									// 3. sources: paths and urls
+
+									// remove all previous results (this is before buffer is implemented)
+									list.removeChildren().then(function () {
+										// Steps
+										// 1. If active filter is set, use only the url/path of that filter.
+										if (filter.active !== undefined) {
+											return list.runDisplay(filter.active, query);
+										} else {
+											if (filter.defaults.length !== 0) {
+												// display only defaults
+												return Promise.ordered(filter.defaults.map(function (def) {
+													return function () {
+														return list.runDisplay(args.options.targets[def], query);
+													}
+												}));
+											} else {
+												// display everything
+												return Promise.ordered(Object.keys(args.options.targets).map(function (target) {
+													return function () {
+														return list.runDisplay(args.options.targets[target], query);
+													}
+												}));
+											}
+										}
+									});
+								}
+							} else {
+								listWrapper.hide();
+								filterWrapper.show();
+								list.removeChildren();
+							}
+
+							if (base.input !== undefined && query !== '') {
+								base.input(base, type, query, query.slice(-1));
+							}
+						}
+					});
+
+					// Search button behaviour
+					searchButton.setBindings({
+						'mousedown': function (_this) {
+							filter.active = undefined;
+						},
+					});
+
+					// Autocomplete mode only affects present elements, it does not add any.
+					searchButton.hide();
+					if (search.autocomplete !== undefined && search.autocomplete) {
+						// autocomplete mode: display filter first
+						listWrapper.hide();
+
+					} else {
+						// display data first, display filter panel upon focussing input, hide again on input.
+						filterWrapper.hide();
+						args.options.reset.forEach(function (state) {
+							list.addState({
+								name: state,
+								args: {
+									preFn: function (_this) {
+										return list.removeChildren().then(function () {
+											return Promise.ordered(Object.keys(args.options.targets).map(function (target) {
+												return function () {
+													return list.runDisplay(args.options.targets[target]);
+												}
+											}));
+										});
+									}
+								},
+							});
+						});
+					}
+
+					// DEFINE INPUT GROUP
+					searchWrapper.defined = true;
+					searchWrapperChildren = function () {
+						return searchWrapper.setChildren([
+							searchInput,
+							searchButton,
+						]);
+					}
+
+				} else {
+					// No filter panel
+					filterWrapper.defined = false;
+
+					// display everything
+					args.options.reset.forEach(function (state) {
+						list.addState({
+							name: state,
+							args: {
+								preFn: function (_this) {
+									return _this.removeChildren().then(function () {
+										return Promise.ordered(Object.keys(args.options.targets).map(function (target) {
+											return function () {
+												return _this.runDisplay(args.options.targets[target]);
+											}
+										}));
+									});
+								}
+							},
+						});
+					});
+
+					// INPUT: if search, define input field
+					searchInput.setBindings({
+						// BLUR INPUT:
+						'blur': function (_this) {
+							if (search.autocomplete !== undefined && search.autocomplete) {
+								listWrapper.hide();
+							}
+						},
+
+						// TYPE INPUT:
+						'input': function (_this) {
+							// get words
+							var query = _this.model().val();
+							var tokens = query.split('');
+
+							if (tokens.length !== 0) {
+								// show or hide
+								listWrapper.show();
+
+								// Materials
+								// 1. tokens or value -> filters values
+								// 2. active filter -> filters rules
+								// 3. sources: paths and urls
+
+								// remove all previous results (this is before buffer is implemented)
+								list.removeChildren().then(function () {
+									return Promise.ordered(Object.keys(args.options.targets).map(function (target) {
+										return function () {
+											return list.runDisplay(args.options.targets[target]);
+										}
+									}));
+								});
+							} else {
+								list.removeChildren().then(function () {
+									if (search.autocomplete === undefined || !search.autocomplete) {
+										return Promise.ordered(Object.keys(args.options.targets).map(function (target) {
+											return function () {
+												return list.runDisplay(args.options.targets[target]);
+											}
+										}));
+									}
+								});
+							}
+						}
+					});
+
+					// DEFINE INPUT GROUP
+					searchWrapper.defined = true;
+					searchWrapperChildren = function () {
+						return searchWrapper.setChildren([
+							searchInput,
+						]);
+					}
+
+					if (search.autocomplete !== undefined && search.autocomplete) {
+						// autocomplete mode: show no data until search query is entered.
+						listWrapper.hide();
+					} else {
+						// data is displayed first and filtered when search query is entered.
+
+					}
+
+				}
+
+			} else {
+				// display immediately, buffer can only be changed by scrolling.
+				searchWrapper.defined = false;
+
+				if (args.children !== undefined) {
+					listChildren = function () {
+						return list.setChildren(args.children);
+					}
+				} else {
+					args.options.reset.forEach(function (state) {
+						list.addState({
+							name: state,
+							args: {
+								preFn: function (_this) {
+									return _this.removeChildren().then(function () {
+										return Promise.ordered(Object.keys(args.options.targets).map(function (target) {
+											return function () {
+												return _this.runDisplay(args.options.targets[target]);
+											}
+										}));
+									});
+								}
+							},
+						});
+					});
+				}
+			}
+
+			// LIST
+			listWrapper.defined = true;
+			list.display = args.options.display;
+
+			// return elements as they entered to be added to the base
+			if (args.options.info !== undefined) {
+				info.show();
+				filterWrapper.hide();
+				info.defined = true;
+			}
+
+			return Promise.all([
+				listWrapper.setChildren([
+					list,
+					listLoadingIcon,
+				]),
+				infoChildren(),
+				filterWrapperChildren(),
+				searchWrapperChildren(),
+				listChildren(),
+			]).then(function () {
+				base.components = {
+					title: title,
+					searchInput: searchInput,
+					searchButton: searchButton,
+					list: list,
+					listLoadingIcon: listLoadingIcon,
+					filter: filter,
+					info: info,
+				}
+				return base.setChildren([title, searchWrapper, listWrapper, filterWrapper, info].filter(function (child) {
+					return child.defined;
+				}));
 			}).then(function () {
+				if (base.id.includes('search')) {
+					// console.log(base.children[2].children[0].children[1], base.components.filter.children[1]);
+				}
 				return base;
 			});
 		});
 	},
 
-	// SEARCH INPUT
-	// Formatted input field with events for input and key presses.
-	searchInput: function (id, args) {
-		// config
+	//////////// AUTOCOMPLETE
+	//
+	autocomplete: function (id, args) {
 
-		// set up components
-		return Promise.all([
-			// base component
-			UI.createComponent('{id}-base'.format({id: id}), {
-				appearance: args.appearance,
-			}),
-
-		]).then(function (components) {
-			// unpack components
-			var [
-				base,
-			] = components;
-
-			// set up promises to be completed before returning the base.
-
-			// logic, bindings, etc.
-
-			// complete promises.
-			return Promise.all([
-
-			]).then(function (results) {
-				base.components = {
-
-				}
-				return base.setChildren([
-
-				]);
-			}).then(function () {
-				return base;
-			});
-		});
-	},
-
-	// SEARCHABLE LIST
-	// A combination of the content panel and search input components with an option title.
-	// A source can be defined along with a display method, insert/delete, and filter.
-	// Optional filter panel
-	searchableList: function (id, args) {
-		// config
-
-		// set up components
-		return Promise.all([
-			// base component
-			UI.createComponent('{id}-base'.format({id: id}), {
-				appearance: args.appearance,
-			}),
-
-		]).then(function (components) {
-			// unpack components
-			var [
-				base,
-			] = components;
-
-			// set up promises to be completed before returning the base.
-
-			// logic, bindings, etc.
-
-			// complete promises.
-			return Promise.all([
-
-			]).then(function (results) {
-				base.components = {
-
-				}
-				return base.setChildren([
-
-				]);
-			}).then(function () {
-				return base;
-			});
-		});
 	},
 
 	//////////// AUDIO PLAYER
@@ -867,9 +1420,11 @@ var Components = {
 		});
 	},
 
-	// RENDERED TEXT FIELD
-	// A content panel with bindings for adding and removing tokens.
-	// contenteditable is set to 'true' with appropriate bindings.
+	//////////// RENDERED TEXT FIELD
+	// Displays the rendered version of a token field
+	// Features:
+	// 1. Tags are coloured differently
+	// 2. Clicking on a word will take you to the token
 	renderedTextField: function (id, args) {
 		args.appearance.properties['contenteditable'] = 'true';
 
@@ -1015,7 +1570,6 @@ var Components = {
 		});;
 	},
 
-	// A panel with a state structure and space for a content panel.
 	sidebar: function (id, args) {
 		return Promise.all([
 
