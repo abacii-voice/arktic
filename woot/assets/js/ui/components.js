@@ -682,6 +682,12 @@ var Components = {
 		});
 	},
 
+	//////////// AUTOCOMPLETE
+	//
+	autocomplete: function (id, args) {
+
+	},
+
 	//////////// AUDIO PLAYER
 	// Plays audio given a source
 	// Has a buffer for storing multiple tracks and cycling between them.
@@ -1420,9 +1426,7 @@ var Components = {
 	// 1. Tags are coloured differently
 	// 2. Clicking on a word will take you to the token
 	renderedTextField: function (id, args) {
-		args.appearance.properties = {
-			'contenteditable': 'true',
-		}
+		args.appearance.properties['contenteditable'] = 'true';
 
 		// components
 		return Promise.all([
