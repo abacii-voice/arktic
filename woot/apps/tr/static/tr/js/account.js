@@ -1,10 +1,17 @@
 UI.app('hook', [
-	AccountInterfaces.unifiedInterface('unified-account-interface', {
-		interface: {
-			size: 50,
-			margin: 10,
-			corner: 5,
-		}
+	// AccountInterfaces.unifiedInterface('unified-account-interface', {
+	// 	interface: {
+	// 		size: 50,
+	// 		margin: 10,
+	// 		corner: 5,
+	// 	}
+	// }),
+	AccountInterfaces.testInterface('test', {
+		appearance: {
+			style: {
+				'height': '100%',
+			},
+		},
 	}),
 ]).then (function (app) {
 	return app.render();
