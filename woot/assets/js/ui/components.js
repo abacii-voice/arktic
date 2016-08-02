@@ -173,7 +173,7 @@ var Components = {
 			// base component
 			UI.createComponent('{id}-base'.format({id: id}), {
 				template: UI.template('div', 'ie'),
-				appearance: args.appearance,
+				appearance: (args.appearance || defaultAppearance),
 			}),
 
 			// title
@@ -212,10 +212,9 @@ var Components = {
 
 			// set up promises to be completed before returning the base.
 			// logic, bindings, etc.
-			if () {
-
+			if (search.filter) {
+				
 			}
-
 
 			// complete promises.
 			return Promise.all([
