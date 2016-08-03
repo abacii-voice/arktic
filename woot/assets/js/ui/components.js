@@ -197,11 +197,11 @@ var Components = {
 
 			// content
 			Components.contentPanel('{id}-content'.format({id: id}), {
-
+				appearance: defaultAppearance,
 			}),
 
 			Components.contentPanel('{id}-filter'.format({id: id}), {
-
+				appearance: defaultAppearance,
 			}),
 
 		]).then(function (components) {
@@ -212,8 +212,16 @@ var Components = {
 
 			// set up promises to be completed before returning the base.
 			// logic, bindings, etc.
-			if (search.filter) {
+			base.load = function () {
+
+			}
+			base.insert = function (index, data) {
+				// use base.unit method
+
+			}
+			base.remove = function (index) {
 				
+
 			}
 
 			// complete promises.
