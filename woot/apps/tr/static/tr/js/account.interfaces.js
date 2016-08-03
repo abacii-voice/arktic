@@ -1013,14 +1013,21 @@ var AccountInterfaces = {
 			}),
 
 			// test input
-			Components.searchInput('test-input', {
+			Components.searchableList('test-list', {
 				appearance: {
 					style: {
-						'height': '40px',
+						'height': '400px',
 						'width': '200px',
 						'top': '100px',
 						'left': '100px',
 					}
+				},
+				options: {
+					search: true,
+					title: {
+						text: 'Title',
+						centred: true,
+					},
 				},
 			}),
 
@@ -1028,14 +1035,22 @@ var AccountInterfaces = {
 			// unpack components
 			var [
 				base,
-				input,
+				list,
 			] = components;
 
 			// set up promises to be completed before returning the base.
 
 			// logic, bindings, etc.
-			input.onInput = function () {
-				console.log('hello');
+			list.path = function () {
+				// specifies a path from Context
+
+			}
+			list.process = function () {
+				// converts data into useable list
+
+			}
+			list.unit = function () {
+
 			}
 
 			// complete promises.
@@ -1043,10 +1058,10 @@ var AccountInterfaces = {
 
 			]).then(function (results) {
 				base.components = {
-					input: input,
+					list: list,
 				}
 				return base.setChildren([
-					input,
+					list,
 				]);
 			}).then(function () {
 				return base;
