@@ -62,13 +62,19 @@ var Components = {
 	// Formatted input field with events for input and key presses.
 	searchInput: function (id, args) {
 		// config
+		defaultAppearance = {
+			style: {
+				'height': '40px',
+				'width': '100%',
+			},
+		}
 
 		// set up components
 		return Promise.all([
 			// base component
 			UI.createComponent(id, {
 				template: UI.template('input', 'ie input'),
-				appearance: args.appearance,
+				appearance: (args.appearance || defaultAppearance),
 			}),
 
 		]).then(function (components) {
@@ -130,36 +136,6 @@ var Components = {
 	// A source can be defined along with a display method, insert/delete, and filter.
 	// Optional filter panel
 	searchableList: function (id, args) {
-		// SETUP
-		// arg setup and initialisation
-		// - if no title is given, leave no room for a title.
-		// - if no search is given, leave no room for an input.
-		// - looking for final variable 'listHeight'
-		var listHeight = '100%', offset = 0, titleText = '', titleCentered = false, search, titleHeight = 22;
-		var searchHeight = args.interface !== undefined ? args.interface.size : 40;
-		if (args.options !== undefined) {
-			// title
-			if (args.options.title !== undefined) {
-				titleText = args.options.title.text;
-				titleCentered = args.options.title.center;
-				offset += titleHeight;
-			}
-
-			// search
-			if (args.options.search !== undefined) {
-				search = args.options.search;
-				offset += searchHeight;
-			}
-
-			// listHeight
-			listHeight = 'calc(100% - {offset}px)'.format({offset: offset});
-
-			// reset
-			if (!$.isArray(args.options.reset)) {
-				args.options.reset = [args.options.reset];
-			}
-		}
-
 		// default appearance
 		var defaultAppearance = {
 			style: {
@@ -184,9 +160,7 @@ var Components = {
 						'width': '100%',
 						'height': '22px',
 						'font-size': '18px',
-						'text-align': (titleCentered ? 'center' : 'left'),
 					},
-					html: titleText,
 				},
 			}),
 
@@ -208,6 +182,10 @@ var Components = {
 			// unpack components
 			var [
 				base,
+				title,
+				searchInput,
+				listPanel,
+				filterPanel,
 			] = components;
 
 			// set up promises to be completed before returning the base.
@@ -220,19 +198,38 @@ var Components = {
 
 			}
 			base.remove = function (index) {
-				
+
 
 			}
+
+			// set title
+			title.set = function (text, centre) {
+				title.setAppearance({
+					html: text,
+					style: {
+						'text-align': (centre ? 'center': 'left'),
+					},
+				});
+			}
+
+			// search input methods
+			
 
 			// complete promises.
 			return Promise.all([
 
 			]).then(function (results) {
 				base.components = {
-
+					title: title,
+					searchInput: searchInput,
+					listPanel: listPanel,
+					filterPanel: filterPanel,
 				}
 				return base.setChildren([
-
+					title,
+					searchInput,
+					listPanel,
+					filterPanel,
 				]);
 			}).then(function () {
 				return base;
