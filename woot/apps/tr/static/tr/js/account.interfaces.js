@@ -1130,9 +1130,9 @@ var AccountInterfaces = {
 					states: [
 						{name: 'client-state', args: {
 							fn: function (_this) {
-								_this.load();
+								_this.display();
 							},
-						}},		
+						}},
 					]
 				}),
 			]).then(function (results) {

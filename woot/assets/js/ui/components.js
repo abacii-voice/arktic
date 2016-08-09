@@ -195,24 +195,66 @@ var Components = {
 
 			// set up promises to be completed before returning the base.
 			// logic, bindings, etc.
-			base.load = function () {
-				base.dataset = [];
-				// for each target, gather data and evaluate in terms of each process function. Store as virtual list.
-				return Promise.all(base.targets.map(function (target) {
-					return target.path().then(function (path) {
-						return Context.get(path, {force: false});
-					}).then(target.process).then(function (dataset) {
-						return dataset;
-					});
-				})).then(function (datasets) {
-					// consolidate datasets into a unified dataset. Ordering comes later.
-					datasets.forEach(function (dataset) {
-						dataset.forEach(function (datum) {
-							base.dataset.push(datum);
-						});
-					});
-					console.log(base.dataset);
+			base.dataset = [];
+			base.buffer = [];
+			base.virtual = [];
+			base.filters = {};
+			base.display = function (query, filter) {
+				// 1. load
+				// 2. filter by nothing for defaults
+				// 3. diff on nothing
+				// 4. run commands in sequence
+				return base.load().then(function () {
+					return base.filter(query, filter); // returns a reduced dataset
+				}).then(function (results) {
+					return base.diff(); //
+				}).then(function (commands) {
+					return Promise.ordered(commands.map(function (command) {
+						return command; // should be a function that returns a promise.
+					}));
 				});
+			}
+			base.load = function () {
+				// for each target, gather data and evaluate in terms of each process function. Store as virtual list.
+				if (base.dataset.length !== 0) {
+					return emptyPromise();
+				} else {
+					return Promise.all(base.targets.map(function (target) {
+						return target.path().then(function (path) {
+							return Context.get(path, {force: false});
+						}).then(target.process).then(function (dataset) {
+							return dataset;
+						});
+					})).then(function (datasets) {
+						// consolidate datasets into a unified dataset. Ordering comes later.
+						datasets.forEach(function (dataset) {
+							dataset.forEach(function (datum) {
+								base.dataset.push(datum);
+							});
+						});
+					}).then(function () {
+						// load filters
+						return Promise.all(base.targets.map(function (target) {
+							return new Promise(function(resolve, reject) {
+								base.filters[target.filter.char] = target.filter;
+								resolve();
+							});
+						}));
+					});
+					// All data to be filtered now lives in base.dataset.
+				}
+			}
+			base.filter = function (query, filter) {
+				// filter called with no arguments should yield only the default filters
+				// In this way, an autocomplete is simply a list with no default filters
+				// The output of filter goes to base.buffer
+
+			}
+			base.diff = function () {
+				// compares base.buffer and base.virtual
+				// outputs list of commands necessary to execute to achieve change.
+
+
 			}
 			base.insert = function (index, data) {
 				// use base.unit method
