@@ -6,14 +6,13 @@ var Components = {
 	// Nested panel components meant to hide scroll bar.
 	contentPanel: function (id, args) {
 		// config
-		args.appearance.style['overflow'] = 'hidden';
+		
 
 		// set up components
 		return Promise.all([
 			// base component
 			UI.createComponent('{id}-base'.format({id: id}), {
 				template: UI.template('div', 'ie'),
-				appearance: args.appearance,
 			}),
 
 			// wrapper
@@ -169,13 +168,19 @@ var Components = {
 
 			}),
 
-			// content
-			Components.contentPanel('{id}-content'.format({id: id}), {
-				appearance: defaultAppearance,
+			// filter button
+			UI.createComponent('{id}-search'.format({id: id}), {
+				template: UI.template('div', 'ie button'),
 			}),
 
+			// content
+			Components.contentPanel('{id}-content'.format({id: id}), {
+
+			}),
+
+			// filter
 			Components.contentPanel('{id}-filter'.format({id: id}), {
-				appearance: defaultAppearance,
+
 			}),
 
 		]).then(function (components) {
@@ -213,7 +218,7 @@ var Components = {
 			}
 
 			// search input methods
-			
+
 
 			// complete promises.
 			return Promise.all([
