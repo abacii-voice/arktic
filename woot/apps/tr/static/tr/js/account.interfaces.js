@@ -1022,13 +1022,6 @@ var AccountInterfaces = {
 						'left': '100px',
 					}
 				},
-				options: {
-					search: true,
-					title: {
-						text: 'Title',
-						centred: true,
-					},
-				},
 			}),
 
 		]).then(function (components) {
@@ -1041,21 +1034,107 @@ var AccountInterfaces = {
 			// set up promises to be completed before returning the base.
 
 			// logic, bindings, etc.
-			list.path = function () {
-				// specifies a path from Context
+			// LIST
+			list.toggleSearch();
+			list.setTitle('Clients', true);
+			list.targets = [
+				{
+					name: 'clients',
+					path: function () {
+						return new Promise(function(resolve, reject) {
+							resolve('clients');
+						});
+					},
+					process: function (data) {
+						return new Promise(function(resolve, reject) {
+							var results = Object.keys(data).map(function (key) {
+								var client = data[key];
+								return {
+									id: key,
+									main: client.name,
+									type: 'client',
+								}
+							});
 
-			}
-			list.process = function () {
-				// converts data into useable list
+							resolve(results);
+						});
+					},
+					filter: {
+						char: '/',
+						key: 'forwardslash',
+						display: 'Client',
+						button: 'Clients',
+						rule: 'client',
+					},
+				},
+				{
+					name: 'roles',
+					path: function () {
+						return Active.get('client').then(function (client) {
+							return 'user.clients.{active_client}.roles'.format({active_client: client});
+						});
+					},
+					process: function (data) {
+						return new Promise(function(resolve, reject) {
+							var results = Object.keys(data).map(function (key) {
+								var role = data[key];
+								return {
+									id: key,
+									main: role.type,
+									type: 'role',
+								}
+							});
 
-			}
-			list.unit = function () {
+							resolve(results);
+						});
+					},
+					filter: {
+						char: '.',
+						key: 'period',
+						display: 'Role',
+						button: 'Roles',
+						rule: 'role',
+					},
+				},
+			]
+			list.unit = function (_this, datum) {
+				return Promise.all([
+					// base component
+					UI.createComponent('{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
 
+					}),
+
+					//
+
+				]).then(function (unitComponents) {
+					var [
+						unitBase,
+					] = unitComponents;
+
+					// complete promises.
+					return Promise.all([
+
+					]).then(function () {
+						return unitBase.setChildren([
+
+						]);
+					}).then(function () {
+						return unitBase;
+					});
+				});
 			}
 
 			// complete promises.
 			return Promise.all([
-
+				list.setState({
+					states: [
+						{name: 'client-state', args: {
+							fn: function (_this) {
+								_this.load();
+							},
+						}},		
+					]
+				}),
 			]).then(function (results) {
 				base.components = {
 					list: list,
