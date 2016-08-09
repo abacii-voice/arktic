@@ -6,7 +6,7 @@ var Components = {
 	// Nested panel components meant to hide scroll bar.
 	contentPanel: function (id, args) {
 		// config
-		
+
 
 		// set up components
 		return Promise.all([
@@ -169,7 +169,7 @@ var Components = {
 			}),
 
 			// filter button
-			UI.createComponent('{id}-search'.format({id: id}), {
+			UI.createComponent('{id}-filter-button'.format({id: id}), {
 				template: UI.template('div', 'ie button'),
 			}),
 
@@ -196,7 +196,23 @@ var Components = {
 			// set up promises to be completed before returning the base.
 			// logic, bindings, etc.
 			base.load = function () {
-
+				base.dataset = [];
+				// for each target, gather data and evaluate in terms of each process function. Store as virtual list.
+				return Promise.all(base.targets.map(function (target) {
+					return target.path().then(function (path) {
+						return Context.get(path, {force: false});
+					}).then(target.process).then(function (dataset) {
+						return dataset;
+					});
+				})).then(function (datasets) {
+					// consolidate datasets into a unified dataset. Ordering comes later.
+					datasets.forEach(function (dataset) {
+						dataset.forEach(function (datum) {
+							base.dataset.push(datum);
+						});
+					});
+					console.log(base.dataset);
+				});
 			}
 			base.insert = function (index, data) {
 				// use base.unit method
@@ -204,6 +220,19 @@ var Components = {
 			}
 			base.remove = function (index) {
 
+
+			}
+			base.move = function (fromIndex, toIndex) {
+
+			}
+
+			// activate search
+			base.toggleSearch = function () {
+
+			}
+
+			// set title
+			base.setTitle = function (text, center) {
 
 			}
 
