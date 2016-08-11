@@ -68,9 +68,11 @@ Common interface elements
 	overflow-x: hidden;
 	overflow-y: hidden;
 	box-sizing: border-box;
-	font-family: inherit;
 	font-size: inherit;
 	line-height: inherit;
+	font-family: monospace;
+	font-style: normal;
+	font-variant: normal;
 	margin: 0px;
 }
 
