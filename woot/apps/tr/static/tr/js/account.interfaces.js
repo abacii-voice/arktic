@@ -1103,10 +1103,16 @@ var AccountInterfaces = {
 				return Promise.all([
 					// base component
 					UI.createComponent('{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
-
+						template: UI.template('div', 'ie border'),
+						appearance: {
+							style: {
+								'height': '30px',
+								'width': '100%',
+							},
+						},
 					}),
 
-					//
+					// main
 
 				]).then(function (unitComponents) {
 					var [
