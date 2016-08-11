@@ -211,7 +211,7 @@ var Components = {
 					return listPanel.removeAll();
 				}).then(function () {
 					return Promise.all(base.virtual.map(function (item) {
-						return base.unit(base, item);
+						return base.unit(base, item, query);
 					})).then(function (listItems) {
 						return listPanel.components.wrapper.setChildren(listItems);
 					});

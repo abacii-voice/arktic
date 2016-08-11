@@ -1016,7 +1016,7 @@ var AccountInterfaces = {
 			Components.searchableList('test-list', {
 				appearance: {
 					style: {
-						'height': '400px',
+						'height': '250px',
 						'width': '300px',
 						'top': '100px',
 						'left': '100px',
@@ -1072,6 +1072,7 @@ var AccountInterfaces = {
 					name: 'roles',
 					path: function () {
 						return Active.get('client').then(function (client) {
+							console.log(client);
 							return 'user.clients.{active_client}.roles'.format({active_client: client});
 						});
 					},
@@ -1099,7 +1100,9 @@ var AccountInterfaces = {
 					},
 				},
 			]
-			list.unit = function (_this, datum) {
+			list.unit = function (_this, datum, query) {
+				query = (query || '');
+
 				return Promise.all([
 					// base component
 					UI.createComponent('{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
@@ -1125,13 +1128,24 @@ var AccountInterfaces = {
 					}),
 
 					// main
-					UI.createComponent('{id}-{object}-main'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{id}-{object}-main-head'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('span', 'ie'),
+						appearance: {
+							style: {
+								'font-size': '14px',
+								'color': '#eee',
+							},
+							html: datum.main.substring(0, query.length),
+						},
+					}),
+
+					UI.createComponent('{id}-{object}-main-tail'.format({id: _this.id, object: datum.id}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
 								'font-size': '14px',
 							},
-							html: datum.main,
+							html: datum.main.substring(query.length),
 						},
 					}),
 
@@ -1139,12 +1153,16 @@ var AccountInterfaces = {
 					var [
 						unitBase,
 						unitMainWrapper,
-						unitMain,
+						unitMainHead,
+						unitMainTail,
 					] = unitComponents;
 
 					// complete promises.
 					return Promise.all([
-						unitMainWrapper.setChildren([unitMain]),
+						unitMainWrapper.setChildren([
+							unitMainHead,
+							unitMainTail,
+						]),
 					]).then(function () {
 						return unitBase.setChildren([
 							unitMainWrapper,
