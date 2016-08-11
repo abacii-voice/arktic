@@ -272,32 +272,6 @@ var Components = {
 					resolve();
 				});
 			}
-			base.resolve = function () {
-
-			}
-			base.insert = function (index, datum) {
-				return new Promise(function(resolve, reject) {
-					// 1. add to base.virtual
-					base.virtual.splice(index, 0, datum);
-					resolve();
-				}).then(function () {
-					return // use base.unit method
-					listPanel.add(base.unit(datum));
-				});
-			}
-			base.remove = function (id, index) {
-				return new Promise(function(resolve, reject) {
-					// 1. remove from base.virtual
-					base.virtual.splice(index, 1);
-					resolve();
-				}).then(function () {
-					// 2. remove from parent
-					return listPanel.remove(id);
-				});
-			}
-			base.move = function (fromIndex, toIndex) {
-
-			}
 
 			// activate search
 			base.toggleSearch = function () {
