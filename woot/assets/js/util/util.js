@@ -180,7 +180,11 @@ Array.prototype.sum = function (object) {
 	return this.reduce(reduceSum);
 }
 
-function getCaretOffsetWithin(element) {
+function singleKeyPair (object) {
+	return [Object.keys(object)[0], object[Object.keys(object)[0]]];
+}
+
+function getCaretOffsetWithin (element) {
 	var caretOffset = 0;
 	var doc = element.ownerDocument || element.document;
 	var win = doc.defaultView || doc.parentWindow;
