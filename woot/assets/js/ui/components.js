@@ -42,11 +42,8 @@ var Components = {
 			base.setChildren = function (children) {
 				return wrapper.setChildren(children);
 			}
-			base.add = function (childComponent) {
-				return wrapper.addChild(childComponent);
-			}
-			base.remove = function (id) {
-				return wrapper.removeChild(id);
+			base.removeAll = function () {
+				return wrapper.removeChildren();
 			}
 
 			// complete promises.
@@ -195,6 +192,7 @@ var Components = {
 				base,
 				title,
 				searchInput,
+				filterButton,
 				listPanel,
 				filterPanel,
 			] = components;
@@ -203,18 +201,20 @@ var Components = {
 			// logic, bindings, etc.
 			base.dataset = [];
 			base.buffer = [];
-			base.virtual = [{id: '8b7d36ef-3387-40a8-a98d-3541110e161f'}, {id: '05ff19e5-446f-43cb-ae3e-8b2a3f7d5a40'}, {id: 'a'}];
+			base.virtual = [];
 			base.filters = {};
 			base.defaultFilters = [];
 			base.display = function (query, filter) {
-				// 1. load
-				// 2. filter by nothing for defaults
-				// 3. diff on nothing
-				// 4. run commands in sequence
 				return base.load().then(function () {
 					return base.filter(query, filter); // returns a reduced dataset
 				}).then(function () {
-					return base.resolve(); // compare base.buffer and base.virtual and generate list of commands
+					return listPanel.removeAll();
+				}).then(function () {
+					return Promise.all(base.virtual.map(function (item) {
+						return base.unit(base, item);
+					})).then(function (listItems) {
+						return listPanel.components.wrapper.setChildren(listItems);
+					});
 				});
 			}
 			base.load = function () {
@@ -260,11 +260,11 @@ var Components = {
 
 				return new Promise(function(resolve, reject) {
 					if (query || filter) {
-						base.buffer = base.dataset.filter(function (datum) {
+						base.virtual = base.dataset.filter(function (datum) {
 							return datum.rule.indexOf(rule) === 0 && datum.main.toLowerCase().indexOf(query) === 0;
 						});
 					} else {
-						base.buffer = base.dataset.filter(function (datum) {
+						base.virtual = base.dataset.filter(function (datum) {
 							return base.defaultFilters.contains(datum.rule);
 						});
 					}
@@ -273,90 +273,7 @@ var Components = {
 				});
 			}
 			base.resolve = function () {
-				return new Promise(function(resolve, reject) {
-					// compares base.buffer and base.virtual
-					// outputs list of commands necessary to execute to achieve change.
-					// 1. find max length to iterate over
-					var commands = {};
-					var build = base.virtual; // a copy of the current order
-					var length = base.buffer.length > base.virtual.length ? base.buffer.length : base.virtual.length;
-					for (i = 0; i < length; i++) {
-						// 2. get ids to be compared
-						var bufferId = i < base.buffer.length ? base.buffer[i].id : '';
-						var virtualId = i < base.virtual.length ? base.virtual[i].id : '';
 
-						// 3. unless the id is blank, generate a command to insert or remove
-						if (bufferId !== virtualId) {
-							if (bufferId) {
-								// insert
-								commands[bufferId] = (commands[bufferId] || {});
-								commands[bufferId].insert = i;
-							}
-
-							if (virtualId) {
-								// remove
-								commands[virtualId] = (commands[virtualId] || {});
-								commands[virtualId].remove = i;
-							}
-						}
-					}
-
-					// 4. given list of commands, for each remove, if there is an insert with the same id, change to move.
-					var segmentedCommands = {'remove': [], 'move': [], 'insert': []};
-					Object.keys(commands).forEach(function (id) {
-						var command = commands[id];
-						var newCommand = {};
-						if ('insert' in command) {
-							newCommand[id] = command.insert;
-							segmentedCommands[('remove' in command ? 'move' : 'insert')].push(newCommand);
-						} else {
-							newCommand[id] = command.remove
-							segmentedCommands.remove.push(newCommand);
-						}
-					});
-
-					////// NOT FOR REAL
-					// 5a. do removal
-					segmentedCommands.remove.forEach(function (command) {
-						var [id, index] = singleKeyPair(command);
-						base.build.splice(index, 1);
-					});
-
-					// 5b. do insertion
-					segmentedCommands.insert.forEach(function (command) {
-						var [id, index] = singleKeyPair(command);
-						base.build.splice(index, 0, id);
-					});
-
-					// 5c. do moving - test moves
-					segmentedCommands.move.forEach(function (command) {
-						var [id, index] = singleKeyPair(command);
-						base.build.splice(index, 0);
-						base.build.splice(index, 0, id);
-					});
-
-					console.log(base.virtual, base.build, base.buffer);
-
-					resolve(segmentedCommands);
-				}).then(function (commands) {
-					////// FOR REAL
-
-					// 6. removal
-					return Promise.all(commands.remove.map(function (command) {
-						var [id, index] = singleKeyPair(command);
-						return base.remove(id, index);
-					})).then(function () {
-						// 7. insertion
-						return Promise.ordered(commands.insert.map(function (command) {
-
-						}));
-					}).then(function () {
-						// 8. moving
-						return Promise.ordered(commands.move.map(function (command) {
-
-						}));
-					});
-				});
 			}
 			base.insert = function (index, datum) {
 				return new Promise(function(resolve, reject) {
