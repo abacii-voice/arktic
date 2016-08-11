@@ -1017,7 +1017,7 @@ var AccountInterfaces = {
 				appearance: {
 					style: {
 						'height': '400px',
-						'width': '200px',
+						'width': '300px',
 						'top': '100px',
 						'left': '100px',
 					}
@@ -1103,28 +1103,51 @@ var AccountInterfaces = {
 				return Promise.all([
 					// base component
 					UI.createComponent('{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
-						template: UI.template('div', 'ie border'),
+						template: UI.template('div', 'ie button'),
 						appearance: {
 							style: {
 								'height': '30px',
 								'width': '100%',
+								'border-bottom': '1px solid #ccc',
+								'padding': '0px',
+							},
+						},
+					}),
+
+					// main wrapper
+					UI.createComponent('{id}-{object}-main-wrapper'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('div', 'ie centred'),
+						appearance: {
+							style: {
+								'font-size': '13px',
 							},
 						},
 					}),
 
 					// main
+					UI.createComponent('{id}-{object}-main-wrapper'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('span', 'ie'),
+						appearance: {
+							style: {
+								'font-size': '14px',
+							},
+							html: datum.main,
+						},
+					}),
 
 				]).then(function (unitComponents) {
 					var [
 						unitBase,
+						unitMainWrapper,
+						unitMain,
 					] = unitComponents;
 
 					// complete promises.
 					return Promise.all([
-
+						unitMainWrapper.setChildren([unitMain]),
 					]).then(function () {
 						return unitBase.setChildren([
-
+							unitMainWrapper,
 						]);
 					}).then(function () {
 						return unitBase;
