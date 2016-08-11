@@ -42,6 +42,12 @@ var Components = {
 			base.setChildren = function (children) {
 				return wrapper.setChildren(children);
 			}
+			base.add = function (childComponent) {
+				return wrapper.addChild(childComponent);
+			}
+			base.remove = function (id) {
+				return wrapper.removeChild(id);
+			}
 
 			// complete promises.
 			return Promise.all([
@@ -197,7 +203,7 @@ var Components = {
 			// logic, bindings, etc.
 			base.dataset = [];
 			base.buffer = [];
-			base.virtual = [{id: '05ff19e5-446f-43cb-ae3e-8b2a3f7d5a40'}, {id: '8b7d36ef-3387-40a8-a98d-3541110e161f'}, {id: 'a'}];
+			base.virtual = [{id: '8b7d36ef-3387-40a8-a98d-3541110e161f'}, {id: '05ff19e5-446f-43cb-ae3e-8b2a3f7d5a40'}, {id: 'a'}];
 			base.filters = {};
 			base.defaultFilters = [];
 			base.display = function (query, filter) {
@@ -272,6 +278,7 @@ var Components = {
 					// outputs list of commands necessary to execute to achieve change.
 					// 1. find max length to iterate over
 					var commands = {};
+					var build = base.virtual; // a copy of the current order
 					var length = base.buffer.length > base.virtual.length ? base.buffer.length : base.virtual.length;
 					for (i = 0; i < length; i++) {
 						// 2. get ids to be compared
@@ -294,35 +301,82 @@ var Components = {
 						}
 					}
 
-					var remove = [];
-					var insert = {};
-					var move = {};
-
 					// 4. given list of commands, for each remove, if there is an insert with the same id, change to move.
+					var segmentedCommands = {'remove': [], 'move': [], 'insert': []};
 					Object.keys(commands).forEach(function (id) {
 						var command = commands[id];
-						if ('insert' in command && 'remove' in command) {
-							commands[id] = {move: command.insert};
+						var newCommand = {};
+						if ('insert' in command) {
+							newCommand[id] = command.insert;
+							segmentedCommands[('remove' in command ? 'move' : 'insert')].push(newCommand);
+						} else {
+							newCommand[id] = command.remove
+							segmentedCommands.remove.push(newCommand);
 						}
 					});
 
-					// 5. Split into three groups; remove, insert, move.
-					var remove = []; // list of id's
-					var insert = []; // list of id's
-					var move = []; // this list should be checked after the first two steps and only necessary ones executed.
-					console.log(commands);
+					////// NOT FOR REAL
+					// 5a. do removal
+					segmentedCommands.remove.forEach(function (command) {
+						var [id, index] = singleKeyPair(command);
+						base.build.splice(index, 1);
+					});
 
-					// 6. return list of commands to be executed. Each command should be a function that returns a promise.
-					resolve();
+					// 5b. do insertion
+					segmentedCommands.insert.forEach(function (command) {
+						var [id, index] = singleKeyPair(command);
+						base.build.splice(index, 0, id);
+					});
+
+					// 5c. do moving - test moves
+					segmentedCommands.move.forEach(function (command) {
+						var [id, index] = singleKeyPair(command);
+						base.build.splice(index, 0);
+						base.build.splice(index, 0, id);
+					});
+
+					console.log(base.virtual, base.build, base.buffer);
+
+					resolve(segmentedCommands);
+				}).then(function (commands) {
+					////// FOR REAL
+
+					// 6. removal
+					return Promise.all(commands.remove.map(function (command) {
+						var [id, index] = singleKeyPair(command);
+						return base.remove(id, index);
+					})).then(function () {
+						// 7. insertion
+						return Promise.ordered(commands.insert.map(function (command) {
+
+						}));
+					}).then(function () {
+						// 8. moving
+						return Promise.ordered(commands.move.map(function (command) {
+
+						}));
+					});
 				});
 			}
-			base.insert = function (index, data) {
-				// use base.unit method
-
+			base.insert = function (index, datum) {
+				return new Promise(function(resolve, reject) {
+					// 1. add to base.virtual
+					base.virtual.splice(index, 0, datum);
+					resolve();
+				}).then(function () {
+					return // use base.unit method
+					listPanel.add(base.unit(datum));
+				});
 			}
-			base.remove = function (index) {
-
-
+			base.remove = function (id, index) {
+				return new Promise(function(resolve, reject) {
+					// 1. remove from base.virtual
+					base.virtual.splice(index, 1);
+					resolve();
+				}).then(function () {
+					// 2. remove from parent
+					return listPanel.remove(id);
+				});
 			}
 			base.move = function (fromIndex, toIndex) {
 
