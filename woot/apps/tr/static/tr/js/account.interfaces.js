@@ -1125,7 +1125,7 @@ var AccountInterfaces = {
 					}),
 
 					// main
-					UI.createComponent('{id}-{object}-main-wrapper'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{id}-{object}-main'.format({id: _this.id, object: datum.id}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
