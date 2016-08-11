@@ -1052,7 +1052,7 @@ var AccountInterfaces = {
 								return {
 									id: key,
 									main: client.name,
-									type: 'client',
+									rule: 'client',
 								}
 							});
 
@@ -1060,6 +1060,7 @@ var AccountInterfaces = {
 						});
 					},
 					filter: {
+						default: true,
 						char: '/',
 						key: 'forwardslash',
 						display: 'Client',
@@ -1081,7 +1082,7 @@ var AccountInterfaces = {
 								return {
 									id: key,
 									main: role.type,
-									type: 'role',
+									rule: 'role',
 								}
 							});
 
@@ -1089,6 +1090,7 @@ var AccountInterfaces = {
 						});
 					},
 					filter: {
+						default: true,
 						char: '.',
 						key: 'period',
 						display: 'Role',

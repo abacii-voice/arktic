@@ -168,6 +168,10 @@ function onOff (onOff) {
 	}
 }
 
+String.prototype.contains = function (object) {
+	return this.indexOf(object) !== -1;
+}
+
 Array.prototype.contains = function (object) {
 	return this.indexOf(object) !== -1;
 }
