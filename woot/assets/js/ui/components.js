@@ -197,8 +197,9 @@ var Components = {
 			// logic, bindings, etc.
 			base.dataset = [];
 			base.buffer = [];
-			base.virtual = [];
+			base.virtual = [{id: '05ff19e5-446f-43cb-ae3e-8b2a3f7d5a40'}, {id: '8b7d36ef-3387-40a8-a98d-3541110e161f'}, {id: 'a'}];
 			base.filters = {};
+			base.defaultFilters = [];
 			base.display = function (query, filter) {
 				// 1. load
 				// 2. filter by nothing for defaults
@@ -206,12 +207,8 @@ var Components = {
 				// 4. run commands in sequence
 				return base.load().then(function () {
 					return base.filter(query, filter); // returns a reduced dataset
-				}).then(function (results) {
-					return base.diff(); //
-				}).then(function (commands) {
-					return Promise.ordered(commands.map(function (command) {
-						return command; // should be a function that returns a promise.
-					}));
+				}).then(function () {
+					return base.resolve(); // compare base.buffer and base.virtual and generate list of commands
 				});
 			}
 			base.load = function () {
@@ -237,6 +234,9 @@ var Components = {
 						return Promise.all(base.targets.map(function (target) {
 							return new Promise(function(resolve, reject) {
 								base.filters[target.filter.char] = target.filter;
+								if (target.filter.default && base.defaultFilters.indexOf(target.filter.rule) === -1) {
+									base.defaultFilters.push(target.filter.rule);
+								}
 								resolve();
 							});
 						}));
@@ -245,16 +245,76 @@ var Components = {
 				}
 			}
 			base.filter = function (query, filter) {
+				query = (query || '');
+				filter = (filter || '');
+				var rule = filter ? base.filters[filter].rule : '';
 				// filter called with no arguments should yield only the default filters
 				// In this way, an autocomplete is simply a list with no default filters
 				// The output of filter goes to base.buffer
 
+				return new Promise(function(resolve, reject) {
+					if (query || filter) {
+						base.buffer = base.dataset.filter(function (datum) {
+							return datum.rule.indexOf(rule) === 0 && datum.main.toLowerCase().indexOf(query) === 0;
+						});
+					} else {
+						base.buffer = base.dataset.filter(function (datum) {
+							return base.defaultFilters.contains(datum.rule);
+						});
+					}
+
+					resolve();
+				});
 			}
-			base.diff = function () {
-				// compares base.buffer and base.virtual
-				// outputs list of commands necessary to execute to achieve change.
+			base.resolve = function () {
+				return new Promise(function(resolve, reject) {
+					// compares base.buffer and base.virtual
+					// outputs list of commands necessary to execute to achieve change.
+					// 1. find max length to iterate over
+					var commands = {};
+					var length = base.buffer.length > base.virtual.length ? base.buffer.length : base.virtual.length;
+					for (i = 0; i < length; i++) {
+						// 2. get ids to be compared
+						var bufferId = i < base.buffer.length ? base.buffer[i].id : '';
+						var virtualId = i < base.virtual.length ? base.virtual[i].id : '';
 
+						// 3. unless the id is blank, generate a command to insert or remove
+						if (bufferId !== virtualId) {
+							if (bufferId) {
+								// insert
+								commands[bufferId] = (commands[bufferId] || {});
+								commands[bufferId].insert = i;
+							}
 
+							if (virtualId) {
+								// remove
+								commands[virtualId] = (commands[virtualId] || {});
+								commands[virtualId].remove = i;
+							}
+						}
+					}
+
+					var remove = [];
+					var insert = {};
+					var move = {};
+
+					// 4. given list of commands, for each remove, if there is an insert with the same id, change to move.
+					Object.keys(commands).forEach(function (id) {
+						var command = commands[id];
+						if ('insert' in command && 'remove' in command) {
+							commands[id] = {move: command.insert};
+						}
+					});
+
+					// 5. Split into three groups; remove, insert, move.
+					var remove = []; // list of id's
+					var insert = []; // list of id's
+					var move = []; // this list should be checked after the first two steps and only necessary ones executed.
+					console.log(commands);
+
+					// 6. return list of commands to be executed. Each command should be a function that returns a promise.
+					resolve();
+				});
 			}
 			base.insert = function (index, data) {
 				// use base.unit method
