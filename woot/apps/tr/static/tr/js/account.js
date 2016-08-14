@@ -6,7 +6,7 @@ UI.app('hook', [
 	// 		corner: 5,
 	// 	}
 	// }),
-	AccountInterfaces.testInterface('test', {
+	AccountInterfaces.testInterfaces.renderedTextField('test', {
 		appearance: {
 			style: {
 				'height': '100%',

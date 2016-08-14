@@ -63,38 +63,38 @@ base.previous = function () {
 	}
 }
 base.setState(args.state);
-// list.currentIndex = 0;
-// list.switch = true;
-// list.token = function () {
-// 	var _this = list;
-// 	if (_this.switch) {
-// 		_this.switch = false;
-// 		return Promise.all(args.options.token.components(_this)).then(base.tokenModifierFunction(_this)).then(function (token) {
-// 			if (_this.activeToken !== undefined) {
-// 				token.setAfter(_this.activeToken.id);
-// 			}
-// 			token.activate();
-// 			_this.currentIndex++;
-// 			return _this.setChildren([token]);
-// 		}).then(function () {
-// 			return _this.fitToTokens();
-// 		}).then(function () {
-// 			return new Promise(function(resolve, reject) {
-// 				resolve(_this.activeToken);
-// 			});
-// 		});
-// 	} else {
-// 		return new Promise(function(resolve, reject) {
-// 			resolve(_this.activeToken);
-// 		});
-// 	}
-// }
-// list.fitToTokens = function () {
-// 	var _this = list;
-// 	return new Promise(function(resolve, reject) {
-// 		resolve();
-// 	});
-// }
-// list.exportTokens = function () {
-// 	var _this = list;
-// }
+list.currentIndex = 0;
+list.switch = true;
+list.token = function () {
+	var _this = list;
+	if (_this.switch) {
+		_this.switch = false;
+		return Promise.all(args.options.token.components(_this)).then(base.tokenModifierFunction(_this)).then(function (token) {
+			if (_this.activeToken !== undefined) {
+				token.setAfter(_this.activeToken.id);
+			}
+			token.activate();
+			_this.currentIndex++;
+			return _this.setChildren([token]);
+		}).then(function () {
+			return _this.fitToTokens();
+		}).then(function () {
+			return new Promise(function(resolve, reject) {
+				resolve(_this.activeToken);
+			});
+		});
+	} else {
+		return new Promise(function(resolve, reject) {
+			resolve(_this.activeToken);
+		});
+	}
+}
+list.fitToTokens = function () {
+	var _this = list;
+	return new Promise(function(resolve, reject) {
+		resolve();
+	});
+}
+list.exportTokens = function () {
+	var _this = list;
+}
