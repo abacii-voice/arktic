@@ -1001,55 +1001,60 @@ var AccountInterfaces = {
 			});
 		});
 	},
-	testInterface: function (id, args) {
-		// config
+	testInterfaces: {
+		renderedTextField: function (id, args) {
+			// config
 
-		// set up components
-		return Promise.all([
-			// base component
-			UI.createComponent('{id}-base'.format({id: id}), {
-				template: UI.template('div', 'ie'),
-				appearance: args.appearance,
-			}),
-
-			// test input
-			AccountComponents.renderedTextField('{id}-text-field-test'.format({id: id}), {
-				appearance: {
-					style: {
-						'top': '100px',
-						'left': '100px',
-						'height': '400px',
-						'width': '400px',
-					},
-				},
-			}),
-
-		]).then(function (components) {
-			// unpack components
-			var [
-				base,
-				caption,
-			] = components;
-
-			// set up promises to be completed before returning the base.
-
-			// logic, bindings, etc.
-			// CAPTION
-
-
-			// complete promises.
+			// set up components
 			return Promise.all([
+				// base component
+				UI.createComponent('{id}-base'.format({id: id}), {
+					template: UI.template('div', 'ie'),
+					appearance: args.appearance,
+				}),
 
-			]).then(function () {
-				base.components = {
-					caption: caption,
-				}
-				return base.setChildren([
+				// test input
+				AccountComponents.renderedTextField('{id}-text-field-test'.format({id: id}), {
+					appearance: {
+						style: {
+							'top': '100px',
+							'left': '100px',
+							'height': '400px',
+							'width': '400px',
+						},
+					},
+				}),
+
+			]).then(function (components) {
+				// unpack components
+				var [
+					base,
 					caption,
-				]);
-			}).then(function () {
-				return base;
+				] = components;
+
+				// set up promises to be completed before returning the base.
+
+				// logic, bindings, etc.
+				// CAPTION
+
+
+				// complete promises.
+				return Promise.all([
+
+				]).then(function () {
+					base.components = {
+						caption: caption,
+					}
+					return base.setChildren([
+						caption,
+					]);
+				}).then(function () {
+					return base;
+				});
 			});
-		});
+		},
+		searchableList: function (id, args) {
+			
+		},
 	},
 }
