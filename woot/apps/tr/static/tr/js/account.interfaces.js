@@ -1002,7 +1002,7 @@ var AccountInterfaces = {
 		});
 	},
 	testInterfaces: {
-		renderedTextField: function (id, args) {
+		captionField: function (id, args) {
 			// config
 
 			// set up components
@@ -1014,7 +1014,7 @@ var AccountInterfaces = {
 				}),
 
 				// test input
-				AccountComponents.renderedTextField('{id}-text-field-test'.format({id: id}), {
+				AccountComponents.captionField('{id}-caption-field-test'.format({id: id}), {
 					appearance: {
 						style: {
 							'top': '100px',
@@ -1054,7 +1054,200 @@ var AccountInterfaces = {
 			});
 		},
 		searchableList: function (id, args) {
-			
+			// config
+
+			// set up components
+			return Promise.all([
+				// base component
+				UI.createComponent('{id}-base'.format({id: id}), {
+					template: UI.template('div', 'ie'),
+					appearance: args.appearance,
+				}),
+
+				// test input
+				Components.searchableList('test-list', {
+					appearance: {
+						style: {
+							'height': '250px',
+							'width': '300px',
+							'top': '100px',
+							'left': '100px',
+						}
+					},
+				}),
+
+			]).then(function (components) {
+				// unpack components
+				var [
+					base,
+					list,
+				] = components;
+
+				// set up promises to be completed before returning the base.
+
+				// logic, bindings, etc.
+				// LIST
+				list.toggleSearch();
+				list.autocomplete = true;
+				list.setTitle('Clients', true);
+				list.targets = [
+					{
+						name: 'clients',
+						path: function () {
+							return new Promise(function(resolve, reject) {
+								resolve('clients');
+							});
+						},
+						process: function (data) {
+							return new Promise(function(resolve, reject) {
+								var results = Object.keys(data).map(function (key) {
+									var client = data[key];
+									return {
+										id: key,
+										main: client.name,
+										rule: 'client',
+									}
+								});
+
+								resolve(results);
+							});
+						},
+						filter: {
+							default: true,
+							char: '/',
+							key: 'forwardslash',
+							display: 'Client',
+							button: 'Clients',
+							rule: 'client',
+						},
+					},
+					{
+						name: 'roles',
+						path: function () {
+							return Active.get('client').then(function (client) {
+								return 'user.clients.{active_client}.roles'.format({active_client: client});
+							});
+						},
+						process: function (data) {
+							return new Promise(function(resolve, reject) {
+								var results = Object.keys(data).map(function (key) {
+									var role = data[key];
+									return {
+										id: key,
+										main: role.type,
+										rule: 'role',
+									}
+								});
+
+								resolve(results);
+							});
+						},
+						filter: {
+							default: true,
+							char: '.',
+							key: 'period',
+							display: 'Role',
+							button: 'Roles',
+							rule: 'role',
+						},
+					},
+				]
+				list.unit = function (_this, datum, query) {
+					query = (query || '');
+
+					return Promise.all([
+						// base component
+						UI.createComponent('{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
+							template: UI.template('div', 'ie button'),
+							appearance: {
+								style: {
+									'height': '30px',
+									'width': '100%',
+									'border-bottom': '1px solid #ccc',
+									'padding': '0px',
+								},
+							},
+						}),
+
+						// main wrapper
+						UI.createComponent('{id}-{object}-main-wrapper'.format({id: _this.id, object: datum.id}), {
+							template: UI.template('div', 'ie centred'),
+							appearance: {
+								style: {
+									'font-size': '13px',
+								},
+							},
+						}),
+
+						// main
+						UI.createComponent('{id}-{object}-main-head'.format({id: _this.id, object: datum.id}), {
+							template: UI.template('span', 'ie'),
+							appearance: {
+								style: {
+									'font-size': '14px',
+									'color': '#eee',
+								},
+								html: datum.main.substring(0, query.length),
+							},
+						}),
+
+						UI.createComponent('{id}-{object}-main-tail'.format({id: _this.id, object: datum.id}), {
+							template: UI.template('span', 'ie'),
+							appearance: {
+								style: {
+									'font-size': '14px',
+								},
+								html: datum.main.substring(query.length),
+							},
+						}),
+
+					]).then(function (unitComponents) {
+						var [
+							unitBase,
+							unitMainWrapper,
+							unitMainHead,
+							unitMainTail,
+						] = unitComponents;
+
+						// complete promises.
+						return Promise.all([
+							unitMainWrapper.setChildren([
+								unitMainHead,
+								unitMainTail,
+							]),
+						]).then(function () {
+							return unitBase.setChildren([
+								unitMainWrapper,
+							]);
+						}).then(function () {
+							return unitBase;
+						});
+					});
+				}
+
+				// complete promises.
+				return Promise.all([
+					list.setState({
+						states: [
+							{name: 'client-state', args: {
+								fn: function (_this) {
+									_this.display();
+								},
+							}},
+						]
+					}),
+				]).then(function (results) {
+					base.components = {
+						list: list,
+					}
+					return base.setChildren([
+						list,
+					]);
+				}).then(function () {
+					return base;
+				});
+			});
 		},
+
 	},
 }

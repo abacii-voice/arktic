@@ -735,7 +735,7 @@ var AccountComponents = {
 	// RENDERED TEXT FIELD
 	// A content panel with bindings for adding and removing tokens.
 	// contenteditable is set to 'true' with appropriate bindings.
-	renderedTextField: function (id, args) {
+	captionField: function (id, args) {
 		args.appearance = (args.appearance || {
 			style: {
 				'width': '100%',
@@ -770,7 +770,7 @@ var AccountComponents = {
 			] = components;
 
 			// methods and properties
-			
+
 
 			return Promise.all([
 
