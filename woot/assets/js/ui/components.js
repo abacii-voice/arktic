@@ -261,11 +261,11 @@ var Components = {
 				return new Promise(function(resolve, reject) {
 					if (query || filter) {
 						base.virtual = base.dataset.filter(function (datum) {
-							return datum.rule.indexOf(rule) === 0 && datum.main.toLowerCase().indexOf(query.toLowerCase()) === 0;
+							return datum.rule.indexOf(rule) === 0 && datum.main.toLowerCase().indexOf(query.toLowerCase()) === 0 && !(base.autocomplete && query === '');
 						});
 					} else {
 						base.virtual = base.dataset.filter(function (datum) {
-							return base.defaultFilters.contains(datum.rule) && datum.main.toLowerCase().indexOf(query.toLowerCase()) === 0;
+							return base.defaultFilters.contains(datum.rule) && datum.main.toLowerCase().indexOf(query.toLowerCase()) === 0 && !(base.autocomplete && query === '');
 						});
 					}
 
