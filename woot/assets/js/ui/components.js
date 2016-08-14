@@ -321,10 +321,6 @@ var Components = {
 	},
 
 	// AUTOCOMPLETE
-	// Slightlight modified searchableList
-	autocomplete: function (id, args) {
-
-	},
 
 	// A panel with a state structure and space for a content panel.
 	sidebar: function (id, args) {
