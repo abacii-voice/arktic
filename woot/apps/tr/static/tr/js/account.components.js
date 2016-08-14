@@ -736,23 +736,28 @@ var AccountComponents = {
 	// A content panel with bindings for adding and removing tokens.
 	// contenteditable is set to 'true' with appropriate bindings.
 	renderedTextField: function (id, args) {
+		args.appearance = (args.appearance || {
+			style: {
+				'width': '100%',
+				'height': '100%',
+			},
+		});
+		args.appearance.properties = (args.appearance.properties || {});
 		args.appearance.properties['contenteditable'] = 'true';
 
 		// components
 		return Promise.all([
 			// base
-			UI.createComponent(id, {
+			UI.createComponent('{id}-base'.format({id: id}), {
 				template: UI.template('div', 'ie'),
 				appearance: args.appearance,
 			}),
 
 			// wrapper
-			UI.createComponent('{id}-wrapper'.format({id: id}), {
-				template: UI.template('div', 'ie'),
+			Components.contentPanel('{id}-content'.format({id: id}), {
 				appearance: {
 					style: {
 						'width': '100%',
-						'overflow-y': 'hidden',
 					},
 				},
 			}),
@@ -830,51 +835,50 @@ var AccountComponents = {
 				}
 			}
 			base.setState(args.state);
-			list.currentIndex = 0;
-			list.switch = true;
-			list.token = function () {
-				var _this = list;
-				if (_this.switch) {
-					_this.switch = false;
-					return Promise.all(args.options.token.components(_this)).then(base.tokenModifierFunction(_this)).then(function (token) {
-						if (_this.activeToken !== undefined) {
-							token.setAfter(_this.activeToken.id);
-						}
-						token.activate();
-						_this.currentIndex++;
-						return _this.setChildren([token]);
-					}).then(function () {
-						return _this.fitToTokens();
-					}).then(function () {
-						return new Promise(function(resolve, reject) {
-							resolve(_this.activeToken);
-						});
-					});
-				} else {
-					return new Promise(function(resolve, reject) {
-						resolve(_this.activeToken);
-					});
-				}
-			}
-			list.fitToTokens = function () {
-				var _this = list;
-				return new Promise(function(resolve, reject) {
-					resolve();
-				});
-			}
-			list.exportTokens = function () {
-				var _this = list;
-			}
+			// list.currentIndex = 0;
+			// list.switch = true;
+			// list.token = function () {
+			// 	var _this = list;
+			// 	if (_this.switch) {
+			// 		_this.switch = false;
+			// 		return Promise.all(args.options.token.components(_this)).then(base.tokenModifierFunction(_this)).then(function (token) {
+			// 			if (_this.activeToken !== undefined) {
+			// 				token.setAfter(_this.activeToken.id);
+			// 			}
+			// 			token.activate();
+			// 			_this.currentIndex++;
+			// 			return _this.setChildren([token]);
+			// 		}).then(function () {
+			// 			return _this.fitToTokens();
+			// 		}).then(function () {
+			// 			return new Promise(function(resolve, reject) {
+			// 				resolve(_this.activeToken);
+			// 			});
+			// 		});
+			// 	} else {
+			// 		return new Promise(function(resolve, reject) {
+			// 			resolve(_this.activeToken);
+			// 		});
+			// 	}
+			// }
+			// list.fitToTokens = function () {
+			// 	var _this = list;
+			// 	return new Promise(function(resolve, reject) {
+			// 		resolve();
+			// 	});
+			// }
+			// list.exportTokens = function () {
+			// 	var _this = list;
+			// }
 
-			// associate components
-			wrapper.setChildren([
-				list,
-			]);
 
-			base.list = list;
-			return base.setChildren([
-				wrapper,
+			return Promise.all([
+
 			]).then(function () {
+				return base.setChildren([
+					wrapper,
+				]);
+			}).then(function () {
 				return base;
 			});
 		});;
