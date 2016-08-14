@@ -6,13 +6,18 @@ var Components = {
 	// Nested panel components meant to hide scroll bar.
 	contentPanel: function (id, args) {
 		// config
-
+		args.appearance = (args.appearance || {
+			style: {
+				'width': '100%',
+			},
+		});
 
 		// set up components
 		return Promise.all([
 			// base component
 			UI.createComponent('{id}-base'.format({id: id}), {
 				template: UI.template('div', 'ie'),
+				appearance: args.appearance,
 			}),
 
 			// wrapper
