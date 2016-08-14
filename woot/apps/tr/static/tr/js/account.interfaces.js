@@ -1036,6 +1036,7 @@ var AccountInterfaces = {
 			// logic, bindings, etc.
 			// LIST
 			list.toggleSearch();
+			list.autocomplete = true;
 			list.setTitle('Clients', true);
 			list.targets = [
 				{
