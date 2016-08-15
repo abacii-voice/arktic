@@ -301,6 +301,9 @@ var Components = {
 			// search input methods
 			searchInput.onInput = function (value) {
 				base.display(value);
+				if (base.onInput !== undefined) {
+					base.onInput(value);
+				}
 			}
 
 			// complete promises.
