@@ -22,3 +22,24 @@ The point of user input is the Autocomplete. This is where all data added to the
 6. Connection between done button and the counter
 
 IDEA: Use current words to search database for transcriptions with similar words and add to autocomplete
+
+2016/8/15:
+rendered text field -> caption field
+Still trying to do this caption field
+Behaviour cases:
+
+1. Focus autocomplete
+	a. caption was focussed?
+
+2. Focus caption (active token glued to caret)
+	a. Make token active
+
+3. Input autocomplete
+	a. beginning of active token -> previous |active
+	b. in the middle -> a|ctive
+	c. at the end -> active| next
+
+4. Input caption
+	a. beginning of active token -> previous |active
+	b. in the middle -> a|ctive
+	c. at the end -> active| next
