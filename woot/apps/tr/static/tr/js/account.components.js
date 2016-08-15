@@ -771,21 +771,17 @@ var AccountComponents = {
 			// methods and properties
 			var wrapper = content.components.wrapper;
 			wrapper.setAppearance({properties: {'contenteditable': 'true'}});
-			content.input = function (text) {
-
-			}
-			content.onInput = function () {
-				return content.input(activeToken.model().val());
-			}
-			content.setBindings({
-				'input': function (_this) {
-					_this.onInput();
-				},
-			});
 
 			return Promise.all([
-
+				wrapper.setBindings({
+					'input': function (_this) {
+						base.onInput(_this);
+					},
+				}),
 			]).then(function () {
+				base.components = {
+					wrapper: wrapper,
+				}
 				return base.setChildren([
 					content,
 				]);
