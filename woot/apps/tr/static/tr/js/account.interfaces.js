@@ -1051,10 +1051,13 @@ var AccountInterfaces = {
 				// logic, bindings, etc.
 				// CAPTION
 				caption.onInput = function (_this) {
-					console.log(_this.id);
+					
 				}
 
 				// LIST
+				autocomplete.onInput = function () {
+
+				}
 				autocomplete.toggleSearch();
 				autocomplete.autocomplete = true;
 				autocomplete.targets = [
