@@ -742,8 +742,6 @@ var AccountComponents = {
 				'height': '100%',
 			},
 		});
-		args.appearance.properties = (args.appearance.properties || {});
-		args.appearance.properties['contenteditable'] = 'true';
 
 		// components
 		return Promise.all([
@@ -753,11 +751,12 @@ var AccountComponents = {
 				appearance: args.appearance,
 			}),
 
-			// wrapper
+			// content
 			Components.contentPanel('{id}-content'.format({id: id}), {
 				appearance: {
 					style: {
 						'width': '100%',
+						'height': '40px',
 					},
 				},
 			}),
@@ -766,17 +765,29 @@ var AccountComponents = {
 			// unpack components
 			var [
 				base,
-				wrapper,
+				content,
 			] = components;
 
 			// methods and properties
+			var wrapper = content.components.wrapper;
+			wrapper.setAppearance({properties: {'contenteditable': 'true'}});
+			content.input = function (text) {
 
+			}
+			content.onInput = function () {
+				return content.input(activeToken.model().val());
+			}
+			content.setBindings({
+				'input': function (_this) {
+					_this.onInput();
+				},
+			});
 
 			return Promise.all([
 
 			]).then(function () {
 				return base.setChildren([
-					wrapper,
+					content,
 				]);
 			}).then(function () {
 				return base;
