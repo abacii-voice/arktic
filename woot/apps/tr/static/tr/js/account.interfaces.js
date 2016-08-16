@@ -1019,8 +1019,9 @@ var AccountInterfaces = {
 						style: {
 							'top': '100px',
 							'left': '100px',
-							'height': '40px',
+							'height': '400px',
 							'width': '400px',
+							'padding': '10px',
 						},
 						classes: ['border'],
 					},
@@ -1060,25 +1061,38 @@ var AccountInterfaces = {
 							template: UI.template('div', 'ie'),
 							appearance: {
 								style: {
-									'height': '20px',
-									'margin': '10px',
+									'height': '30px',
+									'display': 'inline-block',
+									'margin': '0px',
 								},
 							},
 						}),
 
 						// head
-						UI.createComponent('{id}-{key}-base'.format({id: caption.id, key: key}), {
+						UI.createComponent('{id}-{key}-head'.format({id: caption.id, key: key}), {
+							template: UI.template('span', 'ie'),
+							appearance: {
+								properties: {
+									'contenteditable': 'true',
+								},
+							},
+						}),
+
+						// tail
+						UI.createComponent('{id}-{key}-tail'.format({id: caption.id, key: key}), {
 							template: UI.template('span', 'ie'),
 						}),
 
 					]).then(function (unitComponents) {
 						var [
 							unitBase,
+							unitHead,
+							unitTail,
 						] = unitComponents;
 
 						// methods
 						unitBase.focus = function () {
-
+							unitHead.model().focus();
 						}
 
 						return Promise.all([
@@ -1086,10 +1100,12 @@ var AccountInterfaces = {
 						]).then(function () {
 							// children
 							unitBase.components = {
-
+								head: unitHead,
+								tail: unitTail,
 							}
 							return unitBase.setChildren([
-
+								unitHead,
+								unitTail,
 							]);
 						}).then(function () {
 							return unitBase;
