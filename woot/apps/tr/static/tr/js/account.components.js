@@ -756,7 +756,7 @@ var AccountComponents = {
 				appearance: {
 					style: {
 						'width': '100%',
-						'height': '40px',
+						'height': '100%',
 					},
 				},
 			}),
@@ -779,11 +779,7 @@ var AccountComponents = {
 				} else {
 					return base.unit().then(function (unit) {
 						// methods
-						unit.setAppearance({
-							properties: {
-								'contenteditable': 'true',
-							}
-						});
+
 
 						// set after HERE
 						return _this.setChildren([unit]).then(function () {
