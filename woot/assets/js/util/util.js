@@ -207,3 +207,16 @@ function getCaretOffsetWithin (element) {
 	}
 	return caretOffset;
 }
+
+function textOnly (component) {
+	return new Promise(function(resolve, reject) {
+		resolve(component.model().clone().children().remove().end().text());
+	});
+}
+
+function removeText (component) {
+	return new Promise(function(resolve, reject) {
+		component.model().html(component.model().children());
+		resolve();
+	});
+}

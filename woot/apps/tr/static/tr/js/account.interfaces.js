@@ -1050,10 +1050,51 @@ var AccountInterfaces = {
 
 				// logic, bindings, etc.
 				// CAPTION
-				caption.onInput = function (_this) {
-					// _this refers to the wrapper inside
+				caption.unit = function (text, type) {
+					var key = makeid();
 
+					// components
+					return Promise.all([
+						// base
+						UI.createComponent('{id}-{key}-base'.format({id: caption.id, key: key}), {
+							template: UI.template('div', 'ie'),
+							appearance: {
+								style: {
+									'height': '20px',
+									'margin': '10px',
+								},
+							},
+						}),
 
+						// head
+						UI.createComponent('{id}-{key}-base'.format({id: caption.id, key: key}), {
+							template: UI.template('span', 'ie'),
+						}),
+
+					]).then(function (unitComponents) {
+						var [
+							unitBase,
+						] = unitComponents;
+
+						// methods
+						unitBase.focus = function () {
+
+						}
+
+						return Promise.all([
+							// bindings
+						]).then(function () {
+							// children
+							unitBase.components = {
+
+							}
+							return unitBase.setChildren([
+
+							]);
+						}).then(function () {
+							return unitBase;
+						});
+					});
 				}
 
 				// LIST
