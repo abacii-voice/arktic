@@ -770,12 +770,39 @@ var AccountComponents = {
 
 			// methods and properties
 			var wrapper = content.components.wrapper;
-			wrapper.setAppearance({properties: {'contenteditable': 'true'}});
+			wrapper.token = function (text, type) {
+				var _this = wrapper;
+				if (_this.active !== undefined) {
+					return new Promise(function(resolve, reject) {
+						resolve(_this.active);
+					});
+				} else {
+					return base.unit().then(function (unit) {
+						// methods
+						unit.setAppearance({
+							properties: {
+								'contenteditable': 'true',
+							}
+						});
 
+						// set after HERE
+						return _this.setChildren([unit]).then(function () {
+							_this.active = unit;
+							return unit;
+						});
+					});
+				}
+			}
+
+			// complete promises
 			return Promise.all([
+				// wrapper bindings
+				// 1. click - get active token and focus
 				wrapper.setBindings({
-					'input': function (_this) {
-						base.onInput(_this);
+					'click': function (_this) {
+						return _this.token().then(function (token) {
+							token.focus();
+						});
 					},
 				}),
 			]).then(function () {
