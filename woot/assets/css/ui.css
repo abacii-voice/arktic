@@ -255,15 +255,12 @@ Common interface elements
 */
 
 .ie.input {
-	font-size: 14px;
-	height: 34px;
-	width: 400px;
 	box-sizing: border-box;
-	border: 0px solid #ccc;
-	background-color: transparent;
 	color: #ccc;
-	padding: 8px;
-	border-radius: 4px;
+	height: 40px;
+	padding-top: 12px;
+	padding-left: 10px;
+	cursor: text;
 }
 
 .ie.input.error {
@@ -280,6 +277,15 @@ Common interface elements
 .ie.input.top {
 	border-bottom-left-radius: 0px;
 	border-bottom-right-radius: 0px;
+}
+
+.ie.input .head {
+	display: inline-block;
+	min-width: 2px;
+}
+
+.ie.input .tail {
+	display: inline-block;
 }
 
 /*
