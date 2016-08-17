@@ -1019,9 +1019,9 @@ var AccountInterfaces = {
 						style: {
 							'top': '100px',
 							'left': '100px',
-							'height': '400px',
+							'height': '40px',
 							'width': '400px',
-							'padding': '10px',
+							'padding': '8px',
 						},
 						classes: ['border'],
 					},
@@ -1070,8 +1070,11 @@ var AccountInterfaces = {
 
 						// head
 						UI.createComponent('{id}-{key}-head'.format({id: caption.id, key: key}), {
-							template: UI.template('span', 'ie'),
+							template: UI.template('div', 'ie'),
 							appearance: {
+								style: {
+									'display': 'inline-block',
+								},
 								properties: {
 									'contenteditable': 'true',
 								},
@@ -1080,7 +1083,12 @@ var AccountInterfaces = {
 
 						// tail
 						UI.createComponent('{id}-{key}-tail'.format({id: caption.id, key: key}), {
-							template: UI.template('span', 'ie'),
+							template: UI.template('div', 'ie'),
+							appearance: {
+								style: {
+									'display': 'inline-block',
+								},
+							},
 						}),
 
 					]).then(function (unitComponents) {
