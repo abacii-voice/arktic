@@ -795,11 +795,7 @@ var AccountComponents = {
 				// wrapper bindings
 				// 1. click - get active token and focus
 				wrapper.setBindings({
-					'click': function (_this) {
-						return _this.token().then(function (token) {
-							token.focus();
-						});
-					},
+					
 				}),
 			]).then(function () {
 				base.components = {

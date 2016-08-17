@@ -1050,6 +1050,12 @@ var AccountInterfaces = {
 				// set up promises to be completed before returning the base.
 
 				// logic, bindings, etc.
+				// KEYBINDINGS
+				Mousetrap.bind('enter', function (event) {
+					event.preventDefault();
+					
+				});
+
 				// CAPTION
 				caption.unit = function (text, type) {
 					var key = makeid();
