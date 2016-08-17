@@ -71,61 +71,67 @@ var Components = {
 		// config
 		defaultAppearance = {
 			style: {
-				'height': '40px',
 				'width': '100%',
 			},
+			classes: ['border', 'border-radius'],
 		}
 
 		// set up components
 		return Promise.all([
 			// base component
-			UI.createComponent(id, {
-				template: UI.template('input', 'ie input'),
+			UI.createComponent('{id}-base'.format({id: id}), {
+				template: UI.template('div', 'ie input'),
 				appearance: (args.appearance || defaultAppearance),
+			}),
+
+			// head
+			UI.createComponent('{id}-head'.format({id: id}), {
+				template: UI.template('div', 'ie head'),
+				appearance: {
+					properties: {
+						'contenteditable': 'true',
+					},
+				},
+			}),
+
+			// tail
+			UI.createComponent('{id}-tail'.format({id: id}), {
+				template: UI.template('div', 'ie tail'),
 			}),
 
 		]).then(function (components) {
 			// unpack components
 			var [
 				base,
+				head,
+				tail,
 			] = components;
 
-			// set up promises to be completed before returning the base.
-			var setInputBindings = function () {
-				return base.setBindings({
+			// logic, bindings, etc.
+
+
+			// complete promises.
+			return Promise.all([
+				base.setBindings({
 					'input': function (_this) {
-						var value = _this.model().val();
+						var value = head.model().text();
 
 						if (_this.onInput !== undefined) {
 							_this.onInput(value);
 						}
 					},
-				});
-			}
-
-			// logic, bindings, etc.
-			base.clear = function () {
-				return new Promise(function(resolve, reject) {
-					base.model().val('');
-					resolve();
-				});
-			}
-			base.focus = function () {
-				return new Promise(function(resolve, reject) {
-					base.model().focus();
-					resolve();
-				});
-			}
-
-			// complete promises.
-			return Promise.all([
-				setInputBindings(),
+					'click': function (_this) {
+						head.model().focus();
+					}
+				}),
 			]).then(function (results) {
 				base.components = {
-
+					head: head,
+					tail: tail,
 				}
 				return base.setChildren([
-
+					head,
+					tail,
 				]);
 			}).then(function () {
 				return base;
