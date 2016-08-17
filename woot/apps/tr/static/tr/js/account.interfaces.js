@@ -1208,16 +1208,18 @@ var AccountInterfaces = {
 									'width': '100%',
 									'border-bottom': '1px solid #ccc',
 									'padding': '0px',
+									'padding-left': '10px',
+									'text-align': 'left',
 								},
 							},
 						}),
 
 						// main wrapper
 						UI.createComponent('{id}-{object}-main-wrapper'.format({id: _this.id, object: datum.id}), {
-							template: UI.template('div', 'ie centred'),
+							template: UI.template('div', 'ie centred-vertically'),
 							appearance: {
 								style: {
-									'font-size': '13px',
+									'left': '0px',
 								},
 							},
 						}),
@@ -1227,7 +1229,6 @@ var AccountInterfaces = {
 							template: UI.template('span', 'ie'),
 							appearance: {
 								style: {
-									'font-size': '14px',
 									'color': '#eee',
 								},
 								html: datum.main.substring(0, query.length),
@@ -1238,7 +1239,7 @@ var AccountInterfaces = {
 							template: UI.template('span', 'ie'),
 							appearance: {
 								style: {
-									'font-size': '14px',
+									// 'font-size': '14px',
 								},
 								html: datum.main.substring(query.length),
 							},
