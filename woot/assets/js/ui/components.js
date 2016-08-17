@@ -108,7 +108,9 @@ var Components = {
 			] = components;
 
 			// logic, bindings, etc.
-
+			base.setQuery = function (query) {
+				return tail.setAppearance({html: query});
+			}
 
 			// complete promises.
 			return Promise.all([
@@ -224,6 +226,7 @@ var Components = {
 					return Promise.all(base.virtual.map(function (item) {
 						return base.unit(base, item, query);
 					})).then(function (listItems) {
+						searchInput.setQuery(listItems.length !== 0 ? listItems[0].query : '');
 						return listPanel.components.wrapper.setChildren(listItems);
 					});
 				});
