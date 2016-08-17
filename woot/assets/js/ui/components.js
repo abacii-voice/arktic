@@ -226,7 +226,7 @@ var Components = {
 					return Promise.all(base.virtual.map(function (item) {
 						return base.unit(base, item, query);
 					})).then(function (listItems) {
-						searchInput.setQuery(listItems.length !== 0 ? listItems[0].query : '');
+						searchInput.setQuery((listItems.length !== 0 && query !== undefined && query !== '') ? listItems[0].query : '');
 						return listPanel.components.wrapper.setChildren(listItems);
 					});
 				});
