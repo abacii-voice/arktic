@@ -281,11 +281,14 @@ Common interface elements
 
 .ie.input .head {
 	display: inline-block;
+	position: absolute;
 	min-width: 2px;
 }
 
 .ie.input .tail {
 	display: inline-block;
+	position: absolute;
+	opacity: 0.5;
 }
 
 /*

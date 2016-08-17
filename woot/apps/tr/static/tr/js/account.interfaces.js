@@ -1053,7 +1053,7 @@ var AccountInterfaces = {
 				// KEYBINDINGS
 				Mousetrap.bind('enter', function (event) {
 					event.preventDefault();
-					
+
 				});
 
 				// CAPTION
@@ -1251,6 +1251,11 @@ var AccountInterfaces = {
 							unitMainHead,
 							unitMainTail,
 						] = unitComponents;
+
+						// set head and tail
+						unitBase.query = query + datum.main.substring(query.length);
+						unitBase.head = datum.main.substring(0, query.length);
+						unitBase.tail = datum.main.substring(query.length);
 
 						// complete promises.
 						return Promise.all([
