@@ -459,6 +459,9 @@ var UI = {
 				return $('#{id}'.format({id: this.id}));
 			}
 		}
+		this.element = function () {
+			return document.getElementById(this.id);
+		}
 		this.render = function () {
 			var _this = this;
 			var root = $('#{id}'.format({id: _this.root}));

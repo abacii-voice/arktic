@@ -1051,9 +1051,9 @@ var AccountInterfaces = {
 
 				// logic, bindings, etc.
 				// KEYBINDINGS
-				Mousetrap.bind('enter', function (event) {
+				Mousetrap.bind('right', function (event) {
 					event.preventDefault();
-
+					autocomplete.behaviours.right();
 				});
 
 				// CAPTION
@@ -1254,6 +1254,7 @@ var AccountInterfaces = {
 						] = unitComponents;
 
 						// set head and tail
+						unitBase.original = datum.main;
 						unitBase.query = query + datum.main.substring(query.length);
 						unitBase.head = datum.main.substring(0, query.length);
 						unitBase.tail = datum.main.substring(query.length);
