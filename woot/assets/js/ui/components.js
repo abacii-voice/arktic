@@ -86,7 +86,7 @@ var Components = {
 
 			// head
 			UI.createComponent('{id}-head'.format({id: id}), {
-				template: UI.template('div', 'ie head'),
+				template: UI.template('div', 'ie head mousetrap'),
 				appearance: {
 					properties: {
 						'contenteditable': 'true',
@@ -108,8 +108,47 @@ var Components = {
 			] = components;
 
 			// logic, bindings, etc.
-			base.setQuery = function (query) {
-				return tail.setAppearance({html: query});
+			base.setCurrent = function (current, condition) {
+				base.current = current;
+				return tail.setAppearance({html: condition ? base.current.query : ''});
+			}
+
+			base.complete = function () {
+				return tail.setAppearance({html: ''}).then(function () {
+					return head.setAppearance({html: base.current.complete});
+				}).then(function () {
+					head.model().trigger('input');
+					setEndOfContenteditable(head.element());
+				})
+			}
+
+			base.caretOffset = 0;
+			base.caretAtEnd = false;
+			base.getCaretPosition = function (correction) {
+				return new Promise(function(resolve, reject) {
+					base.caretOffset = getCaretOffsetWithin(head.element()) + correction;
+					base.caretAtEnd = base.caretOffset === head.model().html().length;
+					resolve(base.caretOffset);
+				});
+			}
+
+			base.behaviours = {
+				right: function () {
+					return base.getCaretPosition(1).then(function () {
+						if (base.caretAtEnd) {
+							return base.complete();
+						}
+					})
+				},
+				left: function () {
+
+				},
+				enter: function () {
+
+				},
+				click: function () {
+
+				}
 			}
 
 			// complete promises.
@@ -124,6 +163,7 @@ var Components = {
 					},
 					'click': function (_this) {
 						head.model().focus();
+						setEndOfContenteditable(head.element());
 					}
 				}),
 			]).then(function (results) {
@@ -132,8 +172,8 @@ var Components = {
 					tail: tail,
 				}
 				return base.setChildren([
+					tail, // must be underneath
 					head,
-					tail,
 				]);
 			}).then(function () {
 				return base;
@@ -226,8 +266,14 @@ var Components = {
 					return Promise.all(base.virtual.map(function (item) {
 						return base.unit(base, item, query);
 					})).then(function (listItems) {
-						searchInput.setQuery((listItems.length !== 0 && query !== undefined && query !== '') ? listItems[0].query : '');
-						return listPanel.components.wrapper.setChildren(listItems);
+						var condition = (listItems.length !== 0 && query !== undefined && query !== '');
+						var current = {
+							complete: listItems.length !== 0 ? listItems[0].original : '',
+							query: listItems.length !== 0 ? listItems[0].query : '',
+						}
+						return searchInput.setCurrent(current, condition).then(function () {
+							return listPanel.components.wrapper.setChildren(listItems);
+						});
 					});
 				});
 			}
@@ -295,6 +341,27 @@ var Components = {
 			// set title
 			base.setTitle = function (text, center) {
 
+			}
+
+			// complete
+			base.complete = function () {
+				searchInput.complete();
+			}
+
+			// behaviours
+			base.behaviours = {
+				right: function () {
+					return searchInput.behaviours.right();
+				},
+				left: function () {
+
+				},
+				enter: function () {
+
+				},
+				click: function () {
+
+				}
 			}
 
 			// set title
