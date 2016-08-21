@@ -107,6 +107,10 @@ var Components = {
 				tail,
 			] = components;
 
+			// variables
+			base.caretOffset = 0;
+			base.caretAtEnd = false;
+
 			// logic, bindings, etc.
 			base.setCurrent = function (current, condition) {
 				base.current = current;
@@ -117,28 +121,14 @@ var Components = {
 				return tail.setAppearance({html: ''}).then(function () {
 					return head.setAppearance({html: base.current.complete});
 				}).then(function () {
-					head.model().trigger('input');
-					setEndOfContenteditable(head.element());
-				})
-			}
 
-			base.caretOffset = 0;
-			base.caretAtEnd = false;
-			base.getCaretPosition = function (correction) {
-				return new Promise(function(resolve, reject) {
-					base.caretOffset = getCaretOffsetWithin(head.element()) + correction;
-					base.caretAtEnd = base.caretOffset === head.model().html().length;
-					resolve(base.caretOffset);
 				});
 			}
 
+			// behaviours
 			base.behaviours = {
 				right: function () {
-					return base.getCaretPosition(1).then(function () {
-						if (base.caretAtEnd) {
-							return base.complete();
-						}
-					})
+
 				},
 				left: function () {
 
@@ -155,15 +145,10 @@ var Components = {
 			return Promise.all([
 				base.setBindings({
 					'input': function (_this) {
-						var value = head.model().text();
 
-						if (_this.onInput !== undefined) {
-							_this.onInput(value);
-						}
 					},
 					'click': function (_this) {
-						head.model().focus();
-						setEndOfContenteditable(head.element());
+
 					}
 				}),
 			]).then(function (results) {
@@ -350,18 +335,27 @@ var Components = {
 
 			// behaviours
 			base.behaviours = {
-				right: function () {
-					return searchInput.behaviours.right();
+				up: function () {
+
+				},
+				down: function () {
+
 				},
 				left: function () {
+
+				},
+				right: function () {
+
+				},
+				number: function (char) {
 
 				},
 				enter: function () {
 
 				},
-				click: function () {
+				backspace: function () {
 
-				}
+				},
 			}
 
 			// set title
