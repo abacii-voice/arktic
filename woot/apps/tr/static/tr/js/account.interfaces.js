@@ -1052,34 +1052,32 @@ var AccountInterfaces = {
 				// logic, bindings, etc.
 				// KEYBINDINGS
 				Mousetrap.bind('up', function (event) {
+					event.preventDefault();
 					autocomplete.behaviours.up();
-					return false;
 				});
 
 				Mousetrap.bind('down', function (event) {
+					event.preventDefault();
 					autocomplete.behaviours.down();
-					return false;
 				});
 
 				Mousetrap.bind('left', function (event) {
 					autocomplete.behaviours.left();
-					return false;
 				});
 
 				Mousetrap.bind('right', function (event) {
 					autocomplete.behaviours.right();
-					return false;
 				});
 
 				Mousetrap.bind(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], function (event) {
+					event.preventDefault();
 					var char = String.fromCharCode(event.which);
 					autocomplete.behaviours.number(char);
-					return false;
 				});
 
 				Mousetrap.bind('enter', function (event) {
+					event.preventDefault();
 					autocomplete.behaviours.enter();
-					return false;
 				});
 
 				Mousetrap.bind('backspace', function (event) {

@@ -51,6 +51,25 @@ var Components = {
 				return wrapper.removeChildren();
 			}
 
+			// behaviours
+			base.behaviours = {
+				up: function () {
+
+				},
+				down: function () {
+
+				},
+				left: function () {
+
+				},
+				right: function () {
+
+				},
+				enter: function () {
+
+				},
+			}
+
 			// complete promises.
 			return Promise.all([
 
@@ -67,7 +86,7 @@ var Components = {
 
 	// SEARCH INPUT
 	// Formatted input field with events for input and key presses.
-	searchInput: function (id, args) {
+	search: function (id, args) {
 		// config
 		defaultAppearance = {
 			style: {
@@ -136,6 +155,9 @@ var Components = {
 				enter: function () {
 
 				},
+				backspace: function () {
+
+				},
 				click: function () {
 
 				}
@@ -145,10 +167,14 @@ var Components = {
 			return Promise.all([
 				base.setBindings({
 					'input': function (_this) {
+						var value = head.model().text();
 
+						if (_this.onInput !== undefined) {
+							_this.onInput(value);
+						}
 					},
 					'click': function (_this) {
-
+						head.model().focus();
 					}
 				}),
 			]).then(function (results) {
@@ -205,7 +231,7 @@ var Components = {
 			}),
 
 			// search input
-			Components.searchInput('{id}-search'.format({id: id}), {
+			Components.search('{id}-search'.format({id: id}), {
 
 			}),
 
@@ -214,8 +240,8 @@ var Components = {
 				template: UI.template('div', 'ie button'),
 			}),
 
-			// content
-			Components.contentPanel('{id}-content'.format({id: id}), {
+			// list
+			Components.contentPanel('{id}-list'.format({id: id}), {
 
 			}),
 
@@ -229,10 +255,10 @@ var Components = {
 			var [
 				base,
 				title,
-				searchInput,
+				search,
 				filterButton,
-				listPanel,
-				filterPanel,
+				list,
+				filter,
 			] = components;
 
 			// set up promises to be completed before returning the base.
@@ -246,7 +272,7 @@ var Components = {
 				return base.load().then(function () {
 					return base.filter(query, filter); // returns a reduced dataset
 				}).then(function () {
-					return listPanel.removeAll();
+					return list.removeAll();
 				}).then(function () {
 					return Promise.all(base.virtual.map(function (item) {
 						return base.unit(base, item, query);
@@ -256,8 +282,8 @@ var Components = {
 							complete: listItems.length !== 0 ? listItems[0].original : '',
 							query: listItems.length !== 0 ? listItems[0].query : '',
 						}
-						return searchInput.setCurrent(current, condition).then(function () {
-							return listPanel.components.wrapper.setChildren(listItems);
+						return search.setCurrent(current, condition).then(function () {
+							return list.components.wrapper.setChildren(listItems);
 						});
 					});
 				});
@@ -325,42 +351,46 @@ var Components = {
 
 			// set title
 			base.setTitle = function (text, center) {
-
-			}
-
-			// complete
-			base.complete = function () {
-				searchInput.complete();
+				return title.set(text, center);
 			}
 
 			// behaviours
 			base.behaviours = {
 				up: function () {
-
+					return list.behaviours.up();
 				},
 				down: function () {
-
+					return list.behaviours.down();
 				},
 				left: function () {
-
+					return Promise.all([
+						list.behaviours.left(),
+						search.behaviours.left(),
+					]);
 				},
 				right: function () {
-
+					return Promise.all([
+						list.behaviours.right(),
+						search.behaviours.right(),
+					]);
 				},
 				number: function (char) {
-
+					return list.behaviours.number(char);
 				},
 				enter: function () {
-
+					return Promise.all([
+						list.behaviours.enter(),
+						search.behaviours.enter(),
+					]);
 				},
 				backspace: function () {
-
+					return search.behaviours.backspace();
 				},
 			}
 
 			// set title
 			title.set = function (text, centre) {
-				title.setAppearance({
+				return title.setAppearance({
 					html: text,
 					style: {
 						'text-align': (centre ? 'center': 'left'),
@@ -369,11 +399,12 @@ var Components = {
 			}
 
 			// search input methods
-			searchInput.onInput = function (value) {
-				base.display(value);
-				if (base.onInput !== undefined) {
-					base.onInput(value);
-				}
+			search.onInput = function (value) {
+				return base.display(value).then(function () {
+					if (base.onInput !== undefined) {
+						return base.onInput(value);
+					}
+				});
 			}
 
 			// complete promises.
@@ -382,15 +413,15 @@ var Components = {
 			]).then(function (results) {
 				base.components = {
 					title: title,
-					searchInput: searchInput,
-					listPanel: listPanel,
-					filterPanel: filterPanel,
+					search: search,
+					list: list,
+					filter: filter,
 				}
 				return base.setChildren([
 					title,
-					searchInput,
-					listPanel,
-					filterPanel,
+					search,
+					list,
+					filter,
 				]);
 			}).then(function () {
 				return base;
