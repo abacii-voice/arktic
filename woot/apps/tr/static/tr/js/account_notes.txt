@@ -43,3 +43,12 @@ Behaviour cases:
 	a. beginning of active token -> previous |active
 	b. in the middle -> a|ctive
 	c. at the end -> active| next
+
+2016/08/21:
+Thinking about input behaviours
+1. Autocomplete object
+	a. input
+		right, enter, backspace, click, focus, blur
+
+	b. list
+		up, down, click
