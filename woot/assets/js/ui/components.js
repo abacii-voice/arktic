@@ -291,7 +291,6 @@ var Components = {
 			// set up promises to be completed before returning the base.
 			// logic, bindings, etc.
 			base.dataset = [];
-			base.buffer = [];
 			base.virtual = [];
 			base.filters = {};
 			base.defaultFilters = [];
@@ -305,12 +304,10 @@ var Components = {
 					return Promise.all(base.virtual.map(function (item) {
 						return base.unit(base, item, query);
 					})).then(function (listItems) {
-						var condition = (listItems.length !== 0 && query !== undefined && query !== '');
-						var current = {
-							complete: listItems.length !== 0 ? listItems[0].original : '',
-							query: listItems.length !== 0 ? listItems[0].query : '',
+						if (listItems.length !== 0) {
+							listItems[0].activate();
 						}
-						return search.setCurrent(current, condition).then(function () {
+						return base.setCurrent(listItems, query, 0).then(function () {
 							return base.list.components.wrapper.setChildren(listItems);
 						});
 					});
@@ -371,6 +368,27 @@ var Components = {
 					resolve();
 				});
 			}
+			base.setCurrent = function (listItems, query, index) {
+				var condition = (listItems.length !== 0 && query !== undefined && query !== '');
+				var current = {
+					complete: listItems.length !== 0 ? listItems[index].original : '',
+					query: listItems.length !== 0 ? listItems[index].query : '',
+				}
+				return search.setCurrent(current, condition);
+			}
+
+			// control active list item
+			base.next = function () {
+				return new Promise(function(resolve, reject) {
+					console.log(base.active);
+					resolve();
+				});
+			}
+			base.previous = function () {
+				return new Promise(function(resolve, reject) {
+					resolve();
+				});
+			}
 
 			// activate search
 			base.toggleSearch = function () {
@@ -385,10 +403,10 @@ var Components = {
 			// behaviours
 			base.behaviours = {
 				up: function () {
-					return base.list.behaviours.up();
+					return base.previous();
 				},
 				down: function () {
-					return base.list.behaviours.down();
+					return base.next();
 				},
 				left: function () {
 					return Promise.all([
