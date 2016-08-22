@@ -258,9 +258,10 @@ Common interface elements
 	box-sizing: border-box;
 	color: #ccc;
 	height: 40px;
-	padding-top: 12px;
+	padding-top: 11px;
 	padding-left: 10px;
 	cursor: text;
+	font-size: 15px;
 }
 
 .ie.input.error {

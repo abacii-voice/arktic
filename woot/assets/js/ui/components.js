@@ -156,7 +156,6 @@ var Components = {
 							base.caretOffset += increment;
 						}
 						base.caretOffset = base.caretOffset > base.textLength ? base.textLength : base.caretOffset;
-						console.log(base.textLength, base.caretOffset);
 						resolve();
 					});
 				});
@@ -296,11 +295,12 @@ var Components = {
 			base.virtual = [];
 			base.filters = {};
 			base.defaultFilters = [];
+			base.list = list; // allow for swapable components
 			base.display = function (query, filter) {
 				return base.load().then(function () {
 					return base.filter(query, filter); // returns a reduced dataset
 				}).then(function () {
-					return list.removeAll();
+					return base.list.removeAll();
 				}).then(function () {
 					return Promise.all(base.virtual.map(function (item) {
 						return base.unit(base, item, query);
@@ -311,7 +311,7 @@ var Components = {
 							query: listItems.length !== 0 ? listItems[0].query : '',
 						}
 						return search.setCurrent(current, condition).then(function () {
-							return list.components.wrapper.setChildren(listItems);
+							return base.list.components.wrapper.setChildren(listItems);
 						});
 					});
 				});
@@ -385,29 +385,29 @@ var Components = {
 			// behaviours
 			base.behaviours = {
 				up: function () {
-					return list.behaviours.up();
+					return base.list.behaviours.up();
 				},
 				down: function () {
-					return list.behaviours.down();
+					return base.list.behaviours.down();
 				},
 				left: function () {
 					return Promise.all([
-						list.behaviours.left(),
+						base.list.behaviours.left(),
 						search.behaviours.left(),
 					]);
 				},
 				right: function () {
 					return Promise.all([
-						list.behaviours.right(),
+						base.list.behaviours.right(),
 						search.behaviours.right(),
 					]);
 				},
 				number: function (char) {
-					return list.behaviours.number(char);
+					return base.list.behaviours.number(char);
 				},
 				enter: function () {
 					return Promise.all([
-						list.behaviours.enter(),
+						base.list.behaviours.enter(),
 						search.behaviours.enter(),
 					]);
 				},
