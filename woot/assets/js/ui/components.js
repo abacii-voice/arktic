@@ -500,6 +500,7 @@ var Components = {
 
 			// clone
 			base.clone = function (copy) {
+				// confusing, but properties of copy get sent to this object.
 				base.autocomplete = copy.autocomplete;
 				base.targets = copy.targets;
 				base.list = copy.list;
