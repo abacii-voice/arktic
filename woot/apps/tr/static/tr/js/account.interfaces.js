@@ -1357,10 +1357,7 @@ var AccountInterfaces = {
 				}
 
 				// LIST2
-				autocomplete2.autocomplete = false;
-				autocomplete2.targets = autocomplete.targets;
-				autocomplete2.list = autocomplete.list;
-				autocomplete2.unit = autocomplete.unit;
+				autocomplete2.clone(autocomplete);
 
 				// complete promises
 				return Promise.all([
