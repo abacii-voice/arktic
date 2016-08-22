@@ -304,7 +304,7 @@ var Components = {
 					return Promise.all(base.virtual.map(function (item) {
 						return base.unit(base, item, query);
 					})).then(function (listItems) {
-						if (listItems.length !== 0) {
+						if (listItems.length !== 0 && !(!base.autocomplete && (query === '' || query === undefined))) {
 							listItems[0].activate();
 						}
 						return base.setCurrent(listItems, query, 0).then(function () {
@@ -380,14 +380,38 @@ var Components = {
 			// control active list item
 			base.next = function () {
 				return new Promise(function(resolve, reject) {
-					console.log(base.active);
-					resolve();
+					// 1. get new active with next index
+					if (base.active.index < base.list.components.wrapper.children.length - 1) {
+						var index = base.active.index + 1;
+						base.setActive(index);
+					}
+					resolve(index);
+				}).then(function (index) {
+					if (index !== undefined) {
+						return base.setCurrent(base.list.components.wrapper.children, base.query, index);
+					}
 				});
 			}
 			base.previous = function () {
 				return new Promise(function(resolve, reject) {
-					resolve();
+					// 1. get new active with next index
+					if (base.active.index > 0) {
+						var index = base.active.index - 1;
+						base.setActive(index);
+					}
+					resolve(index);
+				}).then(function (index) {
+					if (index !== undefined) {
+						return base.setCurrent(base.list.components.wrapper.children, base.query, index);
+					}
 				});
+			}
+			base.setActive = function (index) {
+				base.active.deactivate();
+				base.active = base.list.components.wrapper.children.filter(function (child) {
+					return child.index === index;
+				})[0];
+				base.active.activate();
 			}
 
 			// activate search
@@ -410,24 +434,19 @@ var Components = {
 				},
 				left: function () {
 					return Promise.all([
-						base.list.behaviours.left(),
 						search.behaviours.left(),
 					]);
 				},
 				right: function () {
 					return Promise.all([
-						base.list.behaviours.right(),
 						search.behaviours.right(),
 					]);
 				},
 				number: function (char) {
-					return base.list.behaviours.number(char);
+
 				},
 				enter: function () {
-					return Promise.all([
-						base.list.behaviours.enter(),
-						search.behaviours.enter(),
-					]);
+					search.behaviours.enter()
 				},
 				backspace: function () {
 					return search.behaviours.backspace();
@@ -446,6 +465,7 @@ var Components = {
 
 			// search input methods
 			search.onInput = function (value) {
+				base.query = value;
 				return base.display(value).then(function () {
 					if (base.onInput !== undefined) {
 						return base.onInput(value);
