@@ -173,37 +173,52 @@ var Components = {
 			// behaviours
 			base.behaviours = {
 				right: function () {
-					return base.increment().then(function () {
-						if (base.caretAtEnd) {
-							return base.complete();
-						}
-					}).then(function () {
-						head.model().trigger('input');
-					});
+					if (base.isFocussed) {
+						return base.increment().then(function () {
+							if (base.caretAtEnd) {
+								return base.complete();
+							}
+						}).then(function () {
+							head.model().trigger('input');
+						});
+					}
 				},
 				left: function () {
-					return base.increment(true);
+					if (base.isFocussed) {
+						return base.increment(true);
+					}
 				},
 				enter: function () {
 					// 1. complete
-					return base.complete().then(function () {
-						// 2. pass data upwards
-						if (base.onComplete !== undefined) {
-							return base.onComplete();
-						}
-					}).then(function () {
-						// 3. clear
-						return base.clear();
-					});
+					if (base.isFocussed) {
+						return base.complete().then(function () {
+							// 2. pass data upwards
+							if (base.onComplete !== undefined) {
+								return base.onComplete();
+							}
+						}).then(function () {
+							// 3. clear
+							return base.clear();
+						});
+					}
 				},
 				backspace: function () {
-					return base.increment(true);
+					if (base.isFocussed) {
+						return base.increment(true);
+					}
 				},
-				click: function () {
+				click: function (end) {
+					base.isFocussed = true;
 					// find caret
 					return new Promise(function(resolve, reject) {
-						base.caretOffset = getCaretOffsetWithin(base.element());
-						base.caretAtEnd = base.caretOffset === head.model().html().length;
+						if (!end) {
+							base.caretOffset = getCaretOffsetWithin(base.element());
+							base.caretAtEnd = base.caretOffset === head.model().html().length;
+						} else {
+							base.caretOffset = head.model().html().length;
+							base.caretAtEnd = true;
+							setEndOfContenteditable(head.element());
+						}
 						resolve();
 					});
 				}
@@ -222,7 +237,12 @@ var Components = {
 					},
 					'click': function (_this) {
 						head.model().focus();
-						return _this.behaviours.click();
+						return _this.behaviours.click(true);
+					}
+				}),
+				head.setBindings({
+					'blur': function (_this) {
+						base.isFocussed = false;
 					}
 				}),
 			]).then(function (results) {
@@ -316,6 +336,7 @@ var Components = {
 			base.filters = {};
 			base.defaultFilters = [];
 			base.list = list; // allow for swapable components
+			base.search = search;
 			base.display = function (query, filter) {
 				return base.load().then(function () {
 					return base.filter(query, filter); // returns a reduced dataset
