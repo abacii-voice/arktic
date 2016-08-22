@@ -498,6 +498,14 @@ var Components = {
 				},
 			}
 
+			// clone
+			base.clone = function (copy) {
+				base.autocomplete = copy.autocomplete;
+				base.targets = copy.targets;
+				base.list = copy.list;
+				base.unit = copy.unit;
+			}
+
 			// set title
 			title.set = function (text, centre) {
 				return title.setAppearance({
