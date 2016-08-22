@@ -177,6 +177,8 @@ var Components = {
 						if (base.caretAtEnd) {
 							return base.complete();
 						}
+					}).then(function () {
+						head.model().trigger('input');
 					});
 				},
 				left: function () {
@@ -320,10 +322,10 @@ var Components = {
 				}).then(function () {
 					return base.list.removeAll();
 				}).then(function () {
-					return Promise.all(base.virtual.map(function (item) {
-						return base.unit(base, item, query);
+					return Promise.all(base.virtual.map(function (item, index) {
+						return base.unit(base, item, query, index);
 					})).then(function (listItems) {
-						if (listItems.length !== 0 && !(!base.autocomplete && (query === '' || query === undefined))) {
+						if (listItems.length !== 0 && !(!base.autocomplete && !query)) {
 							listItems[0].activate();
 						}
 						return base.setCurrent(listItems, query, 0).then(function () {
@@ -399,39 +401,38 @@ var Components = {
 
 			// control active list item
 			base.next = function () {
-				return new Promise(function(resolve, reject) {
-					// 1. get new active with next index
-					if (base.active.index < base.list.components.wrapper.children.length - 1) {
-						var index = base.active.index + 1;
-						base.setActive(index);
-					}
-					resolve(index);
-				}).then(function (index) {
-					if (index !== undefined) {
+				if (base.active && (base.active.index < base.list.components.wrapper.children.length - 1)) {
+					var index = base.active.index + 1;
+					return base.setActive(index).then(function (index) {
 						return base.setCurrent(base.list.components.wrapper.children, base.query, index);
-					}
-				});
+					});
+				} else {
+					return emptyPromise();
+				}
 			}
 			base.previous = function () {
-				return new Promise(function(resolve, reject) {
-					// 1. get new active with next index
-					if (base.active.index > 0) {
-						var index = base.active.index - 1;
-						base.setActive(index);
-					}
-					resolve(index);
-				}).then(function (index) {
-					if (index !== undefined) {
+				if (base.active && base.active.index > 0) {
+					var index = base.active.index - 1;
+					return base.setActive(index).then(function (index) {
 						return base.setCurrent(base.list.components.wrapper.children, base.query, index);
-					}
-				});
+					});
+				} else {
+					return emptyPromise();
+				}
 			}
 			base.setActive = function (index) {
-				base.active.deactivate();
-				base.active = base.list.components.wrapper.children.filter(function (child) {
-					return child.index === index;
-				})[0];
-				base.active.activate();
+				return base.active.deactivate().then(function () {
+					return new Promise(function(resolve, reject) {
+						base.active = base.list.components.wrapper.children.filter(function (child) {
+							return child.index === index;
+						})[0];
+						resolve();
+					});
+				}).then(function () {
+					return base.active.activate();
+				}).then(function () {
+					return index;
+				});
 			}
 
 			// activate search
@@ -459,7 +460,14 @@ var Components = {
 					return search.behaviours.right();
 				},
 				number: function (char) {
-
+					var index = parseInt(char);
+					if (index < base.list.components.wrapper.children.length && base.query) {
+						return base.setActive(index).then(function (index) {
+							return base.setCurrent(base.list.components.wrapper.children, base.query, index);
+						}).then(function () {
+							return search.behaviours.enter(); // behaviour could also be "right" here.
+						});
+					}
 				},
 				enter: function () {
 					return search.behaviours.enter();

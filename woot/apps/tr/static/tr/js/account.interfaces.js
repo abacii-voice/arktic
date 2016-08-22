@@ -1226,7 +1226,7 @@ var AccountInterfaces = {
 						},
 					},
 				]
-				autocomplete.unit = function (_this, datum, query) {
+				autocomplete.unit = function (_this, datum, query, index) {
 					query = (query || '');
 
 					// base class
@@ -1288,12 +1288,24 @@ var AccountInterfaces = {
 							},
 						}),
 
+						// index
+						UI.createComponent('{id}-{object}-index'.format({id: _this.id, object: datum.id}), {
+							template: UI.template('div', 'ie abs centred-vertically'),
+							appearance: {
+								style: {
+									'right': '5px',
+								},
+								html: index,
+							},
+						}),
+
 					]).then(function (unitComponents) {
 						var [
 							unitBase,
 							unitMainWrapper,
 							unitMainHead,
 							unitMainTail,
+							unitIndex,
 						] = unitComponents;
 
 						// set head and tail
@@ -1309,7 +1321,7 @@ var AccountInterfaces = {
 						}
 
 						unitBase.deactivate = function () {
-							unitBase.setAppearance({classes: {remove: ['active']}});
+							return unitBase.setAppearance({classes: {remove: ['active']}});
 						}
 
 						// complete promises.
@@ -1321,6 +1333,7 @@ var AccountInterfaces = {
 						]).then(function () {
 							return unitBase.setChildren([
 								unitMainWrapper,
+								unitIndex,
 							]);
 						}).then(function () {
 							return unitBase;
