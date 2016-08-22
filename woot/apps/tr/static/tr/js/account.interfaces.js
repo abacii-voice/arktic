@@ -1039,24 +1039,12 @@ var AccountInterfaces = {
 					},
 				}),
 
-				Components.searchableList('test-list2', {
-					appearance: {
-						style: {
-							'height': '250px',
-							'width': '300px',
-							'top': '100px',
-							'left': '500px',
-						}
-					},
-				}),
-
 			]).then(function (components) {
 				// unpack components
 				var [
 					base,
 					caption,
 					autocomplete,
-					autocomplete2,
 				] = components;
 
 				// set up promises to be completed before returning the base.
@@ -1066,13 +1054,11 @@ var AccountInterfaces = {
 				Mousetrap.bind('up', function (event) {
 					event.preventDefault();
 					autocomplete.behaviours.up();
-					autocomplete2.behaviours.up();
 				});
 
 				Mousetrap.bind('down', function (event) {
 					event.preventDefault();
 					autocomplete.behaviours.down();
-					autocomplete2.behaviours.down();
 				});
 
 				Mousetrap.bind('left', function (event) {
@@ -1081,7 +1067,6 @@ var AccountInterfaces = {
 
 				Mousetrap.bind('right', function (event) {
 					autocomplete.behaviours.right();
-					autocomplete2.behaviours.right();
 				});
 
 				Mousetrap.bind(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], function (event) {
@@ -1356,9 +1341,6 @@ var AccountInterfaces = {
 					});
 				}
 
-				// LIST2
-				autocomplete2.clone(autocomplete);
-
 				// complete promises
 				return Promise.all([
 					// caption
@@ -1381,7 +1363,6 @@ var AccountInterfaces = {
 					return base.setChildren([
 						caption,
 						autocomplete,
-						autocomplete2,
 					]);
 				}).then(function () {
 					return base;
