@@ -1088,15 +1088,18 @@ var AccountInterfaces = {
 					event.preventDefault();
 					var char = String.fromCharCode(event.which);
 					autocomplete.behaviours.number(char);
+					autocomplete2.behaviours.number(char);
 				});
 
 				Mousetrap.bind('enter', function (event) {
 					event.preventDefault();
 					autocomplete.behaviours.enter();
+					autocomplete2.behaviours.enter();
 				});
 
 				Mousetrap.bind('backspace', function (event) {
 					autocomplete.behaviours.backspace();
+					autocomplete2.behaviours.backspace();
 				});
 
 				// CAPTION
@@ -1176,6 +1179,9 @@ var AccountInterfaces = {
 				}
 				autocomplete.components.search.onComplete = function () {
 					console.log(autocomplete.components.search.current.complete);
+				}
+				autocomplete2.components.search.onComplete = function () {
+					console.log(autocomplete2.components.search.current.complete);
 				}
 				autocomplete.toggleSearch();
 				autocomplete.autocomplete = false;
