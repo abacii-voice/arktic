@@ -1159,6 +1159,9 @@ var AccountInterfaces = {
 				autocomplete.onInput = function () {
 
 				}
+				autocomplete.components.search.onComplete = function () {
+					console.log(autocomplete.components.search.current.complete);
+				}
 				autocomplete.toggleSearch();
 				autocomplete.autocomplete = false;
 				autocomplete.targets = [
@@ -1238,11 +1241,20 @@ var AccountInterfaces = {
 					jss.set('#{id}-{object}-base.active'.format({id: _this.id, object: datum.id}), {
 						'background-color': 'rgba(255,255,255,0.1)'
 					});
+					jss.set('#{id}-{object}-base.client'.format({id: _this.id, object: datum.id}), {
+						'background-color': 'rgba(255,255,0,0.05)'
+					});
+					jss.set('#{id}-{object}-base.client.active'.format({id: _this.id, object: datum.id}), {
+						'background-color': 'rgba(255,255,0,0.1)'
+					});
 
 					return Promise.all([
 						// base component
 						UI.createComponent('{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
 							template: UI.template('div', 'ie button'),
+							appearance: {
+								classes: [datum.rule],
+							}
 						}),
 
 						// main wrapper
@@ -1289,6 +1301,7 @@ var AccountInterfaces = {
 						unitBase.query = query + datum.main.substring(query.length);
 						unitBase.head = datum.main.substring(0, query.length);
 						unitBase.tail = datum.main.substring(query.length);
+						unitBase.type = datum.rule;
 
 						unitBase.activate = function () {
 							_this.active = unitBase;

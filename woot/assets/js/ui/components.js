@@ -141,7 +141,8 @@ var Components = {
 				return tail.setAppearance({html: ''}).then(function () {
 					return head.setAppearance({html: base.current.complete});
 				}).then(function () {
-
+					head.model().focus();
+					setEndOfContenteditable(head.element());
 				});
 			}
 
@@ -161,21 +162,39 @@ var Components = {
 				});
 			}
 
+			base.clear = function () {
+				return new Promise(function(resolve, reject) {
+					head.model().html('');
+					head.model().trigger('input');
+					resolve();
+				});
+			}
+
 			// behaviours
 			base.behaviours = {
 				right: function () {
-					// caret + 1
-					return base.increment();
+					return base.increment().then(function () {
+						if (base.caretAtEnd) {
+							return base.complete();
+						}
+					});
 				},
 				left: function () {
-					// caret - 1
 					return base.increment(true);
 				},
 				enter: function () {
-
+					// 1. complete
+					return base.complete().then(function () {
+						// 2. pass data upwards
+						if (base.onComplete !== undefined) {
+							return base.onComplete();
+						}
+					}).then(function () {
+						// 3. clear
+						return base.clear();
+					});
 				},
 				backspace: function () {
-					// caret - 1
 					return base.increment(true);
 				},
 				click: function () {
@@ -373,6 +392,7 @@ var Components = {
 				var current = {
 					complete: listItems.length !== 0 ? listItems[index].original : '',
 					query: listItems.length !== 0 ? listItems[index].query : '',
+					type: listItems.length !== 0 ? listItems[index].type : '',
 				}
 				return search.setCurrent(current, condition);
 			}
@@ -433,20 +453,16 @@ var Components = {
 					return base.next();
 				},
 				left: function () {
-					return Promise.all([
-						search.behaviours.left(),
-					]);
+					return search.behaviours.left();
 				},
 				right: function () {
-					return Promise.all([
-						search.behaviours.right(),
-					]);
+					return search.behaviours.right();
 				},
 				number: function (char) {
 
 				},
 				enter: function () {
-					search.behaviours.enter()
+					return search.behaviours.enter();
 				},
 				backspace: function () {
 					return search.behaviours.backspace();
