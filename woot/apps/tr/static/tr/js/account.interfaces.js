@@ -1526,6 +1526,5 @@ var AccountInterfaces = {
 				});
 			});
 		},
-
 	},
 }

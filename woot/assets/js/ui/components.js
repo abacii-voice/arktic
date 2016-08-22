@@ -127,6 +127,7 @@ var Components = {
 			] = components;
 
 			// variables
+			base.textLength = 0;
 			base.caretOffset = 0;
 			base.caretAtEnd = false;
 
@@ -144,22 +145,47 @@ var Components = {
 				});
 			}
 
+			base.increment = function (decrement) {
+				return new Promise(function(resolve, reject) {
+					base.textLength = head.model().text().length;
+					resolve();
+				}).then(function () {
+					return new Promise(function(resolve, reject) {
+						var increment = (decrement ? -1 : 1 || 1);
+						if (base.caretOffset + increment >= 0 && base.caretOffset + increment <= base.textLength) {
+							base.caretOffset += increment;
+						}
+						base.caretOffset = base.caretOffset > base.textLength ? base.textLength : base.caretOffset;
+						console.log(base.textLength, base.caretOffset);
+						resolve();
+					});
+				});
+			}
+
 			// behaviours
 			base.behaviours = {
 				right: function () {
-
+					// caret + 1
+					return base.increment();
 				},
 				left: function () {
-
+					// caret - 1
+					return base.increment(true);
 				},
 				enter: function () {
 
 				},
 				backspace: function () {
-
+					// caret - 1
+					return base.increment(true);
 				},
 				click: function () {
-
+					// find caret
+					return new Promise(function(resolve, reject) {
+						base.caretOffset = getCaretOffsetWithin(base.element());
+						base.caretAtEnd = base.caretOffset === head.model().html().length;
+						resolve();
+					});
 				}
 			}
 
@@ -168,13 +194,15 @@ var Components = {
 				base.setBindings({
 					'input': function (_this) {
 						var value = head.model().text();
-
-						if (_this.onInput !== undefined) {
-							_this.onInput(value);
-						}
+						_this.increment().then(function () {
+							if (_this.onInput !== undefined) {
+								return _this.onInput(value);
+							}
+						});
 					},
 					'click': function (_this) {
 						head.model().focus();
+						return _this.behaviours.click();
 					}
 				}),
 			]).then(function (results) {
