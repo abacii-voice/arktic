@@ -1226,20 +1226,23 @@ var AccountInterfaces = {
 				autocomplete.unit = function (_this, datum, query) {
 					query = (query || '');
 
+					// base class
+					jss.set('#{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
+						'height': '30px',
+						'width': '100%',
+						'border-bottom': '1px solid #ccc',
+						'padding': '0px',
+						'padding-left': '10px',
+						'text-align': 'left',
+					});
+					jss.set('#{id}-{object}-base.active'.format({id: _this.id, object: datum.id}), {
+						'background-color': 'rgba(255,255,255,0.1)'
+					});
+
 					return Promise.all([
 						// base component
 						UI.createComponent('{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
 							template: UI.template('div', 'ie button'),
-							appearance: {
-								style: {
-									'height': '30px',
-									'width': '100%',
-									'border-bottom': '1px solid #ccc',
-									'padding': '0px',
-									'padding-left': '10px',
-									'text-align': 'left',
-								},
-							},
 						}),
 
 						// main wrapper
@@ -1286,6 +1289,15 @@ var AccountInterfaces = {
 						unitBase.query = query + datum.main.substring(query.length);
 						unitBase.head = datum.main.substring(0, query.length);
 						unitBase.tail = datum.main.substring(query.length);
+
+						unitBase.activate = function () {
+							_this.active = unitBase;
+							return unitBase.setAppearance({classes: {add: ['active']}});
+						}
+
+						unitBase.deactivate = function () {
+							unitBase.setAppearance({classes: {remove: ['active']}});
+						}
 
 						// complete promises.
 						return Promise.all([
