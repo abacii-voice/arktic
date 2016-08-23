@@ -1125,52 +1125,36 @@ var AccountInterfaces = {
 							},
 						}),
 
-						// head
-						UI.createComponent('{id}-{key}-head'.format({id: caption.id, key: key}), {
-							template: UI.template('div', 'ie'),
-							appearance: {
-								style: {
-									'display': 'inline-block',
-								},
-								properties: {
-									'contenteditable': 'true',
-								},
-							},
-						}),
-
-						// tail
-						UI.createComponent('{id}-{key}-tail'.format({id: caption.id, key: key}), {
-							template: UI.template('div', 'ie'),
-							appearance: {
-								style: {
-									'display': 'inline-block',
-								},
-							},
-						}),
+						// autocomplete element
+						Components.searchableList('{id}-{key}-autocomplete'.format({id: caption.id, key: key}), {}),
 
 					]).then(function (unitComponents) {
 						var [
 							unitBase,
-							unitHead,
-							unitTail,
+							unitAutocomplete,
 						] = unitComponents;
 
+
+						// clone page autocomplete
+						unitAutocomplete.clone(autocomplete);
+						// unitAutocomplete.search.setAppearance({
+						// 	style: {
+						//
+						// 	},
+						// });
+
 						// methods
-						unitBase.focus = function () {
-							unitHead.model().focus();
-						}
+
 
 						return Promise.all([
 							// bindings
 						]).then(function () {
 							// children
 							unitBase.components = {
-								head: unitHead,
-								tail: unitTail,
+								autocomplete: unitAutocomplete,
 							}
 							return unitBase.setChildren([
-								unitHead,
-								unitTail,
+								unitAutocomplete,
 							]);
 						}).then(function () {
 							return unitBase;
