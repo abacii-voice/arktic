@@ -1143,11 +1143,18 @@ var AccountInterfaces = {
 						// 	},
 						// });
 
-						// methods
 
+						// methods
+						unitBase.focus = function () {
+							unitAutocomplete.focus();
+						}
 
 						return Promise.all([
-							// bindings
+							unitAutocomplete.search.setAppearance({
+								classes: {
+									remove: ['border', 'border-radius'],
+								}
+							}),
 						]).then(function () {
 							// children
 							unitBase.components = {
