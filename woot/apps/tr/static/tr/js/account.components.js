@@ -770,6 +770,11 @@ var AccountComponents = {
 
 			// methods and properties
 			var wrapper = content.components.wrapper;
+			wrapper.load = function () {
+
+			}
+			
+
 			wrapper.token = function (text, type) {
 				var _this = wrapper;
 				if (_this.active !== undefined) {
@@ -790,13 +795,31 @@ var AccountComponents = {
 				}
 			}
 
+			// behaviours
+			base.behaviours = {
+				left: function () {
+
+				},
+				right: function () {
+
+				},
+				shiftleft: function () {
+
+				},
+				shiftright: function () {
+
+				},
+				enter: function () {
+
+				},
+				backspace: function () {
+
+				},
+			}
+
 			// complete promises
 			return Promise.all([
-				// wrapper bindings
-				// 1. click - get active token and focus
-				wrapper.setBindings({
-					
-				}),
+
 			]).then(function () {
 				base.components = {
 					wrapper: wrapper,
