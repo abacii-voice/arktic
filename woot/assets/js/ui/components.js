@@ -299,9 +299,7 @@ var Components = {
 			}),
 
 			// search input
-			Components.search('{id}-search'.format({id: id}), {
-
-			}),
+			Components.search('{id}-search'.format({id: id}), {}),
 
 			// filter button
 			UI.createComponent('{id}-filter-button'.format({id: id}), {
@@ -309,14 +307,10 @@ var Components = {
 			}),
 
 			// list
-			Components.contentPanel('{id}-list'.format({id: id}), {
-
-			}),
+			Components.contentPanel('{id}-list'.format({id: id}), {}),
 
 			// filter
-			Components.contentPanel('{id}-filter'.format({id: id}), {
-
-			}),
+			Components.contentPanel('{id}-filter'.format({id: id}), {}),
 
 		]).then(function (components) {
 			// unpack components
