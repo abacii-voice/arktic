@@ -1062,26 +1062,49 @@ var AccountInterfaces = {
 				});
 
 				Mousetrap.bind('left', function (event) {
-					autocomplete.behaviours.left();
+					Promise.all([
+						autocomplete.behaviours.left(),
+						caption.behaviours.left(),
+					]);
 				});
 
 				Mousetrap.bind('right', function (event) {
-					autocomplete.behaviours.right();
+					Promise.all([
+						autocomplete.behaviours.right(),
+						caption.behaviours.right(),
+					]);
 				});
 
 				Mousetrap.bind(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], function (event) {
 					event.preventDefault();
 					var char = String.fromCharCode(event.which);
-					autocomplete.behaviours.number(char);
+					Promise.all([
+						autocomplete.behaviours.number(char),
+						caption.behaviours.number(char),
+					]);
 				});
 
 				Mousetrap.bind('enter', function (event) {
 					event.preventDefault();
-					autocomplete.behaviours.enter();
+					Promise.all([
+						autocomplete.behaviours.enter(),
+						caption.behaviours.enter(),
+					]);
 				});
 
 				Mousetrap.bind('backspace', function (event) {
-					autocomplete.behaviours.backspace();
+					Promise.all([
+						autocomplete.behaviours.backspace(),
+						caption.behaviours.backspace(),
+					]);
+				});
+
+				Mousetrap.bind('shift+right', function (event) {
+					caption.behaviours.shiftright();
+				});
+
+				Mousetrap.bind('shift+left', function (event) {
+					caption.behaviours.shiftleft();
 				});
 
 				// CAPTION
