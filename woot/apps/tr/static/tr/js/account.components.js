@@ -773,7 +773,7 @@ var AccountComponents = {
 			wrapper.load = function () {
 
 			}
-			
+
 
 			wrapper.token = function (text, type) {
 				var _this = wrapper;
@@ -819,7 +819,14 @@ var AccountComponents = {
 
 			// complete promises
 			return Promise.all([
-
+				wrapper.setBindings({
+					'click': function (_this) {
+						// create token. Worry about loading later.
+						wrapper.token().then(function (token) {
+							token.focus();
+						});
+					},
+				}),
 			]).then(function () {
 				base.components = {
 					wrapper: wrapper,
