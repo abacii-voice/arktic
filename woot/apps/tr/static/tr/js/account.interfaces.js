@@ -1163,7 +1163,7 @@ var AccountInterfaces = {
 					console.log(autocomplete.components.search.current.complete);
 				}
 				autocomplete.toggleSearch();
-				autocomplete.autocomplete = false;
+				autocomplete.autocomplete = true;
 				autocomplete.targets = [
 					{
 						name: 'clients',
