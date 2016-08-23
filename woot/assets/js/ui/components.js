@@ -136,16 +136,13 @@ var Components = {
 				base.current = current;
 				return tail.setAppearance({html: condition ? base.current.query : ''});
 			}
-
 			base.complete = function () {
 				return tail.setAppearance({html: ''}).then(function () {
 					return head.setAppearance({html: base.current.complete});
 				}).then(function () {
-					head.model().focus();
-					setEndOfContenteditable(head.element());
+					base.focus();
 				});
 			}
-
 			base.increment = function (decrement) {
 				return new Promise(function(resolve, reject) {
 					base.textLength = head.model().text().length;
@@ -161,13 +158,16 @@ var Components = {
 					});
 				});
 			}
-
 			base.clear = function () {
 				return new Promise(function(resolve, reject) {
 					head.model().html('');
 					head.model().trigger('input');
 					resolve();
 				});
+			}
+			base.focus = function () {
+				head.model().focus();
+				setEndOfContenteditable(head.element());
 			}
 
 			// behaviours
@@ -448,6 +448,9 @@ var Components = {
 				}).then(function () {
 					return index;
 				});
+			}
+			base.focus = function () {
+				search.focus();
 			}
 
 			// activate search
