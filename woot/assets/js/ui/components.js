@@ -132,16 +132,20 @@ var Components = {
 			base.caretAtEnd = false;
 
 			// logic, bindings, etc.
-			base.setCurrent = function (current, condition) {
+			base.setCurrent = function (current) {
 				base.current = current;
-				return tail.setAppearance({html: condition ? base.current.query : ''});
+				return tail.setAppearance({html: base.current.condition ? base.current.guess : base.current.query});
 			}
 			base.complete = function () {
-				return tail.setAppearance({html: ''}).then(function () {
-					return head.setAppearance({html: base.current.complete});
-				}).then(function () {
-					base.focus();
-				});
+				if (base.current.condition) {
+					return tail.setAppearance({html: ''}).then(function () {
+						return head.setAppearance({html: base.current.complete});
+					}).then(function () {
+						base.focus();
+					});
+				} else {
+					return emptyPromise();
+				}
 			}
 			base.increment = function (decrement) {
 				return new Promise(function(resolve, reject) {
@@ -407,13 +411,14 @@ var Components = {
 				});
 			}
 			base.setCurrent = function (listItems, query, index) {
-				var condition = (listItems.length !== 0 && query !== undefined && query !== '');
-				var current = {
+				// condition is that there are filtered items and the query is not nothing
+				return search.setCurrent({
+					condition: (listItems.length !== 0 && query),
 					complete: listItems.length !== 0 ? listItems[index].original : '',
-					query: listItems.length !== 0 ? listItems[index].query : '',
+					guess: listItems.length !== 0 ? listItems[index].query : '',
 					type: listItems.length !== 0 ? listItems[index].type : '',
-				}
-				return search.setCurrent(current, condition);
+					query: query,
+				});
 			}
 
 			// control active list item
