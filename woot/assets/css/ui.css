@@ -290,6 +290,7 @@ Common interface elements
 	display: inline-block;
 	position: relative;
 	opacity: 0.5;
+	pointer-events: none;
 }
 
 /*

@@ -197,8 +197,8 @@ var UI = {
 
 				// classes need to be a combination of ones removed and ones added. If "add" and "remove" are not present, defaults to using whole object.
 				this.classes = currentClasses;
-				var addClasses = appearance.classes !== undefined ? (appearance.classes.add !== undefined ? appearance.classes.add : (appearance.classes.remove !== undefined ? [] : appearance.classes)) : [];
-				var removeClasses = appearance.classes !== undefined ? (appearance.classes.remove !== undefined ? appearance.classes.remove : []) : [];
+				var addClasses = appearance.classes !== undefined ? (appearance.classes.add !== undefined ? ($.isArray(appearance.classes.add) ? appearance.classes.add : [appearance.classes.add]) : (appearance.classes.remove !== undefined ? [] : appearance.classes)) : [];
+				var removeClasses = appearance.classes !== undefined ? (appearance.classes.remove !== undefined ? ($.isArray(appearance.classes.remove) ? appearance.classes.remove : [appearance.classes.remove]) : []) : [];
 				var _this = this;
 				this.classes = this.classes.concat(addClasses.filter(function (cls) {
 					return _this.classes.indexOf(cls) === -1;
@@ -228,14 +228,18 @@ var UI = {
 						// classes
 						if (_this.classes !== undefined) {
 							// remove current classes that are not the new classes variable
-							removeClasses.forEach(function (cls) {
-								model.removeClass(cls);
-							});
+							if (removeClasses.length > 0) {
+								removeClasses.forEach(function (cls) {
+									model.removeClass(cls);
+								});
+							}
 
 							// add new classes
-							addClasses.forEach(function (cls) {
-								model.addClass(cls);
-							});
+							if (addClasses.length > 0) {
+								addClasses.forEach(function (cls) {
+									model.addClass(cls);
+								});
+							}
 						}
 
 						// style

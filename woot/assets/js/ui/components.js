@@ -261,6 +261,10 @@ var Components = {
 				head.setBindings({
 					'blur': function (_this) {
 						base.isFocussed = false;
+					},
+					'click': function (_this, event) {
+						event.stopPropagation();
+						return base.behaviours.click(false);
 					}
 				}),
 			]).then(function (results) {

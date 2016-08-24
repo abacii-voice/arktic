@@ -1101,6 +1101,13 @@ var AccountInterfaces = {
 					]);
 				});
 
+				Mousetrap.bind('space', function (event) {
+					event.preventDefault();
+					Promise.all([
+						caption.behaviours.space(),
+					]);
+				});
+
 				Mousetrap.bind('shift+right', function (event) {
 					caption.behaviours.shiftright();
 				});
@@ -1113,18 +1120,24 @@ var AccountInterfaces = {
 				caption.unit = function (text, type) {
 					var key = makeid();
 
+					// classes
+					jss.set('#{id}-{key}-base'.format({id: caption.id, key: key}), {
+						'height': '30px',
+						'margin': '0px',
+						'display': 'inline-block',
+					});
+					jss.set('#{id}-{key}-base.tag'.format({id: caption.id, key: key}), {
+
+					});
+					jss.set('#{id}-{key}-base.active'.format({id: caption.id, key: key}), {
+
+					});
+
 					// components
 					return Promise.all([
 						// base
 						UI.createComponent('{id}-{key}-base'.format({id: caption.id, key: key}), {
 							template: UI.template('div', 'ie'),
-							appearance: {
-								style: {
-									'height': '30px',
-									'margin': '0px',
-									'display': 'inline-block',
-								},
-							},
 						}),
 
 						// autocomplete element
@@ -1155,13 +1168,20 @@ var AccountInterfaces = {
 
 						// methods
 						unitBase.focus = function () {
-							unitAutocomplete.focus();
+							return unitAutocomplete.focus();
 						}
-
 						unitBase.reset = function () {
 							return unitAutocomplete.clear().then(function () {
 								return unitAutocomplete.focus();
 							})
+						}
+						unitBase.activate = function () {
+							return unitBase.setAppearance({classes: {add: 'active'}}).then(function () {
+								return unitBase.focus();
+							});
+						}
+						unitBase.deactivate = function () {
+							return unitBase.setAppearance({classes: {remove: 'active'}});
 						}
 
 						return Promise.all([
