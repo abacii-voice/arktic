@@ -103,11 +103,6 @@ var Components = {
 				appearance: (args.appearance || defaultAppearance),
 			}),
 
-			// tail
-			UI.createComponent('{id}-tail'.format({id: id}), {
-				template: UI.template('div', 'ie tail'),
-			}),
-
 			// head
 			UI.createComponent('{id}-head'.format({id: id}), {
 				template: UI.template('div', 'ie head mousetrap'),
@@ -118,12 +113,26 @@ var Components = {
 				},
 			}),
 
+			// tail
+			UI.createComponent('{id}-tail'.format({id: id}), {
+				template: UI.template('div', 'ie tail'),
+			}),
+
+			// space
+			UI.createComponent('{id}-space'.format({id: id}), {
+				template: UI.template('div', 'ie tail'),
+				appearance: {
+					html: '&nbsp;',
+				},
+			}),
+
 		]).then(function (components) {
 			// unpack components
 			var [
 				base,
-				tail,
 				head,
+				tail,
+				space,
 			] = components;
 
 			// variables
@@ -171,9 +180,12 @@ var Components = {
 				});
 			}
 			base.focus = function () {
-				base.isFocussed = true;
-				head.model().focus();
-				setEndOfContenteditable(head.element());
+				return new Promise(function(resolve, reject) {
+					base.isFocussed = true;
+					head.model().focus();
+					setEndOfContenteditable(head.element());
+					resolve();
+				});
 			}
 
 			// behaviours
@@ -259,6 +271,7 @@ var Components = {
 				return base.setChildren([
 					head,
 					tail, // must be underneath
+					space,
 				]);
 			}).then(function () {
 				return base;
@@ -456,8 +469,11 @@ var Components = {
 					return index;
 				});
 			}
+			base.clear = function () {
+				return search.clear();
+			}
 			base.focus = function () {
-				search.focus();
+				return search.focus();
 			}
 
 			// activate search
