@@ -773,16 +773,14 @@ var AccountComponents = {
 			wrapper.load = function () {
 
 			}
-
-
-			wrapper.token = function (text, type) {
+			wrapper.token = function (swap, text, type) {
 				var _this = wrapper;
-				if (_this.active !== undefined) {
+				if (_this.active !== undefined && !swap) {
 					return new Promise(function(resolve, reject) {
 						resolve(_this.active);
 					});
 				} else {
-					return base.unit().then(function (unit) {
+					return base.unit(text, type).then(function (unit) {
 						// methods
 
 
@@ -794,18 +792,37 @@ var AccountComponents = {
 					});
 				}
 			}
+			wrapper.next = function () {
+				var _this = wrapper;
+				if (_this.active && _this.active.components.autocomplete.search.caretAtEnd) {
+					return _this.token(true).then(function (token) {
+						token.reset();
+					});
+				} else {
+					return emptyPromise();
+				}
+			}
+			wrapper.previous = function () {
+
+			}
 
 			// behaviours
 			base.behaviours = {
 				left: function () {
-					return Promise.all(wrapper.children.map(function (child) {
-						return child.behaviours.left();
-					}));
+					return Promise.all([
+						Promise.all(wrapper.children.map(function (child) {
+							return child.behaviours.left();
+						})),
+						wrapper.previous(),
+					]);
 				},
 				right: function () {
-					return Promise.all(wrapper.children.map(function (child) {
-						return child.behaviours.right();
-					}));
+					return Promise.all([
+						Promise.all(wrapper.children.map(function (child) {
+							return child.behaviours.right();
+						})),
+						wrapper.next(),
+					]);
 				},
 				shiftleft: function () {
 
@@ -827,7 +844,7 @@ var AccountComponents = {
 					'click': function (_this) {
 						// create token. Worry about loading later.
 						wrapper.token().then(function (token) {
-							token.focus();
+							return token.focus();
 						});
 					},
 				}),

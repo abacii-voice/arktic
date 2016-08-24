@@ -1142,7 +1142,6 @@ var AccountInterfaces = {
 							unitAutocomplete,
 						] = unitComponents;
 
-
 						// clone page autocomplete
 						unitAutocomplete.clone(autocomplete);
 						unitBase.behaviours = {
@@ -1154,10 +1153,15 @@ var AccountInterfaces = {
 							},
 						}
 
-
 						// methods
 						unitBase.focus = function () {
 							unitAutocomplete.focus();
+						}
+
+						unitBase.reset = function () {
+							return unitAutocomplete.clear().then(function () {
+								return unitAutocomplete.focus();
+							})
 						}
 
 						return Promise.all([
