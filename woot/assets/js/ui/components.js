@@ -88,19 +88,19 @@ var Components = {
 	// Formatted input field with events for input and key presses.
 	search: function (id, args) {
 		// config
-		defaultAppearance = {
+		args.appearance = (args.appearance || {
 			style: {
 				'width': '100%',
 			},
 			classes: ['border', 'border-radius'],
-		}
+		});
 
 		// set up components
 		return Promise.all([
 			// base component
 			UI.createComponent('{id}-base'.format({id: id}), {
 				template: UI.template('div', 'ie input'),
-				appearance: (args.appearance || defaultAppearance),
+				appearance: args.appearance,
 			}),
 
 			// head
