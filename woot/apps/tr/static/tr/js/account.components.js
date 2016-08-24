@@ -773,18 +773,22 @@ var AccountComponents = {
 			wrapper.load = function () {
 
 			}
-			wrapper.token = function (swap, text, type) {
+			wrapper.token = function (options) {
+				options = (options || {});
 				var _this = wrapper;
-				if (_this.active !== undefined && !swap) {
+				if (_this.active !== undefined && !options.swap) {
 					return new Promise(function(resolve, reject) {
 						resolve(_this.active);
 					});
 				} else {
-					return base.unit(text, type).then(function (unit) {
+					return base.unit(options.text, options.type).then(function (unit) {
 						// methods
 
 
 						// set after HERE
+						if (_this.active) {
+							unit.after = options.before ? '' : _this.active.id;
+						}
 						return _this.setChildren([unit]).then(function () {
 							_this.active = unit;
 							return unit;
@@ -792,18 +796,53 @@ var AccountComponents = {
 					});
 				}
 			}
-			wrapper.next = function () {
+			wrapper.next = function (newToken) {
 				var _this = wrapper;
 				if (_this.active && _this.active.components.autocomplete.search.caretAtEnd) {
-					return _this.token(true).then(function (token) {
-						token.reset();
-					});
+					var newIndex = _this.active.index + 1;
+					if (newIndex === _this.children.length || newToken) {
+						return _this.token({swap: true}).then(function (token) {
+							token.reset();
+						});
+					} else {
+						_this.active.deactivate().then(function () {
+							return new Promise(function(resolve, reject) {
+								_this.active = _this.children.filter(function (child) {
+									return child.index === newIndex;
+								})[0];
+								resolve();
+							});
+						}).then(function () {
+							return _this.active.activate();
+						});
+					}
 				} else {
 					return emptyPromise();
 				}
 			}
 			wrapper.previous = function () {
-
+				var _this = wrapper;
+				if (_this.active && _this.active.components.autocomplete.search.caretOffset === 0) {
+					var newIndex = _this.active.index - 1;
+					if (newIndex < 0) {
+						return _this.token({swap: true, before: true}).then(function (token) {
+							token.reset();
+						});
+					} else {
+						_this.active.deactivate().then(function () {
+							return new Promise(function(resolve, reject) {
+								_this.active = _this.children.filter(function (child) {
+									return child.index === newIndex;
+								})[0];
+								resolve();
+							});
+						}).then(function () {
+							return _this.active.activate();
+						});
+					}
+				} else {
+					return emptyPromise();
+				}
 			}
 
 			// behaviours
@@ -821,7 +860,7 @@ var AccountComponents = {
 						Promise.all(wrapper.children.map(function (child) {
 							return child.behaviours.right();
 						})),
-						wrapper.next(),
+						wrapper.next(false),
 					]);
 				},
 				shiftleft: function () {
@@ -835,6 +874,9 @@ var AccountComponents = {
 				},
 				backspace: function () {
 
+				},
+				space: function () {
+					return wrapper.next(true);
 				},
 			}
 
