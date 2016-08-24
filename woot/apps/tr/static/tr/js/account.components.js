@@ -798,10 +798,14 @@ var AccountComponents = {
 			// behaviours
 			base.behaviours = {
 				left: function () {
-
+					return Promise.all(wrapper.children.map(function (child) {
+						return child.behaviours.left();
+					}));
 				},
 				right: function () {
-
+					return Promise.all(wrapper.children.map(function (child) {
+						return child.behaviours.right();
+					}));
 				},
 				shiftleft: function () {
 

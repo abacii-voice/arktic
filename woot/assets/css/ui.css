@@ -288,7 +288,7 @@ Common interface elements
 
 .ie.input .tail {
 	display: inline-block;
-	position: absolute;
+	position: relative;
 	opacity: 0.5;
 }
 
