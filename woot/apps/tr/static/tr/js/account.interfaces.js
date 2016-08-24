@@ -1129,8 +1129,8 @@ var AccountInterfaces = {
 					jss.set('#{id}-{key}-base.tag'.format({id: caption.id, key: key}), {
 
 					});
-					jss.set('#{id}-{key}-base.active'.format({id: caption.id, key: key}), {
-
+					jss.set('#{id}-{key}-base.active .head'.format({id: caption.id, key: key}), {
+						'color': '#fff',
 					});
 
 					// components
@@ -1167,17 +1167,17 @@ var AccountInterfaces = {
 						}
 
 						// methods
-						unitBase.focus = function () {
-							return unitAutocomplete.focus();
+						unitBase.focus = function (start) {
+							return unitAutocomplete.focus(start);
 						}
 						unitBase.reset = function () {
 							return unitAutocomplete.clear().then(function () {
 								return unitAutocomplete.focus();
 							})
 						}
-						unitBase.activate = function () {
+						unitBase.activate = function (start) {
 							return unitBase.setAppearance({classes: {add: 'active'}}).then(function () {
-								return unitBase.focus();
+								return unitBase.focus(start);
 							});
 						}
 						unitBase.deactivate = function () {
