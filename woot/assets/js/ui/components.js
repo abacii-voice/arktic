@@ -167,7 +167,7 @@ var Components = {
 							base.caretOffset += increment;
 						}
 						base.caretOffset = base.caretOffset > base.textLength ? base.textLength : base.caretOffset;
-						base.caretAtEnd = base.caretOffset === base.textLength;
+						base.caretAtEnd = (base.caretOffset === base.textLength && base.textLength > 0);
 						resolve();
 					});
 				});
@@ -179,11 +179,11 @@ var Components = {
 					resolve();
 				});
 			}
-			base.focus = function () {
+			base.focus = function (start) {
 				return new Promise(function(resolve, reject) {
 					base.isFocussed = true;
 					head.model().focus();
-					setEndOfContenteditable(head.element());
+					setEndOfContenteditable(head.element(), start);
 					resolve();
 				});
 			}
@@ -476,8 +476,8 @@ var Components = {
 			base.clear = function () {
 				return search.clear();
 			}
-			base.focus = function () {
-				return search.focus();
+			base.focus = function (start) {
+				return search.focus(start);
 			}
 
 			// activate search

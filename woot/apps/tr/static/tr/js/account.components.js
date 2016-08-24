@@ -813,7 +813,7 @@ var AccountComponents = {
 								resolve();
 							});
 						}).then(function () {
-							return _this.active.activate();
+							return _this.active.activate(true);
 						});
 					}
 				} else {

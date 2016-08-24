@@ -199,10 +199,10 @@ function getCaretOffsetWithin (element) {
 	return caretOffset;
 }
 
-function setEndOfContenteditable (contentEditableElement) {
+function setEndOfContenteditable (contentEditableElement, start) {
 	var range = document.createRange(); // Create a range (a range is a like the selection but invisible)
 	range.selectNodeContents(contentEditableElement); // Select the entire contents of the element with the range
-	range.collapse(false); // collapse the range to the end point. false means collapse to end rather than the start
+	range.collapse(start); // collapse the range to the end point. false means collapse to end rather than the start
 
 	var selection = window.getSelection(); // get the selection object (allows you to change selection)
 	selection.removeAllRanges(); // remove any selections already made
