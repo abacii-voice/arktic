@@ -1019,9 +1019,11 @@ var AccountInterfaces = {
 						style: {
 							'top': '100px',
 							'left': '100px',
-							'height': '40px',
+							'height': '100px',
 							'width': '400px',
 							'padding': '8px',
+							'padding-left': '16px',
+							'padding-right': '0px',
 						},
 						classes: ['border'],
 					},
@@ -1119,14 +1121,20 @@ var AccountInterfaces = {
 							appearance: {
 								style: {
 									'height': '30px',
-									'display': 'inline-block',
 									'margin': '0px',
+									'display': 'inline-block',
 								},
 							},
 						}),
 
 						// autocomplete element
-						Components.searchableList('{id}-{key}-autocomplete'.format({id: caption.id, key: key}), {}),
+						Components.searchableList('{id}-{key}-autocomplete'.format({id: caption.id, key: key}), {
+							appearance: {
+								style: {
+									'display': 'inline-block',
+								},
+							},
+						}),
 
 					]).then(function (unitComponents) {
 						var [
@@ -1137,11 +1145,14 @@ var AccountInterfaces = {
 
 						// clone page autocomplete
 						unitAutocomplete.clone(autocomplete);
-						// unitAutocomplete.search.setAppearance({
-						// 	style: {
-						//
-						// 	},
-						// });
+						unitBase.behaviours = {
+							right: function () {
+								return unitAutocomplete.behaviours.right();
+							},
+							left: function () {
+								return unitAutocomplete.behaviours.left();
+							},
+						}
 
 
 						// methods
@@ -1151,9 +1162,13 @@ var AccountInterfaces = {
 
 						return Promise.all([
 							unitAutocomplete.search.setAppearance({
+								style: {
+									'height': '30px',
+									'padding-left': '0px',
+								},
 								classes: {
 									remove: ['border', 'border-radius'],
-								}
+								},
 							}),
 						]).then(function () {
 							// children

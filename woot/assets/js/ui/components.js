@@ -103,6 +103,11 @@ var Components = {
 				appearance: (args.appearance || defaultAppearance),
 			}),
 
+			// tail
+			UI.createComponent('{id}-tail'.format({id: id}), {
+				template: UI.template('div', 'ie tail'),
+			}),
+
 			// head
 			UI.createComponent('{id}-head'.format({id: id}), {
 				template: UI.template('div', 'ie head mousetrap'),
@@ -113,17 +118,12 @@ var Components = {
 				},
 			}),
 
-			// tail
-			UI.createComponent('{id}-tail'.format({id: id}), {
-				template: UI.template('div', 'ie tail'),
-			}),
-
 		]).then(function (components) {
 			// unpack components
 			var [
 				base,
-				head,
 				tail,
+				head,
 			] = components;
 
 			// variables
@@ -154,6 +154,7 @@ var Components = {
 							base.caretOffset += increment;
 						}
 						base.caretOffset = base.caretOffset > base.textLength ? base.textLength : base.caretOffset;
+						base.caretAtEnd = base.caretOffset === base.textLength;
 						resolve();
 					});
 				});
@@ -166,6 +167,7 @@ var Components = {
 				});
 			}
 			base.focus = function () {
+				base.isFocussed = true;
 				head.model().focus();
 				setEndOfContenteditable(head.element());
 			}
@@ -251,8 +253,8 @@ var Components = {
 					tail: tail,
 				}
 				return base.setChildren([
-					tail, // must be underneath
 					head,
+					tail, // must be underneath
 				]);
 			}).then(function () {
 				return base;
@@ -274,7 +276,6 @@ var Components = {
 		var defaultAppearance = {
 			style: {
 				'height': '100%',
-				'width': '100%',
 			},
 		}
 
@@ -294,6 +295,7 @@ var Components = {
 						'width': '100%',
 						'height': '22px',
 						'font-size': '18px',
+						'display': 'none',
 					},
 				},
 			}),
