@@ -142,8 +142,9 @@ var Components = {
 			base.isFocussed = false;
 
 			// logic, bindings, etc.
-			base.setMetadata = function () {
-
+			base.setMetadata = function (metadata) {
+				base.metadata = metadata;
+				return tail.setAppearance({});
 			}
 			base.complete = function () {
 
@@ -292,7 +293,7 @@ var Components = {
 						if (listItems.length !== 0 && !(!base.autocomplete && !query)) { // maybe remove this condition
 							listItems[0].activate();
 						}
-						return base.setMetadata(listItems, query).then(function () {
+						return base.setMetadata(query).then(function () {
 							return base.list.components.wrapper.setChildren(listItems);
 						});
 					});
@@ -353,16 +354,16 @@ var Components = {
 					resolve();
 				});
 			}
-			base.setMetadata = function (listItems, query, index) {
+			base.setMetadata = function (query, index) {
 				// condition is that there are filtered items and the query is not nothing
 				index = (index || 0);
 				var metadata = {};
-				if (listItems.length) {
-					var item = listItems[index]
+				if (base.virtual.length) {
+					var item = base.virtual[index].metadata;
 					metadata = {
 						query: query,
-						complete: item.original,
-						combined: item.query,
+						complete: item.complete,
+						combined: item.combined,
 						type: item.type,
 					}
 				}

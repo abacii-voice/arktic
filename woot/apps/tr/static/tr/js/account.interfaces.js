@@ -1211,7 +1211,7 @@ var AccountInterfaces = {
 					console.log(autocomplete.components.search.current.complete);
 				}
 				autocomplete.toggleSearch();
-				autocomplete.autocomplete = true;
+				autocomplete.autocomplete = false;
 				autocomplete.targets = [
 					{
 						name: 'clients',
@@ -1356,16 +1356,12 @@ var AccountInterfaces = {
 						] = unitComponents;
 
 						// set metadata
-						unitBase.metadata = {
+						datum.metadata = {
 							query: query,
 							complete: datum.main,
-							
+							combined: query + datum.main.substring(query.length),
+							type: datum.rule,
 						}
-						unitBase.original = datum.main;
-						unitBase.query = query + datum.main.substring(query.length);
-						unitBase.head = datum.main.substring(0, query.length);
-						unitBase.tail = datum.main.substring(query.length);
-						unitBase.type = datum.rule;
 
 						unitBase.activate = function () {
 							_this.active = unitBase;
