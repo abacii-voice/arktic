@@ -139,106 +139,38 @@ var Components = {
 			base.textLength = 0;
 			base.caretOffset = 0;
 			base.caretAtEnd = false;
+			base.isFocussed = false;
 
 			// logic, bindings, etc.
-			base.setCurrent = function (current) {
-				base.current = current;
-				return tail.setAppearance({html: base.current.condition ? base.current.guess : base.current.query});
+			base.setMetadata = function () {
+
 			}
 			base.complete = function () {
-				if (base.current.condition) {
-					return tail.setAppearance({html: ''}).then(function () {
-						return head.setAppearance({html: base.current.complete});
-					}).then(function () {
-						base.focus();
-					});
-				} else {
-					return emptyPromise();
-				}
-			}
-			base.increment = function (decrement) {
-				return new Promise(function(resolve, reject) {
-					base.textLength = head.model().text().length;
-					resolve();
-				}).then(function () {
-					return new Promise(function(resolve, reject) {
-						var increment = (decrement ? -1 : 1 || 1);
-						if (base.caretOffset + increment >= 0 && base.caretOffset + increment <= base.textLength) {
-							base.caretOffset += increment;
-						}
-						base.caretOffset = base.caretOffset > base.textLength ? base.textLength : base.caretOffset;
-						base.caretAtEnd = (base.caretOffset === base.textLength && base.textLength > 0);
-						resolve();
-					});
-				});
+
 			}
 			base.clear = function () {
-				return new Promise(function(resolve, reject) {
-					head.model().html('');
-					head.model().trigger('input');
-					resolve();
-				});
+
 			}
 			base.focus = function (start) {
-				return new Promise(function(resolve, reject) {
-					base.isFocussed = true;
-					head.model().focus();
-					setEndOfContenteditable(head.element(), start);
-					resolve();
-				});
+
 			}
 
 			// behaviours
 			base.behaviours = {
 				right: function () {
-					if (base.isFocussed) {
-						return base.increment().then(function () {
-							if (base.caretAtEnd) {
-								return base.complete();
-							}
-						}).then(function () {
-							head.model().trigger('input');
-						});
-					}
+
 				},
 				left: function () {
-					if (base.isFocussed) {
-						return base.increment(true);
-					}
+
 				},
 				enter: function () {
-					// 1. complete
-					if (base.isFocussed) {
-						return base.complete().then(function () {
-							// 2. pass data upwards
-							if (base.onComplete !== undefined) {
-								return base.onComplete();
-							}
-						}).then(function () {
-							// 3. clear
-							return base.clear();
-						});
-					}
+
 				},
 				backspace: function () {
-					if (base.isFocussed) {
-						return base.increment(true);
-					}
+
 				},
 				click: function (end) {
-					base.isFocussed = true;
-					// find caret
-					return new Promise(function(resolve, reject) {
-						if (!end) {
-							base.caretOffset = getCaretOffsetWithin(base.element());
-							base.caretAtEnd = base.caretOffset === head.model().html().length;
-						} else {
-							base.caretOffset = head.model().html().length;
-							base.caretAtEnd = true;
-							setEndOfContenteditable(head.element());
-						}
-						resolve();
-					});
+
 				}
 			}
 
@@ -247,24 +179,18 @@ var Components = {
 				base.setBindings({
 					'input': function (_this) {
 						var value = head.model().text();
-						_this.increment().then(function () {
-							if (_this.onInput !== undefined) {
-								return _this.onInput(value);
-							}
-						});
 					},
 					'click': function (_this) {
-						head.model().focus();
-						return _this.behaviours.click(true);
+
 					}
 				}),
 				head.setBindings({
 					'blur': function (_this) {
-						base.isFocussed = false;
+						
 					},
 					'click': function (_this, event) {
 						event.stopPropagation();
-						return base.behaviours.click(false);
+
 					}
 				}),
 			]).then(function (results) {
