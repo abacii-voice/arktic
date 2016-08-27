@@ -186,7 +186,7 @@ var Components = {
 				}),
 				head.setBindings({
 					'blur': function (_this) {
-						
+
 					},
 					'click': function (_this, event) {
 						event.stopPropagation();
@@ -289,10 +289,10 @@ var Components = {
 					return Promise.all(base.virtual.map(function (item, index) {
 						return base.unit(base, item, query, index);
 					})).then(function (listItems) {
-						if (listItems.length !== 0 && !(!base.autocomplete && !query)) {
+						if (listItems.length !== 0 && !(!base.autocomplete && !query)) { // maybe remove this condition
 							listItems[0].activate();
 						}
-						return base.setCurrent(listItems, query, 0).then(function () {
+						return base.setMetadata(listItems, query).then(function () {
 							return base.list.components.wrapper.setChildren(listItems);
 						});
 					});
@@ -353,57 +353,34 @@ var Components = {
 					resolve();
 				});
 			}
-			base.setCurrent = function (listItems, query, index) {
+			base.setMetadata = function (listItems, query, index) {
 				// condition is that there are filtered items and the query is not nothing
-				return search.setCurrent({
-					condition: (listItems.length !== 0 && query),
-					complete: listItems.length !== 0 ? listItems[index].original : '',
-					guess: listItems.length !== 0 ? listItems[index].query : '',
-					type: listItems.length !== 0 ? listItems[index].type : '',
-					query: query,
-				});
+				index = (index || 0);
+				var metadata = {};
+				if (listItems.length) {
+					var item = listItems[index]
+					metadata = {
+						query: query,
+						complete: item.original,
+						combined: item.query,
+						type: item.type,
+					}
+				}
+				return search.setMetadata(metadata);
 			}
 
-			// control active list item
+			// list methods
 			base.next = function () {
-				if (base.active && (base.active.index < base.list.components.wrapper.children.length - 1)) {
-					var index = base.active.index + 1;
-					return base.setActive(index).then(function (index) {
-						return base.setCurrent(base.list.components.wrapper.children, base.query, index);
-					});
-				} else {
-					return emptyPromise();
-				}
-			}
-			base.previous = function () {
-				if (base.active && base.active.index > 0) {
-					var index = base.active.index - 1;
-					return base.setActive(index).then(function (index) {
-						return base.setCurrent(base.list.components.wrapper.children, base.query, index);
-					});
-				} else {
-					return emptyPromise();
-				}
-			}
-			base.setActive = function (index) {
-				return base.active.deactivate().then(function () {
-					return new Promise(function(resolve, reject) {
-						base.active = base.list.components.wrapper.children.filter(function (child) {
-							return child.index === index;
-						})[0];
-						resolve();
-					});
+				base.active.deactivate().then(function () {
+					return base.setActive({increment: 1});
 				}).then(function () {
 					return base.active.activate();
 				}).then(function () {
-					return index;
+					return base.setMetadata();
 				});
 			}
-			base.clear = function () {
-				return search.clear();
-			}
-			base.focus = function (start) {
-				return search.focus(start);
+			base.previous = function () {
+
 			}
 
 			// activate search
