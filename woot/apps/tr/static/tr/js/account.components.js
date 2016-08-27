@@ -806,20 +806,10 @@ var AccountComponents = {
 			// behaviours
 			base.behaviours = {
 				left: function () {
-					return Promise.all([
-						Promise.all(wrapper.children.map(function (child) {
-							return child.behaviours.left();
-						})),
-						wrapper.previous(),
-					]);
+
 				},
 				right: function () {
-					return Promise.all([
-						Promise.all(wrapper.children.map(function (child) {
-							return child.behaviours.right();
-						})),
-						wrapper.next(false),
-					]);
+
 				},
 				shiftleft: function () {
 
@@ -834,7 +824,7 @@ var AccountComponents = {
 
 				},
 				space: function () {
-					return wrapper.next(true);
+
 				},
 			}
 
@@ -842,10 +832,7 @@ var AccountComponents = {
 			return Promise.all([
 				wrapper.setBindings({
 					'click': function (_this) {
-						// create token. Worry about loading later.
-						wrapper.token().then(function (token) {
-							return token.focus();
-						});
+						
 					},
 				}),
 			]).then(function () {
