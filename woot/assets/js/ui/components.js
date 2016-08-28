@@ -290,10 +290,9 @@ var Components = {
 					return Promise.all(base.virtual.map(function (item, index) {
 						return base.unit(base, item, query, index);
 					})).then(function (listItems) {
-						if (listItems.length !== 0 && !(!base.autocomplete && !query)) { // maybe remove this condition
-							listItems[0].activate();
-						}
-						return base.setMetadata(query).then(function () {
+						return base.setActive({set: listItems}).then(function () {
+							return base.setMetadata(query);
+						}).then(function () {
 							return base.list.components.wrapper.setChildren(listItems);
 						});
 					});
@@ -369,19 +368,37 @@ var Components = {
 				}
 				return search.setMetadata(metadata);
 			}
+			base.setActive = function (options) {
+				var set = (options.set || base.list.components.wrapper.children);
+
+				// changes
+				var previousIndex = base.currentIndex;
+				base.currentIndex = (options.index || ((base.currentIndex || 0) + (options.increment || 0)));
+
+				// boundary conditions
+				base.currentIndex = base.currentIndex > set.length - 1 ? set.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
+
+				// if there are any results
+				if (set.length && (base.currentIndex !== previousIndex)) {
+					return ((base.active || {}).deactivate || emptyPromise)().then(function () {
+						base.active = set[base.currentIndex];
+						return base.active.activate();
+					});
+				} else {
+					return emptyPromise();
+				}
+			}
 
 			// list methods
 			base.next = function () {
-				base.active.deactivate().then(function () {
-					return base.setActive({increment: 1});
-				}).then(function () {
-					return base.active.activate();
-				}).then(function () {
+				base.setActive({increment: 1}).then(function () {
 					return base.setMetadata();
 				});
 			}
 			base.previous = function () {
-
+				base.setActive({increment: -1}).then(function () {
+					return base.setMetadata();
+				});
 			}
 
 			// activate search
