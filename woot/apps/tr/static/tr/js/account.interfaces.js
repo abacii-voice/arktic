@@ -1364,7 +1364,6 @@ var AccountInterfaces = {
 						}
 
 						unitBase.activate = function () {
-							_this.active = unitBase;
 							return unitBase.setAppearance({classes: {add: ['active']}});
 						}
 
