@@ -281,6 +281,7 @@ var Components = {
 			base.defaultFilters = [];
 			base.list = list; // allow for swapable components
 			base.search = search;
+			base.isFocussed = false;
 			base.display = function (query, filter) {
 				return base.load().then(function () {
 					return base.filter(query, filter); // returns a reduced dataset
@@ -353,14 +354,15 @@ var Components = {
 					resolve();
 				});
 			}
-			base.setMetadata = function (query, index) {
+			base.setMetadata = function (query) {
+				base.query = ((base.query || query) || '');
 				// condition is that there are filtered items and the query is not nothing
-				index = (index || 0);
+
 				var metadata = {};
-				if (base.virtual.length) {
-					var item = base.virtual[index].metadata;
+				if (base.virtual.length && base.currentIndex !== undefined) {
+					var item = base.virtual[base.currentIndex].metadata;
 					metadata = {
-						query: query,
+						query: base.query,
 						complete: item.complete,
 						combined: item.combined,
 						type: item.type,
@@ -369,21 +371,27 @@ var Components = {
 				return search.setMetadata(metadata);
 			}
 			base.setActive = function (options) {
+				options = (options || {});
 				var set = (options.set || base.list.components.wrapper.children);
 
-				// changes
-				var previousIndex = base.currentIndex;
-				base.currentIndex = (options.index || ((base.currentIndex || 0) + (options.increment || 0)));
-
-				// boundary conditions
-				base.currentIndex = base.currentIndex > set.length - 1 ? set.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
-
 				// if there are any results
-				if (set.length && (base.currentIndex !== previousIndex)) {
-					return ((base.active || {}).deactivate || emptyPromise)().then(function () {
-						base.active = set[base.currentIndex];
-						return base.active.activate();
-					});
+				if (set.length && base.isFocussed) {
+
+					// changes
+					var previousIndex = base.currentIndex;
+					base.currentIndex = (options.index || ((base.currentIndex || 0) + (options.increment || 0)));
+
+					// boundary conditions
+					base.currentIndex = base.currentIndex > set.length - 1 ? set.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
+
+					if (base.currentIndex !== previousIndex) {
+						return ((base.active || {}).deactivate || emptyPromise)().then(function () {
+							base.active = set[base.currentIndex];
+							return base.active.activate();
+						});
+					} else {
+						return emptyPromise();
+					}
 				} else {
 					return emptyPromise();
 				}
@@ -391,12 +399,12 @@ var Components = {
 
 			// list methods
 			base.next = function () {
-				base.setActive({increment: 1}).then(function () {
+				return base.setActive({increment: 1}).then(function () {
 					return base.setMetadata();
 				});
 			}
 			base.previous = function () {
-				base.setActive({increment: -1}).then(function () {
+				return base.setActive({increment: -1}).then(function () {
 					return base.setMetadata();
 				});
 			}
