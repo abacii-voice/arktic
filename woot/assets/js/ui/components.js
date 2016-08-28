@@ -144,7 +144,7 @@ var Components = {
 			// logic, bindings, etc.
 			base.setMetadata = function (metadata) {
 				base.metadata = metadata;
-				return tail.setAppearance({});
+				return tail.setAppearance({html: metadata.query ? metadata.combined: metadata.query});
 			}
 			base.complete = function () {
 
@@ -153,12 +153,12 @@ var Components = {
 
 			}
 			base.focus = function (start) {
-				return base.onFocus().then(function () {
+				return (base.onFocus || emptyPromise)().then(function () {
 					head.model().focus();
 				});
 			}
 			base.blur = function () {
-				return base.onBlur();
+				return (base.onBlur || emptyPromise)();
 			}
 
 			// behaviours
@@ -185,6 +185,7 @@ var Components = {
 				base.setBindings({
 					'input': function (_this) {
 						var value = head.model().text();
+						base.onInput(value);
 					},
 					'click': function (_this) {
 						base.focus();
@@ -193,6 +194,9 @@ var Components = {
 				head.setBindings({
 					'blur': function (_this) {
 						base.blur();
+					},
+					'focus': function (_this) {
+						(base.onFocus || emptyPromise)();
 					},
 					'click': function (_this, event) {
 						event.stopPropagation();
@@ -291,6 +295,7 @@ var Components = {
 				return base.load().then(function () {
 					return base.filter(query, filter); // returns a reduced dataset
 				}).then(function () {
+					base.currentIndex = undefined;
 					return base.list.removeAll();
 				}).then(function () {
 					return Promise.all(base.virtual.map(function (item, index) {
@@ -431,6 +436,9 @@ var Components = {
 				base.isFocussed = false;
 				base.currentIndex = undefined;
 				return base.deactivate();
+			}
+			search.onInput = function (query) {
+				return base.display(query);
 			}
 
 			// activate search
