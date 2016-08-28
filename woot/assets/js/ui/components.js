@@ -153,7 +153,12 @@ var Components = {
 
 			}
 			base.focus = function (start) {
-
+				return base.onFocus().then(function () {
+					head.model().focus();
+				});
+			}
+			base.blur = function () {
+				return base.onBlur();
 			}
 
 			// behaviours
@@ -182,12 +187,12 @@ var Components = {
 						var value = head.model().text();
 					},
 					'click': function (_this) {
-
+						base.focus();
 					}
 				}),
 				head.setBindings({
 					'blur': function (_this) {
-
+						base.blur();
 					},
 					'click': function (_this, event) {
 						event.stopPropagation();
@@ -385,7 +390,7 @@ var Components = {
 					base.currentIndex = base.currentIndex > set.length - 1 ? set.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
 
 					if (base.currentIndex !== previousIndex) {
-						return ((base.active || {}).deactivate || emptyPromise)().then(function () {
+						return base.deactivate().then(function () {
 							base.active = set[base.currentIndex];
 							return base.active.activate();
 						});
@@ -395,6 +400,14 @@ var Components = {
 				} else {
 					return emptyPromise();
 				}
+			}
+			base.deactivate = function () {
+				return ((base.active || {}).deactivate || emptyPromise)().then(function () {
+					return new Promise(function(resolve, reject) {
+						base.active = undefined;
+						resolve();
+					});
+				});
 			}
 
 			// list methods
@@ -407,6 +420,17 @@ var Components = {
 				return base.setActive({increment: -1}).then(function () {
 					return base.setMetadata();
 				});
+			}
+
+			// search methods
+			search.onFocus = function () {
+				base.isFocussed = true;
+				return base.setActive();
+			}
+			search.onBlur = function () {
+				base.isFocussed = false;
+				base.currentIndex = undefined;
+				return base.deactivate();
 			}
 
 			// activate search
