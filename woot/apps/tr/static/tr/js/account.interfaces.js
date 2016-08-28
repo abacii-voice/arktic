@@ -1359,7 +1359,7 @@ var AccountInterfaces = {
 						datum.metadata = {
 							query: query,
 							complete: datum.main,
-							combined: query + datum.main.substring(query.length),
+							combined: query ? query + datum.main.substring(query.length) : '',
 							type: datum.rule,
 						}
 

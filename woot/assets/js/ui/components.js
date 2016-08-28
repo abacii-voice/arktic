@@ -144,15 +144,16 @@ var Components = {
 			// logic, bindings, etc.
 			base.setMetadata = function (metadata) {
 				base.metadata = metadata;
-				return tail.setAppearance({html: metadata.query ? metadata.combined: metadata.query});
+				return tail.setAppearance({html: (metadata.combined || metadata.query)});
+			}
+			base.setCaretPosition = function (options) {
+				options.end = (options.end || true);
+				
 			}
 			base.complete = function () {
 
 			}
-			base.clear = function () {
-
-			}
-			base.focus = function (start) {
+			base.focus = function () {
 				return (base.onFocus || emptyPromise)().then(function () {
 					head.model().focus();
 				});
@@ -368,7 +369,9 @@ var Components = {
 				base.query = ((base.query || query) || '');
 				// condition is that there are filtered items and the query is not nothing
 
-				var metadata = {};
+				var metadata = {
+					query: base.query,
+				}
 				if (base.virtual.length && base.currentIndex !== undefined) {
 					var item = base.virtual[base.currentIndex].metadata;
 					metadata = {
@@ -437,11 +440,10 @@ var Components = {
 				base.currentIndex = undefined;
 				return base.deactivate();
 			}
-			search.onInput = function (query) {
-				return base.display(query);
+			search.onInput = function (value) {
+				base.query = value;
+				return base.display(value);
 			}
-
-			// activate search
 			base.toggleSearch = function () {
 
 			}
@@ -449,6 +451,14 @@ var Components = {
 			// set title
 			base.setTitle = function (text, center) {
 				return title.set(text, center);
+			}
+			title.set = function (text, centre) {
+				return title.setAppearance({
+					html: text,
+					style: {
+						'text-align': (centre ? 'center': 'left'),
+					},
+				});
 			}
 
 			// behaviours
@@ -490,26 +500,6 @@ var Components = {
 				base.targets = copy.targets;
 				base.list = copy.list;
 				base.unit = copy.unit;
-			}
-
-			// set title
-			title.set = function (text, centre) {
-				return title.setAppearance({
-					html: text,
-					style: {
-						'text-align': (centre ? 'center': 'left'),
-					},
-				});
-			}
-
-			// search input methods
-			search.onInput = function (value) {
-				base.query = value;
-				return base.display(value).then(function () {
-					if (base.onInput !== undefined) {
-						return base.onInput(value);
-					}
-				});
 			}
 
 			// complete promises.
