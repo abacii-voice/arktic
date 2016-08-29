@@ -137,8 +137,6 @@ var Components = {
 
 			// variables
 			base.textLength = 0;
-			base.caretOffset = 0;
-			base.caretAtEnd = false;
 			base.isFocussed = false;
 
 			// logic, bindings, etc.
@@ -147,15 +145,48 @@ var Components = {
 				return tail.setAppearance({html: (metadata.combined || metadata.query)});
 			}
 			base.setCaretPosition = function (options) {
-				options.end = (options.end || true);
-				
+				options = (options || {});
+				options.active = options.active !== undefined ? options.active : true;
+
+				// changes
+				base.caretOffset = (options.position || (base.caretOffset || 0)) + (options.increment || 0);
+
+				// boundary conditions
+				base.caretOffset = base.caretOffset > base.textLength ? base.textLength : (base.caretOffset < 0 ? 0 : base.caretOffset);
+
+				return new Promise(function(resolve, reject) {
+					var range = document.createRange(); // Create a range (a range is a like the selection but invisible)
+					if (options.end !== undefined) {
+						base.caretAtEnd = options.end;
+						base.caretOffset = options.end ? base.textLength : 0;
+						if (options.active) {
+							range.selectNodeContents(head.element()); // Select the entire contents of the element with the range
+							range.collapse(!options.end); // collapse the range to the end point. false means collapse to end rather than the start
+						}
+					} else {
+						if (options.active) {
+							range.setStart(head.element().firstChild, base.caretOffset);
+						}
+					}
+
+					if (options.active) {
+						var selection = window.getSelection(); // get the selection object (allows you to change selection)
+						selection.removeAllRanges(); // remove any selections already made
+						selection.addRange(range); // make the range you have just created the visible selection
+					}
+					console.log(base.caretOffset);
+					resolve();
+				});
 			}
 			base.complete = function () {
 
 			}
-			base.focus = function () {
+			base.focus = function (options) {
+				options = (options || {});
+				options.end = options.end !== undefined ? options.end : true;
 				return (base.onFocus || emptyPromise)().then(function () {
 					head.model().focus();
+					return base.setCaretPosition({end: options.end});
 				});
 			}
 			base.blur = function () {
@@ -165,10 +196,10 @@ var Components = {
 			// behaviours
 			base.behaviours = {
 				right: function () {
-
+					return base.setCaretPosition({increment: 1, active: false});
 				},
 				left: function () {
-
+					return base.setCaretPosition({increment: -1, active: false});
 				},
 				enter: function () {
 
@@ -186,7 +217,10 @@ var Components = {
 				base.setBindings({
 					'input': function (_this) {
 						var value = head.model().text();
-						base.onInput(value);
+						base.textLength = value.length;
+						base.setCaretPosition({position: value.length, active: false}).then(function () {
+							return base.onInput(value);
+						});
 					},
 					'click': function (_this) {
 						base.focus();
