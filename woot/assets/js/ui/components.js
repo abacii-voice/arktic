@@ -146,7 +146,7 @@ var Components = {
 			}
 			base.setCaretPosition = function (options) {
 				options = (options || {});
-				options.active = options.active !== undefined ? options.active : true;
+				options.active = options.active !== undefined ? options.active : false;
 
 				// changes
 				base.caretOffset = (options.position || (base.caretOffset || 0)) + (options.increment || 0);
@@ -174,7 +174,6 @@ var Components = {
 						selection.removeAllRanges(); // remove any selections already made
 						selection.addRange(range); // make the range you have just created the visible selection
 					}
-					console.log(base.caretOffset);
 					resolve();
 				});
 			}
@@ -182,11 +181,8 @@ var Components = {
 
 			}
 			base.focus = function (options) {
-				options = (options || {});
-				options.end = options.end !== undefined ? options.end : true;
 				return (base.onFocus || emptyPromise)().then(function () {
-					head.model().focus();
-					return base.setCaretPosition({end: options.end});
+					return base.setCaretPosition(options);
 				});
 			}
 			base.blur = function () {
@@ -196,10 +192,10 @@ var Components = {
 			// behaviours
 			base.behaviours = {
 				right: function () {
-					return base.setCaretPosition({increment: 1, active: false});
+					return base.setCaretPosition({increment: 1});
 				},
 				left: function () {
-					return base.setCaretPosition({increment: -1, active: false});
+					return base.setCaretPosition({increment: -1});
 				},
 				enter: function () {
 
@@ -218,12 +214,15 @@ var Components = {
 					'input': function (_this) {
 						var value = head.model().text();
 						base.textLength = value.length;
-						base.setCaretPosition({position: value.length, active: false}).then(function () {
+						base.setCaretPosition({increment: 1}).then(function () {
 							return base.onInput(value);
 						});
 					},
-					'click': function (_this) {
+					'mouseup': function (_this) {
 						base.focus();
+					},
+					'mousedown': function (_this) {
+						head.model().focus();
 					}
 				}),
 				head.setBindings({
@@ -233,7 +232,11 @@ var Components = {
 					'focus': function (_this) {
 						(base.onFocus || emptyPromise)();
 					},
-					'click': function (_this, event) {
+					'mouseup': function (_this, event) {
+						event.stopPropagation();
+
+					},
+					'mousedown': function (_this, event) {
 						event.stopPropagation();
 
 					}
