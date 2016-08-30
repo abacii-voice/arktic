@@ -180,12 +180,13 @@ var Components = {
 				});
 			}
 			base.complete = function () {
-				head.model().html(base.metadata.complete);
-				// return head.setAppearance({html: base.metadata.complete}).then(function () {
-				// 	return base.onInput(base.metadata.complete);
-				// }).then(function () {
-				// 	return base.setCaretPosition();
-				// });
+				return tail.setAppearance({html: base.metadata.complete}).then(function () {
+					return head.setAppearance({html: base.metadata.complete})
+				}).then(function () {
+					return base.onInput(base.metadata.complete);
+				}).then(function () {
+					return base.setCaretPosition();
+				});
 			}
 			base.focus = function (options) {
 				return (base.onFocus || emptyPromise)().then(function () {
@@ -221,18 +222,14 @@ var Components = {
 			// complete promises.
 			return Promise.all([
 				base.setBindings({
-					'input': function (_this) {
-						var value = head.model().text();
-						base.onInput(value);
-					},
 					'click': function (_this) {
-						base.focus().then(function () {
-							head.model().focus();
-							return base.setCaretPosition();
-						});
+						base.focus();
 					}
 				}),
 				head.setBindings({
+					'input': function (_this) {
+						(base.onInput || emptyPromise)(_this.model().text());
+					},
 					'blur': function (_this) {
 						base.blur();
 					},
