@@ -143,30 +143,34 @@ var Components = {
 				base.metadata = metadata;
 				return tail.setAppearance({html: (metadata.combined || metadata.query)});
 			}
-			base.isCaretAtEnd = function () {
+			base.isCaretInPosition = function (mode) {
+				mode = (mode || 'end');
 				// determine caret position after an action. Only important thing is whether or not it is at the end.
 				var selection = window.getSelection();
-				var caretAtEnd = false;
+				var caretInPosition = false;
 				if (head.element().childNodes) { // if there is even text
-					if (head.element() === selection.focusNode.parentNode) {
-						if (selection.rangeCount) {
-							var range = selection.getRangeAt(0);
-							caretAtEnd = range.endOffset === selection.focusNode.length;
+					if (head.element() === selection.focusNode.parentNode) { // is the selection inside the head
+						if (selection.rangeCount) { // not even necessary
+							var range = selection.getRangeAt(0); // get the only range
+							if (mode === 'end') {
+								caretInPosition = range.endOffset === selection.focusNode.length; // check the offset == the node value length
+							} else if (mode === 'start') {
+								caretInPosition = range.endOffset === 0; // or 0
+							}
 						}
 					}
 				}
-
-				return caretAtEnd;
+				return caretInPosition;
 			}
-			base.setCaretPosition = function (type) {
+			base.setCaretPosition = function (mode) {
 				return new Promise(function(resolve, reject) {
-					type = (type || 'end');
+					mode = (mode || 'end');
 					// set the caret position to the end or the beginning
 					var range = document.createRange(); // Create a range (a range is a like the selection but invisible)
 					range.selectNodeContents(head.element()); // Select the entire contents of the element with the range
-					if (type === 'end') {
+					if (mode === 'end') {
 						range.collapse(false); // collapse the range to the end point. false means collapse to end rather than the start
-					} else if (type === 'start') {
+					} else if (mode === 'start') {
 						range.collapse(true);
 					}
 					var selection = window.getSelection(); // get the selection object (allows you to change selection)
@@ -176,7 +180,12 @@ var Components = {
 				});
 			}
 			base.complete = function () {
-
+				head.model().html(base.metadata.complete);
+				// return head.setAppearance({html: base.metadata.complete}).then(function () {
+				// 	return base.onInput(base.metadata.complete);
+				// }).then(function () {
+				// 	return base.setCaretPosition();
+				// });
 			}
 			base.focus = function (options) {
 				return (base.onFocus || emptyPromise)().then(function () {
@@ -190,11 +199,13 @@ var Components = {
 			// behaviours
 			base.behaviours = {
 				right: function () {
-					var caretAtEnd = base.isCaretAtEnd();
-					console.log(caretAtEnd);
+					if (base.isCaretInPosition('end')) {
+						base.complete();
+					};
 				},
 				left: function () {
-
+					var caretInPosition = base.isCaretInPosition('start');
+					console.log(caretInPosition);
 				},
 				enter: function () {
 
