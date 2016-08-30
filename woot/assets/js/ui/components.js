@@ -136,7 +136,6 @@ var Components = {
 			] = components;
 
 			// variables
-			base.textLength = 0;
 			base.isFocussed = false;
 
 			// logic, bindings, etc.
@@ -144,36 +143,35 @@ var Components = {
 				base.metadata = metadata;
 				return tail.setAppearance({html: (metadata.combined || metadata.query)});
 			}
-			base.setCaretPosition = function (options) {
-				options = (options || {});
-				options.active = options.active !== undefined ? options.active : false;
+			base.isCaretAtEnd = function () {
+				// determine caret position after an action. Only important thing is whether or not it is at the end.
+				var selection = window.getSelection();
+				var caretAtEnd = false;
+				if (head.element().childNodes) { // if there is even text
+					if (head.element() === selection.focusNode.parentNode) {
+						if (selection.rangeCount) {
+							var range = selection.getRangeAt(0);
+							caretAtEnd = range.endOffset === selection.focusNode.length;
+						}
+					}
+				}
 
-				// changes
-				base.caretOffset = (options.position || (base.caretOffset || 0)) + (options.increment || 0);
-
-				// boundary conditions
-				base.caretOffset = base.caretOffset > base.textLength ? base.textLength : (base.caretOffset < 0 ? 0 : base.caretOffset);
-
+				return caretAtEnd;
+			}
+			base.setCaretPosition = function (type) {
 				return new Promise(function(resolve, reject) {
+					type = (type || 'end');
+					// set the caret position to the end or the beginning
 					var range = document.createRange(); // Create a range (a range is a like the selection but invisible)
-					if (options.end !== undefined) {
-						base.caretAtEnd = options.end;
-						base.caretOffset = options.end ? base.textLength : 0;
-						if (options.active) {
-							range.selectNodeContents(head.element()); // Select the entire contents of the element with the range
-							range.collapse(!options.end); // collapse the range to the end point. false means collapse to end rather than the start
-						}
-					} else {
-						if (options.active) {
-							range.setStart(head.element().firstChild, base.caretOffset);
-						}
+					range.selectNodeContents(head.element()); // Select the entire contents of the element with the range
+					if (type === 'end') {
+						range.collapse(false); // collapse the range to the end point. false means collapse to end rather than the start
+					} else if (type === 'start') {
+						range.collapse(true);
 					}
-
-					if (options.active) {
-						var selection = window.getSelection(); // get the selection object (allows you to change selection)
-						selection.removeAllRanges(); // remove any selections already made
-						selection.addRange(range); // make the range you have just created the visible selection
-					}
+					var selection = window.getSelection(); // get the selection object (allows you to change selection)
+					selection.removeAllRanges(); // remove any selections already made
+					selection.addRange(range); // make the range you have just created the visible selection
 					resolve();
 				});
 			}
@@ -182,7 +180,7 @@ var Components = {
 			}
 			base.focus = function (options) {
 				return (base.onFocus || emptyPromise)().then(function () {
-					return base.setCaretPosition(options);
+					return base.setCaretPosition();
 				});
 			}
 			base.blur = function () {
@@ -192,10 +190,11 @@ var Components = {
 			// behaviours
 			base.behaviours = {
 				right: function () {
-					return base.setCaretPosition({increment: 1});
+					var caretAtEnd = base.isCaretAtEnd();
+					console.log(caretAtEnd);
 				},
 				left: function () {
-					return base.setCaretPosition({increment: -1});
+
 				},
 				enter: function () {
 
@@ -213,16 +212,13 @@ var Components = {
 				base.setBindings({
 					'input': function (_this) {
 						var value = head.model().text();
-						base.textLength = value.length;
-						base.setCaretPosition({increment: 1}).then(function () {
-							return base.onInput(value);
+						base.onInput(value);
+					},
+					'click': function (_this) {
+						base.focus().then(function () {
+							head.model().focus();
+							return base.setCaretPosition();
 						});
-					},
-					'mouseup': function (_this) {
-						base.focus();
-					},
-					'mousedown': function (_this) {
-						head.model().focus();
 					}
 				}),
 				head.setBindings({
@@ -232,14 +228,10 @@ var Components = {
 					'focus': function (_this) {
 						(base.onFocus || emptyPromise)();
 					},
-					'mouseup': function (_this, event) {
+					'click': function (_this, event) {
 						event.stopPropagation();
 
 					},
-					'mousedown': function (_this, event) {
-						event.stopPropagation();
-
-					}
 				}),
 			]).then(function (results) {
 				base.components = {
