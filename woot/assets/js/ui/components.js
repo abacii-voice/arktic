@@ -181,6 +181,7 @@ var Components = {
 				return tail.setAppearance({html: base.metadata.complete}).then(function () {
 					return head.setAppearance({html: base.metadata.complete});
 				}).then(function () {
+					head.model().html(base.metadata.complete);
 					return base.setCaretPosition();
 				});
 			}
@@ -190,7 +191,11 @@ var Components = {
 				});
 			}
 			base.blur = function () {
-				return (base.onBlur || emptyPromise)();
+				return (base.onBlur || emptyPromise)().then(function () {
+					if (head.model().text() === '') {
+						tail.setAppearance({html: ''});
+					}
+				});
 			}
 
 			// behaviours
