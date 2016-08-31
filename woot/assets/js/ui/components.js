@@ -523,7 +523,7 @@ var Components = {
 						return base.setActive({index: index}).then(function () {
 							return base.setMetadata();
 						}).then(function () {
-							// don't know what behaviour to have hear
+							// don't know what behaviour to have here
 							return search.behaviours.right();
 							// return search.behaviours.enter();
 						});
