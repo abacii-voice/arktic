@@ -432,7 +432,7 @@ var Components = {
 
 					// changes
 					var previousIndex = base.currentIndex;
-					base.currentIndex = (options.index || ((base.currentIndex || 0) + (options.increment || 0)));
+					base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (options.increment || 0)));
 
 					// boundary conditions
 					base.currentIndex = base.currentIndex > set.length - 1 ? set.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
@@ -519,12 +519,14 @@ var Components = {
 				},
 				number: function (char) {
 					var index = parseInt(char);
-					if (index < base.list.components.wrapper.children.length && base.query) {
-						return base.setActive(index).then(function (index) {
-							return base.setCurrent(base.list.components.wrapper.children, base.query, index);
-						}).then(function () {
-							return search.behaviours.enter(); // behaviour could also be "right" here.
+					if (index < base.list.components.wrapper.children.length) {
+						return base.setActive({index: index}).then(function () {
+							return base.setMetadata();
 						});
+
+						// .then(function () {
+						// 	return search.behaviours.enter(); // behaviour could also be "right" here.
+						// });
 					}
 				},
 				enter: function () {
