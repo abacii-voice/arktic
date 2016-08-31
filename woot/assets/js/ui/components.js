@@ -148,17 +148,15 @@ var Components = {
 				// determine caret position after an action. Only important thing is whether or not it is at the end.
 				var selection = window.getSelection();
 				var caretInPosition = false;
-				if (head.element().childNodes) { // if there is even text
-					if (head.element() === selection.focusNode.parentNode) { // is the selection inside the head
-						if (selection.rangeCount) { // not even necessary
-							var range = selection.getRangeAt(0); // get the only range
-							if (mode === 'end') {
-								caretInPosition = range.endOffset === selection.focusNode.length; // check the offset == the node value length
-							} else if (mode === 'start') {
-								caretInPosition = range.endOffset === 0; // or 0
-							}
-						}
+				if (head.element() === selection.focusNode.parentNode) { // is the selection inside
+					var range = selection.getRangeAt(0); // get the only range
+					if (mode === 'end') {
+						caretInPosition = range.endOffset === selection.focusNode.length; // check the offset == the node value length
+					} else if (mode === 'start') {
+						caretInPosition = range.endOffset === 0; // or 0
 					}
+				} else if (head.element() === selection.focusNode) {
+					caretInPosition = true;
 				}
 				return caretInPosition;
 			}
@@ -181,9 +179,7 @@ var Components = {
 			}
 			base.complete = function () {
 				return tail.setAppearance({html: base.metadata.complete}).then(function () {
-					return head.setAppearance({html: base.metadata.complete})
-				}).then(function () {
-					return base.onInput(base.metadata.complete);
+					return head.setAppearance({html: base.metadata.complete});
 				}).then(function () {
 					return base.setCaretPosition();
 				});
@@ -201,7 +197,9 @@ var Components = {
 			base.behaviours = {
 				right: function () {
 					if (base.isCaretInPosition('end')) {
-						base.complete();
+						base.complete().then(function () {
+							return base.onInput(base.metadata.complete);
+						});
 					};
 				},
 				left: function () {
