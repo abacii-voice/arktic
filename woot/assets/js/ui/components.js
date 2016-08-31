@@ -522,11 +522,11 @@ var Components = {
 					if (index < base.list.components.wrapper.children.length) {
 						return base.setActive({index: index}).then(function () {
 							return base.setMetadata();
+						}).then(function () {
+							// don't know what behaviour to have hear
+							return search.behaviours.right();
+							// return search.behaviours.enter();
 						});
-
-						// .then(function () {
-						// 	return search.behaviours.enter(); // behaviour could also be "right" here.
-						// });
 					}
 				},
 				enter: function () {
