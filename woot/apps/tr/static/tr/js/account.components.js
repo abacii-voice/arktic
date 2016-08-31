@@ -826,13 +826,16 @@ var AccountComponents = {
 				space: function () {
 
 				},
+				number: function () {
+
+				},
 			}
 
 			// complete promises
 			return Promise.all([
 				wrapper.setBindings({
 					'click': function (_this) {
-						
+
 					},
 				}),
 			]).then(function () {
