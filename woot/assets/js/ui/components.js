@@ -468,7 +468,9 @@ var Components = {
 			// search methods
 			search.onFocus = function () {
 				base.isFocussed = true;
-				return base.setActive();
+				return base.setActive().then(function () {
+					return base.setMetadata();
+				});
 			}
 			search.onBlur = function () {
 				base.isFocussed = false;
