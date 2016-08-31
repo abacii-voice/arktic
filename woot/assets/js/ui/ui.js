@@ -180,35 +180,28 @@ var UI = {
 			});
 		}
 		this.setAppearance = function (appearance) {
-			var currentProperties = this.properties !== undefined ? this.properties : {};
-			var currentHTML = this.html !== undefined ? this.html : '';
-			var currentClasses = this.classes !== undefined ? this.classes : [];
-			var currentStyle = this.style !== undefined ? this.style : {};
-			var currentAppearance = {
-				properties: currentProperties,
-				html: currentHTML,
-				classes: currentClasses,
-				style: currentStyle,
-			}
+			var currentProperties = (this.properties || {});
+			var currentHTML = (this.html || '');
+			var currentClasses = (this.classes || []);
+			var currentStyle = (this.style || {});
 
 			if (appearance !== undefined) {
-				this.properties = appearance.properties !== undefined ? appearance.properties : currentProperties;
+				this.properties = (appearance.properties || currentProperties);
 				this.html = appearance.html !== undefined ? appearance.html : currentHTML;
 
 				// classes need to be a combination of ones removed and ones added. If "add" and "remove" are not present, defaults to using whole object.
 				this.classes = currentClasses;
-				var addClasses = appearance.classes !== undefined ? (appearance.classes.add !== undefined ? ($.isArray(appearance.classes.add) ? appearance.classes.add : [appearance.classes.add]) : (appearance.classes.remove !== undefined ? [] : appearance.classes)) : [];
-				var removeClasses = appearance.classes !== undefined ? (appearance.classes.remove !== undefined ? ($.isArray(appearance.classes.remove) ? appearance.classes.remove : [appearance.classes.remove]) : []) : [];
+				var addClasses = appearance.classes ? (appearance.classes.add ? ($.isArray(appearance.classes.add) ? appearance.classes.add : [appearance.classes.add]) : (appearance.classes.remove ? [] : appearance.classes)) : [];
+				var removeClasses = appearance.classes ? (appearance.classes.remove ? ($.isArray(appearance.classes.remove) ? appearance.classes.remove : [appearance.classes.remove]) : []) : [];
 				var _this = this;
 				this.classes = this.classes.concat(addClasses.filter(function (cls) {
 					return _this.classes.indexOf(cls) === -1;
 				}));
-
 				this.classes = this.classes.filter(function (cls) {
 					return removeClasses.indexOf(cls) === -1;
 				});
 
-				this.style = appearance.style !== undefined ? appearance.style : currentStyle;
+				this.style = (appearance.style || currentStyle);
 
 				if (this.isRendered) {
 					return new Promise(function(resolve, reject) {
@@ -216,26 +209,28 @@ var UI = {
 						var model = _this.model();
 
 						// properties
-						Object.keys(_this.properties).forEach(function (property) {
-							model.attr(property, _this.properties[property]);
-						});
+						if (appearance.properties) {
+							Object.keys(_this.properties).forEach(function (property) {
+								model.attr(property, _this.properties[property]);
+							});
+						}
 
-						// html
-						if (model.children().length === 0) {
+						// html - this will erase children of the current model
+						if (appearance.html !== undefined) {
 							model.html(_this.html);
 						}
 
 						// classes
-						if (_this.classes !== undefined) {
-							// remove current classes that are not the new classes variable
-							if (removeClasses.length > 0) {
+						if (appearance.classes) {
+							// remove current classes that are not in the new classes variable
+							if (removeClasses) {
 								removeClasses.forEach(function (cls) {
 									model.removeClass(cls);
 								});
 							}
 
 							// add new classes
-							if (addClasses.length > 0) {
+							if (addClasses) {
 								addClasses.forEach(function (cls) {
 									model.addClass(cls);
 								});
@@ -243,7 +238,9 @@ var UI = {
 						}
 
 						// style
-						model.animate(_this.style);
+						if (appearance.style) {
+							model.animate(_this.style);
+						}
 
 						resolve();
 					});
@@ -251,7 +248,12 @@ var UI = {
 					return appearance;
 				}
 			} else {
-				return currentAppearance;
+				return {
+					properties: currentProperties,
+					html: currentHTML,
+					classes: currentClasses,
+					style: currentStyle,
+				};
 			}
 		}
 

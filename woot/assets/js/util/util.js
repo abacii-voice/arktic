@@ -158,7 +158,7 @@ function emptyPromise () {
 	});
 }
 
-function blankFunction () {}
+function emptyFunction () {}
 
 function onOff (onOff) {
 	return {
