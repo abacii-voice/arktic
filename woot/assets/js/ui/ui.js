@@ -220,8 +220,8 @@ var UI = {
 							model.attr(property, _this.properties[property]);
 						});
 
-						// html
-						if (model.children().length === 0) {
+						// html - this will erase children of the current model
+						if (appearance.html !== undefined) {
 							model.html(_this.html);
 						}
 
