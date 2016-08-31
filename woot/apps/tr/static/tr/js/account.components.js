@@ -770,18 +770,25 @@ var AccountComponents = {
 
 			// methods and properties
 			var wrapper = content.components.wrapper;
-			wrapper.token = function (text, type) {
+			wrapper.load = function () {
+
+			}
+			wrapper.token = function (options) {
+				options = (options || {});
 				var _this = wrapper;
-				if (_this.active !== undefined) {
+				if (_this.active !== undefined && !options.swap) {
 					return new Promise(function(resolve, reject) {
 						resolve(_this.active);
 					});
 				} else {
-					return base.unit().then(function (unit) {
+					return base.unit(options.text, options.type).then(function (unit) {
 						// methods
 
 
 						// set after HERE
+						if (_this.active) {
+							unit.after = options.before ? '' : _this.active.id;
+						}
 						return _this.setChildren([unit]).then(function () {
 							_this.active = unit;
 							return unit;
@@ -789,13 +796,47 @@ var AccountComponents = {
 					});
 				}
 			}
+			wrapper.next = function (newToken) {
+
+			}
+			wrapper.previous = function () {
+
+			}
+
+			// behaviours
+			base.behaviours = {
+				left: function () {
+
+				},
+				right: function () {
+
+				},
+				shiftleft: function () {
+
+				},
+				shiftright: function () {
+
+				},
+				enter: function () {
+
+				},
+				backspace: function () {
+
+				},
+				space: function () {
+
+				},
+				number: function () {
+
+				},
+			}
 
 			// complete promises
 			return Promise.all([
-				// wrapper bindings
-				// 1. click - get active token and focus
 				wrapper.setBindings({
-					
+					'click': function (_this) {
+
+					},
 				}),
 			]).then(function () {
 				base.components = {
