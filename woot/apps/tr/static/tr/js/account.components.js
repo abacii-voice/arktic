@@ -797,71 +797,19 @@ var AccountComponents = {
 				}
 			}
 			wrapper.next = function (newToken) {
-				var _this = wrapper;
-				if (_this.active && _this.active.components.autocomplete.search.caretAtEnd) {
-					var newIndex = _this.active.index + 1;
-					if (newIndex === _this.children.length || newToken) {
-						return _this.token({swap: true}).then(function (token) {
-							token.reset();
-						});
-					} else {
-						_this.active.deactivate().then(function () {
-							return new Promise(function(resolve, reject) {
-								_this.active = _this.children.filter(function (child) {
-									return child.index === newIndex;
-								})[0];
-								resolve();
-							});
-						}).then(function () {
-							return _this.active.activate(true);
-						});
-					}
-				} else {
-					return emptyPromise();
-				}
+
 			}
 			wrapper.previous = function () {
-				var _this = wrapper;
-				if (_this.active && _this.active.components.autocomplete.search.caretOffset === 0) {
-					var newIndex = _this.active.index - 1;
-					if (newIndex < 0) {
-						return _this.token({swap: true, before: true}).then(function (token) {
-							token.reset();
-						});
-					} else {
-						_this.active.deactivate().then(function () {
-							return new Promise(function(resolve, reject) {
-								_this.active = _this.children.filter(function (child) {
-									return child.index === newIndex;
-								})[0];
-								resolve();
-							});
-						}).then(function () {
-							return _this.active.activate();
-						});
-					}
-				} else {
-					return emptyPromise();
-				}
+
 			}
 
 			// behaviours
 			base.behaviours = {
 				left: function () {
-					return Promise.all([
-						Promise.all(wrapper.children.map(function (child) {
-							return child.behaviours.left();
-						})),
-						wrapper.previous(),
-					]);
+
 				},
 				right: function () {
-					return Promise.all([
-						Promise.all(wrapper.children.map(function (child) {
-							return child.behaviours.right();
-						})),
-						wrapper.next(false),
-					]);
+
 				},
 				shiftleft: function () {
 
@@ -876,7 +824,10 @@ var AccountComponents = {
 
 				},
 				space: function () {
-					return wrapper.next(true);
+
+				},
+				number: function () {
+
 				},
 			}
 
@@ -884,10 +835,7 @@ var AccountComponents = {
 			return Promise.all([
 				wrapper.setBindings({
 					'click': function (_this) {
-						// create token. Worry about loading later.
-						wrapper.token().then(function (token) {
-							return token.focus();
-						});
+
 					},
 				}),
 			]).then(function () {

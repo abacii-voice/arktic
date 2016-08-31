@@ -88,19 +88,19 @@ var Components = {
 	// Formatted input field with events for input and key presses.
 	search: function (id, args) {
 		// config
-		defaultAppearance = {
+		args.appearance = (args.appearance || {
 			style: {
 				'width': '100%',
 			},
 			classes: ['border', 'border-radius'],
-		}
+		});
 
 		// set up components
 		return Promise.all([
 			// base component
 			UI.createComponent('{id}-base'.format({id: id}), {
 				template: UI.template('div', 'ie input'),
-				appearance: (args.appearance || defaultAppearance),
+				appearance: args.appearance,
 			}),
 
 			// head
@@ -136,136 +136,113 @@ var Components = {
 			] = components;
 
 			// variables
-			base.textLength = 0;
-			base.caretOffset = 0;
-			base.caretAtEnd = false;
+			base.isFocussed = false;
 
 			// logic, bindings, etc.
-			base.setCurrent = function (current) {
-				base.current = current;
-				return tail.setAppearance({html: base.current.condition ? base.current.guess : base.current.query});
+			base.setMetadata = function (metadata) {
+				base.metadata = metadata;
+				return tail.setAppearance({html: (metadata.combined || metadata.query)});
+			}
+			base.isCaretInPosition = function (mode) {
+				mode = (mode || 'end');
+				// determine caret position after an action. Only important thing is whether or not it is at the end.
+				var selection = window.getSelection();
+				var caretInPosition = false;
+				if (head.element() === selection.focusNode.parentNode) { // is the selection inside
+					var range = selection.getRangeAt(0); // get the only range
+					if (mode === 'end') {
+						caretInPosition = range.endOffset === selection.focusNode.length; // check the offset == the node value length
+					} else if (mode === 'start') {
+						caretInPosition = range.endOffset === 0; // or 0
+					}
+				} else if (head.element() === selection.focusNode) {
+					caretInPosition = true;
+				}
+				return caretInPosition;
+			}
+			base.setCaretPosition = function (mode) {
+				return new Promise(function(resolve, reject) {
+					mode = (mode || 'end');
+					// set the caret position to the end or the beginning
+					var range = document.createRange(); // Create a range (a range is a like the selection but invisible)
+					range.selectNodeContents(head.element()); // Select the entire contents of the element with the range
+					if (mode === 'end') {
+						range.collapse(false); // collapse the range to the end point. false means collapse to end rather than the start
+					} else if (mode === 'start') {
+						range.collapse(true);
+					}
+					var selection = window.getSelection(); // get the selection object (allows you to change selection)
+					selection.removeAllRanges(); // remove any selections already made
+					selection.addRange(range); // make the range you have just created the visible selection
+					resolve();
+				});
 			}
 			base.complete = function () {
-				if (base.current.condition) {
-					return tail.setAppearance({html: ''}).then(function () {
-						return head.setAppearance({html: base.current.complete});
-					}).then(function () {
-						base.focus();
-					});
-				} else {
-					return emptyPromise();
-				}
-			}
-			base.increment = function (decrement) {
-				return new Promise(function(resolve, reject) {
-					base.textLength = head.model().text().length;
-					resolve();
+				return tail.setAppearance({html: base.metadata.complete}).then(function () {
+					return head.setAppearance({html: base.metadata.complete});
 				}).then(function () {
-					return new Promise(function(resolve, reject) {
-						var increment = (decrement ? -1 : 1 || 1);
-						if (base.caretOffset + increment >= 0 && base.caretOffset + increment <= base.textLength) {
-							base.caretOffset += increment;
-						}
-						base.caretOffset = base.caretOffset > base.textLength ? base.textLength : base.caretOffset;
-						base.caretAtEnd = (base.caretOffset === base.textLength && base.textLength > 0);
-						resolve();
-					});
+					head.model().html(base.metadata.complete);
+					return base.setCaretPosition();
 				});
 			}
-			base.clear = function () {
-				return new Promise(function(resolve, reject) {
-					head.model().html('');
-					head.model().trigger('input');
-					resolve();
+			base.focus = function (options) {
+				return (base.onFocus || emptyPromise)().then(function () {
+					return base.setCaretPosition();
 				});
 			}
-			base.focus = function (start) {
-				return new Promise(function(resolve, reject) {
-					base.isFocussed = true;
-					head.model().focus();
-					setEndOfContenteditable(head.element(), start);
-					resolve();
+			base.blur = function () {
+				return (base.onBlur || emptyPromise)().then(function () {
+					if (head.model().text() === '') {
+						tail.setAppearance({html: ''});
+					}
 				});
 			}
 
 			// behaviours
 			base.behaviours = {
 				right: function () {
-					if (base.isFocussed) {
-						return base.increment().then(function () {
-							if (base.caretAtEnd) {
-								return base.complete();
-							}
-						}).then(function () {
-							head.model().trigger('input');
+					if (base.isCaretInPosition('end')) {
+						base.complete().then(function () {
+							return base.onInput(base.metadata.complete);
 						});
-					}
+					};
 				},
 				left: function () {
-					if (base.isFocussed) {
-						return base.increment(true);
-					}
+					var caretInPosition = base.isCaretInPosition('start');
+					console.log(caretInPosition);
 				},
 				enter: function () {
-					// 1. complete
-					if (base.isFocussed) {
-						return base.complete().then(function () {
-							// 2. pass data upwards
-							if (base.onComplete !== undefined) {
-								return base.onComplete();
-							}
-						}).then(function () {
-							// 3. clear
-							return base.clear();
-						});
-					}
+
 				},
 				backspace: function () {
-					if (base.isFocussed) {
-						return base.increment(true);
-					}
+
 				},
 				click: function (end) {
-					base.isFocussed = true;
-					// find caret
-					return new Promise(function(resolve, reject) {
-						if (!end) {
-							base.caretOffset = getCaretOffsetWithin(base.element());
-							base.caretAtEnd = base.caretOffset === head.model().html().length;
-						} else {
-							base.caretOffset = head.model().html().length;
-							base.caretAtEnd = true;
-							setEndOfContenteditable(head.element());
-						}
-						resolve();
-					});
+
 				}
 			}
 
 			// complete promises.
 			return Promise.all([
 				base.setBindings({
-					'input': function (_this) {
-						var value = head.model().text();
-						_this.increment().then(function () {
-							if (_this.onInput !== undefined) {
-								return _this.onInput(value);
-							}
-						});
-					},
 					'click': function (_this) {
-						head.model().focus();
-						return _this.behaviours.click(true);
+						base.focus();
 					}
 				}),
 				head.setBindings({
+					'input': function (_this) {
+						(base.onInput || emptyPromise)(_this.model().text());
+					},
 					'blur': function (_this) {
-						base.isFocussed = false;
+						base.blur();
+					},
+					'focus': function (_this) {
+						(base.onFocus || emptyPromise)();
 					},
 					'click': function (_this, event) {
 						event.stopPropagation();
-						return base.behaviours.click(false);
-					}
+
+					},
 				}),
 			]).then(function (results) {
 				base.components = {
@@ -354,19 +331,20 @@ var Components = {
 			base.defaultFilters = [];
 			base.list = list; // allow for swapable components
 			base.search = search;
+			base.isFocussed = false;
 			base.display = function (query, filter) {
 				return base.load().then(function () {
 					return base.filter(query, filter); // returns a reduced dataset
 				}).then(function () {
+					base.currentIndex = undefined;
 					return base.list.removeAll();
 				}).then(function () {
 					return Promise.all(base.virtual.map(function (item, index) {
 						return base.unit(base, item, query, index);
 					})).then(function (listItems) {
-						if (listItems.length !== 0 && !(!base.autocomplete && !query)) {
-							listItems[0].activate();
-						}
-						return base.setCurrent(listItems, query, 0).then(function () {
+						return base.setActive({set: listItems}).then(function () {
+							return base.setMetadata(query);
+						}).then(function () {
 							return base.list.components.wrapper.setChildren(listItems);
 						});
 					});
@@ -427,60 +405,87 @@ var Components = {
 					resolve();
 				});
 			}
-			base.setCurrent = function (listItems, query, index) {
+			base.setMetadata = function (query) {
+				base.query = ((base.query || query) || '');
 				// condition is that there are filtered items and the query is not nothing
-				return search.setCurrent({
-					condition: (listItems.length !== 0 && query),
-					complete: listItems.length !== 0 ? listItems[index].original : '',
-					guess: listItems.length !== 0 ? listItems[index].query : '',
-					type: listItems.length !== 0 ? listItems[index].type : '',
-					query: query,
-				});
-			}
 
-			// control active list item
-			base.next = function () {
-				if (base.active && (base.active.index < base.list.components.wrapper.children.length - 1)) {
-					var index = base.active.index + 1;
-					return base.setActive(index).then(function (index) {
-						return base.setCurrent(base.list.components.wrapper.children, base.query, index);
-					});
+				var metadata = {
+					query: base.query,
+				}
+				if (base.virtual.length && base.currentIndex !== undefined) {
+					var item = base.virtual[base.currentIndex].metadata;
+					metadata = {
+						query: base.query,
+						complete: item.complete,
+						combined: item.combined,
+						type: item.type,
+					}
+				}
+				return search.setMetadata(metadata);
+			}
+			base.setActive = function (options) {
+				options = (options || {});
+				var set = (options.set || base.list.components.wrapper.children);
+
+				// if there are any results
+				if (set.length && base.isFocussed) {
+
+					// changes
+					var previousIndex = base.currentIndex;
+					base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (options.increment || 0)));
+
+					// boundary conditions
+					base.currentIndex = base.currentIndex > set.length - 1 ? set.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
+
+					if (base.currentIndex !== previousIndex) {
+						return base.deactivate().then(function () {
+							base.active = set[base.currentIndex];
+							return base.active.activate();
+						});
+					} else {
+						return emptyPromise();
+					}
 				} else {
 					return emptyPromise();
 				}
 			}
-			base.previous = function () {
-				if (base.active && base.active.index > 0) {
-					var index = base.active.index - 1;
-					return base.setActive(index).then(function (index) {
-						return base.setCurrent(base.list.components.wrapper.children, base.query, index);
-					});
-				} else {
-					return emptyPromise();
-				}
-			}
-			base.setActive = function (index) {
-				return base.active.deactivate().then(function () {
+			base.deactivate = function () {
+				return ((base.active || {}).deactivate || emptyPromise)().then(function () {
 					return new Promise(function(resolve, reject) {
-						base.active = base.list.components.wrapper.children.filter(function (child) {
-							return child.index === index;
-						})[0];
+						base.active = undefined;
 						resolve();
 					});
-				}).then(function () {
-					return base.active.activate();
-				}).then(function () {
-					return index;
 				});
 			}
-			base.clear = function () {
-				return search.clear();
+
+			// list methods
+			base.next = function () {
+				return base.setActive({increment: 1}).then(function () {
+					return base.setMetadata();
+				});
 			}
-			base.focus = function (start) {
-				return search.focus(start);
+			base.previous = function () {
+				return base.setActive({increment: -1}).then(function () {
+					return base.setMetadata();
+				});
 			}
 
-			// activate search
+			// search methods
+			search.onFocus = function () {
+				base.isFocussed = true;
+				return base.setActive().then(function () {
+					return base.setMetadata();
+				});
+			}
+			search.onBlur = function () {
+				base.isFocussed = false;
+				base.currentIndex = undefined;
+				return base.deactivate();
+			}
+			search.onInput = function (value) {
+				base.query = value;
+				return base.display(value);
+			}
 			base.toggleSearch = function () {
 
 			}
@@ -488,6 +493,14 @@ var Components = {
 			// set title
 			base.setTitle = function (text, center) {
 				return title.set(text, center);
+			}
+			title.set = function (text, centre) {
+				return title.setAppearance({
+					html: text,
+					style: {
+						'text-align': (centre ? 'center': 'left'),
+					},
+				});
 			}
 
 			// behaviours
@@ -506,11 +519,13 @@ var Components = {
 				},
 				number: function (char) {
 					var index = parseInt(char);
-					if (index < base.list.components.wrapper.children.length && base.query) {
-						return base.setActive(index).then(function (index) {
-							return base.setCurrent(base.list.components.wrapper.children, base.query, index);
+					if (index < base.list.components.wrapper.children.length) {
+						return base.setActive({index: index}).then(function () {
+							return base.setMetadata();
 						}).then(function () {
-							return search.behaviours.enter(); // behaviour could also be "right" here.
+							// don't know what behaviour to have here
+							return search.behaviours.right();
+							// return search.behaviours.enter();
 						});
 					}
 				},
@@ -529,26 +544,6 @@ var Components = {
 				base.targets = copy.targets;
 				base.list = copy.list;
 				base.unit = copy.unit;
-			}
-
-			// set title
-			title.set = function (text, centre) {
-				return title.setAppearance({
-					html: text,
-					style: {
-						'text-align': (centre ? 'center': 'left'),
-					},
-				});
-			}
-
-			// search input methods
-			search.onInput = function (value) {
-				base.query = value;
-				return base.display(value).then(function () {
-					if (base.onInput !== undefined) {
-						return base.onInput(value);
-					}
-				});
 			}
 
 			// complete promises.
