@@ -1159,25 +1159,20 @@ var AccountInterfaces = {
 						unitAutocomplete.clone(autocomplete);
 						unitBase.behaviours = {
 							right: function () {
-								return unitAutocomplete.behaviours.right();
+
 							},
 							left: function () {
-								return unitAutocomplete.behaviours.left();
+
 							},
 						}
 
 						// methods
 						unitBase.focus = function (start) {
-							return unitAutocomplete.focus(start);
-						}
-						unitBase.reset = function () {
-							return unitAutocomplete.clear().then(function () {
-								return unitAutocomplete.focus();
-							})
+
 						}
 						unitBase.activate = function (start) {
 							return unitBase.setAppearance({classes: {add: 'active'}}).then(function () {
-								return unitBase.focus(start);
+
 							});
 						}
 						unitBase.deactivate = function () {
@@ -1216,7 +1211,7 @@ var AccountInterfaces = {
 					console.log(autocomplete.components.search.current.complete);
 				}
 				autocomplete.toggleSearch();
-				autocomplete.autocomplete = true;
+				autocomplete.autocomplete = false;
 				autocomplete.targets = [
 					{
 						name: 'clients',
@@ -1330,7 +1325,6 @@ var AccountInterfaces = {
 								html: datum.main.substring(0, query.length),
 							},
 						}),
-
 						UI.createComponent('{id}-{object}-main-tail'.format({id: _this.id, object: datum.id}), {
 							template: UI.template('span', 'ie'),
 							appearance: {
@@ -1361,15 +1355,15 @@ var AccountInterfaces = {
 							unitIndex,
 						] = unitComponents;
 
-						// set head and tail
-						unitBase.original = datum.main;
-						unitBase.query = query + datum.main.substring(query.length);
-						unitBase.head = datum.main.substring(0, query.length);
-						unitBase.tail = datum.main.substring(query.length);
-						unitBase.type = datum.rule;
+						// set metadata
+						datum.metadata = {
+							query: query,
+							complete: datum.main,
+							combined: query + datum.main.substring(query.length),
+							type: datum.rule,
+						}
 
 						unitBase.activate = function () {
-							_this.active = unitBase;
 							return unitBase.setAppearance({classes: {add: ['active']}});
 						}
 
