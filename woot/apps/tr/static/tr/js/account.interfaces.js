@@ -1019,9 +1019,11 @@ var AccountInterfaces = {
 						style: {
 							'top': '100px',
 							'left': '100px',
-							'height': '40px',
+							'height': '100px',
 							'width': '400px',
 							'padding': '8px',
+							'padding-left': '16px',
+							'padding-right': '0px',
 						},
 						classes: ['border'],
 					},
@@ -1099,6 +1101,13 @@ var AccountInterfaces = {
 					]);
 				});
 
+				Mousetrap.bind('space', function (event) {
+					event.preventDefault();
+					Promise.all([
+						caption.behaviours.space(),
+					]);
+				});
+
 				Mousetrap.bind('shift+right', function (event) {
 					caption.behaviours.shiftright();
 				});
@@ -1111,36 +1120,28 @@ var AccountInterfaces = {
 				caption.unit = function (text, type) {
 					var key = makeid();
 
+					// classes
+					jss.set('#{id}-{key}-base'.format({id: caption.id, key: key}), {
+						'height': '30px',
+						'margin': '0px',
+						'display': 'inline-block',
+					});
+					jss.set('#{id}-{key}-base.tag'.format({id: caption.id, key: key}), {
+
+					});
+					jss.set('#{id}-{key}-base.active .head'.format({id: caption.id, key: key}), {
+						'color': '#fff',
+					});
+
 					// components
 					return Promise.all([
 						// base
 						UI.createComponent('{id}-{key}-base'.format({id: caption.id, key: key}), {
 							template: UI.template('div', 'ie'),
-							appearance: {
-								style: {
-									'height': '30px',
-									'display': 'inline-block',
-									'margin': '0px',
-								},
-							},
 						}),
 
-						// head
-						UI.createComponent('{id}-{key}-head'.format({id: caption.id, key: key}), {
-							template: UI.template('div', 'ie'),
-							appearance: {
-								style: {
-									'display': 'inline-block',
-								},
-								properties: {
-									'contenteditable': 'true',
-								},
-							},
-						}),
-
-						// tail
-						UI.createComponent('{id}-{key}-tail'.format({id: caption.id, key: key}), {
-							template: UI.template('div', 'ie'),
+						// autocomplete element
+						Components.searchableList('{id}-{key}-autocomplete'.format({id: caption.id, key: key}), {
 							appearance: {
 								style: {
 									'display': 'inline-block',
@@ -1151,26 +1152,50 @@ var AccountInterfaces = {
 					]).then(function (unitComponents) {
 						var [
 							unitBase,
-							unitHead,
-							unitTail,
+							unitAutocomplete,
 						] = unitComponents;
 
+						// clone page autocomplete
+						unitAutocomplete.clone(autocomplete);
+						unitBase.behaviours = {
+							right: function () {
+
+							},
+							left: function () {
+
+							},
+						}
+
 						// methods
-						unitBase.focus = function () {
-							unitHead.model().focus();
+						unitBase.focus = function (start) {
+
+						}
+						unitBase.activate = function (start) {
+							return unitBase.setAppearance({classes: {add: 'active'}}).then(function () {
+
+							});
+						}
+						unitBase.deactivate = function () {
+							return unitBase.setAppearance({classes: {remove: 'active'}});
 						}
 
 						return Promise.all([
-							// bindings
+							unitAutocomplete.search.setAppearance({
+								style: {
+									'height': '30px',
+									'padding-left': '0px',
+								},
+								classes: {
+									remove: ['border', 'border-radius'],
+								},
+							}),
 						]).then(function () {
 							// children
 							unitBase.components = {
-								head: unitHead,
-								tail: unitTail,
+								autocomplete: unitAutocomplete,
 							}
 							return unitBase.setChildren([
-								unitHead,
-								unitTail,
+								unitAutocomplete,
 							]);
 						}).then(function () {
 							return unitBase;
@@ -1186,7 +1211,7 @@ var AccountInterfaces = {
 					console.log(autocomplete.components.search.current.complete);
 				}
 				autocomplete.toggleSearch();
-				autocomplete.autocomplete = true;
+				autocomplete.autocomplete = false;
 				autocomplete.targets = [
 					{
 						name: 'clients',
@@ -1300,7 +1325,6 @@ var AccountInterfaces = {
 								html: datum.main.substring(0, query.length),
 							},
 						}),
-
 						UI.createComponent('{id}-{object}-main-tail'.format({id: _this.id, object: datum.id}), {
 							template: UI.template('span', 'ie'),
 							appearance: {
@@ -1331,15 +1355,15 @@ var AccountInterfaces = {
 							unitIndex,
 						] = unitComponents;
 
-						// set head and tail
-						unitBase.original = datum.main;
-						unitBase.query = query + datum.main.substring(query.length);
-						unitBase.head = datum.main.substring(0, query.length);
-						unitBase.tail = datum.main.substring(query.length);
-						unitBase.type = datum.rule;
+						// set metadata
+						datum.metadata = {
+							query: query,
+							complete: datum.main,
+							combined: query + datum.main.substring(query.length),
+							type: datum.rule,
+						}
 
 						unitBase.activate = function () {
-							_this.active = unitBase;
 							return unitBase.setAppearance({classes: {add: ['active']}});
 						}
 
