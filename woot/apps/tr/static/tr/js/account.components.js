@@ -790,7 +790,7 @@ var AccountComponents = {
 							unit.after = options.before ? '' : _this.active.id;
 						}
 						return _this.deactivate().then(function () {
-							return _this.setChildren([unit])
+							return _this.setChildren([unit]);
 						}).then(function () {
 							_this.active = unit;
 							return _this.active.activate();
@@ -815,9 +815,6 @@ var AccountComponents = {
 					return _this.deactivate().then(function () {
 						_this.active = _this.children[_this.currentIndex];
 						return _this.active.activate();
-					}).then(function () {
-						var end = _this.currentIndex < previousIndex;
-						return _this.active.focus({end: end});
 					});
 				} else {
 					return emptyPromise();
@@ -827,10 +824,14 @@ var AccountComponents = {
 				return (wrapper.active ? wrapper.active.deactivate : emptyPromise)();
 			}
 			wrapper.next = function () {
-				return wrapper.setActive({increment: 1});
+				return wrapper.setActive({increment: 1}).then(function () {
+					return wrapper.active.focus('start');
+				});
 			}
 			wrapper.previous = function () {
-				return wrapper.setActive({increment: -1});
+				return wrapper.setActive({increment: -1}).then(function () {
+					return wrapper.active.focus('end');
+				});
 			}
 
 			// behaviours
