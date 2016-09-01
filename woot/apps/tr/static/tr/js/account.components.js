@@ -866,7 +866,9 @@ var AccountComponents = {
 				enter: function () {
 					// complete and new token
 					return Promise.all([
-						(wrapper.active ? wrapper.token : emptyPromise)({swap: true}),
+						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)().then(function () {
+							return (wrapper.active ? wrapper.token : emptyPromise)({swap: true});
+						}),
 					]);
 				},
 				backspace: function () {
