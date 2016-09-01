@@ -137,7 +137,6 @@ var Components = {
 
 			// variables
 			base.isFocussed = false;
-			base.isComplete = false;
 
 			// logic, bindings, etc.
 			base.setMetadata = function (metadata) {
@@ -179,11 +178,15 @@ var Components = {
 				});
 			}
 			base.complete = function () {
-				return tail.setAppearance({html: base.metadata.complete}).then(function () {
-					return head.setAppearance({html: base.metadata.complete});
+				base.completeQuery = base.metadata.complete;
+				return tail.setAppearance({html: base.completeQuery}).then(function () {
+					return head.setAppearance({html: base.completeQuery});
 				}).then(function () {
 					return base.setCaretPosition();
 				});
+			}
+			base.isComplete = function () {
+				return head.model().text() === base.completeQuery;
 			}
 			base.focus = function (mode) {
 				base.isFocussed = true;

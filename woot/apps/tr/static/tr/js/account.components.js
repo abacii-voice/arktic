@@ -802,6 +802,12 @@ var AccountComponents = {
 					});
 				}
 			}
+			wrapper.isCaretInPosition = function (mode) {
+				return wrapper.active.components.autocomplete.search.isCaretInPosition(mode);
+			}
+			wrapper.isComplete = function () {
+				return wrapper.active.components.autocomplete.search.isComplete();
+			}
 			wrapper.setActive = function (options) {
 				var _this = wrapper;
 				// changes
@@ -848,13 +854,13 @@ var AccountComponents = {
 				},
 				left: function () {
 					// go to previous token if at end
-					// return ((wrapper.active && wrapper.active.components.autocomplete.search.isCaretInPosition('start')) ? wrapper.previous : emptyPromise)();
+					return ((wrapper.active && wrapper.isCaretInPosition('start')) ? wrapper.previous : emptyPromise)();
 				},
 				right: function () {
 					// complete or go to next token if already complete
 					return Promise.all([
+						((wrapper.active && wrapper.isCaretInPosition() && wrapper.isComplete()) ? wrapper.next : emptyPromise)(),
 						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)(),
-						// ((wrapper.active && wrapper.active.components.autocomplete.search.isCaretInPosition()) ? wrapper.next : emptyPromise)(),
 					]);
 				},
 				shiftleft: function () {
