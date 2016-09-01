@@ -781,11 +781,12 @@ var AccountComponents = {
 						resolve(_this.active);
 					});
 				} else {
+					_this.currentIndex = _this.currentIndex !== undefined ? _this.currentIndex + 1 : 0;
 					return base.unit(options.text, options.type).then(function (unit) {
 						// methods
 
-
 						// set after HERE
+
 						if (_this.active) {
 							unit.after = options.before ? '' : _this.active.id;
 						}
@@ -805,7 +806,7 @@ var AccountComponents = {
 			wrapper.setActive = function (options) {
 				var _this = wrapper;
 				// changes
-				var previousIndex = _this.currentIndex;
+				var previousIndex = _this.currentIndex !== undefined ? _this.currentIndex : 0;
 				_this.currentIndex = (options.index !== undefined ? options.index : undefined || ((_this.currentIndex || 0) + (options.increment || 0)));
 
 				// boundary conditions
@@ -813,8 +814,10 @@ var AccountComponents = {
 
 				if (_this.currentIndex !== previousIndex) {
 					return _this.deactivate().then(function () {
-						_this.active = _this.children[base.currentIndex];
+						_this.active = _this.children[_this.currentIndex];
 						return _this.active.activate();
+					}).then(function () {
+						return _this.active.focus();
 					});
 				} else {
 					return emptyPromise();
@@ -844,11 +847,14 @@ var AccountComponents = {
 				},
 				left: function () {
 					// go to previous token if at end
+					return ((wrapper.active && wrapper.active.components.autocomplete.search.isCaretInPosition('start')) ? wrapper.previous : emptyPromise)();
 				},
 				right: function () {
 					// complete or go to next token if already complete
 					return Promise.all([
-						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)(),
+						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)().then(function () {
+							return ((wrapper.active && wrapper.active.components.autocomplete.search.isCaretInPosition()) ? wrapper.next : emptyPromise)();
+						}),
 					]);
 				},
 				shiftleft: function () {
