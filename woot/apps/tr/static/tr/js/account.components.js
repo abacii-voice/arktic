@@ -852,9 +852,8 @@ var AccountComponents = {
 				right: function () {
 					// complete or go to next token if already complete
 					return Promise.all([
-						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)().then(function () {
-							return ((wrapper.active && wrapper.active.components.autocomplete.search.isCaretInPosition()) ? wrapper.next : emptyPromise)();
-						}),
+						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)(),
+						((wrapper.active && wrapper.active.components.autocomplete.search.isCaretInPosition()) ? wrapper.next : emptyPromise)(),
 					]);
 				},
 				shiftleft: function () {

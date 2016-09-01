@@ -191,6 +191,9 @@ var Components = {
 			base.focus = function (options) {
 				base.isFocussed = true;
 				return (base.onFocus || emptyPromise)().then(function () {
+					if (head.model().text()) {
+						head.model().trigger('input');
+					}
 					return base.setCaretPosition();
 				});
 			}
