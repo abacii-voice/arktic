@@ -786,7 +786,6 @@ var AccountComponents = {
 						// methods
 
 						// set after HERE
-
 						if (_this.active) {
 							unit.after = options.before ? '' : _this.active.id;
 						}
