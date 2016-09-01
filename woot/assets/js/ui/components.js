@@ -189,12 +189,14 @@ var Components = {
 				});
 			}
 			base.focus = function (options) {
+				options = (options || {});
 				base.isFocussed = true;
 				return (base.onFocus || emptyPromise)().then(function () {
 					if (head.model().text()) {
 						head.model().trigger('input');
 					}
-					return base.setCaretPosition();
+					var mode = (options.end || options.end === undefined) ? 'end' : 'start';
+					return base.setCaretPosition(mode);
 				});
 			}
 			base.blur = function () {
