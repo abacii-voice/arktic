@@ -1166,8 +1166,8 @@ var AccountInterfaces = {
 						unitAutocomplete.autocomplete = true;
 
 						// methods
-						unitBase.focus = function () {
-							return unitAutocomplete.search.focus();
+						unitBase.focus = function (options) {
+							return unitAutocomplete.search.focus(options);
 						}
 						unitBase.activate = function () {
 							return unitBase.setAppearance({classes: {add: 'active'}}).then(function () {

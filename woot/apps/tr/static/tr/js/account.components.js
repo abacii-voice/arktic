@@ -817,7 +817,8 @@ var AccountComponents = {
 						_this.active = _this.children[_this.currentIndex];
 						return _this.active.activate();
 					}).then(function () {
-						return _this.active.focus();
+						var end = _this.currentIndex < previousIndex;
+						return _this.active.focus({end: end});
 					});
 				} else {
 					return emptyPromise();
