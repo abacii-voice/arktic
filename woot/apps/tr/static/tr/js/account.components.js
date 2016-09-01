@@ -777,8 +777,8 @@ var AccountComponents = {
 				options = (options || {});
 				var _this = wrapper;
 				if (_this.active !== undefined && !options.swap) {
-					return new Promise(function(resolve, reject) {
-						resolve(_this.active);
+					return _this.active.focus().then(function () {
+						return _this.active;
 					});
 				} else {
 					_this.currentIndex = _this.currentIndex !== undefined ? _this.currentIndex + 1 : 0;
@@ -865,20 +865,20 @@ var AccountComponents = {
 				},
 				enter: function () {
 					// complete and new token
-					// return Promise.all([
-					// 	(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)().then(function () {
-					// 		return (wrapper.active ? wrapper.token : emptyPromise)({swap: true});
-					// 	}),
-					// ]);
+					return Promise.all([
+						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)().then(function () {
+							return (wrapper.active ? wrapper.token : emptyPromise)({swap: true});
+						}),
+					]);
 				},
 				backspace: function () {
 					// delete token if at beginning
 				},
 				space: function () {
 					// new token
-					// return Promise.all([
-					// 	(wrapper.active ? wrapper.token : emptyPromise)({swap: true}),
-					// ]);
+					return Promise.all([
+						(wrapper.active ? wrapper.token : emptyPromise)({swap: true}),
+					]);
 				},
 				number: function (char) {
 					return Promise.all([
@@ -891,9 +891,7 @@ var AccountComponents = {
 			return Promise.all([
 				wrapper.setBindings({
 					'click': function (_this) {
-						wrapper.token().then(function (token) {
-							return token.focus();
-						})
+						wrapper.token();
 					},
 				}),
 			]).then(function () {
