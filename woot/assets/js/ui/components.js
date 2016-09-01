@@ -188,14 +188,12 @@ var Components = {
 					return base.setCaretPosition();
 				});
 			}
-			base.focus = function (options) {
-				options = (options || {});
+			base.focus = function (mode) {
 				base.isFocussed = true;
 				return (base.onFocus || emptyPromise)().then(function () {
 					if (head.model().text()) {
 						head.model().trigger('input');
 					}
-					var mode = (options.end || options.end === undefined) ? 'end' : 'start';
 					return base.setCaretPosition(mode);
 				});
 			}
