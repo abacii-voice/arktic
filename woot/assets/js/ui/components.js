@@ -238,7 +238,9 @@ var Components = {
 						base.blur();
 					},
 					'focus': function (_this) {
-						(base.onFocus || emptyPromise)();
+						base.focus().then(function () {
+							return (base.onFocus || emptyPromise)();
+						})
 					},
 					'click': function (_this, event) {
 						event.stopPropagation();
