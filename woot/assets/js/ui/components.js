@@ -178,6 +178,9 @@ var Components = {
 					resolve();
 				});
 			}
+			base.isComplete = function () {
+				return base.metadata === undefined || head.model().text() === base.metadata.complete;
+			}
 			base.complete = function () {
 				return tail.setAppearance({html: base.metadata.complete}).then(function () {
 					return head.setAppearance({html: base.metadata.complete});

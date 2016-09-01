@@ -789,9 +789,15 @@ var AccountComponents = {
 						if (_this.active) {
 							unit.after = options.before ? '' : _this.active.id;
 						}
-						return _this.setChildren([unit]).then(function () {
+						return _this.deactivate().then(function () {
+							return _this.setChildren([unit])
+						}).then(function () {
 							_this.active = unit;
-							return unit;
+							return _this.active.activate();
+						}).then(function () {
+							return _this.active.focus();
+						}).then(function () {
+							return _this.active;
 						});
 					});
 				}
@@ -815,7 +821,7 @@ var AccountComponents = {
 				}
 			}
 			wrapper.deactivate = function () {
-				return wrapper.active.deactivate();
+				return (wrapper.active ? wrapper.active.deactivate : emptyPromise)();
 			}
 			wrapper.next = function () {
 				return wrapper.setActive({increment: 1});
@@ -843,7 +849,6 @@ var AccountComponents = {
 					// complete or go to next token if already complete
 					return Promise.all([
 						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)(),
-						(wrapper.active ? (wrapper.active.components.autocomplete.search.isComplete ? wrapper.previous : emptyPromise) : emptyPromise)(),
 					]);
 				},
 				shiftleft: function () {
@@ -854,6 +859,9 @@ var AccountComponents = {
 				},
 				enter: function () {
 					// complete and new token
+					return Promise.all([
+						(wrapper.active ? (wrapper.active.components.autocomplete.search.isComplete() ? wrapper.token : emptyPromise) : emptyPromise)({swap: true}),
+					]);
 				},
 				backspace: function () {
 					// delete token if at beginning
