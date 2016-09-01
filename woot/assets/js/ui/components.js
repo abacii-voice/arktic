@@ -179,7 +179,7 @@ var Components = {
 				});
 			}
 			base.isComplete = function () {
-				return base.metadata === undefined || head.model().text() === base.metadata.complete;
+				return base.metadata.complete === '' || head.model().text() === base.metadata.complete;
 			}
 			base.complete = function () {
 				return tail.setAppearance({html: base.metadata.complete}).then(function () {

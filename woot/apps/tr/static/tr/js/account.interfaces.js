@@ -1179,11 +1179,14 @@ var AccountInterfaces = {
 						}
 						unitBase.activate = function () {
 							return unitBase.setAppearance({classes: {add: 'active'}}).then(function () {
-								
+
 							});
 						}
 						unitBase.deactivate = function () {
-							return unitBase.setAppearance({classes: {remove: 'active'}});
+							return Promise.all([
+								unitBase.setAppearance({classes: {remove: 'active'}}),
+								unitAutocomplete.search.components.tail.setAppearance({html: unitAutocomplete.search.metadata.query}),
+							]);
 						}
 
 						return Promise.all([
