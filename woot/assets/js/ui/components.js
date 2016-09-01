@@ -137,6 +137,7 @@ var Components = {
 
 			// variables
 			base.isFocussed = false;
+			base.isComplete = false;
 
 			// logic, bindings, etc.
 			base.setMetadata = function (metadata) {
@@ -148,7 +149,7 @@ var Components = {
 				// determine caret position after an action. Only important thing is whether or not it is at the end.
 				var selection = window.getSelection();
 				var caretInPosition = false;
-				if (head.element() === selection.focusNode.parentNode) { // is the selection inside
+				if (base.isFocussed && head.element() === selection.focusNode.parentNode) { // is the selection inside
 					var range = selection.getRangeAt(0); // get the only range
 					if (mode === 'end') {
 						caretInPosition = range.endOffset === selection.focusNode.length; // check the offset == the node value length
@@ -181,16 +182,17 @@ var Components = {
 				return tail.setAppearance({html: base.metadata.complete}).then(function () {
 					return head.setAppearance({html: base.metadata.complete});
 				}).then(function () {
-					head.model().html(base.metadata.complete);
 					return base.setCaretPosition();
 				});
 			}
 			base.focus = function (options) {
+				base.isFocussed = true;
 				return (base.onFocus || emptyPromise)().then(function () {
 					return base.setCaretPosition();
 				});
 			}
 			base.blur = function () {
+				base.isFocussed = false;
 				return (base.onBlur || emptyPromise)().then(function () {
 					if (head.model().text() === '') {
 						tail.setAppearance({html: ''});
@@ -209,7 +211,6 @@ var Components = {
 				},
 				left: function () {
 					var caretInPosition = base.isCaretInPosition('start');
-					console.log(caretInPosition);
 				},
 				enter: function () {
 

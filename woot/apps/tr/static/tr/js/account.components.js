@@ -796,38 +796,75 @@ var AccountComponents = {
 					});
 				}
 			}
-			wrapper.next = function (newToken) {
+			wrapper.setActive = function (options) {
+				var _this = wrapper;
+				// changes
+				var previousIndex = _this.currentIndex;
+				_this.currentIndex = (options.index !== undefined ? options.index : undefined || ((_this.currentIndex || 0) + (options.increment || 0)));
 
+				// boundary conditions
+				_this.currentIndex = _this.currentIndex > _this.children.length - 1 ? _this.children.length - 1 : (_this.currentIndex < 0 ? 0 : _this.currentIndex);
+
+				if (_this.currentIndex !== previousIndex) {
+					return _this.deactivate().then(function () {
+						_this.active = _this.children[base.currentIndex];
+						return _this.active.activate();
+					});
+				} else {
+					return emptyPromise();
+				}
+			}
+			wrapper.deactivate = function () {
+				return wrapper.active.deactivate();
+			}
+			wrapper.next = function () {
+				return wrapper.setActive({increment: 1});
 			}
 			wrapper.previous = function () {
-
+				return wrapper.setActive({increment: -1});
 			}
 
 			// behaviours
 			base.behaviours = {
+				up: function () {
+					return Promise.all([
+						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.up : emptyPromise)(),
+					]);
+				},
+				down: function () {
+					return Promise.all([
+						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.down : emptyPromise)(),
+					]);
+				},
 				left: function () {
-
+					// go to previous token if at end
 				},
 				right: function () {
-
+					// complete or go to next token if already complete
+					return Promise.all([
+						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)(),
+						(wrapper.active ? (wrapper.active.components.autocomplete.search.isComplete ? wrapper.previous : emptyPromise) : emptyPromise)(),
+					]);
 				},
 				shiftleft: function () {
-
+					// go to previous token
 				},
 				shiftright: function () {
-
+					// go to next token
 				},
 				enter: function () {
-
+					// complete and new token
 				},
 				backspace: function () {
-
+					// delete token if at beginning
 				},
 				space: function () {
-
+					// new token
 				},
-				number: function () {
-
+				number: function (char) {
+					return Promise.all([
+						wrapper.active.components.autocomplete.behaviours.number(char),
+					]);
 				},
 			}
 
@@ -835,7 +872,9 @@ var AccountComponents = {
 			return Promise.all([
 				wrapper.setBindings({
 					'click': function (_this) {
-
+						wrapper.token().then(function (token) {
+							return token.focus();
+						})
 					},
 				}),
 			]).then(function () {
