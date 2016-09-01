@@ -178,9 +178,6 @@ var Components = {
 					resolve();
 				});
 			}
-			base.isComplete = function () {
-				return base.metadata.complete === '' || head.model().text() === base.metadata.complete;
-			}
 			base.complete = function () {
 				return tail.setAppearance({html: base.metadata.complete}).then(function () {
 					return head.setAppearance({html: base.metadata.complete});
@@ -191,9 +188,6 @@ var Components = {
 			base.focus = function (mode) {
 				base.isFocussed = true;
 				return (base.onFocus || emptyPromise)().then(function () {
-					if (head.model().text()) {
-						head.model().trigger('input');
-					}
 					return base.setCaretPosition(mode);
 				});
 			}
@@ -218,7 +212,7 @@ var Components = {
 					}
 				},
 				left: function () {
-					var caretInPosition = base.isCaretInPosition('start');
+					
 				},
 				enter: function () {
 
