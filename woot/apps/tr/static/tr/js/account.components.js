@@ -848,13 +848,13 @@ var AccountComponents = {
 				},
 				left: function () {
 					// go to previous token if at end
-					return ((wrapper.active && wrapper.active.components.autocomplete.search.isCaretInPosition('start')) ? wrapper.previous : emptyPromise)();
+					// return ((wrapper.active && wrapper.active.components.autocomplete.search.isCaretInPosition('start')) ? wrapper.previous : emptyPromise)();
 				},
 				right: function () {
 					// complete or go to next token if already complete
 					return Promise.all([
 						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)(),
-						((wrapper.active && wrapper.active.components.autocomplete.search.isCaretInPosition()) ? wrapper.next : emptyPromise)(),
+						// ((wrapper.active && wrapper.active.components.autocomplete.search.isCaretInPosition()) ? wrapper.next : emptyPromise)(),
 					]);
 				},
 				shiftleft: function () {
@@ -865,20 +865,20 @@ var AccountComponents = {
 				},
 				enter: function () {
 					// complete and new token
-					return Promise.all([
-						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)().then(function () {
-							return (wrapper.active ? wrapper.token : emptyPromise)({swap: true});
-						}),
-					]);
+					// return Promise.all([
+					// 	(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)().then(function () {
+					// 		return (wrapper.active ? wrapper.token : emptyPromise)({swap: true});
+					// 	}),
+					// ]);
 				},
 				backspace: function () {
 					// delete token if at beginning
 				},
 				space: function () {
 					// new token
-					return Promise.all([
-						(wrapper.active ? wrapper.token : emptyPromise)({swap: true}),
-					]);
+					// return Promise.all([
+					// 	(wrapper.active ? wrapper.token : emptyPromise)({swap: true}),
+					// ]);
 				},
 				number: function (char) {
 					return Promise.all([
