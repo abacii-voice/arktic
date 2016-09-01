@@ -207,10 +207,12 @@ var Components = {
 			base.behaviours = {
 				right: function () {
 					if (base.isCaretInPosition('end')) {
-						base.complete().then(function () {
+						return base.complete().then(function () {
 							return base.onInput(base.metadata.complete);
 						});
-					};
+					} else {
+						return emptyPromise();
+					}
 				},
 				left: function () {
 					var caretInPosition = base.isCaretInPosition('start');
