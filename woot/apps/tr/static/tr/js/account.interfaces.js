@@ -1055,12 +1055,18 @@ var AccountInterfaces = {
 				// KEYBINDINGS
 				Mousetrap.bind('up', function (event) {
 					event.preventDefault();
-					autocomplete.behaviours.up();
+					Promise.all([
+						autocomplete.behaviours.up(),
+						caption.behaviours.up(),
+					]);
 				});
 
 				Mousetrap.bind('down', function (event) {
 					event.preventDefault();
-					autocomplete.behaviours.down();
+					Promise.all([
+						autocomplete.behaviours.down(),
+						caption.behaviours.down(),
+					]);
 				});
 
 				Mousetrap.bind('left', function (event) {
@@ -1157,6 +1163,7 @@ var AccountInterfaces = {
 
 						// clone page autocomplete
 						unitAutocomplete.clone(autocomplete);
+						unitAutocomplete.autocomplete = true;
 						unitBase.behaviours = {
 							right: function () {
 
@@ -1167,10 +1174,10 @@ var AccountInterfaces = {
 						}
 
 						// methods
-						unitBase.focus = function (start) {
-
+						unitBase.focus = function () {
+							return unitAutocomplete.search.focus();
 						}
-						unitBase.activate = function (start) {
+						unitBase.activate = function () {
 							return unitBase.setAppearance({classes: {add: 'active'}}).then(function () {
 
 							});
@@ -1208,10 +1215,10 @@ var AccountInterfaces = {
 
 				}
 				autocomplete.components.search.onComplete = function () {
-					console.log(autocomplete.components.search.current.complete);
+
 				}
 				autocomplete.toggleSearch();
-				autocomplete.autocomplete = false;
+				autocomplete.autocomplete = true;
 				autocomplete.targets = [
 					{
 						name: 'clients',
