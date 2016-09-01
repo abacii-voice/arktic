@@ -194,9 +194,7 @@ var Components = {
 			base.blur = function () {
 				base.isFocussed = false;
 				return (base.onBlur || emptyPromise)().then(function () {
-					if (head.model().text() === '') {
-						tail.setAppearance({html: ''});
-					}
+					return tail.setAppearance({html: head.model().text()});
 				});
 			}
 
@@ -212,7 +210,7 @@ var Components = {
 					}
 				},
 				left: function () {
-					
+
 				},
 				enter: function () {
 
