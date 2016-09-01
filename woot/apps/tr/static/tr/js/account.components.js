@@ -882,7 +882,7 @@ var AccountComponents = {
 				},
 				number: function (char) {
 					return Promise.all([
-						wrapper.active.components.autocomplete.behaviours.number(char),
+						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.number : emptyPromise)(char),
 					]);
 				},
 			}
