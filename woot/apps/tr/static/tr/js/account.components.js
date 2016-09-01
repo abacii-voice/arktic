@@ -860,7 +860,7 @@ var AccountComponents = {
 				enter: function () {
 					// complete and new token
 					return Promise.all([
-						(wrapper.active ? (wrapper.active.components.autocomplete.search.isComplete() ? wrapper.token : emptyPromise) : emptyPromise)({swap: true}),
+						(wrapper.active ? wrapper.token : emptyPromise)({swap: true}),
 					]);
 				},
 				backspace: function () {
@@ -868,6 +868,9 @@ var AccountComponents = {
 				},
 				space: function () {
 					// new token
+					return Promise.all([
+						(wrapper.active ? wrapper.token : emptyPromise)({swap: true}),
+					]);
 				},
 				number: function (char) {
 					return Promise.all([
