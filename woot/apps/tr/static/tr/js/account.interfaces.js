@@ -1164,14 +1164,6 @@ var AccountInterfaces = {
 						// clone page autocomplete
 						unitAutocomplete.clone(autocomplete);
 						unitAutocomplete.autocomplete = true;
-						unitBase.behaviours = {
-							right: function () {
-
-							},
-							left: function () {
-
-							},
-						}
 
 						// methods
 						unitBase.focus = function () {
@@ -1185,7 +1177,7 @@ var AccountInterfaces = {
 						unitBase.deactivate = function () {
 							return Promise.all([
 								unitBase.setAppearance({classes: {remove: 'active'}}),
-								unitAutocomplete.search.components.tail.setAppearance({html: unitAutocomplete.search.metadata.query}),
+								unitAutocomplete.search.components.tail.setAppearance({html: unitAutocomplete.search.components.head.model().text()}),
 							]);
 						}
 
