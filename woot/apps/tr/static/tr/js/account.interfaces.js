@@ -1185,6 +1185,9 @@ var AccountInterfaces = {
 								unitAutocomplete.search.components.tail.setAppearance({html: unitAutocomplete.search.components.head.model().text()}),
 							]);
 						}
+						unitBase.isEmpty = function () {
+							return unitAutocomplete.search.components.head.model().text().length === 0;
+						}
 
 						return Promise.all([
 							unitAutocomplete.search.setAppearance({

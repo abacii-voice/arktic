@@ -817,7 +817,7 @@ var AccountComponents = {
 				// boundary conditions
 				_this.currentIndex = _this.currentIndex > _this.children.length - 1 ? _this.children.length - 1 : (_this.currentIndex < 0 ? 0 : _this.currentIndex);
 
-				if (_this.currentIndex !== previousIndex) {
+				if (_this.currentIndex !== previousIndex || options.force) {
 					return _this.deactivate().then(function () {
 						_this.active = _this.children[_this.currentIndex];
 						return _this.active.activate();
@@ -843,6 +843,17 @@ var AccountComponents = {
 			wrapper.previous = function () {
 				return wrapper.setActive({increment: -1}).then(function (indexChanged) {
 					return (indexChanged ? wrapper.active.focus : emptyPromise)('end');
+				});
+			}
+			wrapper.delete = function () {
+				return wrapper.removeChild(wrapper.active.id).then(function () {
+					wrapper.active = undefined;
+					var forceNext = function () {
+						return wrapper.setActive({force: true}).then(function () {
+							return wrapper.active.focus('start');
+						});
+					}
+					return (wrapper.currentIndex ? wrapper.previous : forceNext)();
 				});
 			}
 
@@ -885,7 +896,7 @@ var AccountComponents = {
 				},
 				backspace: function () {
 					// delete token if at beginning
-
+					return ((wrapper.active && wrapper.active.isEmpty() && wrapper.children.length > 1) ? wrapper.delete : emptyPromise)();
 				},
 				space: function () {
 					// new token
