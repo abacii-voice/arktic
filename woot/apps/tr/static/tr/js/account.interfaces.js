@@ -1107,9 +1107,9 @@ var AccountInterfaces = {
 					]);
 				});
 
-				Mousetrap.bind('shift+backspace', function (event) {
+				Mousetrap.bind('alt+backspace', function (event) {
 					Promise.all([
-						caption.behaviours.shiftbackspace(),
+						caption.behaviours.altbackspace(),
 					]);
 				});
 
@@ -1120,12 +1120,12 @@ var AccountInterfaces = {
 					]);
 				});
 
-				Mousetrap.bind('shift+right', function (event) {
-					caption.behaviours.shiftright();
+				Mousetrap.bind('alt+right', function (event) {
+					caption.behaviours.altright();
 				});
 
-				Mousetrap.bind('shift+left', function (event) {
-					caption.behaviours.shiftleft();
+				Mousetrap.bind('alt+left', function (event) {
+					caption.behaviours.altleft();
 				});
 
 				// CAPTION
