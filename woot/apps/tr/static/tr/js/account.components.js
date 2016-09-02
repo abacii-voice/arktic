@@ -125,7 +125,7 @@ var AccountComponents = {
 			audioTrack.buffer = {};
 			audioTrack.active = 0;
 			audioTrack.controller = {};
-			audioTrack.threshold = args.options.threshold || 4;
+			audioTrack.threshold = (args.options.threshold || 4);
 			audioTrack.canvas = audioTrackCanvas;
 
 			// initialise node and create context
