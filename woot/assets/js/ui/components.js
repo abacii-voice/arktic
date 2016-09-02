@@ -238,6 +238,9 @@ var Components = {
 					'input': function (_this) {
 						(base.onInput || emptyPromise)(_this.model().text());
 					},
+					'focus': function (_this) {
+						base.focus();
+					},
 					'blur': function (_this) {
 						base.blur();
 					},
