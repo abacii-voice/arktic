@@ -187,7 +187,7 @@ var Components = {
 				});
 			}
 			base.isComplete = function () {
-				return head.model().text() === base.completeQuery;
+				return (head.model().text() === base.completeQuery) || !base.metadata.complete;
 			}
 			base.focus = function (mode) {
 				base.isFocussed = true;
