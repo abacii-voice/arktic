@@ -849,9 +849,13 @@ var AccountComponents = {
 				return wrapper.removeChild(wrapper.active.id).then(function () {
 					wrapper.active = undefined;
 					var forceNext = function () {
-						return wrapper.setActive({force: true}).then(function () {
-							return wrapper.active.focus('start');
-						});
+						if (wrapper.children.length) {
+							return wrapper.setActive({force: true}).then(function () {
+								return wrapper.active.focus('start');
+							});
+						} else {
+							return wrapper.token();
+						}
 					}
 					return (wrapper.currentIndex ? wrapper.previous : forceNext)();
 				});
@@ -897,6 +901,10 @@ var AccountComponents = {
 				backspace: function () {
 					// delete token if at beginning
 					return ((wrapper.active && wrapper.active.isEmpty() && wrapper.children.length > 1) ? wrapper.delete : emptyPromise)();
+				},
+				shiftbackspace: function () {
+					// delete token
+					return ((wrapper.active && wrapper.children.length) ? wrapper.delete : emptyPromise)();
 				},
 				space: function () {
 					// new token
