@@ -1107,6 +1107,12 @@ var AccountInterfaces = {
 					]);
 				});
 
+				Mousetrap.bind('shift+backspace', function (event) {
+					Promise.all([
+						caption.behaviours.shiftbackspace(),
+					]);
+				});
+
 				Mousetrap.bind('space', function (event) {
 					event.preventDefault();
 					Promise.all([
