@@ -777,7 +777,7 @@ var AccountComponents = {
 				options = (options || {});
 				var _this = wrapper;
 				if (_this.active !== undefined && !options.swap) {
-					return _this.active.focus().then(function () {
+					return _this.active.focus('end').then(function () {
 						return _this.active;
 					});
 				} else {
@@ -795,7 +795,7 @@ var AccountComponents = {
 							_this.active = unit;
 							return _this.active.activate();
 						}).then(function () {
-							return _this.active.focus();
+							return _this.active.focus('end');
 						}).then(function () {
 							return _this.active;
 						});
@@ -821,6 +821,10 @@ var AccountComponents = {
 					return _this.deactivate().then(function () {
 						_this.active = _this.children[_this.currentIndex];
 						return _this.active.activate();
+					}).then(function () {
+						console.log(_this.currentIndex, previousIndex, _this.children, _this.active.id);
+						var mode = _this.currentIndex < previousIndex ? 'end' : 'start';
+						return _this.active.focus(mode);
 					});
 				} else {
 					return emptyPromise();
@@ -830,14 +834,10 @@ var AccountComponents = {
 				return (wrapper.active ? wrapper.active.deactivate : emptyPromise)();
 			}
 			wrapper.next = function () {
-				return wrapper.setActive({increment: 1}).then(function () {
-					return wrapper.active.focus('start');
-				});
+				return wrapper.setActive({increment: 1});
 			}
 			wrapper.previous = function () {
-				return wrapper.setActive({increment: -1}).then(function () {
-					return wrapper.active.focus('end');
-				});
+				return wrapper.setActive({increment: -1});
 			}
 
 			// behaviours
