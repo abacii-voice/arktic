@@ -481,7 +481,10 @@ var Components = {
 			search.onFocus = function () {
 				base.isFocussed = true;
 				base.query = search.components.head.model().text();
-				return base.display(base.query);
+				return Promise.all([
+					base.display(base.query),
+					(base.searchExternal ? base.searchExternal.onFocus : emptyPromise)(),
+				]);
 			}
 			search.onBlur = function () {
 				base.isFocussed = false;
