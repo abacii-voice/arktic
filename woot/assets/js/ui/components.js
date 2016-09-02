@@ -162,27 +162,29 @@ var Components = {
 			}
 			base.setCaretPosition = function (mode) {
 				return new Promise(function(resolve, reject) {
-					mode = (mode || 'end');
-					// set the caret position to the end or the beginning
-					var range = document.createRange(); // Create a range (a range is a like the selection but invisible)
-					range.selectNodeContents(head.element()); // Select the entire contents of the element with the range
-					if (mode === 'end') {
-						range.collapse(false); // collapse the range to the end point. false means collapse to end rather than the start
-					} else if (mode === 'start') {
-						range.collapse(true);
+					if (mode) {
+						// set the caret position to the end or the beginning
+						var range = document.createRange(); // Create a range (a range is a like the selection but invisible)
+						range.selectNodeContents(head.element()); // Select the entire contents of the element with the range
+						if (mode === 'end') {
+							range.collapse(false); // collapse the range to the end point. false means collapse to end rather than the start
+						} else if (mode === 'start') {
+							range.collapse(true);
+						}
+						var selection = window.getSelection(); // get the selection object (allows you to change selection)
+						selection.removeAllRanges(); // remove any selections already made
+						selection.addRange(range); // make the range you have just created the visible selection
 					}
-					var selection = window.getSelection(); // get the selection object (allows you to change selection)
-					selection.removeAllRanges(); // remove any selections already made
-					selection.addRange(range); // make the range you have just created the visible selection
 					resolve();
 				});
 			}
 			base.complete = function () {
 				base.completeQuery = base.metadata.complete;
-				return tail.setAppearance({html: base.completeQuery}).then(function () {
-					return head.setAppearance({html: base.completeQuery});
+				console.log(base.completeQuery);
+				return tail.setAppearance({html: base.metadata.complete}).then(function () {
+					return head.setAppearance({html: base.metadata.complete});
 				}).then(function () {
-					return base.setCaretPosition();
+					return base.setCaretPosition('end');
 				});
 			}
 			base.isComplete = function () {
@@ -230,7 +232,7 @@ var Components = {
 			return Promise.all([
 				base.setBindings({
 					'click': function (_this) {
-						base.focus();
+						base.focus('end');
 					}
 				}),
 				head.setBindings({
@@ -240,14 +242,11 @@ var Components = {
 					'blur': function (_this) {
 						base.blur();
 					},
-					'focus': function (_this) {
+					'click': function (_this, event) {
+						event.stopPropagation();
 						base.focus().then(function () {
 							return (base.onFocus || emptyPromise)();
 						})
-					},
-					'click': function (_this, event) {
-						event.stopPropagation();
-
 					},
 				}),
 			]).then(function (results) {
@@ -479,9 +478,8 @@ var Components = {
 			// search methods
 			search.onFocus = function () {
 				base.isFocussed = true;
-				return base.setActive().then(function () {
-					return base.setMetadata();
-				});
+				base.query = search.components.head.model().text();
+				return base.display(base.query);
 			}
 			search.onBlur = function () {
 				base.isFocussed = false;
@@ -490,7 +488,7 @@ var Components = {
 			}
 			search.onInput = function (value) {
 				base.query = value;
-				return base.display(value);
+				return base.display(base.query);
 			}
 			base.toggleSearch = function () {
 
