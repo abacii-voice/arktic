@@ -821,22 +821,28 @@ var AccountComponents = {
 					return _this.deactivate().then(function () {
 						_this.active = _this.children[_this.currentIndex];
 						return _this.active.activate();
+					}).then(function () {
+						return new Promise(function(resolve, reject) {
+							resolve(true);
+						});
 					});
 				} else {
-					return emptyPromise();
+					return new Promise(function(resolve, reject) {
+						resolve(false);
+					});
 				}
 			}
 			wrapper.deactivate = function () {
 				return (wrapper.active ? wrapper.active.deactivate : emptyPromise)();
 			}
 			wrapper.next = function () {
-				return wrapper.setActive({increment: 1}).then(function () {
-					return wrapper.active.focus('start');
+				return wrapper.setActive({increment: 1}).then(function (indexChanged) {
+					return (indexChanged ? wrapper.active.focus : emptyPromise)('start');
 				});
 			}
 			wrapper.previous = function () {
-				return wrapper.setActive({increment: -1}).then(function () {
-					return wrapper.active.focus('end');
+				return wrapper.setActive({increment: -1}).then(function (indexChanged) {
+					return (indexChanged ? wrapper.active.focus : emptyPromise)('end');
 				});
 			}
 
