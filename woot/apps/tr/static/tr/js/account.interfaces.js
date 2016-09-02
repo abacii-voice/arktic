@@ -1164,6 +1164,11 @@ var AccountInterfaces = {
 						// clone page autocomplete
 						unitAutocomplete.clone(autocomplete);
 						unitAutocomplete.autocomplete = true;
+						unitAutocomplete.searchExternal = {
+							onFocus: function () {
+								return caption.components.wrapper.setActive({index: unitBase.index});
+							},
+						}
 
 						// methods
 						unitBase.focus = function (mode) {
