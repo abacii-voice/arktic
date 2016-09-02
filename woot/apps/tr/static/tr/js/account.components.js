@@ -877,6 +877,10 @@ var AccountComponents = {
 					// go to previous token if at end
 					return ((wrapper.active && wrapper.isCaretInPosition('start')) ? wrapper.previous : emptyPromise)();
 				},
+				altleft: function () {
+					// go to previous token
+					return (wrapper.active ? wrapper.previous : emptyPromise)();
+				},
 				right: function () {
 					// complete or go to next token if already complete
 					return Promise.all([
@@ -884,11 +888,16 @@ var AccountComponents = {
 						(wrapper.active && !wrapper.isComplete() ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)(),
 					]);
 				},
-				shiftleft: function () {
-					// go to previous token
-				},
-				shiftright: function () {
+				altright: function () {
 					// go to next token
+					var shiftright = function () {
+						return wrapper.setActive({increment: 1}).then(function (indexChanged) {
+							return (indexChanged ? wrapper.active.focus : emptyPromise)('end');
+						});
+					}
+					return Promise.all([
+						(wrapper.active ? shiftright : emptyPromise)(),
+					]);
 				},
 				enter: function () {
 					// complete and new token
@@ -902,7 +911,7 @@ var AccountComponents = {
 					// delete token if at beginning
 					return ((wrapper.active && wrapper.active.isEmpty() && wrapper.children.length > 1) ? wrapper.delete : emptyPromise)();
 				},
-				shiftbackspace: function () {
+				altbackspace: function () {
 					// delete token
 					return ((wrapper.active && wrapper.children.length) ? wrapper.delete : emptyPromise)();
 				},
