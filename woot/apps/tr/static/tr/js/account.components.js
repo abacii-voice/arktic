@@ -822,7 +822,6 @@ var AccountComponents = {
 						_this.active = _this.children[_this.currentIndex];
 						return _this.active.activate();
 					}).then(function () {
-						console.log(_this.currentIndex, previousIndex, _this.children, _this.active.id);
 						var mode = _this.currentIndex < previousIndex ? 'end' : 'start';
 						return _this.active.focus(mode);
 					});
@@ -860,7 +859,7 @@ var AccountComponents = {
 					// complete or go to next token if already complete
 					return Promise.all([
 						((wrapper.active && wrapper.isCaretInPosition() && wrapper.isComplete()) ? wrapper.next : emptyPromise)(),
-						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)(),
+						// (wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)(),
 					]);
 				},
 				shiftleft: function () {

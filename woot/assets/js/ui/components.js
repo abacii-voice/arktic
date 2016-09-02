@@ -180,7 +180,6 @@ var Components = {
 			}
 			base.complete = function () {
 				base.completeQuery = base.metadata.complete;
-				console.log(base.completeQuery);
 				return tail.setAppearance({html: base.metadata.complete}).then(function () {
 					return head.setAppearance({html: base.metadata.complete});
 				}).then(function () {
