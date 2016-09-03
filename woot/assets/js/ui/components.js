@@ -495,21 +495,26 @@ var Components = {
 				base.query = value;
 				return base.display(base.query);
 			}
-			base.toggleSearch = function () {
+			base.setSearch = function (mode) {
 
 			}
 
 			// set title
-			base.setTitle = function (text, center) {
-				return title.set(text, center);
-			}
-			title.set = function (text, centre) {
-				return title.setAppearance({
-					html: text,
-					style: {
-						'text-align': (centre ? 'center': 'left'),
-					},
-				});
+			base.setTitle = function (options) {
+				if (options.text) {
+					return title.setAppearance({
+						html: options.text,
+						style: {
+							'text-align': (options.centre ? 'center': 'left'),
+						},
+					});
+				} else {
+					return title.setAppearance({
+						style: {
+							'display': 'none',
+						}
+					});
+				}
 			}
 
 			// behaviours
@@ -583,14 +588,24 @@ var Components = {
 	sidebar: function (id, args) {
 		return Promise.all([
 
+			// base
+			UI.createComponent('{id}-base'.format({id: id}), {
+				template: UI.template('div', 'ie abstract'),
+				appearance: {
+					style: {
+						'height': '100%',
+					},
+				},
+			}),
+
 			// main
 			UI.createComponent('{id}-main'.format({id: id}), {
 				template: UI.template('div', 'ie abs border-right centred-vertically'),
 				appearance: {
 					style: {
+						'left': '-200px',
 						'height': '70%',
 						'width': '200px',
-						'left': args.position.main.initial,
 					},
 				},
 				children: args.children,
@@ -601,73 +616,79 @@ var Components = {
 				template: UI.template('div', 'ie abs border-right centred-vertically'),
 				appearance: {
 					style: {
+						'left': '-50px',
 						'height': '70%',
 						'width': '50px',
-						'left': args.position.back.initial,
 					},
 				},
+			}),
+
+			// back button
+			UI.createComponent('{id}-back-button'.format({id: id}), {
+				template: UI.template('div', 'ie button'),
 				children: [
-					UI.createComponent('{id}-back-button'.format({id: id}), {
-						template: UI.template('div', 'ie button'),
-						children: [
-							UI.createComponent('{id}-back-button-span'.format({id: id}), {
-								template: UI.template('span', 'glyphicon glyphicon-chevron-left'),
-							}),
-						],
-						state: {
-							stateMap: args.state.primary,
-						},
-						bindings: {
-							'click': function (_this) {
-								_this.triggerState();
-							},
-						}
+					UI.createComponent('{id}-back-button-span'.format({id: id}), {
+						template: UI.template('span', 'glyphicon glyphicon-chevron-left'),
 					}),
-				]
+				],
+				state: {
+					stateMap: args.state.primary,
+				},
+				bindings: {
+					'click': function (_this) {
+						_this.triggerState();
+					},
+				}
 			}),
 
 		]).then(function (components) {
 			// unpack components
 			var [
+				base,
 				main,
 				back,
+				backButton,
 			] = components;
 
-			return new Promise(function(resolve, reject) {
+			// process states
+			Object.keys(args.state).forEach(function (category) {
+				var stateSet = args.state[category];
+				if (!$.isArray(stateSet)) {
+					stateSet = [stateSet];
+				}
 
-				// process states
-				Object.keys(args.state).forEach(function (category) {
-					var stateSet = args.state[category];
-					if (!$.isArray(stateSet)) {
-						stateSet = [stateSet];
+				// This structure sets up the sidebar to have primary, secondary, and deactivate states
+				// These can be sets of states. Primary, main is active; secondary, back is active; deactivate, neither is active.
+				stateSet.forEach(function (state) {
+					if (category === 'primary') {
+						main.addState({name: state, args: onOff(args.position.main.on)});
+						back.addState({name: state, args: onOff(args.position.back.off)});
+					} else if (category === 'secondary') {
+						main.addState({name: state, args: onOff(args.position.main.off)});
+						back.addState({name: state, args: onOff(args.position.back.on)});
+					} else if (category === 'deactivate') {
+						main.addState({name: state, args: onOff(args.position.main.off)});
+						back.addState({name: state, args: onOff(args.position.back.off)});
 					}
-
-					// This structure sets up the sidebar to have primary, secondary, and deactivate states
-					// These can be sets of states. Primary, main is active; secondary, back is active; deactivate, neither is active.
-					stateSet.forEach(function (state) {
-						if (category === 'primary') {
-							main.addState({name: state, args: onOff(args.position.main.on)});
-							back.addState({name: state, args: onOff(args.position.back.off)});
-						} else if (category === 'secondary') {
-							main.addState({name: state, args: onOff(args.position.main.off)});
-							back.addState({name: state, args: onOff(args.position.back.on)});
-						} else if (category === 'deactivate') {
-							main.addState({name: state, args: onOff(args.position.main.off)});
-							back.addState({name: state, args: onOff(args.position.back.off)});
-						}
-					});
 				});
-				resolve([main, back]);
 			});
-		}).then(function (components) {
-			return UI.createComponent('{id}-base'.format({id: id}), {
-				template: UI.template('div', 'ie abstract'),
-				appearance: {
-					style: {
-						'height': '100%',
-					},
-				},
-				children: components,
+
+			// complete promises.
+			return Promise.all([
+				back.setChildren([
+					backButton,
+				]),
+			]).then(function (results) {
+				base.components = {
+					main: main,
+					back: back,
+				}
+				return base.setChildren([
+					main,
+					back,
+				]);
+			}).then(function () {
+				return base;
 			});
 		});
 	},
