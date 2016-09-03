@@ -355,6 +355,8 @@ var Components = {
 							return base.list.components.wrapper.setChildren(listItems);
 						});
 					});
+				}).catch(function (error) {
+					console.log(error);
 				});
 			}
 			base.load = function () {

@@ -286,6 +286,12 @@ Common interface elements
 	min-width: 2px;
 }
 
+.ie.input .head:focus {
+	-webkit-box-shadow: inset 0 0px 0px rgba(0, 0, 0, .075), 0 0 0px rgba(102, 175, 233, .6);
+	box-shadow: inset 0 0px 0px rgba(0, 0, 0, .075), 0 0 0px rgba(102, 175, 233, .6);
+	outline: none;
+}
+
 .ie.input .tail {
 	display: inline-block;
 	position: relative;
