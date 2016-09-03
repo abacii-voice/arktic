@@ -93,6 +93,21 @@ var AccountInterfaces = {
 			});
 		});
 	},
+	moderationInterface: function (id, args) {
+
+	},
+	projectInterface: function (id, args) {
+
+	},
+	adminInterface: function (id, args) {
+
+	},
+	moderatorInterface: function (id, args) {
+
+	},
+	workerInterface: function (id, args) {
+
+	},
 	unifiedInterface: function (id, args) {
 		return Promise.all([
 			// base
@@ -111,25 +126,229 @@ var AccountInterfaces = {
 			}),
 
 			// sidebars
+			Components.sidebar('client-sidebar', {
+				position: {
+					main: {
+						on: '0px',
+						off: '-200px',
+					},
+					back: {
+						on: '0px',
+						off: '-50px',
+					},
+				},
+				state: {
+					primary: 'client-state',
+					secondary: 'role-state',
+					deactivate: 'control-state',
+				},
+			}),
+			Components.searchableList('cs-client-list', {
+				appearance: {
+
+				},
+			}),
+			Components.sidebar('role-sidebar',{
+				position: {
+					main: {
+				 	 on: '50px',
+				 	 off: '-200px',
+				  },
+				  back: {
+				 	 on: '0px',
+				 	 off: '-50px',
+				  },
+				},
+				state: {
+					primary: 'role-state',
+					secondary: 'control-state',
+					deactivate: ['client-state'],
+				},
+			}),
+			Components.searchableList('cs-role-list', {
+				appearance: {
+
+				},
+			}),
+			Components.sidebar('control-sidebar', {
+				position: {
+					main: {
+						on: '50px',
+						off: '-200px',
+					},
+					back: {
+						on: '0px',
+						off: '-50px',
+					},
+				},
+				state: {
+					primary: 'control-state',
+					secondary: ['other-state'],
+					deactivate: ['client-state', 'role-state'],
+				},
+			}),
+			Components.searchableList('cs-control-list', {
+				appearance: {
+
+				},
+			}),
 
 		]).then(function (components) {
 			// unpack components
 			var [
 				base,
 				transcriptionInterface,
+				clientSidebar,
+				clientList,
+				roleSidebar,
+				roleList,
+				controlSidebar,
+				controlList,
 			] = components;
 
 			// ASSOCIATE
-			// key bindings
+			// key bindings and other
+			// TRANSCRIPTION INTERFACE
 
+			// CLIENT SIDEBAR
+			clientList.setSearch('on');
+			clientList.autocomplete = false;
+			clientList.setTitle({text: 'Clients', centre: true});
+			clientList.targets = [
+				{
+					name: 'clients',
+					path: function () {
+						return new Promise(function(resolve, reject) {
+							resolve('clients');
+						});
+					},
+					process: function (data) {
+						return new Promise(function(resolve, reject) {
+							var results = Object.keys(data).map(function (key) {
+								var client = data[key];
+								return {
+									id: key,
+									main: client.name,
+									rule: 'client',
+								}
+							});
 
-			// base children
-			base.components = {
-				transcriptionInterface: transcriptionInterface,
+							resolve(results);
+						});
+					},
+					filter: {
+						default: true,
+						char: '/',
+						key: 'forwardslash',
+						display: 'Client',
+						button: 'Clients',
+						rule: 'client',
+					},
+				},
+			]
+			clientList.unit = function (_this, datum, query) {
+				query = (query || '');
+
+				return Promise.all([
+					// base component
+					UI.createComponent('{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('div', 'ie button'),
+						appearance: {
+							style: {
+								'height': '30px',
+								'width': '100%',
+								'border-bottom': '1px solid #ccc',
+								'padding': '0px',
+							},
+						},
+					}),
+
+					// main wrapper
+					UI.createComponent('{id}-{object}-main-wrapper'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('div', 'ie centred'),
+						appearance: {
+							style: {
+								'font-size': '13px',
+							},
+						},
+					}),
+
+					// main
+					UI.createComponent('{id}-{object}-main-head'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('span', 'ie'),
+						appearance: {
+							style: {
+								'font-size': '14px',
+								'color': '#eee',
+							},
+							html: datum.main.substring(0, query.length),
+						},
+					}),
+
+					UI.createComponent('{id}-{object}-main-tail'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('span', 'ie'),
+						appearance: {
+							style: {
+								'font-size': '14px',
+							},
+							html: datum.main.substring(query.length),
+						},
+					}),
+
+				]).then(function (unitComponents) {
+					var [
+						unitBase,
+						unitMainWrapper,
+						unitMainHead,
+						unitMainTail,
+					] = unitComponents;
+
+					// complete promises.
+					return Promise.all([
+						unitMainWrapper.setChildren([
+							unitMainHead,
+							unitMainTail,
+						]),
+					]).then(function () {
+						return unitBase.setChildren([
+							unitMainWrapper,
+						]);
+					}).then(function () {
+						return unitBase;
+					});
+				});
 			}
-			return base.setChildren([
-				transcriptionInterface,
+
+			return Promise.all([
+
+				// CLIENT SIDEBAR
+				clientList.search.setAppearance({
+					style: {
+						'width': '80%',
+					},
+					classes: ['centred-horizontally'],
+				}),
+				clientSidebar.components.main.setChildren([
+					clientList,
+				]),
+
 			]).then(function () {
+				// base children
+				base.components = {
+					transcriptionInterface: transcriptionInterface,
+					sidebars: {
+						client: clientSidebar,
+						role: roleSidebar,
+						control: controlSidebar,
+					},
+				}
+				return base.setChildren([
+					transcriptionInterface,
+					clientSidebar,
+					roleSidebar,
+					controlSidebar,
+				]);
+			}).then(function () {
 				return base;
 			});
 		});
@@ -359,7 +578,7 @@ var AccountInterfaces = {
 				autocomplete.components.search.onComplete = function () {
 
 				}
-				autocomplete.toggleSearch();
+				autocomplete.setSearch('on');
 				autocomplete.autocomplete = true;
 				autocomplete.targets = [
 					{
@@ -599,7 +818,7 @@ var AccountInterfaces = {
 
 				// logic, bindings, etc.
 				// LIST
-				list.toggleSearch();
+				list.setSearch('on');
 				list.autocomplete = true;
 				list.setTitle('Clients', true);
 				list.targets = [
