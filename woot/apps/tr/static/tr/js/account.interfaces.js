@@ -246,29 +246,43 @@ var AccountInterfaces = {
 					},
 				},
 			]
-			clientList.unit = function (_this, datum, query) {
+			clientList.unit = function (_this, datum, query, index) {
 				query = (query || '');
+
+				// base class
+				jss.set('#{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
+					'height': '30px',
+					'width': '100%',
+					'border-bottom': '1px solid #ccc',
+					'padding': '0px',
+					'padding-left': '10px',
+					'text-align': 'left',
+				});
+				jss.set('#{id}-{object}-base.active'.format({id: _this.id, object: datum.id}), {
+					'background-color': 'rgba(255,255,255,0.1)'
+				});
+				jss.set('#{id}-{object}-base.client'.format({id: _this.id, object: datum.id}), {
+					'background-color': 'rgba(255,255,0,0.05)'
+				});
+				jss.set('#{id}-{object}-base.client.active'.format({id: _this.id, object: datum.id}), {
+					'background-color': 'rgba(255,255,0,0.1)'
+				});
 
 				return Promise.all([
 					// base component
 					UI.createComponent('{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
 						template: UI.template('div', 'ie button'),
 						appearance: {
-							style: {
-								'height': '30px',
-								'width': '100%',
-								'border-bottom': '1px solid #ccc',
-								'padding': '0px',
-							},
-						},
+							classes: [datum.rule],
+						}
 					}),
 
 					// main wrapper
 					UI.createComponent('{id}-{object}-main-wrapper'.format({id: _this.id, object: datum.id}), {
-						template: UI.template('div', 'ie centred'),
+						template: UI.template('div', 'ie centred-vertically'),
 						appearance: {
 							style: {
-								'font-size': '13px',
+								'display': 'inline-block',
 							},
 						},
 					}),
@@ -278,18 +292,16 @@ var AccountInterfaces = {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
-								'font-size': '14px',
 								'color': '#eee',
 							},
 							html: datum.main.substring(0, query.length),
 						},
 					}),
-
 					UI.createComponent('{id}-{object}-main-tail'.format({id: _this.id, object: datum.id}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
-								'font-size': '14px',
+								// 'font-size': '14px',
 							},
 							html: datum.main.substring(query.length),
 						},
@@ -302,6 +314,22 @@ var AccountInterfaces = {
 						unitMainHead,
 						unitMainTail,
 					] = unitComponents;
+
+					// set metadata
+					datum.metadata = {
+						query: query,
+						complete: datum.main,
+						combined: query + datum.main.substring(query.length),
+						type: datum.rule,
+					}
+
+					unitBase.activate = function () {
+						return unitBase.setAppearance({classes: {add: ['active']}});
+					}
+
+					unitBase.deactivate = function () {
+						return unitBase.setAppearance({classes: {remove: ['active']}});
+					}
 
 					// complete promises.
 					return Promise.all([
@@ -324,13 +352,23 @@ var AccountInterfaces = {
 				// CLIENT SIDEBAR
 				clientList.search.setAppearance({
 					style: {
-						'width': '80%',
+						'left': '0px',
+						'width': '100%',
+						'border': '0px',
 					},
-					classes: ['centred-horizontally'],
 				}),
 				clientSidebar.components.main.setChildren([
 					clientList,
 				]),
+				clientList.setState({
+					states: [
+						{name: 'client-state', args: {
+							fn: function (_this) {
+								clientList.display();
+							},
+						}},
+					]
+				}),
 
 			]).then(function () {
 				// base children
@@ -609,36 +647,6 @@ var AccountInterfaces = {
 							display: 'Client',
 							button: 'Clients',
 							rule: 'client',
-						},
-					},
-					{
-						name: 'roles',
-						path: function () {
-							return Active.get('client').then(function (client) {
-								return 'user.clients.{active_client}.roles'.format({active_client: client});
-							});
-						},
-						process: function (data) {
-							return new Promise(function(resolve, reject) {
-								var results = Object.keys(data).map(function (key) {
-									var role = data[key];
-									return {
-										id: key,
-										main: role.type,
-										rule: 'role',
-									}
-								});
-
-								resolve(results);
-							});
-						},
-						filter: {
-							default: true,
-							char: '.',
-							key: 'period',
-							display: 'Role',
-							button: 'Roles',
-							rule: 'role',
 						},
 					},
 				]

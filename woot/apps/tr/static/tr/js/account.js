@@ -1,15 +1,10 @@
 UI.app('hook', [
-	// AccountInterfaces.unifiedInterface('unified-account-interface', {
-	// 	interface: {
-	// 		size: 50,
-	// 		margin: 10,
-	// 		corner: 5,
-	// 	}
-	// }),
-	AccountInterfaces.testInterfaces.captionField('caption-test', {
-		appearance: {
-
-		},
+	AccountInterfaces.unifiedInterface('unified-account-interface', {
+		interface: {
+			size: 50,
+			margin: 10,
+			corner: 5,
+		}
 	}),
 ]).then (function (app) {
 	return app.render();
