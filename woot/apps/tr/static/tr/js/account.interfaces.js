@@ -211,9 +211,7 @@ var AccountInterfaces = {
 			// TRANSCRIPTION INTERFACE
 
 			// CLIENT SIDEBAR
-			clientList.setSearch('on');
 			clientList.autocomplete = false;
-			clientList.setTitle({text: 'Clients', centre: true});
 			clientList.targets = [
 				{
 					name: 'clients',
@@ -253,19 +251,12 @@ var AccountInterfaces = {
 				jss.set('#{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
 					'height': '30px',
 					'width': '100%',
-					'border-bottom': '1px solid #ccc',
 					'padding': '0px',
 					'padding-left': '10px',
 					'text-align': 'left',
 				});
 				jss.set('#{id}-{object}-base.active'.format({id: _this.id, object: datum.id}), {
 					'background-color': 'rgba(255,255,255,0.1)'
-				});
-				jss.set('#{id}-{object}-base.client'.format({id: _this.id, object: datum.id}), {
-					'background-color': 'rgba(255,255,0,0.05)'
-				});
-				jss.set('#{id}-{object}-base.client.active'.format({id: _this.id, object: datum.id}), {
-					'background-color': 'rgba(255,255,0,0.1)'
 				});
 
 				return Promise.all([
@@ -355,6 +346,11 @@ var AccountInterfaces = {
 						'left': '0px',
 						'width': '100%',
 						'border': '0px',
+						'height': '30px',
+						'padding-top': '8px',
+						'background-color': 'rgba(255,255,255,0.1)',
+						'border-radius': '0px',
+						'border-bottom': '1px solid #00869B',
 					},
 				}),
 				clientSidebar.components.main.setChildren([
@@ -369,6 +365,8 @@ var AccountInterfaces = {
 						}},
 					]
 				}),
+				clientList.setTitle({text: 'Clients', centre: true}),
+				clientList.setSearch({state: 'on', placeholder: 'Search clients...'}),
 
 			]).then(function () {
 				// base children
