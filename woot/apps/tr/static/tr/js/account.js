@@ -4,7 +4,10 @@ UI.app('hook', [
 			size: 50,
 			margin: 10,
 			corner: 5,
-		}
+		},
+		colour: {
+			
+		},
 	}),
 ]).then (function (app) {
 	return app.render();
@@ -14,6 +17,4 @@ UI.app('hook', [
 	]);
 }).then(function () {
 	return UI.changeState('client-state');
-}).catch(function (error) {
-	console.log(error);
 });

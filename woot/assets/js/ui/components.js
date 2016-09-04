@@ -141,7 +141,7 @@ var Components = {
 			// logic, bindings, etc.
 			base.setMetadata = function (metadata) {
 				base.metadata = metadata;
-				return tail.setAppearance({html: (metadata.combined || metadata.query)});
+				return tail.setAppearance({html: (metadata.combined || metadata.query || base.placeholder)});
 			}
 			base.isCaretInPosition = function (mode) {
 				mode = (mode || 'end');
@@ -198,7 +198,7 @@ var Components = {
 			base.blur = function () {
 				base.isFocussed = false;
 				return (base.onBlur || emptyPromise)().then(function () {
-					return tail.setAppearance({html: head.model().text()});
+					return tail.setAppearance({html: (head.model().text() || base.placeholder)});
 				});
 			}
 
@@ -497,8 +497,14 @@ var Components = {
 				base.query = value;
 				return base.display(base.query);
 			}
-			base.setSearch = function (mode) {
+			base.setSearch = function (options) {
+				options.mode = (options.mode || 'on');
+				options.placeholder = (options.placeholder || 'search...');
 
+				search.placeholder = options.placeholder;
+				return search.setAppearance({classes: {add: (options.mode === 'off' ? ['hidden'] : [])}}).then(function () {
+					return search.components.tail.setAppearance({html: options.placeholder});
+				});
 			}
 
 			// set title

@@ -245,15 +245,19 @@ var UI = {
 						resolve();
 					});
 				} else {
-					return appearance;
+					return new Promise(function(resolve, reject) {
+						resolve(appearance);
+					});
 				}
 			} else {
-				return {
-					properties: currentProperties,
-					html: currentHTML,
-					classes: currentClasses,
-					style: currentStyle,
-				};
+				return new Promise(function(resolve, reject) {
+					resolve({
+						properties: currentProperties,
+						html: currentHTML,
+						classes: currentClasses,
+						style: currentStyle,
+					});
+				});
 			}
 		}
 
