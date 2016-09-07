@@ -77,34 +77,3 @@
 		}
 	}
 }
-
-var child = UI.createComponent('rs-{name}-button'.format({name: roleName}), {
-	root: _this.id,
-	template: UI.templates.button,
-	appearance: {
-		style: {
-			'opacity': '0.0',
-		},
-		classes: ['show'],
-		html: Context.get('role_display', roleName),
-	},
-	state: {
-		svitches: [
-			{stateName: 'control-state', fn: function (_this) {
-				Context.set('current_role', roleName);
-			}}
-		],
-		stateMap: 'control-state',
-	},
-	bindings: [
-		{name: 'click', fn: function (_this) {
-			_this.triggerState();
-		}}
-	],
-});
-
-_this.children.push(child);
-child.render();
-
-// make buttons visible
-child.model().css({'opacity': '1.0'});

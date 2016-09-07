@@ -1,0 +1,54 @@
+transcription interface elements
+1. Counter
+2. Autocomplete
+3. Audio
+4. Tokens
+5. Original caption
+6. Modified caption
+7. Info panel
+8. Previous button
+9. Next button
+10. Done button
+11. Flags button
+
+The point of user input is the Autocomplete. This is where all data added to the system is entered.
+
+2016/7/7:
+1. Fully construct token and rendered text fields with options.
+2. Set up connection between search input and text fields.
+3. Set up connection between modified caption and tokens (scroll to and edit).
+4. Set up connection between original caption and tokens/modified (copy).
+5. Set up states: transcription-state-interface, transcription-state-info,
+6. Connection between done button and the counter
+
+IDEA: Use current words to search database for transcriptions with similar words and add to autocomplete
+
+2016/8/15:
+rendered text field -> caption field
+Still trying to do this caption field
+Behaviour cases:
+
+1. Focus autocomplete
+	a. caption was focussed?
+
+2. Focus caption (active token glued to caret)
+	a. Make token active
+
+3. Input autocomplete
+	a. beginning of active token -> previous |active
+	b. in the middle -> a|ctive
+	c. at the end -> active| next
+
+4. Input caption
+	a. beginning of active token -> previous |active
+	b. in the middle -> a|ctive
+	c. at the end -> active| next
+
+2016/08/21:
+Thinking about input behaviours
+1. Autocomplete object
+	a. input
+		right, enter, backspace, click, focus, blur
+
+	b. list
+		up, down, click

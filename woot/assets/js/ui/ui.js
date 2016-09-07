@@ -1,457 +1,512 @@
-// UI: This is the UI definition. It should be 100% ignorant of the actual data passing through the app
-// (other than the structure of the components). It is not responsible for the context of the
-// interface, only the definitions of what is where, when.
-
+// UI: This is the UI definition. It is ignorant of the data passing through the app.
 var UI = {
-	////////////
 	// GLOBAL STATE
-	// stores current global state
+	// store current global state
+	// This is a path like 'client-state.reload' -> later, James.
 	globalState: undefined,
 
-	// stores list of possible global states. These constrain any states submitted by components.
-	globalStates: [],
-
-	// shortcut to create a global state
-	createGlobalState: function (stateName) {
-		if (this.globalStates.indexOf(stateName) === -1) {
-			this.globalStates.push(stateName);
-			this.states[stateName] = [];
-			this.svitches[stateName] = [];
-		}
-	},
-
-	// create multiple global states with an array
-	createGlobalStates: function (homeState, stateNames) {
-		this.globalState = homeState;
-		stateNames.unshift(homeState);
-		stateNames.map(this.createGlobalState, this);
-	},
-
-	// A change of global state that is broadcast to the components that need to respond.
+	// changeState
 	changeState: function (stateName, trigger) {
-		if (this.globalStates.indexOf(stateName) !== -1) {
-			// update global state
-			var stateChangePromise = new Promise(function (resolve, reject) {
-				UI.globalState = stateName;
-			});
-
-			// global svitches promise
-			var globalSvitchPromise = new Promise(function (resolve, reject) {
-				if (UI.globalSvitches[stateName] !== undefined) {
-					UI.globalSvitches[stateName].map(function (globalSvitch) {
-						globalSvitch.fn(stateName);
-					});
-				}
-			});
-
-			// execute all component svitches with a promise
-			var componentSvitchPromise = new Promise(function (resolve, reject) {
-				UI.svitches[stateName].filter(function (svitch) {
-					return svitch.component.id === trigger;
-				}).forEach(function (svitch) {
-					svitch.fn(svitch.component);
-				});
-			});
-
-			// when svitches are complete, change the state of every component with the state name
-			var statePromise = new Promise(function (resolve, reject) {
-				UI.states[stateName].map(function (state) {
-					state.component.changeState(state);
-				});
-			});
-
-			// execute
-			stateChangePromise.then(function () {
-				return globalSvitchPromise;
-			}).then(function () {
-				return svitchPromise;
-			}).then(function () {
-				return statePromise;
-			});
-		}
+		return new Promise(function(resolve, reject) {
+			UI.globalState = stateName;
+			resolve();
+		}).then(Registry.trigger).then(function () {
+			return Promise.all(UI.states.map(function (state) {
+				return state.change();
+			}));
+		});
 	},
 
-	// A chain of broadcasts made with a delay between them.
-	// If one delay is given, it will be used for all calls. If more than N-1 delays are given,
-	// only the first N-1 are used. Where N is the number of states.
-	chainStates: function (stateNames, delays) {
-
-	},
-
-	////////////
 	// COMPONENT
-	// List of components stored by id
+	// components
 	components: {},
-	getComponent: function (componentId) {
-		return this.components[componentId];
+
+	// getComponent
+	getComponent: function (id) {
+		return new Promise(function(resolve, reject) {
+			resolve(UI.components[id]);
+		});
 	},
 
-	// Basic component definition
-	component: function (id, args) {
-		var args = args !== undefined ? args : {};
-		// the variable 'this' refers to an instance of this function when called with 'new component()'
-		// args
-		// The structure of this is not too important, but it should stay like this:
-		//
-		// (id, { // <- args variable
-		// 	root: '',
-		// 	template: UI.templates.*,
-		// 	appearance: {
-		// 		html: '',
-		// 		classes: [],
-		// 		style: {},
-		// 	},
-		// 	state: {
-		// 		states: [],
-		// 		svitches: [],
-		// 		stateMap: {},
-		// 	},
-		// 	registry: {
-		// 		path: [],
-		// 		fn: function () {},
-		// 	},
-		// 	properties: {},
-		// 	bindings: [
-		// 		{
-		// 			name: 'click',
-		// 			fn: function () {},
-		// 		}
-		// 	],
-		// 	children: [],
-		// })
-
-		///////////////
-		// METHODS
-		// update
+	// component
+	component: function (id) {
+		// identity
 		this.setId = function (id) {
 			var currentId = this.id;
-			var model = this.model();
-			this.id = id !== undefined ? id : currentId;
+			id = id !== undefined ? id : currentId;
 
-			// handle any changes
-			if (this.id !== currentId && this.rendered) {
-				// 1. change model id
-				model.attr('id', this.id);
+			if (id !== currentId) {
+				var _this = this;
+				// 1. remove the component while keeping a solid var present
+				// 2. change the id of the var and change the model attr.
+				// 3. Add the var.
 
-				// 2. swap key in UI.components object
-				UI.components[this.id] = UI.components[currentId];
-				delete UI.components[currentId];
-
-				// 3. remove old from parent children
-				delete this.parent().children[currentId];
-			}
-		}
-
-		this.setRoot = function (root) {
-			var currentRoot = this.root !== undefined ? this.root : 'hook';
-			this.root = root !== undefined ? root : currentRoot;
-
-			if (this.rendered && this.root !== currentRoot) {
-				var newRoot = $('#{id}'.format({id: this.root}));
-				this.model().appendTo(newRoot);
-				UI.getComponent(this.root).children[this.id] = this;
-			}
-		}
-
-		this.setAfter = function (after) {
-			var currentAfter;
-			if (this.rendered) {
-				// find previous child
-
+				return UI.remove(_this).then(function (component) {
+					return new Promise(function(resolve, reject) {
+						if (component.isRendered) {
+							component.model().attr('id', id);
+						}
+						component.id = id;
+						resolve(component);
+					});
+				}).then(UI.add);
 			} else {
-
+				return this.id;
 			}
 		}
+		this.setAfter = function (after) {
+			var currentAfter = this.after;
+			after = after !== undefined ? after : currentAfter;
 
+			if (after !== currentAfter) {
+				var _this = this;
+				_this.after = after;
+				// 1. Parent stays the same.
+				// 2. Or does it...
+				// 3. No other element has to change.
+				if (after !== '') {
+					return UI.getComponent(_this.after).then(function (before) {
+						return _this.setRoot(before.root).then(function (child) {
+							return new Promise(function(resolve, reject) {
+								_this.model().insertAfter(before.model());
+								resolve();
+							});
+						});
+					});
+				} else {
+					return _this.parent().then(function (parent) {
+						return new Promise(function(resolve, reject) {
+							_this.model().insertBefore(parent.model().children().first());
+							resolve();
+						});
+					});
+				}
+			} else {
+				return this.after;
+			}
+		}
+		this.setRoot = function (root) {
+			var _this = this;
+			var currentRoot = (_this.root || 'hook');
+			newRoot = (root || currentRoot);
+
+			if (newRoot !== currentRoot) {
+				_this.root = newRoot;
+				// 1. get the current parent.
+				// 2.	remove the child from the current parent.
+				// 3. append to new parent model.
+				// 4. change the root value.
+				// 5. get the new parent.
+				// 6. add the child to new parent.
+				if (_this.isAddedToParent) {
+					return _this.parent().then(function (parent) {
+						return parent.removeChild(_this.id);
+					}).then(function () {
+						return new Promise(function(resolve, reject) {
+							_this.root = newRoot;
+							if (_this.isRendered) {
+								_this.model().appendTo('#{id}'.format({id: newRoot}));
+							}
+							resolve(newRoot);
+						});
+					}).then(UI.getComponent).then(function (newParent) {
+						return newParent.addChild(_this);
+					});
+				} else {
+					return emptyPromise();
+				}
+			} else {
+				_this.root = newRoot;
+				return new Promise(function(resolve, reject) {
+					resolve(_this.root);
+				});
+			}
+		}
 		this.setTemplate = function (template) {
 			var currentTemplate = this.template !== undefined ? this.template : UI.templates.div;
 			this.template = template !== undefined ? template : currentTemplate;
-		}
 
+			if (this.template !== currentTemplate) {
+				var _this = this;
+				// 1. render empty template element to the DOM.
+				// 2. Append all children to the new empty element
+				// 3. Remove the old element.
+
+				return _this.renderTemplate().then(function (renderedTemplate) {
+					return new Promise(function(resolve, reject) {
+						if (_this.isRendered) {
+							var model = _this.model();
+							model.after(renderedTemplate);
+							model.attr('id', 'REMOVE-{id}'.format({id: _this.id}));
+						}
+						resolve();
+					});
+				}).then(function () {
+					if (_this.isRendered) {
+						return Promise.all(_this.children.map(function (child) {
+							return new Promise(function(resolve, reject) {
+								child.model().appendTo('#{id}'.format({id: _this.id}));
+								resolve();
+							});
+						}));
+					}
+				}).then(function () {
+					if (_this.isRendered) {
+						return new Promise(function(resolve, reject) {
+							$('#REMOVE-{id}'.format({id: _this.id})).remove();
+							resolve();
+						});
+					}
+				});
+			} else {
+				return this.template;
+			}
+		}
+		this.renderTemplate = function () {
+			var _this = this;
+			return new Promise(function(resolve, reject) {
+				var classes = _this.classes !== undefined ? _this.classes : [];
+				var style = _this.style !== undefined ? _this.style : {};
+				var properties = _this.properties != undefined ? _this.properties : {};
+				var html = _this.html !== undefined ? _this.html : '';
+				var renderedTemplate = _this.template.format({
+					id: _this.id,
+					classes: formatClasses(classes),
+					style: formatStyle(style),
+					properties: formatProperties(properties),
+					html: html,
+				});
+				resolve(renderedTemplate);
+			});
+		}
 		this.setAppearance = function (appearance) {
-			var currentProperties = this.properties !== undefined ? this.properties : {};
-			var currentClasses = this.classes !== undefined ? this.classes : [];
-			var currentStyle = this.style !== undefined ? this.style : {};
+			var currentProperties = (this.properties || {});
+			var currentHTML = (this.html || '');
+			var currentClasses = (this.classes || []);
+			var currentStyle = (this.style || {});
 
 			if (appearance !== undefined) {
-				this.properties = appearance.properties !== undefined ? appearance.properties : currentProperties;
-				this.html = appearance.html !== undefined ? appearance.html : this.html;
-				this.classes = appearance.classes !== undefined ? appearance.classes : currentClasses;
-				this.style = appearance.style !== undefined ? appearance.style : currentStyle;
+				this.properties = (appearance.properties || currentProperties);
+				this.html = appearance.html !== undefined ? appearance.html : currentHTML;
 
-				if (this.rendered) {
-					// model
-					var model = this.model();
+				// classes need to be a combination of ones removed and ones added. If "add" and "remove" are not present, defaults to using whole object.
+				this.classes = currentClasses;
+				var addClasses = appearance.classes ? (appearance.classes.add ? ($.isArray(appearance.classes.add) ? appearance.classes.add : [appearance.classes.add]) : (appearance.classes.remove ? [] : appearance.classes)) : [];
+				var removeClasses = appearance.classes ? (appearance.classes.remove ? ($.isArray(appearance.classes.remove) ? appearance.classes.remove : [appearance.classes.remove]) : []) : [];
+				var _this = this;
+				this.classes = this.classes.concat(addClasses.filter(function (cls) {
+					return _this.classes.indexOf(cls) === -1;
+				}));
+				this.classes = this.classes.filter(function (cls) {
+					return removeClasses.indexOf(cls) === -1;
+				});
 
-					// properties
-					var _this = this;
-					Object.keys(this.properties).forEach(function (property) {
-						model.attr(property, _this.properties[property]);
+				this.style = (appearance.style || currentStyle);
+
+				if (this.isRendered) {
+					return new Promise(function(resolve, reject) {
+						// model
+						var model = _this.model();
+
+						// properties
+						if (appearance.properties) {
+							Object.keys(_this.properties).forEach(function (property) {
+								model.attr(property, _this.properties[property]);
+							});
+						}
+
+						// html - this will erase children of the current model
+						if (appearance.html !== undefined) {
+							model.html(_this.html);
+						}
+
+						// classes
+						if (appearance.classes) {
+							// remove current classes that are not in the new classes variable
+							if (removeClasses) {
+								removeClasses.forEach(function (cls) {
+									model.removeClass(cls);
+								});
+							}
+
+							// add new classes
+							if (addClasses) {
+								addClasses.forEach(function (cls) {
+									model.addClass(cls);
+								});
+							}
+						}
+
+						// style
+						if (appearance.style) {
+							model.animate(_this.style);
+						}
+
+						resolve();
 					});
-
-					// html
-					model.html(this.html);
-
-					// classes
-					if (_this.classes !== undefined) {
-						// remove current classes that are not the new classes variable
-						currentClasses.filter(function (className) {
-							return _this.classes.indexOf(className) === -1;
-						}).forEach(function (className) {
-							model.removeClass(className);
-						});
-
-						// add new classes
-						_this.classes.forEach(function (className) {
-							model.addClass(className);
-						});
-					}
-
-					// style
-					model.css(this.style);
+				} else {
+					return new Promise(function(resolve, reject) {
+						resolve(appearance);
+					});
 				}
+			} else {
+				return new Promise(function(resolve, reject) {
+					resolve({
+						properties: currentProperties,
+						html: currentHTML,
+						classes: currentClasses,
+						style: currentStyle,
+					});
+				});
 			}
 		}
 
-		this.getState = function (stateName) {
-			return this.states().filter(function (state) {
-				return state.name === stateName;
-			})[0];
-		};
-
-		this.setState = function (argsState) {
-			if (argsState !== undefined) {
-				// default state
+		// state
+		this.setState = function (state) {
+			if (state !== undefined) {
 				var currentDefaultState = this.defaultState !== undefined ? this.defaultState : {};
-				this.defaultState = argsState.defaultState !== undefined ? argsState.defaultState : currentDefaultState;
+				this.defaultState = state.defaultState !== undefined ? state.defaultState : currentDefaultState;
+				var _this = this;
 
-				// states
-				this.addStates(argsState.states);
-
-				// svitches
-				this.addSvitches(argsState.svitches);
-
-				// state map
-				this.addStateMap(argsState.stateMap);
+				return Promise.all([
+					this.addStates(state.states),
+					this.addStateMap(state.stateMap),
+				]);
 			}
 		}
-
 		this.addStates = function (states) {
 			if (states !== undefined) {
-				states.forEach(this.addState, this);
-
-				if (this.state === undefined) {
-					this.state = this.getState(UI.globalState);
-					if (this.state !== undefined) {
-						this.stateClasses = this.state.classes !== undefined ? this.state.classes : [];
-						this.stateStyle = this.state.style !== undefined ? this.state.style : {};
-					}
-				}
+				var _this = this;
+				return Promise.all(states.map(function (state) {
+					return _this.addState(state);
+				}));
 			}
 		}
-
-		this.addState = function (statePrototype) {
+		this.addState = function (state) {
 			// add as new state
-			UI.createState(this, statePrototype.name, statePrototype.args);
+			return UI.createState(this, state.name, state.args);
 		}
-
-		this.states = function () {
-			var _this = this;
-			return UI.allStates().filter(function (state) {
-				return state.component.id === _this.id;
-			});
-		}
-
-		this.addSvitches = function (svitches) {
-			if (svitches !== undefined) {
-				svitches.forEach(this.addSvitch, this);
-			}
-		}
-
-		this.addSvitch = function (svitchPrototype) {
-			// add as new svitch
-			UI.createSvitch(this, svitchPrototype.stateName, svitchPrototype.fn);
-		}
-
-		this.svitches = function () {
-			var _this = this;
-			return UI.allSvitches().filter(function (svitch) {
-				return svitch.component.id === _this.id;
-			});
-		}
-
 		this.addStateMap = function (stateMap) {
-			this.stateMap = this.stateMap !== undefined ? this.stateMap : {};
-
-			if (stateMap !== undefined) {
-				if (typeof stateMap === 'string') {
-					UI.globalStates.forEach(function (globalState) {
-						this.stateMap[globalState] = stateMap;
-					}, this);
-				} else {
-					Object.keys(stateMap).forEach(function (stateName) {
-						this.stateMap[stateName] = stateMap[stateName];
-					}, this);
-				}
+			var _this = this;
+			return new Promise(function(resolve, reject) {
+				_this.stateMap = _this.stateMap !== undefined ? _this.stateMap : '';
+				_this.stateMap = stateMap !== undefined ? stateMap : _this.stateMap;
+				resolve();
+			});
+		}
+		this.mapState = function (stateName) {
+			if (typeof this.stateMap === 'string') {
+				return this.stateMap;
+			} else {
+				return this.stateMap[stateName] !== undefined ? this.stateMap[stateName] : '';
 			}
 		}
-
+		this.triggerState = function () {
+			return UI.changeState(this.mapState(UI.globalState), this.id);
+		}
 		this.setRegistry = function (registry) {
+			var _this = this;
 			if (registry !== undefined) {
-				// vars
-				this.registryPath = registry.path; // a function that generates an array of args
-				this.registryResponse = registry.fn;
-
-				// register
-				Context.register(this.id, this.registryPath);
+				return Promise.all(Object.keys(registry).map(function (state) {
+					var entry = registry[state];
+					var args = entry.args !== undefined ? entry.args : {};
+					return Registry.register(_this, state, entry.path, args, entry.fn);
+				}));
 			}
 		}
 
+		// DOM
 		this.setBindings = function (bindings) {
-			this.bindings = this.bindings !== undefined ? this.bindings : {};
-			if (bindings !== undefined) {
-				bindings.forEach(function (binding) {
-					// 1. determine if binding with the same name is in the current array
-					this.bindings[binding.name] = {fn: binding.fn};
-					if (binding.fn2 !== undefined) {
-						this.bindings[binding.name].fn2 = binding.fn2;
-					}
-
-					// 2. if rendered, add to model
-					if (this.rendered) {
-						var _this = this;
-						if (binding.fn2 !== undefined) {
-							this.model().on(binding.name, function () {
-								binding.fn(_this);
-							}, function () {
-								binding.fn2(_this);
+			// TODO: later change to accept single value as single function, with the need for 'fn' key.
+			var _this = this;
+			return new Promise(function(resolve, reject) {
+				_this.bindings = _this.bindings !== undefined ? _this.bindings : {};
+				if (bindings !== undefined) {
+					Object.keys(bindings).forEach(function (name) {
+						var binding = bindings[name];
+						// if rendered, add to model
+						if (_this.isRendered) {
+							_this.model().on(name, function (event) {
+								binding(_this, event);
 							});
 						} else {
-							this.model().on(binding.name, function () {
-								binding.fn(_this);
+							_this.bindings[name] = binding;
+						}
+					}, this);
+				}
+				resolve();
+			});
+		}
+		this.addChild = function (child) {
+			var _this = this;
+			return new Promise(function(resolve, reject) {
+				child.index = (child.index || _this.children.length);
+				child.isAddedToParent = true;
+				_this.children.splice(child.index, 0, child);
+				resolve(child);
+			});
+		}
+		this.removeChild = function (id) {
+			var _this = this;
+			return UI.getComponent(id).then(function (child) {
+				return new Promise(function(resolve, reject) {
+					_this.children.splice(child.index, 1);
+					resolve(id);
+				})
+			}).then(UI.removeComponent).then(function () {
+				// renumber children
+				return _this.setChildIndexes();
+			});
+		}
+		this.removeChildren = function () {
+			var _this = this;
+			return Promise.ordered(_this.children.map(function (child) {
+				return function () {
+					return _this.removeChild(child.id);
+				}
+			}));
+		}
+		this.setChildren = function (children) {
+			var _this = this;
+			_this.children = (_this.children || []);
+			if (children !== undefined) {
+				return Promise.ordered(children.map(function (child) {
+					return function () {
+						if (child.then !== undefined) { // is an unevaluated promise
+							return child.then(function (component) {
+								return component.childIndexFromAfter();
+							}).then(function (component) {
+								return _this.addChild(component);
+							}).then(function (final) {
+								if (_this.isRendered) {
+									final.root = _this.id;
+									return final.render();
+								} else {
+									return final;
+								}
+							});
+						} else {
+							return child.childIndexFromAfter().then(function (component) {
+								return _this.addChild(component);
+							}).then(function (final) {
+								if (_this.isRendered) {
+									final.root = _this.id;
+									return final.render();
+								}
 							});
 						}
 					}
-				}, this);
-			}
-		}
-
-		this.setChildren = function (children) {
-			this.children = this.children !== undefined ? this.children : {};
-			if (children !== undefined) {
-				children.forEach(function (child) {
-					this.children[child.id] = child;
-
-					if (this.rendered) {
-						child.root = this.id;
-						this.renderChild(child.id);
-					}
-				}, this);
-			}
-		}
-
-		this.update = function (args) {
-			// id, root, after, template
-			this.setId(args.id);
-			this.setRoot(args.root);
-			this.setAfter(args.after);
-			this.setTemplate(args.template);
-
-			// appearance
-			this.setAppearance(args.appearance);
-
-			// state
-			this.setState(args.state);
-
-			// registry
-			this.setRegistry(args.registry);
-
-			// bindings
-			this.setBindings(args.bindings);
-
-			// children
-			this.setChildren(args.children);
-		}
-
-		// model
-		this.model = function () {
-			return $('#{id}'.format({id: this.id}));
-		}
-
-		// render
-		this.renderChild = function (childId) {
-			var child = this.children[childId];
-			child.root = this.id;
-			child.render();
-		}
-
-		this.render = function () {
-			// 1. root
-			var root = $('#{id}'.format({id: this.root}));
-
-			// 2. render template
-			var classes = this.classes !== undefined ? this.classes : [];
-			var style = this.style !== undefined ? this.style : {};
-			var properties = this.properties != undefined ? this.properties : {};
-			var html = this.html !== undefined ? this.html : '';
-			var renderedTemplate = this.template.format({
-				id: this.id,
-				classes: formatClasses(classes),
-				style: formatStyle(style),
-				properties: formatProperties(properties),
-				html: html,
-			});
-
-			// 3. Add element to the DOM under root.
-			if (root.children().length !== 0) {
-				root.children().last().after(renderedTemplate); // add as last child
-			} else {
-				root.html(renderedTemplate);
-			}
-
-			// 4. Add classes and style of initial state
-			var model = this.model();
-			if (this.state !== undefined) {
-				this.stateClasses.forEach(function (stateClass) {
-					model.addClass(stateClass);
+				})).then(function () {
+					return _this.setChildIndexes();
 				});
-				model.css(this.stateStyle);
+			} else {
+				return _this.children;
 			}
-
-			// 5. render children
-			Object.keys(this.children).forEach(this.renderChild, this);
-
-			// 6. add bindings
-			var _this = this;
-			Object.keys(this.bindings).forEach(function (bindingName) {
-				var fn = _this.bindings[bindingName].fn;
-				var fn2 = _this.bindings[bindingName].fn2;
-
-				if (fn2 !== undefined) {
-					model.on(bindingName, function () {
-						fn(_this);
-					}, function () {
-						fn2(_this);
-					});
-				} else {
-					model.on(bindingName, function () {
-						fn(_this);
-					});
-				}
-			});
-
-			// 7. set rendered
-			this.rendered = true;
 		}
+		this.setChildIndexes = function () {
+			// set index from position in children array
+			var _this = this;
+			return Promise.all(_this.children.map(function (child, index) {
+				return new Promise(function(resolve, reject) {
+					child.index = index;
+					resolve();
+				});
+			}));
+		}
+		this.childIndexFromAfter = function (placementIndex) {
+			// find index from after key
+			var _this = this;
+			if (_this.after !== undefined) {
+				return UI.getComponent(_this.after).then(function (component) {
+					return new Promise(function(resolve, reject) {
+						_this.index = component !== undefined ? component.index + 1 : 0;
+						resolve(_this);
+					});
+				});
+			} else {
+				return new Promise(function(resolve, reject) {
+					_this.index = placementIndex;
+					resolve(_this);
+				});
+			}
+		}
+		this.update = function (args) {
+			args = args !== undefined ? args : {};
+			var _this = this;
+			return Promise.all([
+				// id, root, after, template
+				_this.setId(args.id),
+				_this.setRoot(args.root),
+				_this.setAfter(args.after),
+				_this.setTemplate(args.template),
+				_this.setAppearance(args.appearance),
 
-		// parent
+				// state
+				_this.setState(args.state),
+
+				// registry
+				_this.setRegistry(args.registry),
+
+				// bindings
+				_this.setBindings(args.bindings),
+			]).then(function (results) {
+				return _this.setChildren(args.children);
+			}).then(function (children) {
+				return _this;
+			});
+		}
+		this.removeModel = function () {
+			var _this = this;
+			return new Promise(function(resolve, reject) {
+				_this.model().remove();
+				resolve();
+			});
+		}
+		this.model = function (single) {
+			if (single !== undefined && single) {
+				return $('#{id}'.format({id: this.id}))[0];
+			} else {
+				return $('#{id}'.format({id: this.id}));
+			}
+		}
+		this.element = function () {
+			return document.getElementById(this.id);
+		}
+		this.render = function () {
+			var _this = this;
+			var root = $('#{id}'.format({id: _this.root}));
+			return _this.renderTemplate().then(function (renderedTemplate) {
+				return new Promise(function(resolve, reject) {
+					if (root.children().length !== 0) {
+						if (_this.after !== undefined) {
+							root.children('#{id}'.format({id: _this.after})).after(renderedTemplate); // add as child after 'after'.
+						} else {
+							root.children().last().after(renderedTemplate); // add as child after last child.
+						}
+					} else {
+						root.html(renderedTemplate);
+					}
+					_this.isRendered = true;
+					resolve();
+				});
+			}).then(function () {
+				return _this.setBindings(_this.bindings);
+			}).then(function () {
+				return Promise.ordered(_this.children.sort(function (first, second) {
+					return first.index - second.index;
+				}).map(function (child) {
+					return function () {
+						child.root = _this.id;
+						return child.render();
+					}
+				}));
+			}).then(function () {
+				return _this;
+			});
+		}
 		this.parent = function () {
 			return UI.getComponent(this.root);
 		}
-
-		///////////////
-		// STATE CHANGES
-		// change state
 		this.changeState = function (state) {
 			// 1. set new state
 			this.state = state;
@@ -460,123 +515,99 @@ var UI = {
 			var _this = this;
 			var model = _this.model();
 
-			// pre-fn promise
-			var preFnPromise = new Promise(function (resolve, reject) {
-				if (_this.state.preFn !== undefined) {
-					_this.state.preFn(_this);
-				}
-			});
-
-			// style promise
-			var stylePromise = new Promise(function (resolve, reject) {
-				// add classes
-				_this.stateClasses.map(function (className) {
-					model.removeClass(className);
-				});
-
-				_this.stateClasses = _this.state.classes !== undefined ? _this.state.classes : [];
-				_this.stateClasses.map(function (className) {
-					model.addClass(className);
-				});
-
-				// add html
-				if (_this.state.html !== undefined) {
-					model.html(_this.state.html);
-				}
-
-				// animate style
-				_this.stateStyle = _this.state.style !== undefined ? _this.state.style : {};
-				model.css(_this.stateStyle);
-			});
-
-			var fnPromise = new Promise(function (resolve, reject) {
-				if (_this.state.fn !== undefined) {
-					_this.state.fn(_this);
-				}
-			});
-
-			// execute
-			preFnPromise.then(function () {
-				return stylePromise;
+			// 3. run pre FN
+			return (_this.state.preFn || emptyPromise)(_this).then(function () {
+				return Promise.all((_this.stateClasses || []).map(function (className) {
+					return new Promise(function(resolve, reject) {
+						model.removeClass(className);
+						resolve();
+					});
+				}));
 			}).then(function () {
-				return fnPromise;
+				_this.stateClasses = _this.state.classes !== undefined ? _this.state.classes : [];
+				return Promise.all(_this.stateClasses.map(function (className) {
+					return new Promise(function(resolve, reject) {
+						model.addClass(className);
+						resolve();
+					});
+				}));
+			}).then(function () {
+				return new Promise(function(resolve, reject) {
+					if (_this.state.html !== undefined) {
+						model.html(_this.state.html);
+					}
+					resolve();
+				});
+			}).then(function () {
+				_this.stateStyle = _this.state.style !== undefined ? _this.state.style : {};
+				return model.animate(_this.stateStyle, 300).promise();
+			}).then(function () {
+				return (_this.state.fn || emptyPromise)(_this);
 			});
-		}
-
-		this.mapState = function (stateName) {
-			return this.stateMap[stateName] !== undefined ? this.stateMap[stateName] : '';
-		}
-
-		this.triggerState = function () {
-			UI.changeState(this.mapState(UI.globalState), this.id);
 		}
 
 		// initialise
 		this.id = id;
-		this.rendered = false; // establish whether or not the component has been rendered to the DOM.
-		this.update(args);
+		this.isRendered = false; // establish whether or not the component has been rendered to the DOM.
 	},
 
-	// component factory
+	// createComponent
+	add: function (component) {
+		return new Promise(function(resolve, reject) {
+			UI.components[component.id] = component;
+			resolve(component);
+		});
+	},
+
 	createComponent: function (id, args) {
-		var component = new this.component(id, args);
-		this.components[id] = component;
-		return component;
+		return new Promise(function(resolve, reject) {
+			resolve(new UI.component(id));
+		}).then(UI.add).then(function (component) {
+			return component.update(args);
+		});
+	},
+
+	// removeComponent
+	remove: function (component) {
+		return new Promise(function(resolve, reject) {
+			delete UI.components[component.id];
+			resolve(component);
+		});
 	},
 
 	removeComponent: function (id) {
-		var component = this.getComponent(id);
-		// remove from Context registry
-		Context.remove(component.id);
-
-		// remove all bindings
-		Object.keys(component.bindings).forEach(function (bindingName) {
-			component.model().off(bindingName);
-		}, component);
-
-		// remove children recursively
-		Object.keys(component.children).forEach(function (childId) {
-			UI.removeComponent(childId);
+		return UI.getComponent(id).then(function (component) {
+			return component.removeChildren().then(function () {
+				return component.removeModel();
+			}).then(function () {
+				return Promise.all([UI.remove(component), Registry.delete(component)]);
+			});
 		});
-
-		// remove model from DOM
-		component.model().remove();
-
-		// remove component from components
-		delete this.components[id];
 	},
 
-	createApp: function (root, children) {
+	// app
+	app: function (root, children) {
 		var id = 'app';
 		var args = {
 			root: root,
-			template: UI.templates.div,
+			template: UI.template('div'),
+			appearance: {
+				style: {
+					'position': 'absolute',
+					'top': '0px',
+					'left': '0px',
+					'width': '100%',
+					'height': '100%',
+				},
+			},
 			children: children,
 		};
 
-		this.createComponent(id, args);
+		return UI.createComponent(id, args);
 	},
 
-	renderApp: function () {
-		var app = this.getComponent('app');
-		app.render();
-		this.changeState(this.globalState);
-	},
-
-	////////////
-	// COMPONENT STATE
-	// States grouped by name
-	states: {},
-
-	allStates: function () {
-		var stateArray = [];
-		this.globalStates.forEach(function (globalState) {
-			this.states[globalState].forEach(function (state) {
-				stateArray.push(state);
-			}, this);
-		}, this);
-		return stateArray;
-	},
+	// STATES
+	states: [],
 
 	// Basic state definition
 	state: function (component, name, args) {
@@ -589,94 +620,45 @@ var UI = {
 		this.style = args.style;
 		this.html = args.html;
 		this.fn = args.fn;
+
+		// change
+		this.change = function () {
+			if (this.name === UI.globalState) {
+				return this.component.changeState(this);
+			}
+		}
 	},
 
 	// state factory
 	createState: function (component, name, args) {
-		var state;
-		if (args === 'default') {
-			state = new this.state(component, name, component.defaultState);
-		} else {
-			state = new this.state(component, name, args);
-		}
-		state.index = this.states[name].length - 1; // able to find state again
-		this.states[name].push(state);
-		return state;
+		var _this = this;
+		return new Promise(function(resolve, reject) {
+			var state = new _this.state(component, name, (args || component.defaultState));
+			state.index = _this.states.length - 1; // able to find state again
+			_this.states.push(state);
+			resolve(state);
+		});
 	},
 
-	////////////
-	// COMPONENT SVITCH
-	// Svitches are specific actions that must be carried out before a particular state change, such as a server API call.
-	// A svitch can be used to access its component or state or be filtered by state name
-	svitches: {},
-
-	allSvitches: function () {
-		var svitchArray = [];
-		this.globalStates.forEach(function (globalState) {
-			this.svitches[globalState].forEach(function (svitch) {
-				svitchArray.push(svitch);
-			}, this);
-		}, this);
-		return svitchArray;
-	},
-
-	// Svitch definition
-	svitch: function (component, stateName, fn) {
-		this.component = component;
-		this.stateName = stateName;
-		this.fn = fn;
-	},
-
-	// svitch factory
-	createSvitch: function (component, stateName, fn) {
-		var svitch = new this.svitch(component, stateName, fn);
-		this.svitches[stateName].push(svitch);
-		return svitch;
-	},
-
-	////////////
-	// GLOBAL SVITCH
-	// Global svitches are called before component svitches and are not specifically
-	// connected with a component
-	globalSvitches: [],
-
-	globalSvitch: function (stateName, fn) {
-		this.stateName = stateName;
-		this.fn = fn;
-	},
-
-	createGlobalSvitches: function (stateName, fn) {
-		var globalSvitch = new this.globalSvitch(stateName, fn);
-		this.globalSvitches[stateName].push(globalSvitch);
-		return globalSvitch;
-	},
-
-	////////////
-	// COMPONENT TEMPLATES
-	//
+	// TEMPLATES
 	templates: {
-		button: `
-			<div id={id} class='ie show button relative centred-horizontally {classes}' style='{style}' {properties}>
-				{html}
-			</div>
-		`,
 		div: `
 			<div id='{id}' class='{classes}' style='{style}' {properties}>
 				{html}
 			</div>
 		`,
 		loadingIcon: `
-			<div id='{id}' class='ie loading-icon centred {classes}' style='{style}'>
+			<div id='{id}' class='ie loading-icon {classes}' style='{style}'>
 				<img src='/static/img/loading-icon.gif' />
 			</div>
 		`,
 	},
 
 	template: function (type, initialClass) {
-		return `<{type} id='{id}' class='{initialClass} {classes}' style='{style}' {properties}>{html}</{type}>`.format({
+		return `<{type} id='{id}' class='{initialClass}{classes}' style='{style}' {properties}>{html}</{type}>`.format({
 			type: type,
 			id: '{id}',
-			initialClass: initialClass !== undefined ? initialClass : '',
+			initialClass: initialClass !== undefined ? (initialClass + ' ') : '',
 			classes: '{classes}',
 			style: '{style}',
 			properties: '{properties}',
@@ -684,10 +666,7 @@ var UI = {
 		});
 	},
 
-	////////////
-	// STANDARD FUNCTIONS
-	//
-
+	// FUNCTIONS
 	functions: {
 		activate: function (_this) {
 			_this.model().css({'display': ' block'});
@@ -699,105 +678,328 @@ var UI = {
 			_this.triggerState();
 		},
 	},
-
 }
 
-// CONTEXT: This is the context definition. It is a local storage of the relevant variables from
-// the server used to display the interface. It should make direct calls to the server API to gather data.
-
+// CONTEXT
+// The Context stores a sample of data from the server. It can be accessed using a path. The same path can access the same data on the server.
 var Context = {
-	////////////
 	// STORE
-	// The variable extracted from the server API call. All parsing of its meaning is done by the specific
-	// UI script for each page.
-	store: {},
-	get: function (path) {
-		// based on a string of parameters, access a value or other sub-structure from store.
-		path = path.split('.');
-		sub = this.store;
-		for (i=0; i<path.length; i++) {
-			sub = sub[path[i]];
-			if (sub === undefined) {
-				break;
-			}
-		}
-		return sub !== undefined ? sub : '';
-	},
+	// This object stores the entire context and can be set and reset by the Context methods.
+	// This contains only data from the server. Any locally created content such as temporary objects
+	// is stored in Active.
+	context: {},
 
-	set: function (path, value) {
-		path = path.split('.');
-		sub = this.store;
-		for (i=0; i<path.length; i++) {
-			if (i+1 === path.length) {
-				sub[path[i]] = value;
-			} else {
-				if (sub[path[i]] === undefined) {
-					sub[path[i]] = {};
+	// GET
+	// This will get from the current store. If it does not exist, a request will be made for it. This will trigger registry.
+	get: function (path, args) {
+		// force load from the server?
+		var force = args !== undefined ? (args.force !== undefined ? args.force : false) : false;
+		var options = args !== undefined ? (args.options !== undefined ? args.options : {}) : {};
+
+		return (path.then !== undefined ? path : new Promise(function(resolve, reject) {
+			resolve(path);
+		})).then(function (calculatedPath) {
+			return new Promise(function(resolve, reject) {
+				// proceed to get from context object
+				context_path = calculatedPath.split('.');
+				sub = Context.context;
+				if (context_path[0] !== '') {
+					for (i=0; i<context_path.length; i++) {
+						sub = sub[context_path[i]];
+						if (sub === undefined) {
+							break;
+						}
+					}
+				} else {
+					sub = Object.keys(sub).length !== 0 ? sub : undefined; // empty context
 				}
+
+				resolve(sub);
+
+			});
+		}).then(function (data) {
+			if (data === undefined || force) {
+				return Context.load(path, options).then(function (data) {
+					return Context.set(path, data);
+				});
+			} else {
+				return data;
 			}
-			sub = sub[path[i]];
-		}
+		});
 	},
 
-	del: function (path) {
-		path = path.split('.');
-		sub = this.store;
-		for (i=0; i<path.length; i++) {
-			if (i+1 === path.length) {
-				delete sub[path[i]];
-			}
-			sub = sub[path[i]];
-		}
-	},
+	// The load method gets the requested path from the server if it does not exist locally.
+	// This operation can be forced from the get method.
+	load: function (path, options) {
+		return (path.then !== undefined ? path : new Promise(function(resolve, reject) {
+			resolve(path);
+		})).then(function (calculatedPath) {
+			return Permission.permit(options).then(function (data) {
+				var ajax_data = {
+					type: 'post',
+					data: data,
+					url: '/context/{path}'.format({path: calculatedPath}),
+					error: function (xhr, ajaxOptions, thrownError) {
+						if (xhr.status === 404 || xhr.status === 0) {
+							Context.load(path, options);
+						}
+					}
+				}
 
-	// REGISTRY
-	// register elements that are requesting data and notify them of its arrival in the context variable.
-	registry: {},
-	// e.g.
-	// registry: {
-	// 	'element-id-1':['args','that','lead','to','data'],
-	// }
-
-	register: function (componentId, componentPath) {
-		this.registry[componentId] = componentPath;
-	},
-
-	remove: function (componentId) {
-		delete this.registry[componentId];
-	},
-
-	// define update function for context along with triggers and anything else.
-	fn: undefined, // this must be a valid promise
-	setFn: function (fn) {
-		this.fn = fn;
-	},
-
-	// A custom function can be defined to update the store and even trigger a state based on the result.
-	load: function () {
-		$.when(this.fn).done(function () {
-			// call back to every component that has registered
-			Object.keys(Context.registry).map(function (registryId) {
-				var component = UI.getComponent(registryId);
-				var path = Context.registry[registryId];
-				component.registryResponse(component, Context.get(path()));
+				return $.ajax(ajax_data);
 			});
 		});
 	},
 
-	// include new data in context
-	update: function (data) {
-		$.extend(true, this.store, data);
+	// SET
+	// Sets the value of a path in the store. If the value changes, a request is sent to change this piece of data.
+	set: function (path, value) {
+		return (path.then !== undefined ? path : new Promise(function(resolve, reject) {
+			resolve(path);
+		})).then(function (calculatedPath) {
+			return new Promise(function (resolve, reject) {
+				context_path = calculatedPath.split('.');
+				sub = Context.context;
+				if (context_path[0] !== '') {
+					for (i=0; i<context_path.length; i++) {
+						if (i+1 === context_path.length) {
+
+							// Here, the value can be an object, it should be merged with any existing object or overwritten if keys match.
+							// if (typeof value === 'object' && typeof sub[context_path[i]] === 'object') {
+							//
+							// } else {
+							sub[context_path[i]] = value;
+							// }
+						} else {
+							if (sub[context_path[i]] === undefined) {
+								sub[context_path[i]] = {};
+							}
+						}
+						sub = sub[context_path[i]];
+					}
+					resolve(sub);
+				} else {
+					Context.context = value;
+					resolve(Context.context);
+				}
+			});
+		});
+	},
+}
+
+// ACTIVE
+// Active stores temporary variables that need to be synthesized using a series of temporally disconnected events, such as upload.
+var Active = {
+	active: {},
+
+	// get
+	get: function (path) {
+		return new Promise(function(resolve, reject) {
+			context_path = path.split('.');
+			sub = Active.active;
+			for (i=0; i<context_path.length; i++) {
+				sub = sub[context_path[i]];
+				if (sub === undefined) {
+					break;
+				}
+			}
+
+			resolve((sub || ''));
+		});
 	},
 
-	updateUser: function (id, role, status) {
-		// 1. update in current_user_profile
-		this.set('current_user_profile.roles.{role}.status'.format({role: role}), status);
+	// set
+	set: function (path, value) {
+		return new Promise(function(resolve, reject) {
+			context_path = path.split('.');
+			sub = Active.active;
+			for (i=0; i<context_path.length; i++) {
+				if (i+1 === context_path.length) {
+					sub[context_path[i]] = value;
+				} else {
+					if (sub[context_path[i]] === undefined) {
+						sub[context_path[i]] = {};
+					}
+				}
+				sub = sub[context_path[i]];
+			}
+			resolve(sub);
+		});
+	},
 
-		// 2. update in clients
-		this.set('clients.{client}.users.{user}.roles.{role}.status'.format({
-			client: Context.get('current_client'),
-			user: id,
-			role: role,
-		}), status);
+	// COMMANDS
+	// A set of commands that are sent with permission data.
+	commands: {
+		sendWhatever: function () {
+
+		},
+		abstract: function (name, data, callback, args) {
+			args = args !== undefined ? args : {};
+			var ajax_params = {
+				type: 'post',
+				data: Permission.permit(data),
+				processData: args.processData !== undefined ? args.processData : true,
+				contentType: args.contentType !== undefined ? args.contentType : 'application/x-www-form-urlencoded',
+				url:'/command/{name}/'.format({name: name}),
+				success: function (data, textStatus, XMLHttpRequest) {
+					callback(data);
+				},
+				error: function (xhr, ajaxOptions, thrownError) {
+					if (xhr.status === 404 || xhr.status === 0) {
+						Active.commands.abstract(name, data, callback, args);
+					}
+				},
+			};
+
+			return $.ajax(ajax_params); // this is a promise
+		},
 	}
+}
+
+// PERMISSION
+// Works the same way as active but stores only the permission information needed to specify the user, role, and client.
+var Permission = {
+	// stores relevant permission details
+	permission: '',
+	get: function () {
+		return new Promise(function(resolve, reject) {
+			resolve(Permission.permission);
+		});
+	},
+
+	set: function (id) {
+		return new Promise(function(resolve, reject) {
+			Permission.permission = id;
+			resolve();
+		});
+	},
+
+	// appends permission details to an object to be passed as data
+	permit: function (data) {
+		return new Promise(function (resolve, reject) {
+			// set
+			data = data !== undefined ? data : {};
+			data.permission = Permission.permission;
+			resolve(JSON.stringify(data));
+		})
+	},
+}
+
+// ACTION
+// Stores a record of the actions performed by the user and relays them to the server.
+var Action = {
+	actions: {},
+}
+
+// REGISTRY
+// Keeps a record of the state dependent paths that objects are waiting for. Updates them when data arrives in Context.
+var Registry = {
+	registry: {},
+
+	// register an object with a state, path, and function
+	register: function (component, state, path, args, fn) {
+		var force = args !== undefined ? (args.force !== undefined ? args.force : false) : false;
+		context_path = path.split('.');
+
+		// add state if necessary
+		if (Registry.registry[state] === undefined) {
+			Registry.registry[state] = {};
+		}
+		sub = Registry.registry[state];
+
+		for (i=0; i<context_path.length; i++) {
+			if (i+1 === context_path.length) {
+				// initialise
+				if (sub[context_path[i]] === undefined) {
+					sub[context_path[i]] = {
+						registered: {},
+					};
+				}
+
+				// add fn to id
+				sub[context_path[i]].registered[component.id] = fn;
+
+				// set force if needed -> set to true if false or undefined and force=true
+				sub[context_path[i]].force = sub[context_path[i]].force !== undefined ? (sub[context_path[i]].force || force) : force;
+			} else {
+				if (sub[context_path[i]] === undefined) {
+					sub[context_path[i]] = {
+						registered: {},
+					};
+				}
+			}
+			sub = sub[context_path[i]];
+		}
+	},
+
+	trigger: function (parent, level) {
+		// What is this method: if "registered", then return Context.get, else a loop of promises.
+
+		// initialise at the top of the tree. This will traverse recursively.
+		parent = parent !== undefined ? parent : '';
+		level = level !== undefined ? level : (Registry.registry[UI.globalState] !== undefined ? Registry.registry[UI.globalState] : {});
+
+		if ('registered' in level && parent !== '') {
+			return Context.get(parent, {force: level.registered.force !== undefined ? level.registered.force : false}).then(function (data) {
+				return Promise.all(Object.keys(level.registered).map(function (componentId) {
+					return UI.getComponent(componentId).then(function (component) {
+						var fn = level.registered[component.id];
+						return fn(component, data); // must return a promise
+					});
+				})).then(function () {
+					return Promise.all(Object.keys(level).map(function (path) {
+						if (path !== 'registered' && path !== 'force') {
+							var get = '{parent}{dot}{path}'.format({parent: parent, dot: (parent !== '' ? '.' : ''), path: path});
+							return Registry.trigger(get, level[path]);
+						}
+					}));
+				});
+			});
+		} else {
+			// continue without changing anything.
+			return Promise.all(Object.keys(level).map(function (path) {
+				if (path !== 'force') {
+					var get = '{parent}{dot}{path}'.format({parent: parent, dot: (parent !== '' ? '.' : ''), path: path});
+					return Registry.trigger(get, level[path]);
+				}
+			}));
+		}
+	},
+
+	delete: function (component, level) {
+		// initialise state and level
+		level = level !== undefined ? level : (Registry.registry !== undefined ? Registry.registry : {});
+
+		// scan registry for this component and remove fn from each entry
+		if ('registered' in level) {
+			if (component.id in level.registered) {
+				delete level.registered[component.id];
+			}
+		}
+
+		return Promise.all(Object.keys(level).map(function (key) {
+			// each key is a top level state
+			if (key !== 'registered' && key !== 'force') {
+				return Registry.delete(component, level[key]);
+			}
+		}));
+	},
+}
+
+var Request = {
+	load_audio: function (transcriptionId) {
+		return Permission.permit({id: transcriptionId}).then(function (data) {
+			return new Promise(function(resolve, reject) {
+				request = new XMLHttpRequest();
+				request.open('POST', '/command/load_audio/', true);
+				request.responseType = 'arraybuffer';
+				request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+				request.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
+				request.addEventListener('load', function (event) {
+					resolve(event.target.response);
+				}, false);
+				request.send(data);
+			});
+		});
+	},
 }
