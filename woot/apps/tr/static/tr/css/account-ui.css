@@ -1,0 +1,27 @@
+/*
+
+This is an extension of assets/ui.css. It contains any extensions of the ui styling that are
+unique to the account app.
+
+*/
+
+/*
+
+Token
+
+*/
+.token {
+	height: 25px;
+	float: left;
+}
+
+.token.active {
+	color: #fff;
+}
+
+/*http://stackoverflow.com/questions/8100770/auto-scaling-inputtype-text-to-width-of-value FOR LATER */
+.token span:focus {
+	outline-style: none;
+	outline-width: 0px;
+	outline-color: -webkit-focus-ring-color;
+}

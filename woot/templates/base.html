@@ -26,6 +26,8 @@
 			{% block outdated_message %}<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>{% endblock %}
 		<![endif]-->
 
+		{% block content %}{% endblock %}
+
 		<!-- NAVBAR -->
 		<nav class='navbar'>
 			<div class='navbar-left'>
@@ -44,29 +46,11 @@
 			</div>
 		</nav>
 		<!-- END NAVBAR -->
-
-		{% block content %}{% endblock %}
-
 		<!-- Core JavaScript ================================================== -->
 		<!-- Placed at the end of the document so the pages load faster -->
 
 		<!-- jQuery -->
 		<script src='{% static "js/jquery/2.2.2/jquery.min.js" %}'></script>
-
-		<!-- general utility stuff comes before everything. -->
-		{# <script src='{% static "js/util/preventzoom.js" %}'></script>#}
-		<script src='{% static "js/util/dropzone.js" %}'></script>
-		<script src='{% static "js/util/util.js" %}'></script>
-		<script src='{% static "js/util/string-format.js" %}' onload='format.extend(String.prototype);'></script>
-		<script src='{% static "js/util/mousetrap.js" %}'></script> <!-- keyboard shortcuts -->
-		<script src='{% static "js/util/shortcuts.js" %}'></script>
-		<script src='{% static "js/util/csrf.js" %}'></script>
-		<script src='{% static "js/util/jzip.js" %}'></script>
-
-		<!-- UI -->
-		<script src='{% static "js/ui/ui.js" %}'></script>
-		<script src='{% static "js/ui/components.js" %}'></script>
-		<script src='{% static "js/ui/shortcuts.js" %}'></script>
 
 		{% block pre_main_script %}{% endblock %}
 		<script src='{% static "js/main.js" %}'></script>

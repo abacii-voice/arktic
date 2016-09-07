@@ -1,418 +1,704 @@
-// These components are specific to the use case of the current arktic website, but they are
-// semi-generalised constructs for repeated use.
-
-// IDEAS:
-// 1. Point at components to hi-jack for use as autocomplete containers, filters, date-pickers.
-// 		Local formatting takes care of sizes and stuff.
+// These components are larger abstractions built on the back of the generalised component system.
 
 var Components = {
-	breadcrumbs: function (id, args) {
-		// displays position in heirarchy
-		return UI.createComponent(id, args);
-	},
 
-	scrollList: function (id, args) {
-		// search field toggle
-		// scroll toggle
-		// infinite scroll loading
-
-		// 1. set search and filter toggles
-		var showTitle = args.title !== undefined ? 'show' : '';
-		var showSearch = args.search !== undefined ? 'show' : '';
-		var scrollHeight = args.search !== undefined ? 'calc(100% - 30px)' : '100%';
-		scrollHeight = args.title !== undefined ? 'calc(100% - 60px)' : scrollHeight;
-
-		var scrollOverflow = args.scroll !== undefined ? (args.scroll ? 'scroll' : 'hidden') : 'scroll';
-		var showLoadingIcon = args.loadingIcon !== undefined ? (args.loadingIcon ? 'show' : '') : '';
-
-		var container = UI.createComponent(id, {
-			template: UI.template('div', 'ie scroll-wrapper show relative'),
-			appearance: args.appearance,
-			children: [
-				UI.createComponent('{id}-title'.format({id: id}), {
-					template: UI.template('h4', 'ie sidebar-title'),
-					appearance: {
-						html: args.title,
-						style: {
-							'height': '30px',
-						},
-						classes: ['relative', showTitle],
-					},
-				}),
-				Components.searchFilterField('{id}-search'.format({id: id}), {
-					show: showSearch,
-				}),
-				UI.createComponent('{id}-scroll'.format({id: id}), {
-					template: UI.template('div', 'ie scroll show relative'),
-					appearance: {
-						style: {
-							'height': scrollHeight,
-							'overflow-y': scrollOverflow,
-						},
-					},
-					state: args.state,
-					children: args.content,
-					registry: args.registry,
-				}),
-				UI.createComponent('{id}-filter'.format({id: id}), {
-					template: UI.template('div', 'ie scroll relative'),
-					appearance: {
-						style: {
-							'height': 'calc(100% - 30px)',
-						},
-					},
-				}),
-				UI.createComponent('{id}-loading-icon'.format({id: id}), {
-					template: UI.templates.loadingIcon,
-					appearance: {
-						classes: [showLoadingIcon],
-					},
-				}),
-			],
-		});
-
-		// add methods
-		container.loadingIcon = function () {
-			return UI.getComponent('{id}-loading-icon'.format({id: id}));
-		}
-
-		container.scroll = function () {
-			return UI.getComponent('{id}-scroll'.format({id: id}));
-		}
-
-		container.filter = function () {
-			return UI.getComponent('{id}-filter'.format({id: id}));
-		}
-
-		container.searchField = function () {
-			return UI.getComponent('{id}-search'.format({id: id}));
-		}
-
-		container.getChildren = function () {
-			return container.scroll().children;
-		}
-
-		// return
-		return container;
-	},
-
-	searchFilterField: function (id, args) {
-		// pop over panel for filter suggestions and search results
-		// keywords and functions
-			// eg. ".." -> function () {} - search for single words
-			// "worker" -> filter by workers
-		var show = args.show !== undefined ? args.show : '';
-		var placeholder = args.placeholder !== undefined ? args.placeholder : 'Search or filter...';
-
-		var container =	UI.createComponent(id, {
-			template: UI.template('input', 'ie input relative'),
-			appearance: {
-				style: {
-					'width': '100%',
-					'margin-bottom': '10px',
-				},
-				classes: [show],
-				properties: {
-					'placeholder': placeholder,
-				},
-			},
-			bindings: args.bindings,
-			state: args.state,
-		});
-
-		return container;
-	},
-
-	roleIndicator: function (id, args) {
-		// change based on standard conditions
-		// dispatch requests for each state
-		// vars
-		var isBasic = args.basic !== undefined ? args.basic : false;
-		if (isBasic) {
-			args.bindings = [
-				{name: 'click', fn: function (_this) {
-					_this.parent().click();
-				}},
-			];
-		}
-
-		var initialState = args.initial !== undefined ? args.initial : (isBasic ? 'empty' : 'add');
-
-		// define
-		var _this = UI.createComponent(id, {
-			template: UI.template('div', 'ie show relative'),
-			children: [
-				UI.createComponent('{id}-glyph-button'.format({id: id}), {
-					template: UI.template('div', 'ie button show relative border border-radius'),
-					appearance: {
-						style: {
-							'height': '40px',
-							'width': '40px',
-							'padding-top': '10px',
-							'margin-top':' 10px',
-							'float': 'left',
-						},
-					},
-					children: [
-						UI.createComponent('{id}-gb-enabled'.format({id: id}), {
-							template: UI.template('span', 'glyphicon glyphicon-ok glyphicon-hidden'),
-						}),
-						UI.createComponent('{id}-gb-disabled'.format({id: id}), {
-							template: UI.template('span', 'glyphicon glyphicon-remove glyphicon-hidden'),
-						}),
-						UI.createComponent('{id}-gb-pending'.format({id: id}), {
-							template: UI.template('span', 'glyphicon glyphicon-option-horizontal glyphicon-hidden'),
-						}),
-						UI.createComponent('{id}-gb-add'.format({id: id}), {
-							template: UI.template('span', 'glyphicon glyphicon-plus glyphicon-hidden'),
-						}),
-					],
-					bindings: [
-						{name: 'click', fn: function (_this) {
-							var indicator = _this.parent();
-							indicator.click();
-
-							if (!indicator.isBasic) {
-								var roleData = {
-									'user_id': Context.get('current_user_profile.id'),
-									'current_client': Context.get('current_client'),
-									'current_role': Context.get('current_role'),
-									'role_type': args.label,
-								};
-								if (indicator.status === 'enabled') {
-									command('enable_role', roleData, function () {});
-								} else if (indicator.status === 'disabled') {
-									command('disable_role', roleData, function () {});
-								} else if (indicator.status === 'pending') {
-									command('add_role_to_user', roleData, function () {});
-								}
-
-								Context.updateUser(Context.get('current_user_profile.id'), args.label, indicator.status);
-							}
-						}}
-					],
-				}),
-				UI.createComponent('{id}-name-button'.format({id: id}), {
-					template: UI.template('div', 'ie button show relative'),
-					appearance: {
-						style: {
-							'height': '40px',
-							'width': '150px',
-							'padding-top': '10px',
-							'margin-top':' 10px',
-							'margin-left':' 10px',
-							'float': 'left',
-							'text-align': 'left',
-						},
-					},
-					registry: {
-						path: function () {
-							return 'role_display.{role}'.format({role: args.label});
-						},
-						fn: function (_this, data) {
-							_this.model().html(data); // set button title
-						}
-					},
-					bindings: [
-						{name: 'click', fn: function (_this) {
-							_this.parent().glyphButton().model().click();
-						}}
-					],
-				}),
-			],
-			state: {
-				states: [
-					{name: 'user-management-user-state', args: {
-						preFn: function (_this) {
-							if (!_this.isBasic) {
-								var status = Context.get('current_user_profile.roles.{role}.status'.format({role: args.label}));
-								status = status !== '' ? status : 'add';
-								_this.set(status);
-							}
-						}
-					}},
-				],
+	// CONTENT PANEL
+	// Nested panel components meant to hide scroll bar.
+	contentPanel: function (id, args) {
+		// config
+		args.appearance = (args.appearance || {
+			style: {
+				'width': '100%',
 			},
 		});
 
-		// vars
-		_this.glyphButton = function () {
-			return UI.getComponent('{id}-glyph-button'.format({id: id}));
-		}
-		_this.enabledGlyph = function () {
-			return UI.getComponent('{id}-gb-enabled'.format({id: id}));
-		}
-		_this.disabledGlyph = function () {
-			return UI.getComponent('{id}-gb-disabled'.format({id: id}));
-		}
-		_this.pendingGlyph = function () {
-			return UI.getComponent('{id}-gb-pending'.format({id: id}));
-		}
-		_this.addGlyph = function () {
-			return UI.getComponent('{id}-gb-add'.format({id: id}));
-		}
-		_this.nameButton = function () {
-			return UI.getComponent('{id}-name-button'.format({id: id}));
-		}
+		// set up components
+		return Promise.all([
+			// base component
+			UI.createComponent('{id}-base'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: args.appearance,
+			}),
 
-		// methods
-		_this.isBasic = isBasic;
-		_this.status = initialState;
-		_this.click = function () {
-			// what happens when clicked is dependent on the mode of the indicator and its current state.
-			if (_this.isBasic) {
-				// only indicates nothing or enabled.
-				if (_this.status == 'enabled') {
-					_this.set('empty');
-				} else {
-					_this.set('enabled');
-				}
-			} else {
-				// has the full range of toggles
-				if (_this.status == 'enabled') {
-					_this.set('disabled');
-				} else if (_this.status === 'add') {
-					_this.set('pending');
-				} else if (_this.status === 'disabled') {
-					_this.set('enabled');
-				}
-			}
-		}
-
-		_this.set = function (status) {
-			_this.status = status;
-
-			// deactivate everything
-			_this.enabledGlyph().model().addClass('glyphicon-hidden');
-			_this.disabledGlyph().model().addClass('glyphicon-hidden');
-			_this.pendingGlyph().model().addClass('glyphicon-hidden');
-			_this.addGlyph().model().addClass('glyphicon-hidden');
-
-			// reactivate certain things
-			if (_this.status === 'enabled') {
-				_this.enabledGlyph().model().removeClass('glyphicon-hidden');
-			} else if (_this.status === 'disabled') {
-				_this.disabledGlyph().model().removeClass('glyphicon-hidden');
-			} else if (_this.status === 'pending') {
-				_this.pendingGlyph().model().removeClass('glyphicon-hidden');
-			} else if (_this.status === 'add') {
-				_this.addGlyph().model().removeClass('glyphicon-hidden');
-			}
-		}
-
-		_this.isEnabled = function () {
-			return _this.status === 'enabled';
-		}
-
-		return _this;
-	},
-
-	sidebar: function (id, args) {
-		// Structure
-		// Top: Container
-			// a. Primary sidebar
-				// i. Title container
-					// - Title
-				// ii. Content container
-			// b. Back sidebar
-				// i. Back button
-
-		// The args entered need to be split into several different things:
-		// 1. The title is the html of the Title component.
-		// 2. The state primitives are split into state definitions for back and primary.
-		// 3. The content array is passed to the children of the content component
-
-		// 1. Calculate states for primary and back
-		var backStateMap;
-		var primaryStates = Object.keys(args.state.states).map(function (stateName) {
-			var value = args.state.states[stateName];
-			if (value === 'active') {
-				backStateMap = stateName;
-				return {name: stateName, args: args.state.active};
-			} else {
-				return {name: stateName, args: 'default'};
-			}
-		});
-
-		var backStates = Object.keys(args.state.states).map(function (stateName) {
-			var value = args.state.states[stateName];
-			if (value === 'next') {
-				return {name: stateName, args: {
+			// wrapper
+			UI.createComponent('{id}-wrapper'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
 					style: {
-						'left': '0px',
-					},
-				}};
-			} else {
-				return {name: stateName, args: 'default'};
-			}
-		});
+						'height': '100%',
+						'width': 'calc(100% + 20px)',
+						'padding-right': '20px',
+						'overflow-y': 'scroll',
+					}
+				},
+			}),
 
-		// 2. Define components and return
-		return UI.createComponent(id, {
-			children: [
-				UI.createComponent('{id}-primary'.format({id: id}), {
-					template: UI.template('div', 'ie sidebar border-right centred-vertically'),
-					state: {
-						defaultState: {
-							style: {
-								'left': '-300px',
-							},
-						},
-						states: primaryStates,
-					},
-					children: [
-						UI.createComponent('{id}-title'.format({id: id}), {
-							template: UI.template('h4', 'ie sidebar-title centred-horizontally show'),
-							appearance: {
-								html: args.title,
-								style: {
-									'height': '30px',
-								},
-							},
-						}),
-						UI.createComponent('{id}-content'.format({id: id}), {
-							template: UI.template('div', 'ie show'),
-							appearance: {
-								style: {
-									'top': '30px',
-									'width': '100%',
-									'height': 'calc(100% - 30px)',
-								},
-							},
-							children: args.content,
-						}),
-					],
-				}),
-				UI.createComponent('{id}-back'.format({id: id}), {
-					template: UI.template('div', 'ie sidebar mini border-right centred-vertically'),
-					state: {
-						defaultState: {
-							style: {
-								'left': '-100px',
-							},
-						},
-						states: backStates,
-					},
-					children: [
-						UI.createComponent('{id}-back-button'.format({id: id}), {
-							template: UI.templates.button,
-							state: {
-								stateMap: backStateMap,
-							},
-							children: [
-								UI.createComponent('cbs-bb-span', {
-									template: UI.template('span', 'glyphicon glyphicon-chevron-left'),
-								}),
-							],
-							bindings: [
-								{name: 'click', fn: function (_this) {
-									_this.triggerState();
-								}}
-							],
-						})
-					],
-				}),
-			],
+		]).then(function (components) {
+			// unpack components
+			var [
+				base,
+				wrapper,
+			] = components;
+
+			// set up promises to be completed before returning the base.
+
+			// logic, bindings, etc.
+			base.setWrapper = base.setChildren;
+			base.setChildren = function (children) {
+				return wrapper.setChildren(children);
+			}
+			base.removeAll = function () {
+				return wrapper.removeChildren();
+			}
+
+			// behaviours
+			base.behaviours = {
+				up: function () {
+
+				},
+				down: function () {
+
+				},
+				left: function () {
+
+				},
+				right: function () {
+
+				},
+				enter: function () {
+
+				},
+			}
+
+			// complete promises.
+			return Promise.all([
+
+			]).then(function (results) {
+				base.components = {
+					wrapper: wrapper,
+				}
+				return base.setWrapper([wrapper]);
+			}).then(function () {
+				return base;
+			});
 		});
 	},
+
+	// SEARCH INPUT
+	// Formatted input field with events for input and key presses.
+	search: function (id, args) {
+		// config
+		args.appearance = (args.appearance || {
+			style: {
+				'width': '100%',
+			},
+			classes: ['border', 'border-radius'],
+		});
+
+		// set up components
+		return Promise.all([
+			// base component
+			UI.createComponent('{id}-base'.format({id: id}), {
+				template: UI.template('div', 'ie input'),
+				appearance: args.appearance,
+			}),
+
+			// head
+			UI.createComponent('{id}-head'.format({id: id}), {
+				template: UI.template('div', 'ie head mousetrap'),
+				appearance: {
+					properties: {
+						'contenteditable': 'true',
+					},
+				},
+			}),
+
+			// tail
+			UI.createComponent('{id}-tail'.format({id: id}), {
+				template: UI.template('div', 'ie tail'),
+			}),
+
+			// space
+			UI.createComponent('{id}-space'.format({id: id}), {
+				template: UI.template('div', 'ie tail'),
+				appearance: {
+					html: '&nbsp;',
+				},
+			}),
+
+		]).then(function (components) {
+			// unpack components
+			var [
+				base,
+				head,
+				tail,
+				space,
+			] = components;
+
+			// variables
+			base.isFocussed = false;
+
+			// logic, bindings, etc.
+			base.setMetadata = function (metadata) {
+				base.metadata = metadata;
+				return tail.setAppearance({html: (metadata.combined || metadata.query || base.placeholder)});
+			}
+			base.isCaretInPosition = function (mode) {
+				mode = (mode || 'end');
+				// determine caret position after an action. Only important thing is whether or not it is at the end.
+				var selection = window.getSelection();
+				var caretInPosition = false;
+				if (base.isFocussed && head.element() === selection.focusNode.parentNode) { // is the selection inside
+					var range = selection.getRangeAt(0); // get the only range
+					if (mode === 'end') {
+						caretInPosition = range.endOffset === selection.focusNode.length; // check the offset == the node value length
+					} else if (mode === 'start') {
+						caretInPosition = range.endOffset === 0; // or 0
+					}
+				} else if (head.element() === selection.focusNode) {
+					caretInPosition = true;
+				}
+				return caretInPosition;
+			}
+			base.setCaretPosition = function (mode) {
+				return new Promise(function(resolve, reject) {
+					if (mode) {
+						// set the caret position to the end or the beginning
+						var range = document.createRange(); // Create a range (a range is a like the selection but invisible)
+						range.selectNodeContents(head.element()); // Select the entire contents of the element with the range
+						if (mode === 'end') {
+							range.collapse(false); // collapse the range to the end point. false means collapse to end rather than the start
+						} else if (mode === 'start') {
+							range.collapse(true);
+						}
+						var selection = window.getSelection(); // get the selection object (allows you to change selection)
+						selection.removeAllRanges(); // remove any selections already made
+						selection.addRange(range); // make the range you have just created the visible selection
+					}
+					resolve();
+				});
+			}
+			base.complete = function () {
+				base.completeQuery = base.metadata.complete;
+				return tail.setAppearance({html: base.metadata.complete}).then(function () {
+					return head.setAppearance({html: base.metadata.complete});
+				}).then(function () {
+					return base.setCaretPosition('end');
+				});
+			}
+			base.isComplete = function () {
+				return (head.model().text() === base.completeQuery) || !base.metadata.complete;
+			}
+			base.focus = function (mode) {
+				base.isFocussed = true;
+				return (base.onFocus || emptyPromise)().then(function () {
+					return base.setCaretPosition(mode);
+				});
+			}
+			base.blur = function () {
+				base.isFocussed = false;
+				return (base.onBlur || emptyPromise)().then(function () {
+					return tail.setAppearance({html: (head.model().text() || base.placeholder)});
+				});
+			}
+
+			// behaviours
+			base.behaviours = {
+				right: function () {
+					if (base.isCaretInPosition('end')) {
+						return base.complete().then(function () {
+							return base.onInput(base.metadata.complete);
+						});
+					} else {
+						return emptyPromise();
+					}
+				},
+				left: function () {
+
+				},
+				enter: function () {
+
+				},
+				backspace: function () {
+
+				},
+				click: function (end) {
+
+				}
+			}
+
+			// complete promises.
+			return Promise.all([
+				base.setBindings({
+					'click': function (_this) {
+						base.focus('end');
+					}
+				}),
+				head.setBindings({
+					'input': function (_this) {
+						(base.onInput || emptyPromise)(_this.model().text());
+					},
+					'focus': function (_this) {
+						base.focus();
+					},
+					'blur': function (_this) {
+						base.blur();
+					},
+					'click': function (_this, event) {
+						event.stopPropagation();
+						base.focus().then(function () {
+							return (base.onFocus || emptyPromise)();
+						})
+					},
+				}),
+			]).then(function (results) {
+				base.components = {
+					head: head,
+					tail: tail,
+				}
+				return base.setChildren([
+					head,
+					tail, // must be underneath
+					space,
+				]);
+			}).then(function () {
+				return base;
+			});
+		});
+	},
+
+	// FILTER ICON
+	filterIcon: function (id, args) {
+
+	},
+
+	// SEARCHABLE LIST
+	// A combination of the content panel and search input components with an option title.
+	// A source can be defined along with a display method, insert/delete, and filter.
+	// Optional filter panel
+	searchableList: function (id, args) {
+		// default appearance
+		var defaultAppearance = {
+			style: {
+				'height': '100%',
+			},
+		}
+
+		// set up components
+		return Promise.all([
+			// base component
+			UI.createComponent('{id}-base'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: (args.appearance || defaultAppearance),
+			}),
+
+			// title
+			UI.createComponent('{id}-title'.format({id: id}), {
+				template: UI.template('h4', 'ie title'),
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': '22px',
+						'font-size': '18px',
+						'display': 'none',
+					},
+				},
+			}),
+
+			// search input
+			Components.search('{id}-search'.format({id: id}), {}),
+
+			// filter button
+			UI.createComponent('{id}-filter-button'.format({id: id}), {
+				template: UI.template('div', 'ie button'),
+			}),
+
+			// list
+			Components.contentPanel('{id}-list'.format({id: id}), {}),
+
+			// filter
+			Components.contentPanel('{id}-filter'.format({id: id}), {}),
+
+		]).then(function (components) {
+			// unpack components
+			var [
+				base,
+				title,
+				search,
+				filterButton,
+				list,
+				filter,
+			] = components;
+
+			// set up promises to be completed before returning the base.
+			// logic, bindings, etc.
+			base.dataset = [];
+			base.virtual = [];
+			base.filters = {};
+			base.defaultFilters = [];
+			base.list = list; // allow for swapable components
+			base.search = search;
+			base.isFocussed = false;
+			base.display = function (query, filter) {
+				return base.load().then(function () {
+					return base.filter(query, filter); // returns a reduced dataset
+				}).then(function () {
+					base.currentIndex = undefined;
+					return base.list.removeAll();
+				}).then(function () {
+					return Promise.all(base.virtual.map(function (item, index) {
+						return base.unit(base, item, query, index);
+					})).then(function (listItems) {
+						return base.setActive({set: listItems}).then(function () {
+							return base.setMetadata(query);
+						}).then(function () {
+							return base.list.components.wrapper.setChildren(listItems);
+						});
+					});
+				}).catch(function (error) {
+					console.log(error);
+				});
+			}
+			base.load = function () {
+				// for each target, gather data and evaluate in terms of each process function. Store as virtual list.
+				if (base.dataset.length !== 0) {
+					return emptyPromise();
+				} else {
+					return Promise.all(base.targets.map(function (target) {
+						return target.path().then(function (path) {
+							return Context.get(path, {force: false});
+						}).then(target.process).then(function (dataset) {
+							return dataset;
+						});
+					})).then(function (datasets) {
+						// consolidate datasets into a unified dataset. Ordering comes later.
+						datasets.forEach(function (dataset) {
+							dataset.forEach(function (datum) {
+								base.dataset.push(datum);
+							});
+						});
+					}).then(function () {
+						// load filters
+						return Promise.all(base.targets.map(function (target) {
+							return new Promise(function(resolve, reject) {
+								base.filters[target.filter.char] = target.filter;
+								if (target.filter.default && base.defaultFilters.indexOf(target.filter.rule) === -1) {
+									base.defaultFilters.push(target.filter.rule);
+								}
+								resolve();
+							});
+						}));
+					});
+					// All data to be filtered now lives in base.dataset.
+				}
+			}
+			base.filter = function (query, filter) {
+				query = (query || '');
+				filter = (filter || '');
+				var rule = filter ? base.filters[filter].rule : '';
+				// filter called with no arguments should yield only the default filters
+				// In this way, an autocomplete is simply a list with no default filters
+				// The output of filter goes to base.buffer
+
+				return new Promise(function(resolve, reject) {
+					if (query || filter) {
+						base.virtual = base.dataset.filter(function (datum) {
+							return datum.rule.indexOf(rule) === 0 && datum.main.toLowerCase().indexOf(query.toLowerCase()) === 0 && !(base.autocomplete && query === '');
+						});
+					} else {
+						base.virtual = base.dataset.filter(function (datum) {
+							return base.defaultFilters.contains(datum.rule) && datum.main.toLowerCase().indexOf(query.toLowerCase()) === 0 && !(base.autocomplete && query === '');
+						});
+					}
+
+					resolve();
+				});
+			}
+			base.setMetadata = function (query) {
+				base.query = ((base.query || query) || '');
+				// condition is that there are filtered items and the query is not nothing
+
+				var metadata = {
+					query: base.query,
+				}
+				if (base.virtual.length && base.currentIndex !== undefined) {
+					var item = base.virtual[base.currentIndex].metadata;
+					metadata = {
+						query: base.query,
+						complete: item.complete,
+						combined: item.combined,
+						type: item.type,
+					}
+				}
+				return search.setMetadata(metadata);
+			}
+			base.setActive = function (options) {
+				options = (options || {});
+				var set = (options.set || base.list.components.wrapper.children);
+
+				// if there are any results
+				if (set.length && base.isFocussed) {
+
+					// changes
+					var previousIndex = base.currentIndex;
+					base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (options.increment || 0)));
+
+					// boundary conditions
+					base.currentIndex = base.currentIndex > set.length - 1 ? set.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
+
+					if (base.currentIndex !== previousIndex) {
+						return base.deactivate().then(function () {
+							base.active = set[base.currentIndex];
+							return base.active.activate();
+						});
+					} else {
+						return emptyPromise();
+					}
+				} else {
+					return emptyPromise();
+				}
+			}
+			base.deactivate = function () {
+				return ((base.active || {}).deactivate || emptyPromise)().then(function () {
+					return new Promise(function(resolve, reject) {
+						base.active = undefined;
+						resolve();
+					});
+				});
+			}
+
+			// list methods
+			base.next = function () {
+				return base.setActive({increment: 1}).then(function () {
+					return base.setMetadata();
+				});
+			}
+			base.previous = function () {
+				return base.setActive({increment: -1}).then(function () {
+					return base.setMetadata();
+				});
+			}
+
+			// search methods
+			search.onFocus = function () {
+				base.isFocussed = true;
+				base.query = search.components.head.model().text();
+				return Promise.all([
+					base.display(base.query),
+					(base.searchExternal ? base.searchExternal.onFocus : emptyPromise)(),
+				]);
+			}
+			search.onBlur = function () {
+				base.isFocussed = false;
+				base.currentIndex = undefined;
+				return base.deactivate();
+			}
+			search.onInput = function (value) {
+				base.query = value;
+				return base.display(base.query);
+			}
+			base.setSearch = function (options) {
+				options.mode = (options.mode || 'on');
+				options.placeholder = (options.placeholder || 'search...');
+
+				search.placeholder = options.placeholder;
+				return search.setAppearance({classes: {add: (options.mode === 'off' ? ['hidden'] : [])}}).then(function () {
+					return search.components.tail.setAppearance({html: options.placeholder});
+				});
+			}
+
+			// set title
+			base.setTitle = function (options) {
+				if (options.text) {
+					return title.setAppearance({
+						html: options.text,
+						style: {
+							'text-align': (options.centre ? 'center': 'left'),
+						},
+					});
+				} else {
+					return title.setAppearance({
+						style: {
+							'display': 'none',
+						}
+					});
+				}
+			}
+
+			// behaviours
+			base.behaviours = {
+				up: function () {
+					return base.previous();
+				},
+				down: function () {
+					return base.next();
+				},
+				left: function () {
+					return search.behaviours.left();
+				},
+				right: function () {
+					return search.behaviours.right();
+				},
+				number: function (char) {
+					var index = parseInt(char);
+					if (index < base.list.components.wrapper.children.length) {
+						return base.setActive({index: index}).then(function () {
+							return base.setMetadata();
+						}).then(function () {
+							// don't know what behaviour to have here
+							return search.behaviours.right();
+							// return search.behaviours.enter();
+						});
+					}
+				},
+				enter: function () {
+					return search.behaviours.enter();
+				},
+				backspace: function () {
+					return search.behaviours.backspace();
+				},
+			}
+
+			// clone
+			base.clone = function (copy) {
+				// confusing, but properties of copy get sent to this object.
+				base.autocomplete = copy.autocomplete;
+				base.targets = copy.targets;
+				base.list = copy.list;
+				base.unit = copy.unit;
+			}
+
+			// complete promises.
+			return Promise.all([
+
+			]).then(function (results) {
+				base.components = {
+					title: title,
+					search: search,
+					list: list,
+					filter: filter,
+				}
+				return base.setChildren([
+					title,
+					search,
+					list,
+					filter,
+				]);
+			}).then(function () {
+				return base;
+			});
+		});
+	},
+
+	// AUTOCOMPLETE
+
+	// A panel with a state structure and space for a content panel.
+	sidebar: function (id, args) {
+		return Promise.all([
+
+			// base
+			UI.createComponent('{id}-base'.format({id: id}), {
+				template: UI.template('div', 'ie abstract'),
+				appearance: {
+					style: {
+						'height': '100%',
+					},
+				},
+			}),
+
+			// main
+			UI.createComponent('{id}-main'.format({id: id}), {
+				template: UI.template('div', 'ie abs border-right centred-vertically'),
+				appearance: {
+					style: {
+						'left': '-200px',
+						'height': '70%',
+						'width': '200px',
+					},
+				},
+				children: args.children,
+			}),
+
+			// back
+			UI.createComponent('{id}-back'.format({id: id}), {
+				template: UI.template('div', 'ie abs border-right centred-vertically'),
+				appearance: {
+					style: {
+						'left': '-50px',
+						'height': '70%',
+						'width': '50px',
+					},
+				},
+			}),
+
+			// back button
+			UI.createComponent('{id}-back-button'.format({id: id}), {
+				template: UI.template('div', 'ie button'),
+				children: [
+					UI.createComponent('{id}-back-button-span'.format({id: id}), {
+						template: UI.template('span', 'glyphicon glyphicon-chevron-left'),
+					}),
+				],
+				state: {
+					stateMap: args.state.primary,
+				},
+				bindings: {
+					'click': function (_this) {
+						_this.triggerState();
+					},
+				}
+			}),
+
+		]).then(function (components) {
+			// unpack components
+			var [
+				base,
+				main,
+				back,
+				backButton,
+			] = components;
+
+			// process states
+			Object.keys(args.state).forEach(function (category) {
+				var stateSet = args.state[category];
+				if (!$.isArray(stateSet)) {
+					stateSet = [stateSet];
+				}
+
+				// This structure sets up the sidebar to have primary, secondary, and deactivate states
+				// These can be sets of states. Primary, main is active; secondary, back is active; deactivate, neither is active.
+				stateSet.forEach(function (state) {
+					if (category === 'primary') {
+						main.addState({name: state, args: onOff(args.position.main.on)});
+						back.addState({name: state, args: onOff(args.position.back.off)});
+					} else if (category === 'secondary') {
+						main.addState({name: state, args: onOff(args.position.main.off)});
+						back.addState({name: state, args: onOff(args.position.back.on)});
+					} else if (category === 'deactivate') {
+						main.addState({name: state, args: onOff(args.position.main.off)});
+						back.addState({name: state, args: onOff(args.position.back.off)});
+					}
+				});
+			});
+
+			// complete promises.
+			return Promise.all([
+				back.setChildren([
+					backButton,
+				]),
+			]).then(function (results) {
+				base.components = {
+					main: main,
+					back: back,
+				}
+				return base.setChildren([
+					main,
+					back,
+				]);
+			}).then(function () {
+				return base;
+			});
+		});
+	},
+
 }

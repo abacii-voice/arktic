@@ -23,7 +23,9 @@ html {
 */
 
 .navbar {
-
+	position: fixed;
+	width: 100%;
+	top: 0px;
 }
 
 .navbar .nav-link {
@@ -61,24 +63,30 @@ Common interface elements
  */
  /* interface element */
 .ie {
-	display: none;
-	position: absolute;
+	position: relative;
 	background-color: transparent;
-	overflow-x: hidden; /* all content must fit inside the box. No expansion left-right will be allowed. */
+	overflow-x: hidden;
 	overflow-y: hidden;
 	box-sizing: border-box;
-	font-family: inherit;
 	font-size: inherit;
 	line-height: inherit;
-	margin: 0;
+	font-family: monospace;
+	font-style: normal;
+	font-variant: normal;
+	margin: 0px;
 }
 
-.ie.show {
-	display: block;
+.ie.abstract {
+	overflow: visible;
+	position: absolute;
 }
 
-.ie.relative {
-	position: relative;
+.ie.hidden {
+	display: none !important;
+}
+
+.ie.abs {
+	position: absolute;
 }
 
 .ie.title {
@@ -121,27 +129,27 @@ Common interface elements
 
 /* borders */
 .ie.border-top {
-	border-top: 2px solid #ccc;
+	border-top: 1px solid #ccc;
 }
 
 .ie.border-right {
-	border-right: 2px solid #ccc;
+	border-right: 1px solid #ccc;
 }
 
 .ie.border-bottom {
-	border-bottom: 2px solid #ccc;
+	border-bottom: 1px solid #ccc;
 }
 
 .ie.border-left {
-	border-left: 2px solid #ccc;
+	border-left: 1px solid #ccc;
 }
 
 .ie.border {
-	border: 2px solid #ccc;
+	border: 1px solid #ccc;
 }
 
 .ie.border.error {
-	border: 2px solid #c00;
+	border: 1px solid #c00;
 }
 
 .ie.border-radius {
@@ -158,13 +166,11 @@ Common interface elements
 	display: block;
 	width: 200px;
 	height: 70%;
-	/*left: -200px; /* Initially hidden until activated */*/
 }
 
 /* Mini sidebar */
 .ie.sidebar.mini {
 	width: 50px;
-	/*left: -50px; /* Initially hidden until activated */*/
 }
 
 .ie.loading-icon {
@@ -180,45 +186,18 @@ Common interface elements
 	width: 25px;
 }
 
-.ie.sidebar .sidebar-title {
-	font-size: 16px;
-	color: #bbb;
-	width: 80%;
-	text-align: center;
-}
-
 /*
 
 3. Panels
 
 */
+
 /* Full panel */
 .ie.panel {
 	height: 70%;
-	width: 954px;
+	width: calc(100% - 60px);
 	-webkit-box-shadow: 0 0px 0px rgba(0, 0, 0, .05);
 	box-shadow: 0 0px 0px rgba(0, 0, 0, .05);
-}
-
-/* Context panel */
-.ie.panel.context {
-	left: 250px;
-	width: 764px;
-}
-
-/* Sub panel */
-.ie.panel.sub-panel {
-	margin-right: 10px;
-	margin-bottom: 10px;
-}
-
-.ie.panel .ie.panel-title {
-	margin-top: 10px;
-	margin-bottom: 10px;
-	font-size: 16px;
-	color: #ccc;
-	width: 100%;
-	text-align: center;
 }
 
 /*
@@ -227,8 +206,7 @@ Common interface elements
 
 */
 .ie.button {
-	height: 50px;
-	width: 100px;
+	height: 40px;
 	text-align: center;
 	background-image: none;
 	background-color: transparent;
@@ -258,15 +236,16 @@ Common interface elements
 	width: 50px;
 }
 
-.ie.sidebar .ie.button.border {
-	margin-bottom: 10px;
-	border-radius: 4px;
+.ie.sidebar .ie.button.start-button {
+	height: 80px;
+	padding-top: 25px;
+	font-size: 20px;
 }
 
-.ie.sidebar .ie.button.start-button {
-	height: 100px;
-	padding-top: 33px;
-	font-size: 20px;
+.ie.sidebar-button {
+	margin-left: 10px;
+	margin-right: 10px;
+	margin-bottom: 10px;
 }
 
 /*
@@ -276,15 +255,13 @@ Common interface elements
 */
 
 .ie.input {
-	font-size: 14px;
-	height: 34px;
-	width: 400px;
 	box-sizing: border-box;
-	border: 1px solid #ccc;
-	background-color: transparent;
 	color: #ccc;
-	padding: 8px;
-	border-radius: 4px;
+	height: 40px;
+	padding-top: 11px;
+	padding-left: 10px;
+	cursor: text;
+	font-size: 15px;
 }
 
 .ie.input.error {
@@ -296,6 +273,30 @@ Common interface elements
 	box-shadow: inset 0 0px 0px rgba(0, 0, 0, .075), 0 0 0px rgba(102, 175, 233, .6);
 	outline: none;
 	color: #ccc;
+}
+
+.ie.input.top {
+	border-bottom-left-radius: 0px;
+	border-bottom-right-radius: 0px;
+}
+
+.ie.input .head {
+	display: inline-block;
+	position: absolute;
+	min-width: 2px;
+}
+
+.ie.input .head:focus {
+	-webkit-box-shadow: inset 0 0px 0px rgba(0, 0, 0, .075), 0 0 0px rgba(102, 175, 233, .6);
+	box-shadow: inset 0 0px 0px rgba(0, 0, 0, .075), 0 0 0px rgba(102, 175, 233, .6);
+	outline: none;
+}
+
+.ie.input .tail {
+	display: inline-block;
+	position: relative;
+	opacity: 0.5;
+	pointer-events: none;
 }
 
 /*
