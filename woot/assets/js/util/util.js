@@ -1,60 +1,3 @@
-// call command
-function command (name, data, callback, args) {
-	args = args !== undefined ? args : {};
-	var ajax_params = {
-		type: 'post',
-		data: data,
-		processData: args.processData !== undefined ? args.processData : true,
-		contentType: args.contentType !== undefined ? args.contentType : 'application/x-www-form-urlencoded',
-		url:'/command/{name}/'.format({name: name}),
-		success: function (data, textStatus, XMLHttpRequest) {
-			callback(data);
-		},
-		error: function (xhr, ajaxOptions, thrownError) {
-			if (xhr.status === 404 || xhr.status === 0) {
-				command(name, data, callback);
-			}
-		}
-	};
-
-	return $.ajax(ajax_params); // this is a promise
-};
-
-// request data
-function getdata (name, data, callback) {
-	var ajax_params = {
-		type: 'post',
-		data: data,
-		url:'/data/{name}/'.format({name: name}),
-		success: function (data, textStatus, XMLHttpRequest) {
-			callback(data);
-		},
-		error: function (xhr, ajaxOptions, thrownError) {
-			if (xhr.status === 404 || xhr.status === 0) {
-				getdata(name, data, callback);
-			}
-		}
-	};
-
-	return $.ajax(ajax_params); // this is a promise
-};
-
-// perform action
-function action (name, data) {
-	var ajax_params = {
-		type: 'post',
-		data: data,
-		url:'/action/{name}/'.format({name: name}),
-		success: function (data, textStatus, XMLHttpRequest) {},
-		error: function (xhr, ajaxOptions, thrownError) {
-			if (xhr.status === 404 || xhr.status === 0) {
-				action(name, data);
-			}
-		}
-	};
-
-	return $.ajax(ajax_params); // this is a promise
-};
 
 // String formatting
 function formatStyle (style) {
@@ -70,7 +13,7 @@ function formatStyle (style) {
 
 function formatClasses (classes) {
 	if (classes !== undefined) {
-		return classes.join(' ');
+		return classes.join(' ').trim();
 	} else {
 		return '';
 	}
@@ -103,7 +46,7 @@ String.prototype.trunc = function(n, useWordBoundary) {
 	var isTooLong = this.length > n;
 	var s_ = isTooLong ? this.substr(0,n-1) : this;
 	var s_ = (useWordBoundary && isTooLong) ? s_.substr(0,s_.lastIndexOf(' ')) : s_;
-	return  isTooLong ? s_ + '&hellip;' : s_;
+	return	isTooLong ? s_ + '&hellip;' : s_;
 };
 
 // gives filename without directories
@@ -131,4 +74,137 @@ function alphaSort(key) {
 			return 0;
 		}
 	}
+}
+
+// Ordered promises
+Promise.ordered = function (promiseFunctions, input) {
+	if (promiseFunctions.length !== 0) {
+		var result = promiseFunctions[0](input);
+		promiseFunctions.forEach(function (promiseFunction, index) {
+			if (index > 0) {
+				result = result.then(promiseFunction);
+			}
+		});
+
+		return result;
+	} else {
+		return new Promise(function(resolve, reject) {resolve()});
+	}
+}
+
+// Trim string
+if(!String.prototype.trim) {
+	String.prototype.trim = function () {
+		return this.replace(/^\s+|\s+$/g,'');
+	};
+}
+
+// Array interpolation
+function linearInterpolate (before, after, atPoint) {
+	return before + (after - before) * atPoint;
+};
+
+function interpolateArray (data, fitCount) {
+	var newData = new Array();
+	var springFactor = new Number((data.length - 1) / (fitCount - 1));
+	newData[0] = data[0]; // for new allocation
+	for ( var i = 1; i < fitCount - 1; i++) {
+		var tmp = i * springFactor;
+		var before = new Number(Math.floor(tmp)).toFixed();
+		var after = new Number(Math.ceil(tmp)).toFixed();
+		var atPoint = tmp - before;
+		newData[i] = this.linearInterpolate(data[before], data[after], atPoint);
+		}
+	newData[fitCount - 1] = data[data.length - 1]; // for new allocation
+	return newData;
+};
+
+function getMaxOfArray (numArray) {
+	return Math.max.apply(null, numArray);
+}
+
+function getAbsNormalised (array, max) {
+	// abs
+	var abs = array.map(function (value) {
+		return Math.abs(value);
+	});
+
+	var arrayMax = getMaxOfArray(abs);
+
+	var normalised = abs.map(function (value) {
+		return max * Math.sqrt(value / arrayMax);
+		// return max * value / arrayMax;
+	});
+
+	return normalised;
+}
+
+function getDifferenceArray (previous, next) {
+	if (previous.length === next.length) {
+		var differenceArray = [];
+		for (i=0; i<previous.length; i++) {
+			differenceArray.push(next[i] - previous[i]);
+		}
+	}
+}
+
+function reduceSum (previous, next) {
+	return previous + next;
+}
+
+function emptyPromise () {
+	return new Promise(function(resolve, reject) {
+		resolve();
+	});
+}
+
+function emptyFunction () {}
+
+function onOff (onOff) {
+	return {
+		style: {
+			'left': onOff,
+		},
+	}
+}
+
+String.prototype.contains = function (object) {
+	return this.indexOf(object) !== -1;
+}
+
+Array.prototype.contains = function (object) {
+	return this.indexOf(object) !== -1;
+}
+
+Array.prototype.sum = function (object) {
+	return this.reduce(reduceSum);
+}
+
+function singleKeyPair (object) {
+	return [Object.keys(object)[0], object[Object.keys(object)[0]]];
+}
+
+function getCaretOffsetWithin (element) {
+	var caretOffset = 0;
+	var doc = element.ownerDocument;
+	var win = doc.defaultView;
+	var sel = win.getSelection();
+	if (sel.rangeCount > 0) {
+		var range = win.getSelection().getRangeAt(0);
+		var preCaretRange = range.cloneRange();
+		preCaretRange.selectNodeContents(element);
+		preCaretRange.setEnd(range.endContainer, range.endOffset);
+		caretOffset = preCaretRange.toString().length;
+	}
+	return caretOffset;
+}
+
+function setEndOfContenteditable (contentEditableElement, start) {
+	var range = document.createRange(); // Create a range (a range is a like the selection but invisible)
+	range.selectNodeContents(contentEditableElement); // Select the entire contents of the element with the range
+	range.collapse(start); // collapse the range to the end point. false means collapse to end rather than the start
+
+	var selection = window.getSelection(); // get the selection object (allows you to change selection)
+	selection.removeAllRanges(); // remove any selections already made
+	selection.addRange(range); // make the range you have just created the visible selection
 }

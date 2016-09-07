@@ -1,45 +1,21 @@
 # django
-from django.shortcuts import render
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.shortcuts import render, redirect
+from django.core.cache import cache
 from django.views.generic import View
-from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
 from django.conf import settings
+from django.template import Template
 
 # local
-from apps.users.forms import LoginForm, NewAdminForm
-from apps.users.models.user import User
+from apps.users.models import User
+from apps.users.forms import LoginForm
 
 # util
+import json
 
-### User views
-# Views represented here
-# 0. Home view
-class HomeView(View):
-	def get(self, request):
-		return render(request, 'users/home.html', {})
-
-# 1. Admin signup
-class AdminSignupView(View):
-	'''
-	Only admins can sign up directly to the site. All other users (except superusers) are added by an admin. In this view, all details about an admin and their corporation are entered so that objects can be created.
-
-	'''
-
-	def get(self, request, **kwargs):
-		# send the account creation form
-		# if the url includes a client key, it will be preset in the form. This is so a link to this interface can be emailed to other admins.
-
-		user = request.user
-		if user.is_authenticated():
-			'''
-			If the user is logged in already, they will need to log out before creating a new admin user. If they want to add an admin for the same client, they can do so from the admin account interface.
-			'''
-
-			return HttpResponseRedirect('/admin-logged-in/')
-		else:
-			return render(request, 'users/admin-signup.html', {})
-
-# 2. User signup
+### Views
+# User signup
 class UserSignupView(View):
 	'''
 	Responds to the link sent to the user's email. This link is of the form:
@@ -71,52 +47,51 @@ class UserSignupView(View):
 		else:
 			return render(request, 'users/user-signup.html', user_data)
 
-# 3. Account SPA
-class AccountSPAView(View):
-	'''
-	The Account SPA view serves a skeleton template containing a small amount of data,
-	but mostly <targets> for the js SPA that it referres to. The SPA handles the interface.
-	Information can be requested dynamically.
+# User signup
+def us_data(request):
+	if request.method == 'POST':
+		# no permission required
 
-	There is a small matter of permissions and account type. Once the login page has said ok to the
-	user, the type of user need to be determined, along with their permissions.
-	'''
+		# get initial data
+		initial_data = {
+			'user_id': request.POST['user_id'],
+			'activation_key': request.POST['activation_key'],
+		}
 
-	def get(self, request, **kwargs):
+		# compile user data
+		user = User.objects.get(id=initial_data['user_id'])
+		user_data = user.basic_data()
 
-		# get the user from the request
-		user = request.user
-		if user.is_authenticated():
+		return JsonResponse(user_data)
 
-			# METADATA
-			# several things about the user must be known in order to continue.
-			# 1. Is the user a {superadmin, admin, moderator, or user}?
-			#   a. if superadmin, which user profile?
-			# 2. Is the user approved for activity?
-			# 3. How many clients does the user work for?
-			# 4. How many roles does the user have with those clients?
-			# need a dictionary like this:
-			# {
-			# 	'client1':{
-			# 		'admin':{
-			# 			'is_approved':True,
-			# 			'is_active':True,
-			# 		},
-			# 		'worker':{
-			# 			'is_approved':True,
-			# 			'is_active':True,
-			# 		},
-			# 	},
-			# }
+def verify(request, **kwargs):
+	if request.method == 'POST':
 
-			# PSYCH! The decision about the user permissions isn't even made here! It's made by the template by
-			# simply adding or omitting components server side. What comes across in the code will
-			# just not have parts of the interface that do not pertain to the user.
-			return render(request, 'users/account.html', {'user': user})
+		# get user data
+		user_id = request.POST['user_id']
+		first_name = request.POST['first_name']
+		last_name = request.POST['last_name']
+		email = request.POST['email']
+		password = request.POST['password']
 
-		else:
-			# return to login view
-			return HttpResponseRedirect('/login/')
+		# get user and set data
+		user = User.objects.get(id=user_id)
+		user.first_name = first_name
+		user.last_name = last_name
+		user.email = email
+
+		# set password
+		user.set_password(password)
+
+		# activate roles
+		for role in user.roles.all():
+			role.status = 'enabled'
+			role.save()
+
+		user.save()
+
+		# return token response
+		return JsonResponse({'done': True})
 
 # 4. Login view
 class LoginView(View):
@@ -147,17 +122,6 @@ class LoginView(View):
 		else:
 			print('form invalid')
 			return render(request, 'users/login.html', {'bad_formatting':True})
-
-# Verify
-def verify(request, **kwargs):
-	if request.method == 'GET':
-		user_key = kwargs['user']
-		activation_key = kwargs['key']
-
-		# user
-		user = User.objects.get(id=user_key)
-		verified = user.verify_email(activation_key)
-		return render(request, 'users/verified.html', {'verified': verified})
 
 # Logout view
 def logout_view(request):
