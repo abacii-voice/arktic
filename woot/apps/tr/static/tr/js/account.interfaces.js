@@ -284,6 +284,8 @@ var AccountInterfaces = {
 						appearance: {
 							style: {
 								'color': '#eee',
+								'display': 'inline-block',
+								'position': 'absolute',
 							},
 							html: datum.main.substring(0, query.length),
 						},
@@ -292,9 +294,9 @@ var AccountInterfaces = {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
-								// 'font-size': '14px',
+								'display': 'inline-block',
 							},
-							html: datum.main.substring(query.length),
+							html: datum.main,
 						},
 					}),
 
@@ -695,6 +697,8 @@ var AccountInterfaces = {
 							appearance: {
 								style: {
 									'color': '#eee',
+									'display': 'inline-block',
+									'position': 'absolute',
 								},
 								html: datum.main.substring(0, query.length),
 							},
@@ -703,9 +707,9 @@ var AccountInterfaces = {
 							template: UI.template('span', 'ie'),
 							appearance: {
 								style: {
-									// 'font-size': '14px',
+									'display': 'inline-block',
 								},
-								html: datum.main.substring(query.length),
+								html: datum.main,
 							},
 						}),
 
