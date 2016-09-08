@@ -375,7 +375,7 @@ var Components = {
 						});
 					})).then(function (datasets) {
 						// consolidate datasets into a unified dataset. Ordering comes later.
-						base.dataset = [];
+						base.dataset = []; // might choose to do something smarter later.
 						datasets.forEach(function (dataset) {
 							dataset.forEach(function (datum) {
 								base.dataset.push(datum);
