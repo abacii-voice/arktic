@@ -234,14 +234,6 @@ var AccountInterfaces = {
 							resolve(results);
 						});
 					},
-					filter: {
-						default: true,
-						char: '/',
-						key: 'forwardslash',
-						display: 'Client',
-						button: 'Clients',
-						rule: 'client',
-					},
 				},
 			]
 			clientList.unit = function (_this, datum, query, index) {
@@ -350,6 +342,140 @@ var AccountInterfaces = {
 				});
 			}
 
+			// ROLE SIDEBAR
+			roleList.autocomplete = false;
+			roleList.targets = [
+				{
+					name: 'roles',
+					path: function () {
+						return Active.get('client').then(function (clientId) {
+							return new Promise(function(resolve, reject) {
+								resolve('user.clients.{client_id}.roles'.format({client_id: clientId}));
+							});
+						});
+					},
+					process: function (data) {
+						return new Promise(function(resolve, reject) {
+							var results = Object.keys(data).map(function (key) {
+								var role = data[key];
+								return {
+									id: key,
+									main: role.type,
+									rule: 'role',
+								}
+							});
+
+							resolve(results);
+						});
+					},
+				},
+			]
+			roleList.unit = function (_this, datum, query, index) {
+				query = (query || '');
+
+				// base class
+				jss.set('#{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
+					'height': '30px',
+					'width': '100%',
+					'padding': '0px',
+					'padding-left': '10px',
+					'text-align': 'left',
+				});
+				jss.set('#{id}-{object}-base.active'.format({id: _this.id, object: datum.id}), {
+					'background-color': 'rgba(255,255,255,0.1)'
+				});
+
+				return Promise.all([
+					// base component
+					UI.createComponent('{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('div', 'ie button'),
+						appearance: {
+							classes: [datum.rule],
+						},
+						state: {
+							stateMap: 'control-state',
+						},
+					}),
+
+					// main wrapper
+					UI.createComponent('{id}-{object}-main-wrapper'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('div', 'ie centred-vertically'),
+						appearance: {
+							style: {
+								'display': 'inline-block',
+							},
+						},
+					}),
+
+					// main
+					UI.createComponent('{id}-{object}-main-head'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('span', 'ie'),
+						appearance: {
+							style: {
+								'color': '#eee',
+								'display': 'inline-block',
+								'position': 'absolute',
+							},
+							html: datum.main.substring(0, query.length),
+						},
+					}),
+					UI.createComponent('{id}-{object}-main-tail'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('span', 'ie'),
+						appearance: {
+							style: {
+								'display': 'inline-block',
+							},
+							html: datum.main,
+						},
+					}),
+
+				]).then(function (unitComponents) {
+					var [
+						unitBase,
+						unitMainWrapper,
+						unitMainHead,
+						unitMainTail,
+					] = unitComponents;
+
+					// set metadata
+					datum.metadata = {
+						query: query,
+						complete: datum.main,
+						combined: query + datum.main.substring(query.length),
+						type: datum.rule,
+					}
+
+					unitBase.activate = function () {
+						return unitBase.setAppearance({classes: {add: ['active']}});
+					}
+
+					unitBase.deactivate = function () {
+						return unitBase.setAppearance({classes: {remove: ['active']}});
+					}
+
+					// complete promises.
+					return Promise.all([
+						unitBase.setBindings({
+							'click': function (_this) {
+								Active.set('role', datum.id).then(function () {
+									return _this.triggerState();
+								});
+							},
+						}),
+						unitMainWrapper.setChildren([
+							unitMainHead,
+							unitMainTail,
+						]),
+					]).then(function () {
+						return unitBase.setChildren([
+							unitMainWrapper,
+						]);
+					}).then(function () {
+						return unitBase;
+					});
+				});
+			}
+
 			return Promise.all([
 
 				// CLIENT SIDEBAR
@@ -372,13 +498,41 @@ var AccountInterfaces = {
 					states: [
 						{name: 'client-state', args: {
 							fn: function (_this) {
-								clientList.display();
+								clientList.display({forceLoad: true});
 							},
 						}},
 					]
 				}),
 				clientList.setTitle({text: 'Clients', centre: true}),
 				clientList.setSearch({state: 'on', placeholder: 'Search clients...'}),
+
+				// ROLE SIDEBAR
+				roleList.search.setAppearance({
+					style: {
+						'left': '0px',
+						'width': '100%',
+						'border': '0px',
+						'height': '30px',
+						'padding-top': '8px',
+						'background-color': 'rgba(255,255,255,0.1)',
+						'border-radius': '0px',
+						'border-bottom': '1px solid #00869B',
+					},
+				}),
+				roleSidebar.components.main.setChildren([
+					roleList,
+				]),
+				roleList.setState({
+					states: [
+						{name: 'role-state', args: {
+							fn: function (_this) {
+								roleList.display({forceLoad: true});
+							},
+						}},
+					]
+				}),
+				roleList.setTitle({text: 'Roles', centre: true}),
+				roleList.setSearch({state: 'on', placeholder: 'Search roles...'}),
 
 			]).then(function () {
 				// base children

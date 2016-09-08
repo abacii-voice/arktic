@@ -339,8 +339,11 @@ var Components = {
 			base.list = list; // allow for swapable components
 			base.search = search;
 			base.isFocussed = false;
-			base.display = function (query, filter) {
-				return base.load().then(function () {
+			base.display = function (options) {
+				var query = (options || {}).query;
+				var filter = (options || {}).filter;
+				var forceLoad = ((options || {}).forceLoad || false);
+				return base.load({forceLoad: forceLoad}).then(function () {
 					return base.filter(query, filter); // returns a reduced dataset
 				}).then(function () {
 					base.currentIndex = undefined;
@@ -359,9 +362,9 @@ var Components = {
 					console.log(error);
 				});
 			}
-			base.load = function () {
+			base.load = function (options) {
 				// for each target, gather data and evaluate in terms of each process function. Store as virtual list.
-				if (base.dataset.length !== 0) {
+				if (base.dataset.length !== 0 && !options.forceLoad) {
 					return emptyPromise();
 				} else {
 					return Promise.all(base.targets.map(function (target) {
@@ -372,6 +375,7 @@ var Components = {
 						});
 					})).then(function (datasets) {
 						// consolidate datasets into a unified dataset. Ordering comes later.
+						base.dataset = [];
 						datasets.forEach(function (dataset) {
 							dataset.forEach(function (datum) {
 								base.dataset.push(datum);
@@ -381,9 +385,11 @@ var Components = {
 						// load filters
 						return Promise.all(base.targets.map(function (target) {
 							return new Promise(function(resolve, reject) {
-								base.filters[target.filter.char] = target.filter;
-								if (target.filter.default && base.defaultFilters.indexOf(target.filter.rule) === -1) {
-									base.defaultFilters.push(target.filter.rule);
+								if (target.filter) {
+									base.filters[target.filter.char] = target.filter;
+									if (target.filter.default && base.defaultFilters.indexOf(target.filter.rule) === -1) {
+										base.defaultFilters.push(target.filter.rule);
+									}
 								}
 								resolve();
 							});
@@ -407,7 +413,7 @@ var Components = {
 						});
 					} else {
 						base.virtual = base.dataset.filter(function (datum) {
-							return base.defaultFilters.contains(datum.rule) && datum.main.toLowerCase().indexOf(query.toLowerCase()) === 0 && !(base.autocomplete && query === '');
+							return (base.defaultFilters.contains(datum.rule) || base.defaultFilters.length === 0) && datum.main.toLowerCase().indexOf(query.toLowerCase()) === 0 && !(base.autocomplete && query === '');
 						});
 					}
 
@@ -484,7 +490,7 @@ var Components = {
 				base.isFocussed = true;
 				base.query = search.components.head.model().text();
 				return Promise.all([
-					base.display(base.query),
+					base.display({query: base.query}),
 					(base.searchExternal ? base.searchExternal.onFocus : emptyPromise)(),
 				]);
 			}
@@ -495,7 +501,7 @@ var Components = {
 			}
 			search.onInput = function (value) {
 				base.query = value;
-				return base.display(base.query);
+				return base.display({query: base.query});
 			}
 			base.setSearch = function (options) {
 				options.mode = (options.mode || 'on');
