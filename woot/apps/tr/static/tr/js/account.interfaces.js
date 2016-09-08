@@ -265,7 +265,10 @@ var AccountInterfaces = {
 						template: UI.template('div', 'ie button'),
 						appearance: {
 							classes: [datum.rule],
-						}
+						},
+						state: {
+							stateMap: 'role-state',
+						},
 					}),
 
 					// main wrapper
@@ -326,6 +329,13 @@ var AccountInterfaces = {
 
 					// complete promises.
 					return Promise.all([
+						unitBase.setBindings({
+							'click': function (_this) {
+								Active.set('client', datum.id).then(function () {
+									return _this.triggerState();
+								});
+							},
+						}),
 						unitMainWrapper.setChildren([
 							unitMainHead,
 							unitMainTail,
