@@ -192,6 +192,54 @@ var AccountInterfaces = {
 
 				},
 			}),
+			UI.createComponent('cs-cl-transcription-button', {
+				template: UI.template('div', 'ie button'),
+				appearance: {
+					style: {
+						'left': '0px',
+						'width': '100%',
+						'border': '0px',
+						'height': '30px',
+						'padding-top': '8px',
+						'background-color': 'rgba(255,255,255,0.1)',
+						'border-radius': '0px',
+						'border-bottom': '1px solid #00869B',
+					},
+					html: 'Transcription',
+				},
+			}),
+			UI.createComponent('cs-cl-moderation-button', {
+				template: UI.template('div', 'ie button'),
+				appearance: {
+					style: {
+						'left': '0px',
+						'width': '100%',
+						'border': '0px',
+						'height': '30px',
+						'padding-top': '8px',
+						'background-color': 'rgba(255,255,255,0.1)',
+						'border-radius': '0px',
+						'border-bottom': '1px solid #00869B',
+					},
+					html: 'Moderation',
+				},
+			}),
+			UI.createComponent('cs-cl-upload-button', {
+				template: UI.template('div', 'ie button'),
+				appearance: {
+					style: {
+						'left': '0px',
+						'width': '100%',
+						'border': '0px',
+						'height': '30px',
+						'padding-top': '8px',
+						'background-color': 'rgba(255,255,255,0.1)',
+						'border-radius': '0px',
+						'border-bottom': '1px solid #00869B',
+					},
+					html: 'Upload',
+				},
+			}),
 
 		]).then(function (components) {
 			// unpack components
@@ -204,6 +252,9 @@ var AccountInterfaces = {
 				roleList,
 				controlSidebar,
 				controlList,
+				transcriptionButton,
+				moderationButton,
+				uploadButton,
 			] = components;
 
 			// ASSOCIATE
@@ -476,6 +527,10 @@ var AccountInterfaces = {
 				});
 			}
 
+			// CONTROL SIDEBAR
+
+
+			// complete promises
 			return Promise.all([
 
 				// CLIENT SIDEBAR
@@ -539,6 +594,56 @@ var AccountInterfaces = {
 				}),
 				roleList.setTitle({text: 'Roles', centre: true}),
 				roleList.setSearch({mode: 'off', placeholder: 'Search roles...'}),
+
+				// CONTROL SIDEBAR
+				controlSidebar.components.main.setChildren([
+					controlList,
+				]),
+				controlList.setTitle({text: 'Menu', centre: true}),
+				controlList.setSearch({mode: 'off', placeholder: ''}),
+				controlList.setState({
+					states: [
+						{name: 'control-state', args: {
+							preFn: function (_this) {
+								return Promise.all([
+									Active.get('client'),
+									Active.get('role'),
+								]).then(function (results) {
+									var [clientId, roleId] = results;
+									return Context.get('user.clients.{client_id}.roles.{role_id}'.format({client_id: clientId, role_id: roleId}));
+								}).then(function (role) {
+									if (role.type === 'worker') {
+										// worker
+										return Promise.all([
+											transcriptionButton.setAppearance({classes: {remove: 'hidden'}}),
+											moderationButton.setAppearance({classes: {add: 'hidden'}}),
+											uploadButton.setAppearance({classes: {add: 'hidden'}}),
+										]);
+									} else if (role.type === 'moderator') {
+										// moderator
+										return Promise.all([
+											transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
+											moderationButton.setAppearance({classes: {remove: 'hidden'}}),
+											uploadButton.setAppearance({classes: {add: 'hidden'}}),
+										]);
+									} else if (role.type === 'admin') {
+										// admin
+										return Promise.all([
+											transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
+											moderationButton.setAppearance({classes: {add: 'hidden'}}),
+											uploadButton.setAppearance({classes: {remove: 'hidden'}}),
+										]);
+									}
+								});
+							},
+						}},
+					],
+				}),
+				controlList.list.setChildren([
+					transcriptionButton,
+					moderationButton,
+					uploadButton,
+				]),
 
 			]).then(function () {
 				// base children
