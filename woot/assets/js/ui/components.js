@@ -354,6 +354,9 @@ var Components = {
 					base.currentIndex = undefined;
 					return base.list.removeAll();
 				}).then(function () {
+					base.virtual = base.virtual.sort(function (before, after) {
+						return before.main < after.main ? -1 : (before.main > after.main ? 1 : 0);
+					});
 					return Promise.all(base.virtual.map(function (item, index) {
 						return base.unit(base, item, query, index);
 					})).then(function (listItems) {
