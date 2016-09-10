@@ -497,16 +497,17 @@ var AccountInterfaces = {
 				clientList.setState({
 					states: [
 						{name: 'client-state', args: {
-							fn: function (_this) {
-								// clientList.search.clear().then(function () {
-									return clientList.display({forceLoad: true});
-								// });
+							preFn: function (_this) {
+								return clientList.display({forceLoad: true});
+							},
+							fn: function () {
+								return clientList.search.clear();
 							},
 						}},
 					]
 				}),
 				clientList.setTitle({text: 'Clients', centre: true}),
-				clientList.setSearch({state: 'on', placeholder: 'Search clients...'}),
+				clientList.setSearch({mode: 'off', placeholder: 'Search clients...'}),
 
 				// ROLE SIDEBAR
 				roleList.search.setAppearance({
@@ -527,14 +528,17 @@ var AccountInterfaces = {
 				roleList.setState({
 					states: [
 						{name: 'role-state', args: {
-							fn: function (_this) {
-								roleList.display({forceLoad: true});
+							preFn: function (_this) {
+								return roleList.display({forceLoad: true});
+							},
+							fn: function () {
+								return roleList.search.clear();
 							},
 						}},
 					]
 				}),
 				roleList.setTitle({text: 'Roles', centre: true}),
-				roleList.setSearch({state: 'on', placeholder: 'Search roles...'}),
+				roleList.setSearch({mode: 'off', placeholder: 'Search roles...'}),
 
 			]).then(function () {
 				// base children
