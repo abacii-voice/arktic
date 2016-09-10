@@ -130,11 +130,11 @@ var AccountInterfaces = {
 				position: {
 					main: {
 						on: '0px',
-						off: '-200px',
+						off: '-300px',
 					},
 					back: {
 						on: '0px',
-						off: '-50px',
+						off: '-200px',
 					},
 				},
 				state: {
@@ -151,13 +151,13 @@ var AccountInterfaces = {
 			Components.sidebar('role-sidebar',{
 				position: {
 					main: {
-				 	 on: '50px',
-				 	 off: '-200px',
-				  },
-				  back: {
-				 	 on: '0px',
-				 	 off: '-50px',
-				  },
+						on: '50px',
+						off: '-300px',
+					},
+					back: {
+						on: '0px',
+						off: '-200px',
+					},
 				},
 				state: {
 					primary: 'role-state',
@@ -174,11 +174,11 @@ var AccountInterfaces = {
 				position: {
 					main: {
 						on: '50px',
-						off: '-200px',
+						off: '-300px',
 					},
 					back: {
 						on: '0px',
-						off: '-50px',
+						off: '-200px',
 					},
 				},
 				state: {
@@ -498,7 +498,9 @@ var AccountInterfaces = {
 					states: [
 						{name: 'client-state', args: {
 							fn: function (_this) {
-								clientList.display({forceLoad: true});
+								// clientList.search.clear().then(function () {
+									return clientList.display({forceLoad: true});
+								// });
 							},
 						}},
 					]

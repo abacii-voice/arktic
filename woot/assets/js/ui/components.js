@@ -201,6 +201,11 @@ var Components = {
 					return tail.setAppearance({html: (head.model().text() || base.placeholder)});
 				});
 			}
+			base.clear = function () {
+				return head.setAppearance({html: ''}).then(function () {
+					return tail.setAppearance({html: base.placeholder});
+				});
+			}
 
 			// behaviours
 			base.behaviours = {
@@ -358,8 +363,6 @@ var Components = {
 							return base.list.components.wrapper.setChildren(listItems);
 						});
 					});
-				}).catch(function (error) {
-					console.log(error);
 				});
 			}
 			base.load = function (options) {
@@ -617,7 +620,7 @@ var Components = {
 				template: UI.template('div', 'ie abs border-right centred-vertically'),
 				appearance: {
 					style: {
-						'left': '-200px',
+						'left': '-500px',
 						'height': '70%',
 						'width': '200px',
 					},
@@ -630,7 +633,7 @@ var Components = {
 				template: UI.template('div', 'ie abs border-right centred-vertically'),
 				appearance: {
 					style: {
-						'left': '-50px',
+						'left': '-500px',
 						'height': '70%',
 						'width': '50px',
 					},
