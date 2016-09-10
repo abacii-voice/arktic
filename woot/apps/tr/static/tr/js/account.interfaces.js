@@ -93,22 +93,7 @@ var AccountInterfaces = {
 			});
 		});
 	},
-	moderationInterface: function (id, args) {
-
-	},
-	projectInterface: function (id, args) {
-
-	},
-	adminInterface: function (id, args) {
-
-	},
-	moderatorInterface: function (id, args) {
-
-	},
-	workerInterface: function (id, args) {
-
-	},
-	unifiedInterface: function (id, args) {
+	controlInterface: function (id, args) {
 		return Promise.all([
 			// base
 			UI.createComponent('{id}-base'.format({id: id}), {
@@ -118,11 +103,6 @@ var AccountInterfaces = {
 						'height': '100%',
 					},
 				},
-			}),
-
-			// transcription interface
-			AccountInterfaces.transcriptionInterface('transcription-interface', {
-				interface: args.interface,
 			}),
 
 			// sidebars
@@ -245,7 +225,6 @@ var AccountInterfaces = {
 			// unpack components
 			var [
 				base,
-				transcriptionInterface,
 				clientSidebar,
 				clientList,
 				roleSidebar,
@@ -648,7 +627,6 @@ var AccountInterfaces = {
 			]).then(function () {
 				// base children
 				base.components = {
-					transcriptionInterface: transcriptionInterface,
 					sidebars: {
 						client: clientSidebar,
 						role: roleSidebar,
@@ -656,10 +634,73 @@ var AccountInterfaces = {
 					},
 				}
 				return base.setChildren([
-					transcriptionInterface,
 					clientSidebar,
 					roleSidebar,
 					controlSidebar,
+				]);
+			}).then(function () {
+				return base;
+			});
+		});
+	},
+	projectInterface: function (id, args) {
+
+	},
+	adminInterface: function (id, args) {
+
+	},
+	moderatorInterface: function (id, args) {
+
+	},
+	workerInterface: function (id, args) {
+
+	},
+	unifiedInterface: function (id, args) {
+		return Promise.all([
+			// base
+			UI.createComponent('{id}-base'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': '100%',
+					},
+				},
+			}),
+
+			// transcription interface
+			AccountInterfaces.transcriptionInterface('transcription-interface', {
+				interface: args.interface,
+			}),
+
+			// control interface
+			AccountInterfaces.controlInterface('control-interface', {
+				interface: args.interface,
+			}),
+
+		]).then(function (components) {
+			// unpack components
+			var [
+				base,
+				transcriptionInterface,
+				controlInterface,
+			] = components;
+
+			// ASSOCIATE
+			// key bindings and other
+			// TRANSCRIPTION INTERFACE
+
+			// complete promises
+			return Promise.all([
+
+			]).then(function () {
+				// base children
+				base.components = {
+					transcriptionInterface: transcriptionInterface,
+					controlInterface: controlInterface,
+				}
+				return base.setChildren([
+					transcriptionInterface,
+					controlInterface
 				]);
 			}).then(function () {
 				return base;
