@@ -269,8 +269,8 @@ var UI = {
 				var _this = this;
 
 				return Promise.all([
-					this.addStates(state.states),
-					this.addStateMap(state.stateMap),
+					_this.addStates(state.states),
+					_this.addStateMap(state.stateMap),
 				]);
 			}
 		}
@@ -633,6 +633,7 @@ var UI = {
 	createState: function (component, name, args) {
 		var _this = this;
 		return new Promise(function(resolve, reject) {
+			args = args === 'default' ? undefined : args;
 			var state = new _this.state(component, name, (args || component.defaultState));
 			state.index = _this.states.length - 1; // able to find state again
 			_this.states.push(state);
