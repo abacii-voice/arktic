@@ -1,10 +1,13 @@
 var AccountInterfaces = {
+	moderationInterface: function (id, args) {
+
+	},
 	transcriptionInterface: function (id, args) {
 
 		return Promise.all([
 			// base
 			UI.createComponent('transcription-base', {
-
+				template: UI.template('div', 'ie abs'),
 			}),
 
 			// control panel
@@ -80,13 +83,26 @@ var AccountInterfaces = {
 
 			// connect
 			return Promise.all([
-
+				base.setState({
+					defaultState: {
+						classes: ['hidden'],
+					},
+					states: [
+						{name: 'transcription-state', args: {
+							classes: {remove: 'hidden'},
+						}},
+						{name: 'client-state', args: 'default'},
+						{name: 'role-state', args: 'default'},
+						{name: 'control-state', args: 'default'},
+					],
+				}),
 			]).then(function () {
 				base.components = {
 
 				}
 				return base.setChildren([
-
+					buttonPanel,
+					counter,
 				]);
 			}).then(function () {
 				return base;
@@ -142,7 +158,7 @@ var AccountInterfaces = {
 				state: {
 					primary: 'role-state',
 					secondary: 'control-state',
-					deactivate: ['client-state'],
+					deactivate: ['client-state', 'transcription-state'],
 				},
 			}),
 			Components.searchableList('cs-role-list', {
@@ -163,7 +179,7 @@ var AccountInterfaces = {
 				},
 				state: {
 					primary: 'control-state',
-					secondary: ['other-state'],
+					secondary: ['transcription-state'],
 					deactivate: ['client-state', 'role-state'],
 				},
 			}),
@@ -186,6 +202,14 @@ var AccountInterfaces = {
 						'border-bottom': '1px solid #00869B',
 					},
 					html: 'Transcription',
+				},
+				state: {
+					stateMap: 'transcription-state',
+				},
+				bindings: {
+					'click': function (_this) {
+						return _this.triggerState();
+					},
 				},
 			}),
 			UI.createComponent('cs-cl-moderation-button', {
