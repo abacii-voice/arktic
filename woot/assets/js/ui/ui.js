@@ -204,45 +204,48 @@ var UI = {
 				this.style = (appearance.style || currentStyle);
 
 				if (this.isRendered) {
+					// model
+					var model = _this.model();
+
 					return new Promise(function(resolve, reject) {
-						// model
-						var model = _this.model();
-
-						// properties
-						if (appearance.properties) {
-							Object.keys(_this.properties).forEach(function (property) {
-								model.attr(property, _this.properties[property]);
-							});
-						}
-
-						// html - this will erase children of the current model
-						if (appearance.html !== undefined) {
-							model.html(_this.html);
-						}
-
-						// classes
-						if (appearance.classes) {
-							// remove current classes that are not in the new classes variable
-							if (removeClasses) {
-								removeClasses.forEach(function (cls) {
-									model.removeClass(cls);
-								});
-							}
-
-							// add new classes
-							if (addClasses) {
-								addClasses.forEach(function (cls) {
-									model.addClass(cls);
-								});
-							}
-						}
-
 						// style
 						if (appearance.style) {
 							model.animate(_this.style, 300);
 						}
-
 						resolve();
+					}).then(function () {
+						// classes
+						if (appearance.classes) {
+							return Promise.all([
+								Promise.all(removeClasses.map(function (cls) {
+									return new Promise(function(resolve, reject) {
+										model.removeClass(cls);
+										resolve();
+									});
+								})),
+								Promise.all(addClasses.map(function (cls) {
+									return new Promise(function(resolve, reject) {
+										model.addClass(cls);
+										resolve();
+									});
+								})),
+							]);
+						}
+					}).then(function () {
+						return new Promise(function(resolve, reject) {
+							// html - this will erase children of the current model
+							if (appearance.html !== undefined) {
+								model.html(_this.html);
+							}
+
+							// properties
+							if (appearance.properties) {
+								Object.keys(_this.properties).forEach(function (property) {
+									model.attr(property, _this.properties[property]);
+								});
+							}
+							resolve();
+						});
 					});
 				} else {
 					return new Promise(function(resolve, reject) {
