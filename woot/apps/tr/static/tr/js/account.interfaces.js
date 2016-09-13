@@ -83,13 +83,16 @@ var AccountInterfaces = {
 
 			// connect
 			return Promise.all([
+				base.setAppearance({
+					classes: ['hidden'],
+				}),
 				base.setState({
 					defaultState: {
-						classes: ['hidden'],
+						classes: {add: ['hidden']},
 					},
 					states: [
 						{name: 'transcription-state', args: {
-							classes: {remove: 'hidden'},
+							classes: {remove: ['hidden']},
 						}},
 						{name: 'client-state', args: 'default'},
 						{name: 'role-state', args: 'default'},
