@@ -239,7 +239,7 @@ var UI = {
 
 						// style
 						if (appearance.style) {
-							model.animate(_this.style);
+							model.animate(_this.style, 300);
 						}
 
 						resolve();
@@ -508,41 +508,19 @@ var UI = {
 			return UI.getComponent(this.root);
 		}
 		this.changeState = function (state) {
-			// 1. set new state
-			this.state = state;
-
-			// 2. get model
 			var _this = this;
-			var model = _this.model();
 
-			// 3. run pre FN
-			return (_this.state.preFn || emptyPromise)(_this).then(function () {
-				return Promise.all((_this.stateClasses || []).map(function (className) {
-					return new Promise(function(resolve, reject) {
-						model.removeClass(className);
-						resolve();
-					});
-				}));
-			}).then(function () {
-				_this.stateClasses = _this.state.classes !== undefined ? _this.state.classes : [];
-				return Promise.all(_this.stateClasses.map(function (className) {
-					return new Promise(function(resolve, reject) {
-						model.addClass(className);
-						resolve();
-					});
-				}));
-			}).then(function () {
-				return new Promise(function(resolve, reject) {
-					if (_this.state.html !== undefined) {
-						model.html(_this.state.html);
-					}
-					resolve();
+			// 1. Run preFn
+			return (state.preFn || emptyPromise)(_this).then(function () {
+				// 2. Run appearance
+				return _this.setAppearance({
+					classes: state.classes,
+					style: state.style,
+					html: state.html,
 				});
 			}).then(function () {
-				_this.stateStyle = _this.state.style !== undefined ? _this.state.style : {};
-				return model.animate(_this.stateStyle, 300).promise();
-			}).then(function () {
-				return (_this.state.fn || emptyPromise)(_this);
+				// 3. Run fn
+				return (state.fn || emptyPromise)(_this);
 			});
 		}
 
