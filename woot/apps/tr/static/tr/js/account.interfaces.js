@@ -8,6 +8,14 @@ var AccountInterfaces = {
 			// base
 			UI.createComponent('transcription-base', {
 				template: UI.template('div', 'ie abs'),
+				appearance: {
+					style: {
+						'height': '70%',
+						'left': '60px',
+						'width': 'calc(100% - 70px)',
+					},
+					classes: ['centred-vertically'],
+				},
 			}),
 
 			// control panel
@@ -26,13 +34,24 @@ var AccountInterfaces = {
 				appearance: {
 					style: {
 						'width': '100px',
+						'height': '100%',
+						'float': 'left',
+						'margin-right': '{}px'.format(args.interface.margin),
 					}
 				},
 			}),
 
 			// audio caption panel
 			UI.createComponent('tb-audio-caption-panel', {
-
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': '400px',
+						'height': '100%',
+						'float': 'left',
+						'margin-right': '{}px'.format(args.interface.margin),
+					},
+				},
 			}),
 			AccountComponents.audio('tb-acp-audio', {
 				appearance: {
@@ -46,13 +65,27 @@ var AccountInterfaces = {
 			}),
 			AccountComponents.captionField('tb-acp-caption', {
 				appearance: {
-
+					style: {
+						'height': 'calc(100% - 70px)',
+						'width': '100%',
+						'padding': '8px',
+						'padding-left': '16px',
+						'padding-right': '0px',
+					},
 				},
 			}),
 
 			// autocomplete panel
 			UI.createComponent('tb-autocomplete-panel', {
-
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': '300px',
+						'height': '100%',
+						'float': 'left',
+						'margin-right': '{}px'.format(args.interface.margin),
+					},
+				},
 			}),
 			Components.searchableList('tb-ap-autocomplete', {
 				appearance: {
@@ -97,6 +130,20 @@ var AccountInterfaces = {
 						{name: 'control-state', args: 'default'},
 					],
 				}),
+
+				// buttonPanel
+
+				// audioCaptionPanel
+				audioCaptionPanel.setChildren([
+					audio,
+					caption,
+				]),
+
+				// autocompletePanel
+				autocompletePanel.setChildren([
+					autocomplete,
+				]),
+
 			]).then(function () {
 				base.components = {
 
@@ -104,6 +151,8 @@ var AccountInterfaces = {
 				return base.setChildren([
 					buttonPanel,
 					counter,
+					audioCaptionPanel,
+					autocompletePanel,
 				]);
 			}).then(function () {
 				return base;
@@ -692,13 +741,13 @@ var AccountInterfaces = {
 				},
 			}),
 
-			// transcription interface
-			AccountInterfaces.transcriptionInterface('transcription-interface', {
+			// control interface
+			AccountInterfaces.controlInterface('control-interface', {
 				interface: args.interface,
 			}),
 
-			// control interface
-			AccountInterfaces.controlInterface('control-interface', {
+			// transcription interface
+			AccountInterfaces.transcriptionInterface('transcription-interface', {
 				interface: args.interface,
 			}),
 
@@ -706,8 +755,8 @@ var AccountInterfaces = {
 			// unpack components
 			var [
 				base,
-				transcriptionInterface,
 				controlInterface,
+				transcriptionInterface,
 			] = components;
 
 			// ASSOCIATE
@@ -720,12 +769,12 @@ var AccountInterfaces = {
 			]).then(function () {
 				// base children
 				base.components = {
-					transcriptionInterface: transcriptionInterface,
 					controlInterface: controlInterface,
+					transcriptionInterface: transcriptionInterface,
 				}
 				return base.setChildren([
+					controlInterface,
 					transcriptionInterface,
-					controlInterface
 				]);
 			}).then(function () {
 				return base;
