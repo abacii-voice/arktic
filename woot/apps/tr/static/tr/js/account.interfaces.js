@@ -87,13 +87,10 @@ var AccountInterfaces = {
 					classes: ['hidden'],
 				}),
 				base.setState({
-					defaultState: {
-						// preFn: 
-						classes: {add: ['hidden']},
-					},
+					defaultState: {fn: UI.functions.hide},
 					states: [
 						{name: 'transcription-state', args: {
-							classes: {remove: ['hidden']},
+							fn: UI.functions.show,
 						}},
 						{name: 'client-state', args: 'default'},
 						{name: 'role-state', args: 'default'},

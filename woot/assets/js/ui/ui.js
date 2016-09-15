@@ -183,7 +183,7 @@ var UI = {
 			var currentProperties = (this.properties || {});
 			var currentHTML = (this.html || '');
 			var currentClasses = (this.classes || []);
-			var currentStyle = (this.style || {});
+			var currentStyle = this.style;
 
 			if (appearance !== undefined) {
 				this.properties = (appearance.properties || currentProperties);
@@ -207,13 +207,7 @@ var UI = {
 					// model
 					var model = _this.model();
 
-					return new Promise(function(resolve, reject) {
-						// style
-						if (appearance.style) {
-							model.animate(_this.style, 300);
-						}
-						resolve();
-					}).then(function () {
+					return (_this.style ? model.animate(_this.style, 300).promise : emptyPromise)().then(function () {
 						// classes
 						if (appearance.classes) {
 							return Promise.all([
@@ -650,11 +644,23 @@ var UI = {
 
 	// FUNCTIONS
 	functions: {
-		activate: function (_this) {
-			_this.model().css({'display': ' block'});
+		show: function (_this) {
+			return _this.setAppearance({
+				classes: {remove: ['hidden']},
+			}).then(function () {
+				return _this.setAppearance({
+					style: {opacity: 1},
+				});
+			});
 		},
-		deactivate: function (_this) {
-			_this.model().css({'display': 'none'});
+		hide: function (_this) {
+			return _this.setAppearance({
+				style: {opacity: 0},
+			}).then(function () {
+				return _this.setAppearance({
+					classes: {add: ['hidden']},
+				});
+			});
 		},
 		triggerState: function (_this) {
 			_this.triggerState();
