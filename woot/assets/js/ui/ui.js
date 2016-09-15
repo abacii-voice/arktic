@@ -183,7 +183,7 @@ var UI = {
 			var currentProperties = (this.properties || {});
 			var currentHTML = (this.html || '');
 			var currentClasses = (this.classes || []);
-			var currentStyle = this.style;
+			var currentStyle = (this.style || {});
 
 			if (appearance !== undefined) {
 				this.properties = (appearance.properties || currentProperties);
@@ -206,8 +206,7 @@ var UI = {
 				if (this.isRendered) {
 					// model
 					var model = _this.model();
-
-					return (_this.style ? model.animate(_this.style, 300).promise : emptyPromise)().then(function () {
+					return model.animate(appearance.style, 300).promise().then(function () {
 						// classes
 						if (appearance.classes) {
 							return Promise.all([
