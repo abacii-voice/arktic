@@ -59,6 +59,11 @@ var AccountInterfaces = {
 
 					},
 				},
+				state: {
+					states: {
+
+					},
+				},
 				registry: {
 					'transcription-state': {
 						path: 'clients',
@@ -83,8 +88,10 @@ var AccountInterfaces = {
 								Active.get('project'),
 							]).then(function (results) {
 								// unpack variables
-								var client = results[0];
-								var project = results[1];
+								var [
+									client,
+									project,
+								] = results;
 
 								// return path
 								return 'clients.{client}.projects.{project}.transcriptions'.format({client: client, project: project});
@@ -102,7 +109,6 @@ var AccountInterfaces = {
 									client,
 									role_id,
 								] = results;
-								console.log('here');
 
 								return 'user.clients.{client}.roles.{role_id}.active_transcription_token'.format({client: client, role_id: role_id});
 							});
@@ -169,14 +175,14 @@ var AccountInterfaces = {
 				}),
 				base.setState({
 					defaultState: {fn: UI.functions.hide},
-					states: [
-						{name: 'transcription-state', args: {
+					states: {
+						'transcription-state': {
 							fn: UI.functions.show,
-						}},
-						{name: 'client-state', args: 'default'},
-						{name: 'role-state', args: 'default'},
-						{name: 'control-state', args: 'default'},
-					],
+						},
+						'client-state': 'default',
+						'role-state': 'default',
+						'control-state': 'default',
+					},
 				}),
 
 				// buttonPanel
@@ -654,16 +660,16 @@ var AccountInterfaces = {
 					clientList,
 				]),
 				clientList.setState({
-					states: [
-						{name: 'client-state', args: {
+					states: {
+						'client-state': {
 							preFn: function (_this) {
 								return clientList.display({forceLoad: true});
 							},
 							fn: function () {
 								return clientList.search.clear();
 							},
-						}},
-					]
+						},
+					},
 				}),
 				clientList.setTitle({text: 'Clients', centre: true}),
 				clientList.setSearch({mode: 'off', placeholder: 'Search clients...'}),
@@ -685,16 +691,16 @@ var AccountInterfaces = {
 					roleList,
 				]),
 				roleList.setState({
-					states: [
-						{name: 'role-state', args: {
+					states: {
+						'role-state': {
 							preFn: function (_this) {
 								return roleList.display({forceLoad: true});
 							},
 							fn: function () {
 								return roleList.search.clear();
 							},
-						}},
-					]
+						},
+					}
 				}),
 				roleList.setTitle({text: 'Roles', centre: true}),
 				roleList.setSearch({mode: 'off', placeholder: 'Search roles...'}),
@@ -706,8 +712,8 @@ var AccountInterfaces = {
 				controlList.setTitle({text: 'Menu', centre: true}),
 				controlList.setSearch({mode: 'off', placeholder: ''}),
 				controlList.setState({
-					states: [
-						{name: 'control-state', args: {
+					states: {
+						'control-state': {
 							preFn: function (_this) {
 								return Promise.all([
 									Active.get('client'),
@@ -740,8 +746,8 @@ var AccountInterfaces = {
 									}
 								});
 							},
-						}},
-					],
+						},
+					},
 				}),
 				controlList.list.setChildren([
 					transcriptionButton,
@@ -1213,13 +1219,13 @@ var AccountInterfaces = {
 
 					// list
 					autocomplete.setState({
-						states: [
-							{name: 'client-state', args: {
+						states: {
+							'client-state': {
 								fn: function (_this) {
 									_this.display();
 								},
-							}},
-						]
+							},
+						}
 					}),
 				]).then(function () {
 					base.components = {
@@ -1410,13 +1416,13 @@ var AccountInterfaces = {
 				// complete promises.
 				return Promise.all([
 					list.setState({
-						states: [
-							{name: 'client-state', args: {
+						states: {
+							'client-state': {
 								fn: function (_this) {
 									_this.display();
 								},
-							}},
-						]
+							},
+						}
 					}),
 				]).then(function (results) {
 					base.components = {

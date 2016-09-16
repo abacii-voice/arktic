@@ -273,14 +273,14 @@ var UI = {
 		this.addStates = function (states) {
 			if (states !== undefined) {
 				var _this = this;
-				return Promise.all(states.map(function (state) {
-					return _this.addState(state);
+				return Promise.all(Object.keys(states).map(function (stateName) {
+					return _this.addState(stateName, states[stateName]);
 				}));
 			}
 		}
-		this.addState = function (state) {
+		this.addState = function (stateName, state) {
 			// add as new state
-			return UI.createState(this, state.name, state.args);
+			return UI.createState(this, stateName, state);
 		}
 		this.addStateMap = function (stateMap) {
 			var _this = this;
