@@ -61,57 +61,11 @@ var AccountInterfaces = {
 				},
 				state: {
 					states: {
-
-					},
-				},
-				registry: {
-					'transcription-state': {
-						path: 'clients',
-						fn: function (_this) {
-							_this.canvas.start();
-							_this.update();
-						}
-					},
-				},
-				options: {
-
-					// number of loads either side of current
-					threshold: 4,
-
-					// where to gather references
-					source: {
-
-						// adaptive location in Context to fetch audio references
-						path: function () {
-							return Promise.all([
-								Active.get('client'),
-								Active.get('project'),
-							]).then(function (results) {
-								// unpack variables
-								var [
-									client,
-									project,
-								] = results;
-
-								// return path
-								return 'clients.{client}.projects.{project}.transcriptions'.format({client: client, project: project});
-							});
-						},
-
-						// fetch active token to filter transcription references
-						token: function () {
-							return Promise.all([
-								Active.get('client'),
-								Permission.get(),
-							]).then(function (results) {
-								// unpack variable
-								var [
-									client,
-									role_id,
-								] = results;
-
-								return 'user.clients.{client}.roles.{role_id}.active_transcription_token'.format({client: client, role_id: role_id});
-							});
+						'transcription-state': {
+							preFn: function (_this) {
+								_this.canvas.start();
+								return _this.update();
+							},
 						},
 					},
 				},
@@ -166,7 +120,37 @@ var AccountInterfaces = {
 			] = components;
 
 			// bindings
+			// Audio
+			audio.threshold = 4;
+			audio.path = function () {
+				return Promise.all([
+					Active.get('client'),
+					Active.get('project'),
+				]).then(function (results) {
+					// unpack variables
+					var [
+						client,
+						project,
+					] = results;
 
+					// return path
+					return 'clients.{client}.projects.{project}.transcriptions'.format({client: client, project: project});
+				});
+			}
+			audio.token = function () {
+				return Promise.all([
+					Active.get('client'),
+					Permission.get(),
+				]).then(function (results) {
+					// unpack variable
+					var [
+						client,
+						role_id,
+					] = results;
+
+					return 'user.clients.{client}.roles.{role_id}.active_transcription_token'.format({client: client, role_id: role_id});
+				});
+			}
 
 			// connect
 			return Promise.all([
