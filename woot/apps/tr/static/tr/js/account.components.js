@@ -125,7 +125,6 @@ var AccountComponents = {
 			audioTrack.buffer = {};
 			audioTrack.active = 0;
 			audioTrack.controller = {};
-			audioTrack.threshold = (args.options.threshold || 4);
 			audioTrack.canvas = audioTrackCanvas;
 
 			// initialise node and create context
@@ -151,7 +150,7 @@ var AccountComponents = {
 					return _this.load().then(function () {
 						return _this.pre();
 					});
-				} else if (remaining < _this.threshold) {
+				} else if (remaining < (_this.threshold || 4)) {
 					return Promise.all([
 						_this.load({force: true}),
 						_this.pre(),
@@ -166,8 +165,8 @@ var AccountComponents = {
 				var total = Object.keys(_this.buffer).length;
 				// load more and process into buffer
 				return Promise.all([
-					args.options.source.path(),
-					args.options.source.token().then(function (tokenPath) {
+					audioTrack.path(),
+					audioTrack.token().then(function (tokenPath) {
 						return Context.get(tokenPath, {force: force});
 					}),
 				]).then(function (options) {
