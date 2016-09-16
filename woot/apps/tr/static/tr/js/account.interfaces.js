@@ -98,9 +98,10 @@ var AccountInterfaces = {
 								Permission.get(),
 							]).then(function (results) {
 								// unpack variable
-								var client = results[0];
-								var user_id = results[1];
-								var role_id = results[2];
+								var [
+									client,
+									role_id,
+								] = results;
 
 								return 'user.clients.{client}.roles.{role_id}.active_transcription_token'.format({client: client, role_id: role_id});
 							});
