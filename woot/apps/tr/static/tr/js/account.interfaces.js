@@ -102,6 +102,7 @@ var AccountInterfaces = {
 									client,
 									role_id,
 								] = results;
+								console.log('here');
 
 								return 'user.clients.{client}.roles.{role_id}.active_transcription_token'.format({client: client, role_id: role_id});
 							});
@@ -608,7 +609,10 @@ var AccountInterfaces = {
 					return Promise.all([
 						unitBase.setBindings({
 							'click': function (_this) {
-								Active.set('role', datum.id).then(function () {
+								return Promise.all([
+									Active.set('role', datum.id),
+									Permission.set(datum.id),
+								]).then(function () {
 									return _this.triggerState();
 								});
 							},
