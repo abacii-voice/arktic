@@ -153,6 +153,331 @@ var AccountInterfaces = {
 				});
 			}
 
+			// Autocomplete
+			// KEYBINDINGS
+			Mousetrap.bind('up', function (event) {
+				event.preventDefault();
+				Promise.all([
+					autocomplete.behaviours.up(),
+					caption.behaviours.up(),
+				]);
+			});
+
+			Mousetrap.bind('down', function (event) {
+				event.preventDefault();
+				Promise.all([
+					autocomplete.behaviours.down(),
+					caption.behaviours.down(),
+				]);
+			});
+
+			Mousetrap.bind('left', function (event) {
+				Promise.all([
+					autocomplete.behaviours.left(),
+					caption.behaviours.left(),
+				]);
+			});
+
+			Mousetrap.bind('right', function (event) {
+				Promise.all([
+					autocomplete.behaviours.right(),
+					caption.behaviours.right(),
+				]);
+			});
+
+			Mousetrap.bind(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], function (event) {
+				event.preventDefault();
+				var char = String.fromCharCode(event.which);
+				Promise.all([
+					autocomplete.behaviours.number(char),
+					caption.behaviours.number(char),
+				]);
+			});
+
+			Mousetrap.bind('enter', function (event) {
+				event.preventDefault();
+				Promise.all([
+					autocomplete.behaviours.enter(),
+					caption.behaviours.enter(),
+				]);
+			});
+
+			Mousetrap.bind('backspace', function (event) {
+				Promise.all([
+					autocomplete.behaviours.backspace(),
+					caption.behaviours.backspace(),
+				]);
+			});
+
+			Mousetrap.bind('alt+backspace', function (event) {
+				Promise.all([
+					caption.behaviours.altbackspace(),
+				]);
+			});
+
+			Mousetrap.bind('space', function (event) {
+				event.preventDefault();
+				Promise.all([
+					caption.behaviours.space(),
+				]);
+			});
+
+			Mousetrap.bind('alt+right', function (event) {
+				caption.behaviours.altright();
+			});
+
+			Mousetrap.bind('alt+left', function (event) {
+				caption.behaviours.altleft();
+			});
+
+			// CAPTION
+			caption.unit = function (text, type) {
+				var key = makeid();
+
+				// classes
+				jss.set('#{id}-{key}-base'.format({id: caption.id, key: key}), {
+					'height': '30px',
+					'margin': '0px',
+					'display': 'inline-block',
+				});
+				jss.set('#{id}-{key}-base.tag'.format({id: caption.id, key: key}), {
+
+				});
+				jss.set('#{id}-{key}-base.active .head'.format({id: caption.id, key: key}), {
+					'color': '#fff',
+				});
+
+				// components
+				return Promise.all([
+					// base
+					UI.createComponent('{id}-{key}-base'.format({id: caption.id, key: key}), {
+						template: UI.template('div', 'ie'),
+					}),
+
+					// autocomplete element
+					Components.searchableList('{id}-{key}-autocomplete'.format({id: caption.id, key: key}), {
+						appearance: {
+							style: {
+								'display': 'inline-block',
+							},
+						},
+					}),
+
+				]).then(function (unitComponents) {
+					var [
+						unitBase,
+						unitAutocomplete,
+					] = unitComponents;
+
+					// clone page autocomplete
+					unitAutocomplete.clone(autocomplete);
+					unitAutocomplete.autocomplete = true;
+					unitAutocomplete.searchExternal = {
+						onFocus: function () {
+							return caption.components.wrapper.setActive({index: unitBase.index});
+						},
+					}
+
+					// methods
+					unitBase.focus = function (mode) {
+						return unitAutocomplete.search.focus(mode);
+					}
+					unitBase.activate = function () {
+						return unitBase.setAppearance({classes: {add: 'active'}}).then(function () {
+
+						});
+					}
+					unitBase.deactivate = function () {
+						return Promise.all([
+							unitBase.setAppearance({classes: {remove: 'active'}}),
+							unitAutocomplete.search.components.tail.setAppearance({html: unitAutocomplete.search.components.head.model().text()}),
+						]);
+					}
+					unitBase.isEmpty = function () {
+						return unitAutocomplete.search.components.head.model().text().length === 0;
+					}
+
+					return Promise.all([
+						unitAutocomplete.search.setAppearance({
+							style: {
+								'height': '30px',
+								'padding-left': '0px',
+							},
+							classes: {
+								remove: ['border', 'border-radius'],
+							},
+						}),
+					]).then(function () {
+						// children
+						unitBase.components = {
+							autocomplete: unitAutocomplete,
+						}
+						return unitBase.setChildren([
+							unitAutocomplete,
+						]);
+					}).then(function () {
+						return unitBase;
+					});
+				});
+			}
+
+			// LIST
+			autocomplete.onInput = function () {
+
+			}
+			autocomplete.components.search.onComplete = function () {
+
+			}
+			autocomplete.setSearch('on');
+			autocomplete.autocomplete = true;
+			autocomplete.targets = [
+				{
+					name: 'clients',
+					path: function () {
+						return new Promise(function(resolve, reject) {
+							resolve('clients');
+						});
+					},
+					process: function (data) {
+						return new Promise(function(resolve, reject) {
+							var results = Object.keys(data).map(function (key) {
+								var client = data[key];
+								return {
+									id: key,
+									main: client.name,
+									rule: 'client',
+								}
+							});
+
+							resolve(results);
+						});
+					},
+					filter: {
+						default: true,
+						char: '/',
+						key: 'forwardslash',
+						display: 'Client',
+						button: 'Clients',
+						rule: 'client',
+					},
+				},
+			]
+			autocomplete.unit = function (_this, datum, query, index) {
+				query = (query || '');
+
+				// base class
+				jss.set('#{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
+					'height': '30px',
+					'width': '100%',
+					'border-bottom': '1px solid #ccc',
+					'padding': '0px',
+					'padding-left': '10px',
+					'text-align': 'left',
+				});
+				jss.set('#{id}-{object}-base.active'.format({id: _this.id, object: datum.id}), {
+					'background-color': 'rgba(255,255,255,0.1)'
+				});
+				jss.set('#{id}-{object}-base.client'.format({id: _this.id, object: datum.id}), {
+					'background-color': 'rgba(255,255,0,0.05)'
+				});
+				jss.set('#{id}-{object}-base.client.active'.format({id: _this.id, object: datum.id}), {
+					'background-color': 'rgba(255,255,0,0.1)'
+				});
+
+				return Promise.all([
+					// base component
+					UI.createComponent('{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('div', 'ie button'),
+						appearance: {
+							classes: [datum.rule],
+						}
+					}),
+
+					// main wrapper
+					UI.createComponent('{id}-{object}-main-wrapper'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('div', 'ie centred-vertically'),
+						appearance: {
+							style: {
+								'left': '0px',
+							},
+						},
+					}),
+
+					// main
+					UI.createComponent('{id}-{object}-main-head'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('span', 'ie'),
+						appearance: {
+							style: {
+								'color': '#eee',
+								'display': 'inline-block',
+								'position': 'absolute',
+							},
+							html: datum.main.substring(0, query.length),
+						},
+					}),
+					UI.createComponent('{id}-{object}-main-tail'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('span', 'ie'),
+						appearance: {
+							style: {
+								'display': 'inline-block',
+							},
+							html: datum.main,
+						},
+					}),
+
+					// index
+					UI.createComponent('{id}-{object}-index'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('div', 'ie abs centred-vertically'),
+						appearance: {
+							style: {
+								'right': '5px',
+							},
+							html: index,
+						},
+					}),
+
+				]).then(function (unitComponents) {
+					var [
+						unitBase,
+						unitMainWrapper,
+						unitMainHead,
+						unitMainTail,
+						unitIndex,
+					] = unitComponents;
+
+					// set metadata
+					datum.metadata = {
+						query: query,
+						complete: datum.main,
+						combined: query + datum.main.substring(query.length),
+						type: datum.rule,
+					}
+
+					unitBase.activate = function () {
+						return unitBase.setAppearance({classes: {add: ['active']}});
+					}
+
+					unitBase.deactivate = function () {
+						return unitBase.setAppearance({classes: {remove: ['active']}});
+					}
+
+					// complete promises.
+					return Promise.all([
+						unitMainWrapper.setChildren([
+							unitMainHead,
+							unitMainTail,
+						]),
+					]).then(function () {
+						return unitBase.setChildren([
+							unitMainWrapper,
+							unitIndex,
+						]);
+					}).then(function () {
+						return unitBase;
+					});
+				});
+			}
+
 			// connect
 			return Promise.all([
 				base.setAppearance({
