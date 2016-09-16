@@ -681,14 +681,14 @@ var Components = {
 				// These can be sets of states. Primary, main is active; secondary, back is active; deactivate, neither is active.
 				stateSet.forEach(function (state) {
 					if (category === 'primary') {
-						main.addState({name: state, args: onOff(args.position.main.on)});
-						back.addState({name: state, args: onOff(args.position.back.off)});
+						main.addState(state, onOff(args.position.main.on));
+						back.addState(state, onOff(args.position.back.off));
 					} else if (category === 'secondary') {
-						main.addState({name: state, args: onOff(args.position.main.off)});
-						back.addState({name: state, args: onOff(args.position.back.on)});
+						main.addState(state, onOff(args.position.main.off));
+						back.addState(state, onOff(args.position.back.on));
 					} else if (category === 'deactivate') {
-						main.addState({name: state, args: onOff(args.position.main.off)});
-						back.addState({name: state, args: onOff(args.position.back.off)});
+						main.addState(state, onOff(args.position.main.off));
+						back.addState(state, onOff(args.position.back.off));
 					}
 				});
 			});
