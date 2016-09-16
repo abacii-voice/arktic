@@ -13,10 +13,12 @@ UI.app('hook', [
 	return app.render();
 }).then(function () {
 	return Promise.all([
-		// Active.set('client', '05ff19e5-446f-43cb-ae3e-8b2a3f7d5a40'),
-		// Active.set('role', 'a48408d1-81cc-44da-927e-40d081f10e0b'),
-		// Permission.set('a48408d1-81cc-44da-927e-40d081f10e0b'),
+		Context.get('clients'),
+		Context.get('user'),
+		Active.set('client', '030c6bd1-e37c-4af7-a6d7-89d05bf3bc57'),
+		Active.set('role', '5e84c20d-b52c-4acc-af43-8c1ad7091ea8'),
+		Permission.set('5e84c20d-b52c-4acc-af43-8c1ad7091ea8'),
 	]);
 }).then(function () {
-	return UI.changeState('client-state');
+	return UI.changeState('transcription-state');
 });

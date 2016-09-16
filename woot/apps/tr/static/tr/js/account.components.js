@@ -150,7 +150,7 @@ var AccountComponents = {
 					return _this.load().then(function () {
 						return _this.pre();
 					});
-				} else if (remaining < (_this.threshold || 4)) {
+				} else if (remaining < (base.threshold || 4)) {
 					return Promise.all([
 						_this.load({force: true}),
 						_this.pre(),
@@ -165,8 +165,8 @@ var AccountComponents = {
 				var total = Object.keys(_this.buffer).length;
 				// load more and process into buffer
 				return Promise.all([
-					audioTrack.path(),
-					audioTrack.token().then(function (tokenPath) {
+					base.path(),
+					base.token().then(function (tokenPath) {
 						return Context.get(tokenPath, {force: force});
 					}),
 				]).then(function (options) {
@@ -194,8 +194,8 @@ var AccountComponents = {
 				var _this = audioTrack;
 				// determine which audio elements to load
 				// load n either side of active index.
-				var lower = _this.active > 1 ? _this.active - _this.threshold + 2 : 0;
-				var upper = _this.active > 1 ? _this.active + _this.threshold - 1 : _this.threshold + 1;
+				var lower = _this.active > 1 ? _this.active - (base.threshold || 4) + 2 : 0;
+				var upper = _this.active > 1 ? _this.active + (base.threshold || 4) - 1 : (base.threshold || 4) + 1;
 				var indices = [];
 				for (i=lower; i<upper; i++) {
 					indices.push(i);

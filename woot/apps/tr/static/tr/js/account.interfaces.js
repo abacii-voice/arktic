@@ -56,7 +56,7 @@ var AccountInterfaces = {
 			AccountComponents.audio('tb-cp-audio', {
 				appearance: {
 					style: {
-
+						'height': '60px',
 					},
 				},
 				state: {
@@ -125,16 +125,19 @@ var AccountInterfaces = {
 			audio.path = function () {
 				return Promise.all([
 					Active.get('client'),
-					Active.get('project'),
+					Promise.all([
+						Active.get('client'),
+						Permission.get(),
+					]).then(function (results) {
+						var [client_id, role_id] = results;
+						return Context.get('user.clients.{client_id}.roles.{role_id}.project'.format({client_id: client_id, role_id: role_id}));
+					}),
 				]).then(function (results) {
 					// unpack variables
-					var [
-						client,
-						project,
-					] = results;
+					var [client_id, project_id] = results;
 
 					// return path
-					return 'clients.{client}.projects.{project}.transcriptions'.format({client: client, project: project});
+					return 'clients.{client_id}.projects.{project_id}.transcriptions'.format({client_id: client_id, project_id: project_id});
 				});
 			}
 			audio.token = function () {
@@ -143,12 +146,10 @@ var AccountInterfaces = {
 					Permission.get(),
 				]).then(function (results) {
 					// unpack variable
-					var [
-						client,
-						role_id,
-					] = results;
+					var [client_id, role_id] = results;
 
-					return 'user.clients.{client}.roles.{role_id}.active_transcription_token'.format({client: client, role_id: role_id});
+					// return path
+					return 'user.clients.{client_id}.roles.{role_id}.active_transcription_token'.format({client_id: client_id, role_id: role_id});
 				});
 			}
 
