@@ -499,7 +499,7 @@ var AccountInterfaces = {
 
 				// audioCaptionPanel
 				audioCaptionPanel.setChildren([
-					audio,
+					// audio,
 					caption,
 				]),
 
