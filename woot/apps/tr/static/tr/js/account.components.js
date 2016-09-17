@@ -503,10 +503,10 @@ var AccountComponents = {
 
 			// resolve list of components to be rendered.
 			base.next = function () {
-				audioTrack.next();
+				return audioTrack.next();
 			}
 			base.previous = function () {
-				audioTrack.previous();
+				return audioTrack.previous();
 			}
 			base.components = {
 				playButton: playButton,
