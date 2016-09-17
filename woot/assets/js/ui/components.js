@@ -141,7 +141,7 @@ var Components = {
 			// logic, bindings, etc.
 			base.setMetadata = function (metadata) {
 				base.metadata = metadata;
-				return tail.setAppearance({html: (metadata.combined || metadata.query || base.placeholder)});
+				return tail.setAppearance({html: (metadata.combined || metadata.query || base.placeholder || '')});
 			}
 			base.isCaretInPosition = function (mode) {
 				mode = (mode || 'end');
@@ -227,7 +227,7 @@ var Components = {
 				backspace: function () {
 
 				},
-				click: function (end) {
+				click: function () {
 
 				}
 			}
