@@ -140,10 +140,12 @@ var Components = {
 
 			// logic, bindings, etc.
 			base.setMetadata = function (metadata) {
+				console.log('{} search setMetadata'.format(base.id));
 				base.metadata = metadata;
 				return tail.setAppearance({html: (metadata.combined || metadata.query || base.placeholder || '')});
 			}
 			base.isCaretInPosition = function (mode) {
+				console.log('{} search isCaretInPosition'.format(base.id));
 				mode = (mode || 'end');
 				// determine caret position after an action. Only important thing is whether or not it is at the end.
 				var selection = window.getSelection();
@@ -161,6 +163,7 @@ var Components = {
 				return caretInPosition;
 			}
 			base.setCaretPosition = function (mode) {
+				console.log('{} search setCaretPosition'.format(base.id));
 				return new Promise(function(resolve, reject) {
 					if (mode) {
 						// set the caret position to the end or the beginning
@@ -179,6 +182,7 @@ var Components = {
 				});
 			}
 			base.complete = function () {
+				console.log('{} search complete'.format(base.id));
 				base.completeQuery = base.metadata.complete;
 				return tail.setAppearance({html: base.metadata.complete}).then(function () {
 					return head.setAppearance({html: base.metadata.complete});
@@ -187,21 +191,25 @@ var Components = {
 				});
 			}
 			base.isComplete = function () {
+				console.log('{} search isComplete'.format(base.id));
 				return (head.model().text() === base.completeQuery) || !base.metadata.complete;
 			}
 			base.focus = function (mode) {
+				console.log('{} search focus'.format(base.id));
 				base.isFocussed = true;
 				return (base.onFocus || emptyPromise)().then(function () {
 					return base.setCaretPosition(mode);
 				});
 			}
 			base.blur = function () {
+				console.log('search blur {}'.format(base.id));
 				base.isFocussed = false;
 				return (base.onBlur || emptyPromise)().then(function () {
 					return tail.setAppearance({html: (head.model().text() || base.placeholder)});
 				});
 			}
 			base.clear = function () {
+				console.log('{} search clear'.format(base.id));
 				return head.setAppearance({html: ''}).then(function () {
 					return tail.setAppearance({html: base.placeholder});
 				});
@@ -210,6 +218,7 @@ var Components = {
 			// behaviours
 			base.behaviours = {
 				right: function () {
+					console.log('{} search behaviours right'.format(base.id));
 					if (base.isCaretInPosition('end')) {
 						return base.complete().then(function () {
 							return base.onInput(base.metadata.complete);
@@ -236,20 +245,25 @@ var Components = {
 			return Promise.all([
 				base.setBindings({
 					'click': function (_this) {
+						console.log('{} search bindings base click'.format(base.id));
 						base.focus('end');
 					}
 				}),
 				head.setBindings({
 					'input': function (_this) {
+						console.log('{} search bindings head input'.format(base.id));
 						(base.onInput || emptyPromise)(_this.model().text());
 					},
 					'focus': function (_this) {
+						console.log('{} search bindings head focus'.format(base.id));
 						base.focus();
 					},
 					'blur': function (_this) {
+						console.log('{} search bindings head blur'.format(base.id));
 						base.blur();
 					},
 					'click': function (_this, event) {
+						console.log('{} search bindings head click'.format(base.id));
 						event.stopPropagation();
 						base.focus().then(function () {
 							return (base.onFocus || emptyPromise)();
@@ -345,6 +359,7 @@ var Components = {
 			base.search = search;
 			base.isFocussed = false;
 			base.display = function (options) {
+				console.log('{} searchlist display'.format(base.id));
 				var query = (options || {}).query;
 				var filter = (options || {}).filter;
 				var forceLoad = ((options || {}).forceLoad || false);
@@ -369,6 +384,7 @@ var Components = {
 				});
 			}
 			base.load = function (options) {
+				console.log('{} searchlist load'.format(base.id));
 				// for each target, gather data and evaluate in terms of each process function. Store as virtual list.
 				if (base.dataset.length !== 0 && !options.forceLoad) {
 					return emptyPromise();
@@ -405,6 +421,7 @@ var Components = {
 				}
 			}
 			base.filter = function (query, filter) {
+				console.log('{} searchlist filter'.format(base.id));
 				query = (query || '');
 				filter = (filter || '');
 				var rule = filter ? base.filters[filter].rule : '';
@@ -427,6 +444,7 @@ var Components = {
 				});
 			}
 			base.setMetadata = function (query) {
+				console.log('{} searchlist setMetadata'.format(base.id));
 				base.query = ((base.query || query) || '');
 				// condition is that there are filtered items and the query is not nothing
 
@@ -445,6 +463,7 @@ var Components = {
 				return search.setMetadata(metadata);
 			}
 			base.setActive = function (options) {
+				console.log('{} searchlist setActive'.format(base.id));
 				options = (options || {});
 				var set = (options.set || base.list.components.wrapper.children);
 
@@ -471,6 +490,7 @@ var Components = {
 				}
 			}
 			base.deactivate = function () {
+				console.log('{} searchlist deactivate'.format(base.id));
 				return ((base.active || {}).deactivate || emptyPromise)().then(function () {
 					return new Promise(function(resolve, reject) {
 						base.active = undefined;
@@ -481,11 +501,13 @@ var Components = {
 
 			// list methods
 			base.next = function () {
+				console.log('{} searchlist next'.format(base.id));
 				return base.setActive({increment: 1}).then(function () {
 					return base.setMetadata();
 				});
 			}
 			base.previous = function () {
+				console.log('{} searchlist previous'.format(base.id));
 				return base.setActive({increment: -1}).then(function () {
 					return base.setMetadata();
 				});
@@ -493,6 +515,7 @@ var Components = {
 
 			// search methods
 			search.onFocus = function () {
+				console.log('{} search onFocus'.format(search.id));
 				base.isFocussed = true;
 				base.query = search.components.head.model().text();
 				return Promise.all([
@@ -501,11 +524,13 @@ var Components = {
 				]);
 			}
 			search.onBlur = function () {
+				console.log('{} search onBlur'.format(search.id));
 				base.isFocussed = false;
 				base.currentIndex = undefined;
 				return base.deactivate();
 			}
 			search.onInput = function (value) {
+				console.log('{} search onInput'.format(search.id));
 				base.query = value;
 				return base.display({query: base.query});
 			}
@@ -540,18 +565,23 @@ var Components = {
 			// behaviours
 			base.behaviours = {
 				up: function () {
+					console.log('{} searchlist behaviours up'.format(base.id));
 					return base.previous();
 				},
 				down: function () {
+					console.log('{} searchlist behaviours down'.format(base.id));
 					return base.next();
 				},
 				left: function () {
+					console.log('{} searchlist behaviours left'.format(base.id));
 					return search.behaviours.left();
 				},
 				right: function () {
+					console.log('{} searchlist behaviours right'.format(base.id));
 					return search.behaviours.right();
 				},
 				number: function (char) {
+					console.log('{} searchlist behaviours number'.format(base.id));
 					var index = parseInt(char);
 					if (index < base.list.components.wrapper.children.length) {
 						return base.setActive({index: index}).then(function () {
@@ -564,15 +594,18 @@ var Components = {
 					}
 				},
 				enter: function () {
+					console.log('{} searchlist behaviours enter'.format(base.id));
 					return search.behaviours.enter();
 				},
 				backspace: function () {
+					console.log('{} searchlist behaviours backspace'.format(base.id));
 					return search.behaviours.backspace();
 				},
 			}
 
 			// clone
 			base.clone = function (copy) {
+				console.log('{} searchlist clone'.format(base.id));
 				// confusing, but properties of copy get sent to this object.
 				base.autocomplete = copy.autocomplete;
 				base.targets = copy.targets;
