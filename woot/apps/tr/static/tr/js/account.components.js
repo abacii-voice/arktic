@@ -360,12 +360,14 @@ var AccountComponents = {
 
 					// create canvas and context
 					_this.canvas = document.getElementById(_this.id);
-					_this.canvas.height = parseInt(audioTrack.model().css('height'));
-					_this.canvas.width = parseInt(audioTrack.model().css('width'));
-					_this.context = _this.canvas.getContext('2d');
+					if (_this.canvas) {
+						_this.canvas.height = parseInt(audioTrack.model().css('height'));
+						_this.canvas.width = parseInt(audioTrack.model().css('width'));
+						_this.context = _this.canvas.getContext('2d');
 
-					// start loop
-					_this.draw();
+						// start loop
+						_this.draw();
+					}
 				}
 			}
 			audioTrackCanvas.draw = function () {

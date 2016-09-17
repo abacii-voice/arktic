@@ -21,4 +21,6 @@ UI.app('hook', [
 	]);
 }).then(function () {
 	return UI.changeState('transcription-state');
+}).catch(function (error) {
+	console.log(error);
 });

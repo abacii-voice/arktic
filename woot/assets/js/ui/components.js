@@ -202,7 +202,7 @@ var Components = {
 				});
 			}
 			base.blur = function () {
-				console.log('search blur {}'.format(base.id));
+				console.log('{} search blur'.format(base.id));
 				base.isFocussed = false;
 				return (base.onBlur || emptyPromise)().then(function () {
 					return tail.setAppearance({html: (head.model().text() || base.placeholder)});
