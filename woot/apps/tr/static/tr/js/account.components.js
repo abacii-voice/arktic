@@ -964,7 +964,6 @@ var AccountComponents = {
 			return Promise.all([
 				wrapper.setBindings({
 					'click': function (_this) {
-						// console.log('{} caption bindings wrapper click'.format(base.id));
 						wrapper.token({end: true});
 					},
 				}),
