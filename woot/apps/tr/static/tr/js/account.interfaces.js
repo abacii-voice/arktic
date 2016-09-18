@@ -297,6 +297,17 @@ var AccountInterfaces = {
 						return unitAutocomplete.search.components.head.model().text().length === 0;
 					}
 
+					unitAutocomplete.searchExternal.onFocus = function () {
+						return unitBase.activate();
+					}
+
+					unitAutocomplete.searchExternal.onBlur = function () {
+						return Promise.all([
+							unitBase.deactivate(),
+							unitAutocomplete.display(), // display nothing when nothing is selected.
+						]);
+					}
+
 					return Promise.all([
 						unitAutocomplete.search.setAppearance({
 							style: {
@@ -499,7 +510,7 @@ var AccountInterfaces = {
 
 				// audioCaptionPanel
 				audioCaptionPanel.setChildren([
-					// audio,
+					audio,
 					caption,
 				]),
 
