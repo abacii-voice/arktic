@@ -360,29 +360,40 @@ var Components = {
 			base.list = list; // allow for swapable components
 			base.search = search;
 			base.isFocussed = false;
+			base.lock = false;
 			base.display = function (options) {
-				console.log('{} searchlist display'.format(base.id));
+				console.log('{} searchlist display'.format(base.id), base.lock);
 				var query = (options || {}).query;
 				var filter = (options || {}).filter;
 				var forceLoad = ((options || {}).forceLoad || false);
 				return base.load({forceLoad: forceLoad}).then(function () {
-					return base.filter(query, filter); // returns a reduced dataset
-				}).then(function () {
-					base.currentIndex = undefined;
-					return base.list.removeAll();
-				}).then(function () {
-					base.virtual = base.virtual.sort(function (before, after) {
-						return before.main < after.main ? -1 : (before.main > after.main ? 1 : 0);
-					});
-					return Promise.all(base.virtual.map(function (item, index) {
-						return base.unit(base, item, query, index);
-					})).then(function (listItems) {
-						return base.setActive({set: listItems}).then(function () {
-							return base.setMetadata(query);
+					if (!base.lock) {
+						base.lock = true;
+						return base.filter(query, filter).then(function () {
+							base.currentIndex = undefined;
+							return base.list.removeAll();
 						}).then(function () {
-							return base.list.components.wrapper.setChildren(listItems);
+							base.virtual = base.virtual.sort(function (before, after) {
+								return before.main < after.main ? -1 : (before.main > after.main ? 1 : 0);
+							});
+							return Promise.all(base.virtual.map(function (item, index) {
+								return base.unit(base, item, query, index);
+							})).then(function (listItems) {
+								return base.setActive({set: listItems}).then(function () {
+									return base.setMetadata(query);
+								}).then(function () {
+									return base.list.components.wrapper.setChildren(listItems);
+								});
+							});
+						}).then(function () {
+							return new Promise(function(resolve, reject) {
+								base.lock = false;
+								resolve();
+							});
 						});
-					});
+					} else {
+						return emptyPromise();
+					}
 				});
 			}
 			base.load = function (options) {
@@ -480,6 +491,7 @@ var Components = {
 					base.currentIndex = base.currentIndex > set.length - 1 ? set.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
 
 					if (base.currentIndex !== previousIndex) {
+						console.log(base.currentIndex, previousIndex);
 						return base.deactivate().then(function () {
 							base.active = set[base.currentIndex];
 							return base.active.activate();
