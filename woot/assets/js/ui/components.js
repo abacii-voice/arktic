@@ -491,7 +491,6 @@ var Components = {
 					base.currentIndex = base.currentIndex > set.length - 1 ? set.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
 
 					if (base.currentIndex !== previousIndex) {
-						// console.log(base.currentIndex, previousIndex);
 						return base.deactivate().then(function () {
 							base.active = set[base.currentIndex];
 							return base.active.activate();
@@ -541,7 +540,10 @@ var Components = {
 				// console.log('{} search onBlur'.format(search.id));
 				base.isFocussed = false;
 				base.currentIndex = undefined;
-				return base.deactivate();
+				return Promise.all([
+					base.deactivate(),
+					(base.searchExternal ? base.searchExternal.onBlur : emptyPromise)(),
+				]);
 			}
 			search.onInput = function (value) {
 				// console.log('{} search onInput'.format(search.id));
