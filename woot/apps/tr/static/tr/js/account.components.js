@@ -779,7 +779,9 @@ var AccountComponents = {
 				options = (options || {});
 				var _this = wrapper;
 				if (_this.active !== undefined && !options.swap) {
-					return _this.active.focus('end').then(function () {
+					return (options.end ? _this.setActive : emptyPromise)({index: 'last'}).then(function () {
+						return _this.active.focus('end');
+					}).then(function () {
 						return _this.active;
 					});
 				} else {
@@ -815,6 +817,9 @@ var AccountComponents = {
 			wrapper.setActive = function (options) {
 				// console.log('{} caption setActive'.format(base.id));
 				var _this = wrapper;
+				// args
+				options.index = (options || {}).index !== undefined ? (options.index === 'last' ? _this.children.length - 1 : options.index) : undefined; // allow keyword "last"
+
 				// changes
 				var previousIndex = _this.currentIndex !== undefined ? _this.currentIndex : 0;
 				_this.currentIndex = (options.index !== undefined ? options.index : undefined || ((_this.currentIndex || 0) + (options.increment || 0)));
@@ -953,7 +958,7 @@ var AccountComponents = {
 				wrapper.setBindings({
 					'click': function (_this) {
 						// console.log('{} caption bindings wrapper click'.format(base.id));
-						wrapper.token();
+						wrapper.token({end: true});
 					},
 				}),
 			]).then(function () {
