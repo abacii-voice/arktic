@@ -293,8 +293,15 @@ var AccountInterfaces = {
 							unitAutocomplete.search.components.tail.setAppearance({html: unitAutocomplete.search.components.head.model().text()}),
 						]);
 					}
-					unitBase.isEmpty = function () {
-						return unitAutocomplete.search.components.head.model().text().length === 0;
+					unitBase.getContent = function () {
+						return unitAutocomplete.getContent();
+					}
+					unitBase.setContent = function (content) {
+						return unitAutocomplete.setContent(content);
+					}
+
+					unitBase.isAtStart = function () {
+						return unitAutocomplete.search.isCaretInPosition('start');
 					}
 
 					unitAutocomplete.searchExternal.onFocus = function () {
