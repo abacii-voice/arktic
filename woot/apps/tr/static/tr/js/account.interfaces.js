@@ -276,6 +276,12 @@ var AccountInterfaces = {
 						onFocus: function () {
 							return caption.components.wrapper.setActive({index: unitBase.index});
 						},
+						onBlur: function () {
+							return Promise.all([
+								unitBase.deactivate(),
+								unitAutocomplete.display(), // display nothing when nothing is selected.
+							]);
+						}
 					}
 
 					// methods
@@ -302,17 +308,6 @@ var AccountInterfaces = {
 
 					unitBase.isAtStart = function () {
 						return unitAutocomplete.search.isCaretInPosition('start');
-					}
-
-					unitAutocomplete.searchExternal.onFocus = function () {
-						return unitBase.activate();
-					}
-
-					unitAutocomplete.searchExternal.onBlur = function () {
-						return Promise.all([
-							unitBase.deactivate(),
-							unitAutocomplete.display(), // display nothing when nothing is selected.
-						]);
 					}
 
 					return Promise.all([
