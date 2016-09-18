@@ -876,7 +876,7 @@ var AccountComponents = {
 					if (content) {
 						var activeContent = wrapper.active.getContent();
 						return wrapper.active.setContent(activeContent + content).then(function () {
-							
+							// set caret position to active content length
 						});
 					}
 				});
