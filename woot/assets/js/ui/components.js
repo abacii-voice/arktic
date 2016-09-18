@@ -256,7 +256,9 @@ var Components = {
 					},
 					'focus': function (_this) {
 						console.log('{} search bindings head focus'.format(base.id));
-						base.focus();
+						if (!base.isFocussed) {
+							base.focus();
+						}
 					},
 					'blur': function (_this) {
 						console.log('{} search bindings head blur'.format(base.id));
