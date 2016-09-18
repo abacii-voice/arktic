@@ -150,7 +150,7 @@ var Components = {
 				// determine caret position after an action. Only important thing is whether or not it is at the end.
 				var selection = window.getSelection();
 				var caretInPosition = false;
-				console.log(base.isFocussed);
+				console.log(base.id, base.isFocussed);
 				if (base.isFocussed && head.element() === selection.focusNode.parentNode) { // is the selection inside
 					var range = selection.getRangeAt(0); // get the only range
 					if (mode === 'end') {
@@ -199,14 +199,14 @@ var Components = {
 				return (head.model().text() === base.completeQuery) || !base.metadata.complete;
 			}
 			base.focus = function (position) {
+				console.log('{} search focus'.format(base.id));
 				base.isFocussed = true;
-				console.log(base.isFocussed);
 				return (base.onFocus || emptyPromise)().then(function () {
 					return base.setCaretPosition(position);
 				});
 			}
 			base.blur = function () {
-				// console.log('{} search blur'.format(base.id));
+				console.log('{} search blur'.format(base.id));
 				base.isFocussed = false;
 				return (base.onBlur || emptyPromise)().then(function () {
 					return tail.setAppearance({html: (head.model().text() || base.placeholder)});
