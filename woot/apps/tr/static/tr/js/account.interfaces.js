@@ -281,7 +281,7 @@ var AccountInterfaces = {
 								unitBase.deactivate(),
 								unitAutocomplete.display(), // display nothing when nothing is selected.
 							]);
-						}
+						},
 					}
 
 					// methods
@@ -512,7 +512,7 @@ var AccountInterfaces = {
 
 				// audioCaptionPanel
 				audioCaptionPanel.setChildren([
-					audio,
+					// audio,
 					caption,
 				]),
 

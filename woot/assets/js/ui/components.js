@@ -371,6 +371,7 @@ var Components = {
 			base.isFocussed = false;
 			base.lock = false;
 			base.display = function (options) {
+				console.log(options);
 				// console.log('{} searchlist display'.format(base.id), base.lock);
 				var query = (options || {}).query;
 				var filter = (options || {}).filter;
@@ -546,6 +547,7 @@ var Components = {
 				// console.log('{} search onFocus'.format(search.id));
 				base.isFocussed = true;
 				base.query = search.components.head.model().text();
+				console.log('hello', base.query);
 				return Promise.all([
 					base.display({query: base.query}),
 					(base.searchExternal ? base.searchExternal.onFocus : emptyPromise)(),
