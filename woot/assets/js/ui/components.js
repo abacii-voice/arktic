@@ -162,18 +162,22 @@ var Components = {
 				}
 				return caretInPosition;
 			}
-			base.setCaretPosition = function (mode) {
-				// console.log('{} search setCaretPosition'.format(base.id));
+			base.setCaretPosition = function (position) {
+				// set position
+				var maxLength = head.model().text().length;
+				var limits = {'start': 0, 'end': maxLength};
+				position = position in limits ? limits[position] : position;
+
+				// boundary conditions
+				position = position > maxLength ? maxLength : (position < 0 ? 0 : position);
+				console.log(position);
+
 				return new Promise(function(resolve, reject) {
-					if (mode) {
-						// set the caret position to the end or the beginning
+					// set the caret position to the end or the beginning
+					if (position !== undefined) {
 						var range = document.createRange(); // Create a range (a range is a like the selection but invisible)
-						range.selectNodeContents(head.element()); // Select the entire contents of the element with the range
-						if (mode === 'end') {
-							range.collapse(false); // collapse the range to the end point. false means collapse to end rather than the start
-						} else if (mode === 'start') {
-							range.collapse(true);
-						}
+						var lm = head.element();
+						range.setStart(lm.childNodes.length ? lm.firstChild : lm, position);
 						var selection = window.getSelection(); // get the selection object (allows you to change selection)
 						selection.removeAllRanges(); // remove any selections already made
 						selection.addRange(range); // make the range you have just created the visible selection
@@ -212,6 +216,14 @@ var Components = {
 				// console.log('{} search clear'.format(base.id));
 				return head.setAppearance({html: ''}).then(function () {
 					return tail.setAppearance({html: base.placeholder});
+				});
+			}
+			base.getContent = function () {
+				return head.model().text();
+			}
+			base.setContent = function (content) {
+				return head.setAppearance({html: content}).then(function () {
+					head.model().trigger('input');
 				});
 			}
 
@@ -510,6 +522,12 @@ var Components = {
 						resolve();
 					});
 				});
+			}
+			base.getContent = function () {
+				return search.getContent();
+			}
+			base.setContent = function (content) {
+				return search.setContent(content);
 			}
 
 			// list methods

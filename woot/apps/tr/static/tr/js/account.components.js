@@ -859,7 +859,7 @@ var AccountComponents = {
 				});
 			}
 			wrapper.delete = function () {
-				// console.log('{} caption delete'.format(base.id));
+				var content = wrapper.active.getContent();
 				return wrapper.removeChild(wrapper.active.id).then(function () {
 					wrapper.active = undefined;
 					var forceNext = function () {
@@ -872,6 +872,13 @@ var AccountComponents = {
 						}
 					}
 					return (wrapper.currentIndex ? wrapper.previous : forceNext)();
+				}).then(function () {
+					if (content) {
+						var activeContent = wrapper.active.getContent();
+						return wrapper.active.setContent(activeContent + content).then(function () {
+							
+						});
+					}
 				});
 			}
 
@@ -931,7 +938,7 @@ var AccountComponents = {
 				backspace: function () {
 					// console.log('{} caption behaviours backspace'.format(base.id));
 					// delete token if at beginning
-					return ((wrapper.active && wrapper.active.isEmpty() && wrapper.children.length > 1) ? wrapper.delete : emptyPromise)();
+					return ((wrapper.active && wrapper.active.isAtStart() && wrapper.children.length > 1) ? wrapper.delete : emptyPromise)();
 				},
 				altbackspace: function () {
 					// console.log('{} caption behaviours altbackspace'.format(base.id));
