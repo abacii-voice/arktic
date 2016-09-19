@@ -807,11 +807,9 @@ var AccountComponents = {
 				}
 			}
 			wrapper.isCaretInPosition = function (mode) {
-				// console.log('{} caption isCaretInPosition'.format(base.id));
 				return wrapper.active.components.autocomplete.search.isCaretInPosition(mode);
 			}
 			wrapper.isComplete = function () {
-				// console.log('{} caption isComplete'.format(base.id));
 				return wrapper.active.components.autocomplete.search.isComplete();
 			}
 			wrapper.setActive = function (options) {
@@ -873,7 +871,7 @@ var AccountComponents = {
 					}
 					return (wrapper.currentIndex ? wrapper.previous : forceNext)();
 				}).then(function () {
-					if (content) {
+					if (content && wrapper.children.length > 1 && wrapper.isCaretInPosition('start')) {
 						var activeContent = wrapper.active.getContent();
 						return wrapper.active.setContent(activeContent + content).then(function () {
 							// set caret position to active content length
