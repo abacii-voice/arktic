@@ -274,12 +274,14 @@ var AccountInterfaces = {
 					unitAutocomplete.autocomplete = true;
 					unitAutocomplete.searchExternal = {
 						onFocus: function () {
+							console.log('focus', unitBase.id);
 							return caption.components.wrapper.setActive({index: unitBase.index});
 						},
 						onBlur: function () {
+							console.log('blur', unitBase.id);
 							return Promise.all([
 								unitBase.deactivate(),
-								unitAutocomplete.display(), // display nothing when nothing is selected.
+								// unitAutocomplete.display(), // display nothing when nothing is selected.
 							]);
 						},
 					}
@@ -512,7 +514,7 @@ var AccountInterfaces = {
 
 				// audioCaptionPanel
 				audioCaptionPanel.setChildren([
-					// audio,
+					audio,
 					caption,
 				]),
 
