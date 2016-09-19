@@ -849,14 +849,12 @@ var AccountComponents = {
 			wrapper.next = function () {
 				// console.log('{} caption next'.format(base.id));
 				return wrapper.setActive({increment: 1}).then(function (indexChanged) {
-					console.log('change active next');
 					return (indexChanged ? wrapper.active.focus : emptyPromise)('start');
 				});
 			}
 			wrapper.previous = function () {
 				// console.log('{} caption previous'.format(base.id));
 				return wrapper.setActive({increment: -1}).then(function (indexChanged) {
-					console.log('change active previous');
 					return (indexChanged ? wrapper.active.focus : emptyPromise)('end');
 				});
 			}
@@ -879,6 +877,7 @@ var AccountComponents = {
 						var activeContent = wrapper.active.getContent();
 						return wrapper.active.setContent(activeContent + content).then(function () {
 							// set caret position to active content length
+							return wrapper.active.components.autocomplete.search.setCaretPosition(activeContent.length);
 						});
 					}
 				});
