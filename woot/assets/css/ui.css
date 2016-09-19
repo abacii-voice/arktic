@@ -284,6 +284,7 @@ Common interface elements
 	display: inline-block;
 	position: absolute;
 	min-width: 2px;
+	padding-left: 1px;
 }
 
 .ie.input .head:focus {
@@ -297,6 +298,7 @@ Common interface elements
 	position: relative;
 	opacity: 0.5;
 	pointer-events: none;
+	padding-left: 1px;
 }
 
 /*
