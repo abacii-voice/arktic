@@ -274,15 +274,12 @@ var AccountInterfaces = {
 					unitAutocomplete.autocomplete = true;
 					unitAutocomplete.searchExternal = {
 						onFocus: function () {
-							console.log('focus', unitBase.id);
 							return caption.components.wrapper.setActive({index: unitBase.index});
 						},
 						onBlur: function () {
-							console.log('blur', unitBase.id);
-							return Promise.all([
-								unitBase.deactivate(),
-								// unitAutocomplete.display(), // display nothing when nothing is selected.
-							]);
+							return (unitBase.isActive ? unitAutocomplete.display : emptyPromise)().then(function () {
+								unitBase.deactivate();
+							});
 						},
 					}
 
@@ -291,11 +288,11 @@ var AccountInterfaces = {
 						return unitAutocomplete.search.focus(mode);
 					}
 					unitBase.activate = function () {
-						return unitBase.setAppearance({classes: {add: 'active'}}).then(function () {
-
-						});
+						unitBase.isActive = true;
+						return unitBase.setAppearance({classes: {add: 'active'}});
 					}
 					unitBase.deactivate = function () {
+						unitBase.isActive = false;
 						return Promise.all([
 							unitBase.setAppearance({classes: {remove: 'active'}}),
 							unitAutocomplete.search.components.tail.setAppearance({html: unitAutocomplete.search.components.head.model().text()}),
