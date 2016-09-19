@@ -299,7 +299,13 @@ var AccountInterfaces = {
 						return Promise.all([
 							unitBase.setAppearance({classes: {remove: 'active'}}),
 							unitAutocomplete.search.components.tail.setAppearance({html: unitAutocomplete.search.components.head.model().text()}),
-						]);
+						]).then(function () {
+							var content = unitBase.getContent();
+							console.log(content, content !== '' && caption.components.wrapper.children.length <= 1);
+							// return (content === '' && caption.components.wrapper.children.length <= 1 ? emptyPromise : caption.components.wrapper.removeChild)(unitBase.id).catch(function (error) {
+							//
+							// });
+						});
 					}
 					unitBase.getContent = function () {
 						return unitAutocomplete.getContent();
