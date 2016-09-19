@@ -198,10 +198,14 @@ var Components = {
 				return (head.model().text() === base.completeQuery) || !base.metadata.complete;
 			}
 			base.focus = function (position) {
-				base.isFocussed = true;
-				return (base.onFocus || emptyPromise)().then(function () {
-					return base.setCaretPosition(position);
-				});
+				if (!base.isFocussed) {
+					base.isFocussed = true;
+					return (base.onFocus || emptyPromise)().then(function () {
+						return base.setCaretPosition(position);
+					});
+				} else {
+					return emptyPromise();
+				}
 			}
 			base.blur = function () {
 				base.isFocussed = false;
@@ -254,7 +258,7 @@ var Components = {
 			return Promise.all([
 				base.setBindings({
 					'click': function (_this) {
-						// console.log('{} search bindings base click'.format(base.id));
+						event.stopPropagation();
 						base.focus('end');
 					}
 				}),
@@ -265,20 +269,15 @@ var Components = {
 					},
 					'focus': function (_this) {
 						// console.log('{} search bindings head focus'.format(base.id));
-						if (!base.isFocussed) {
-							base.focus();
-						}
+						base.focus();
 					},
 					'blur': function (_this) {
 						// console.log('{} search bindings head blur'.format(base.id));
 						base.blur();
 					},
 					'click': function (_this, event) {
-						// console.log('{} search bindings head click'.format(base.id));
 						event.stopPropagation();
-						base.focus().then(function () {
-							return (base.onFocus || emptyPromise)();
-						})
+						base.focus();
 					},
 				}),
 			]).then(function (results) {

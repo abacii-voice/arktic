@@ -833,12 +833,12 @@ var AccountComponents = {
 						return _this.active.activate();
 					}).then(function () {
 						return new Promise(function(resolve, reject) {
-							resolve(true);
+							resolve(true); // returns whether anything has changed.
 						});
 					});
 				} else {
 					return new Promise(function(resolve, reject) {
-						resolve(false);
+						resolve(false); // returns whether anything has changed.
 					});
 				}
 			}

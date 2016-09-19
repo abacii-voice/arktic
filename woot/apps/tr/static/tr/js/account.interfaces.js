@@ -274,10 +274,13 @@ var AccountInterfaces = {
 					unitAutocomplete.autocomplete = true;
 					unitAutocomplete.searchExternal = {
 						onFocus: function () {
-							return caption.components.wrapper.setActive({index: unitBase.index});
+							return caption.components.wrapper.setActive({index: unitBase.index, force: true});
 						},
 						onBlur: function () {
-							return (unitBase.isActive ? unitAutocomplete.display : emptyPromise)().then(function () {
+							return (unitBase.isActive ? function () {
+								caption.components.wrapper.currentIndex = undefined;
+								return unitAutocomplete.display();
+							} : emptyPromise)().then(function () {
 								unitBase.deactivate();
 							});
 						},
@@ -304,11 +307,11 @@ var AccountInterfaces = {
 					unitBase.setContent = function (content) {
 						return unitAutocomplete.setContent(content);
 					}
-
 					unitBase.isAtStart = function () {
 						return unitAutocomplete.search.isCaretInPosition('start');
 					}
 
+					// complete promises
 					return Promise.all([
 						unitAutocomplete.search.setAppearance({
 							style: {
