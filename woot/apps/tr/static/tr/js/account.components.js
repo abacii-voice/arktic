@@ -858,6 +858,7 @@ var AccountComponents = {
 			}
 			wrapper.delete = function () {
 				var content = wrapper.active.getContent();
+				var isAtStart = wrapper.active.isAtStart();
 				return wrapper.removeChild(wrapper.active.id).then(function () {
 					wrapper.active = undefined;
 					var forceNext = function () {
@@ -871,7 +872,7 @@ var AccountComponents = {
 					}
 					return (wrapper.currentIndex ? wrapper.previous : forceNext)();
 				}).then(function () {
-					if (content && wrapper.children.length > 1 && wrapper.isCaretInPosition('start')) {
+					if (content && isAtStart) {
 						var activeContent = wrapper.active.getContent();
 						return wrapper.active.setContent(activeContent + content).then(function () {
 							// set caret position to active content length
@@ -948,7 +949,7 @@ var AccountComponents = {
 					// console.log('{} caption behaviours space'.format(base.id));
 					// new token
 					return Promise.all([
-						(wrapper.active ? wrapper.token : emptyPromise)({swap: true}),
+						// (wrapper.active ? wrapper.token : emptyPromise)({swap: true}),
 					]);
 				},
 				number: function (char) {

@@ -216,7 +216,7 @@ var AccountInterfaces = {
 			});
 
 			Mousetrap.bind('space', function (event) {
-				event.preventDefault();
+				// event.preventDefault();
 				Promise.all([
 					caption.behaviours.space(),
 				]);
