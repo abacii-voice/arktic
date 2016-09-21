@@ -793,9 +793,7 @@ var AccountComponents = {
 						if (_this.active) {
 							unit.after = options.before ? '' : _this.active.id;
 						}
-						return _this.deactivate().then(function () {
-							return _this.setChildren([unit]);
-						}).then(function () {
+						return _this.setChildren([unit]).then(function () {
 							_this.active = unit;
 							return _this.active.activate();
 						}).then(function () {
@@ -819,30 +817,19 @@ var AccountComponents = {
 				options.index = (options || {}).index !== undefined ? (options.index === 'last' ? _this.children.length - 1 : options.index) : undefined; // allow keyword "last"
 
 				// changes
-				var previousIndex = _this.currentIndex !== undefined ? _this.currentIndex : 0;
+				var previousIndex = _this.currentIndex ? _this.currentIndex : 0;
 				_this.currentIndex = (options.index !== undefined ? options.index : undefined || ((_this.currentIndex || 0) + (options.increment || 0)));
 
 				// boundary conditions
 				_this.currentIndex = _this.currentIndex > _this.children.length - 1 ? _this.children.length - 1 : (_this.currentIndex < 0 ? 0 : _this.currentIndex);
 
-				if (_this.currentIndex !== previousIndex || options.force) {
-					return _this.deactivate().then(function () {
-						_this.active = _this.children[_this.currentIndex];
-						return _this.active.activate();
-					}).then(function () {
-						return new Promise(function(resolve, reject) {
-							resolve(true); // returns whether anything has changed.
-						});
-					});
-				} else {
-					return new Promise(function(resolve, reject) {
-						resolve(false); // returns whether anything has changed.
-					});
+				var hasChanged = _this.currentIndex !== previousIndex || options.force;
+				if (hasChanged) {
+					_this.active = _this.children[_this.currentIndex];
 				}
-			}
-			wrapper.deactivate = function () {
-				// console.log('{} caption deactivate'.format(base.id));
-				return (wrapper.active ? wrapper.active.deactivate : emptyPromise)();
+				return new Promise(function(resolve, reject) {
+					resolve(hasChanged); // returns whether anything has changed.
+				});
 			}
 			wrapper.next = function () {
 				// console.log('{} caption next'.format(base.id));
