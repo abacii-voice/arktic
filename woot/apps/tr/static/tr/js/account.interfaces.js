@@ -274,11 +274,12 @@ var AccountInterfaces = {
 					unitAutocomplete.autocomplete = true;
 					unitAutocomplete.searchExternal = {
 						onFocus: function () {
-							return caption.components.wrapper.setActive({index: unitBase.index, force: true});
+							return caption.components.wrapper.setActive({index: unitBase.index, force: true}).then(function () {
+								return unitBase.activate();
+							});
 						},
 						onBlur: function () {
 							return (unitBase.isActive ? function () {
-								caption.components.wrapper.currentIndex = undefined;
 								return unitAutocomplete.display();
 							} : emptyPromise)().then(function () {
 								unitBase.deactivate();
@@ -301,10 +302,18 @@ var AccountInterfaces = {
 							unitAutocomplete.search.components.tail.setAppearance({html: unitAutocomplete.search.components.head.model().text()}),
 						]).then(function () {
 							var content = unitBase.getContent();
-							console.log(content, content !== '' && caption.components.wrapper.children.length <= 1);
-							// return (content === '' && caption.components.wrapper.children.length <= 1 ? emptyPromise : caption.components.wrapper.removeChild)(unitBase.id).catch(function (error) {
-							//
-							// });
+
+							// This works
+							if (!content) {
+								return caption.components.wrapper.removeChild(unitBase.id);
+							} else {
+								return emptyPromise();
+							}
+
+							// This does not
+							// return (content ? emptyPromise : caption.components.wrapper.removeChild)(unitBase.id);
+
+							// ?????
 						});
 					}
 					unitBase.getContent = function () {
