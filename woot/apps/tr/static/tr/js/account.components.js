@@ -936,7 +936,7 @@ var AccountComponents = {
 					// console.log('{} caption behaviours space'.format(base.id));
 					// new token
 					return Promise.all([
-						// (wrapper.active ? wrapper.token : emptyPromise)({swap: true}),
+						(wrapper.active && !wrapper.active.components.autocomplete.virtual.length ? wrapper.token : emptyPromise)({swap: true}),
 					]);
 				},
 				number: function (char) {
