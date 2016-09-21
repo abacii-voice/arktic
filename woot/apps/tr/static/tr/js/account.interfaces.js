@@ -297,9 +297,11 @@ var AccountInterfaces = {
 					}
 					unitBase.deactivate = function () {
 						unitBase.isActive = false;
+						var trimmedContent = $.trim(unitBase.getContent());
 						return Promise.all([
+							unitBase.setContent(trimmedContent), // see caption.behaviours.space
+							unitAutocomplete.search.components.tail.setAppearance({html: trimmedContent}),
 							unitBase.setAppearance({classes: {remove: 'active'}}),
-							unitAutocomplete.search.components.tail.setAppearance({html: unitAutocomplete.search.components.head.model().text()}),
 						]).then(function () {
 							var content = unitBase.getContent();
 
