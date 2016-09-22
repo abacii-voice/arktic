@@ -861,7 +861,7 @@ var AccountComponents = {
 				}).then(function () {
 					if (content && isAtStart) {
 						var activeContent = wrapper.active.getContent();
-						return wrapper.active.setContent(activeContent + content).then(function () {
+						return wrapper.active.setContent({content: (activeContent + content), trigger: true}).then(function () {
 							// set caret position to active content length
 							return wrapper.active.components.autocomplete.search.setCaretPosition(activeContent.length);
 						});
@@ -936,7 +936,7 @@ var AccountComponents = {
 					// console.log('{} caption behaviours space'.format(base.id));
 					// new token
 					return Promise.all([
-						(wrapper.active && !wrapper.active.components.autocomplete.virtual.length ? wrapper.token : emptyPromise)({swap: true}),
+						// ((wrapper.active && (!wrapper.active.components.autocomplete.virtual.length || wrapper.isComplete())) ? wrapper.token : emptyPromise)({swap: true}),
 					]);
 				},
 				number: function (char) {

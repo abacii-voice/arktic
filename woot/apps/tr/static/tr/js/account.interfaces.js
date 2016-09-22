@@ -299,7 +299,7 @@ var AccountInterfaces = {
 						unitBase.isActive = false;
 						var trimmedContent = $.trim(unitBase.getContent());
 						return Promise.all([
-							unitBase.setContent(trimmedContent), // see caption.behaviours.space
+							unitBase.setContent({content: trimmedContent}), // see caption.behaviours.space
 							unitAutocomplete.search.components.tail.setAppearance({html: trimmedContent}),
 							unitBase.setAppearance({classes: {remove: 'active'}}),
 						]).then(function () {
@@ -321,8 +321,8 @@ var AccountInterfaces = {
 					unitBase.getContent = function () {
 						return unitAutocomplete.getContent();
 					}
-					unitBase.setContent = function (content) {
-						return unitAutocomplete.setContent(content);
+					unitBase.setContent = function (options) {
+						return unitAutocomplete.setContent(options);
 					}
 					unitBase.isAtStart = function () {
 						return unitAutocomplete.search.isCaretInPosition('start');

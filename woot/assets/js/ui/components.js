@@ -222,9 +222,11 @@ var Components = {
 			base.getContent = function () {
 				return head.model().text();
 			}
-			base.setContent = function (content) {
-				return head.setAppearance({html: content}).then(function () {
-					head.model().trigger('input');
+			base.setContent = function (options) {
+				return head.setAppearance({html: options.content}).then(function () {
+					if (options.trigger) {
+						head.model().trigger('input');
+					}
 				});
 			}
 
@@ -522,8 +524,8 @@ var Components = {
 			base.getContent = function () {
 				return search.getContent();
 			}
-			base.setContent = function (content) {
-				return search.setContent(content);
+			base.setContent = function (options) {
+				return search.setContent(options);
 			}
 
 			// list methods
