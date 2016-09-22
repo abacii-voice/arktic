@@ -140,10 +140,12 @@ var Components = {
 
 			// logic, bindings, etc.
 			base.setMetadata = function (metadata) {
+				// console.log('{} search setMetadata'.format(base.id));
 				base.metadata = metadata;
-				return tail.setAppearance({html: (metadata.combined || metadata.query || base.placeholder)});
+				return tail.setAppearance({html: (metadata.combined || metadata.query || base.placeholder || '')});
 			}
 			base.isCaretInPosition = function (mode) {
+				// console.log('{} search isCaretInPosition'.format(base.id));
 				mode = (mode || 'end');
 				// determine caret position after an action. Only important thing is whether or not it is at the end.
 				var selection = window.getSelection();
@@ -160,17 +162,21 @@ var Components = {
 				}
 				return caretInPosition;
 			}
-			base.setCaretPosition = function (mode) {
+			base.setCaretPosition = function (position) {
+				// set position
+				var maxLength = head.model().text().length;
+				var limits = {'start': 0, 'end': maxLength};
+				position = position in limits ? limits[position] : position;
+
+				// boundary conditions
+				position = position > maxLength ? maxLength : (position < 0 ? 0 : position);
+
 				return new Promise(function(resolve, reject) {
-					if (mode) {
-						// set the caret position to the end or the beginning
+					// set the caret position to the end or the beginning
+					if (position !== undefined) {
 						var range = document.createRange(); // Create a range (a range is a like the selection but invisible)
-						range.selectNodeContents(head.element()); // Select the entire contents of the element with the range
-						if (mode === 'end') {
-							range.collapse(false); // collapse the range to the end point. false means collapse to end rather than the start
-						} else if (mode === 'start') {
-							range.collapse(true);
-						}
+						var lm = head.element();
+						range.setStart(lm.childNodes.length ? lm.firstChild : lm, position);
 						var selection = window.getSelection(); // get the selection object (allows you to change selection)
 						selection.removeAllRanges(); // remove any selections already made
 						selection.addRange(range); // make the range you have just created the visible selection
@@ -179,6 +185,7 @@ var Components = {
 				});
 			}
 			base.complete = function () {
+				// console.log('{} search complete'.format(base.id));
 				base.completeQuery = base.metadata.complete;
 				return tail.setAppearance({html: base.metadata.complete}).then(function () {
 					return head.setAppearance({html: base.metadata.complete});
@@ -187,13 +194,18 @@ var Components = {
 				});
 			}
 			base.isComplete = function () {
+				// console.log('{} search isComplete'.format(base.id));
 				return (head.model().text() === base.completeQuery) || !base.metadata.complete;
 			}
-			base.focus = function (mode) {
-				base.isFocussed = true;
-				return (base.onFocus || emptyPromise)().then(function () {
-					return base.setCaretPosition(mode);
-				});
+			base.focus = function (position) {
+				if (!base.isFocussed) {
+					base.isFocussed = true;
+					return (base.onFocus || emptyPromise)().then(function () {
+						return base.setCaretPosition(position);
+					});
+				} else {
+					return emptyPromise();
+				}
 			}
 			base.blur = function () {
 				base.isFocussed = false;
@@ -202,14 +214,26 @@ var Components = {
 				});
 			}
 			base.clear = function () {
+				// console.log('{} search clear'.format(base.id));
 				return head.setAppearance({html: ''}).then(function () {
 					return tail.setAppearance({html: base.placeholder});
+				});
+			}
+			base.getContent = function () {
+				return head.model().text();
+			}
+			base.setContent = function (options) {
+				return head.setAppearance({html: options.content}).then(function () {
+					if (options.trigger) {
+						head.model().trigger('input');
+					}
 				});
 			}
 
 			// behaviours
 			base.behaviours = {
 				right: function () {
+					// console.log('{} search behaviours right'.format(base.id));
 					if (base.isCaretInPosition('end')) {
 						return base.complete().then(function () {
 							return base.onInput(base.metadata.complete);
@@ -227,7 +251,7 @@ var Components = {
 				backspace: function () {
 
 				},
-				click: function (end) {
+				click: function () {
 
 				}
 			}
@@ -236,24 +260,26 @@ var Components = {
 			return Promise.all([
 				base.setBindings({
 					'click': function (_this) {
+						event.stopPropagation();
 						base.focus('end');
 					}
 				}),
 				head.setBindings({
 					'input': function (_this) {
+						// console.log('{} search bindings head input'.format(base.id));
 						(base.onInput || emptyPromise)(_this.model().text());
 					},
 					'focus': function (_this) {
+						// console.log('{} search bindings head focus'.format(base.id));
 						base.focus();
 					},
 					'blur': function (_this) {
+						// console.log('{} search bindings head blur'.format(base.id));
 						base.blur();
 					},
 					'click': function (_this, event) {
 						event.stopPropagation();
-						base.focus().then(function () {
-							return (base.onFocus || emptyPromise)();
-						})
+						base.focus();
 					},
 				}),
 			]).then(function (results) {
@@ -344,31 +370,44 @@ var Components = {
 			base.list = list; // allow for swapable components
 			base.search = search;
 			base.isFocussed = false;
+			base.lock = false;
 			base.display = function (options) {
+				// console.log('{} searchlist display'.format(base.id), base.lock);
 				var query = (options || {}).query;
 				var filter = (options || {}).filter;
 				var forceLoad = ((options || {}).forceLoad || false);
 				return base.load({forceLoad: forceLoad}).then(function () {
-					return base.filter(query, filter); // returns a reduced dataset
-				}).then(function () {
-					base.currentIndex = undefined;
-					return base.list.removeAll();
-				}).then(function () {
-					base.virtual = base.virtual.sort(function (before, after) {
-						return before.main < after.main ? -1 : (before.main > after.main ? 1 : 0);
-					});
-					return Promise.all(base.virtual.map(function (item, index) {
-						return base.unit(base, item, query, index);
-					})).then(function (listItems) {
-						return base.setActive({set: listItems}).then(function () {
-							return base.setMetadata(query);
+					if (!base.lock) {
+						base.lock = true;
+						return base.filter(query, filter).then(function () {
+							base.currentIndex = undefined;
+							return base.list.removeAll();
 						}).then(function () {
-							return base.list.components.wrapper.setChildren(listItems);
+							base.virtual = base.virtual.sort(function (before, after) {
+								return before.main < after.main ? -1 : (before.main > after.main ? 1 : 0);
+							});
+							return Promise.all(base.virtual.map(function (item, index) {
+								return base.unit(base, item, query, index);
+							})).then(function (listItems) {
+								return base.setActive({set: listItems}).then(function () {
+									return base.setMetadata(query);
+								}).then(function () {
+									return base.list.components.wrapper.setChildren(listItems);
+								});
+							});
+						}).then(function () {
+							return new Promise(function(resolve, reject) {
+								base.lock = false;
+								resolve();
+							});
 						});
-					});
+					} else {
+						return emptyPromise();
+					}
 				});
 			}
 			base.load = function (options) {
+				// console.log('{} searchlist load'.format(base.id));
 				// for each target, gather data and evaluate in terms of each process function. Store as virtual list.
 				if (base.dataset.length !== 0 && !options.forceLoad) {
 					return emptyPromise();
@@ -405,6 +444,7 @@ var Components = {
 				}
 			}
 			base.filter = function (query, filter) {
+				// console.log('{} searchlist filter'.format(base.id));
 				query = (query || '');
 				filter = (filter || '');
 				var rule = filter ? base.filters[filter].rule : '';
@@ -427,6 +467,7 @@ var Components = {
 				});
 			}
 			base.setMetadata = function (query) {
+				// console.log('{} searchlist setMetadata'.format(base.id));
 				base.query = ((base.query || query) || '');
 				// condition is that there are filtered items and the query is not nothing
 
@@ -445,6 +486,7 @@ var Components = {
 				return search.setMetadata(metadata);
 			}
 			base.setActive = function (options) {
+				// console.log('{} searchlist setActive'.format(base.id));
 				options = (options || {});
 				var set = (options.set || base.list.components.wrapper.children);
 
@@ -471,6 +513,7 @@ var Components = {
 				}
 			}
 			base.deactivate = function () {
+				// console.log('{} searchlist deactivate'.format(base.id));
 				return ((base.active || {}).deactivate || emptyPromise)().then(function () {
 					return new Promise(function(resolve, reject) {
 						base.active = undefined;
@@ -478,14 +521,22 @@ var Components = {
 					});
 				});
 			}
+			base.getContent = function () {
+				return search.getContent();
+			}
+			base.setContent = function (options) {
+				return search.setContent(options);
+			}
 
 			// list methods
 			base.next = function () {
+				// console.log('{} searchlist next'.format(base.id));
 				return base.setActive({increment: 1}).then(function () {
 					return base.setMetadata();
 				});
 			}
 			base.previous = function () {
+				// console.log('{} searchlist previous'.format(base.id));
 				return base.setActive({increment: -1}).then(function () {
 					return base.setMetadata();
 				});
@@ -493,6 +544,7 @@ var Components = {
 
 			// search methods
 			search.onFocus = function () {
+				// console.log('{} search onFocus'.format(search.id));
 				base.isFocussed = true;
 				base.query = search.components.head.model().text();
 				return Promise.all([
@@ -503,9 +555,13 @@ var Components = {
 			search.onBlur = function () {
 				base.isFocussed = false;
 				base.currentIndex = undefined;
-				return base.deactivate();
+				return Promise.all([
+					base.deactivate(),
+					(base.searchExternal ? base.searchExternal.onBlur : emptyPromise)(),
+				]);
 			}
 			search.onInput = function (value) {
+				// console.log('{} search onInput'.format(search.id));
 				base.query = value;
 				return base.display({query: base.query});
 			}
@@ -540,18 +596,23 @@ var Components = {
 			// behaviours
 			base.behaviours = {
 				up: function () {
+					// console.log('{} searchlist behaviours up'.format(base.id));
 					return base.previous();
 				},
 				down: function () {
+					// console.log('{} searchlist behaviours down'.format(base.id));
 					return base.next();
 				},
 				left: function () {
+					// console.log('{} searchlist behaviours left'.format(base.id));
 					return search.behaviours.left();
 				},
 				right: function () {
+					// console.log('{} searchlist behaviours right'.format(base.id));
 					return search.behaviours.right();
 				},
 				number: function (char) {
+					// console.log('{} searchlist behaviours number'.format(base.id));
 					var index = parseInt(char);
 					if (index < base.list.components.wrapper.children.length) {
 						return base.setActive({index: index}).then(function () {
@@ -564,15 +625,18 @@ var Components = {
 					}
 				},
 				enter: function () {
+					// console.log('{} searchlist behaviours enter'.format(base.id));
 					return search.behaviours.enter();
 				},
 				backspace: function () {
+					// console.log('{} searchlist behaviours backspace'.format(base.id));
 					return search.behaviours.backspace();
 				},
 			}
 
 			// clone
 			base.clone = function (copy) {
+				// console.log('{} searchlist clone'.format(base.id));
 				// confusing, but properties of copy get sent to this object.
 				base.autocomplete = copy.autocomplete;
 				base.targets = copy.targets;
@@ -681,14 +745,14 @@ var Components = {
 				// These can be sets of states. Primary, main is active; secondary, back is active; deactivate, neither is active.
 				stateSet.forEach(function (state) {
 					if (category === 'primary') {
-						main.addState({name: state, args: onOff(args.position.main.on)});
-						back.addState({name: state, args: onOff(args.position.back.off)});
+						main.addState(state, onOff(args.position.main.on));
+						back.addState(state, onOff(args.position.back.off));
 					} else if (category === 'secondary') {
-						main.addState({name: state, args: onOff(args.position.main.off)});
-						back.addState({name: state, args: onOff(args.position.back.on)});
+						main.addState(state, onOff(args.position.main.off));
+						back.addState(state, onOff(args.position.back.on));
 					} else if (category === 'deactivate') {
-						main.addState({name: state, args: onOff(args.position.main.off)});
-						back.addState({name: state, args: onOff(args.position.back.off)});
+						main.addState(state, onOff(args.position.main.off));
+						back.addState(state, onOff(args.position.back.off));
 					}
 				});
 			});

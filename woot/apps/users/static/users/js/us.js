@@ -37,18 +37,12 @@ UI.createApp('hook', [
 				},
 				state: {
 					states: [
-						{name: 'initial-state', args: {
-							preFn: UI.functions.activate,
-							style: {
-								'opacity': '1.0',
-							},
-						}},
-						{name: 'confirmed-state', args: {
-							style: {
-								'opacity': '0.0',
-							},
-							fn: UI.functions.deactivate,
-						}},
+						'initial-state': {
+							preFn: UI.functions.show,
+						},
+						'confirmed-state': {
+							fn: UI.functions.hide,
+						},
 					],
 				},
 				children: [
