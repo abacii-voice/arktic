@@ -14,7 +14,6 @@ class Dictionary(models.Model):
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
-	name = models.CharField(max_length=255)
 	total_tokens = models.PositiveIntegerField(default=0)
 
 	### Methods

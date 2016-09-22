@@ -3,6 +3,7 @@ from django.db import models
 
 # local
 from apps.tr.models.client.project import Project, Batch
+from apps.tr.models.transcription.grammar import Grammar
 from apps.tr.models.role.role import Role
 from apps.tr.idgen import idgen
 
@@ -60,6 +61,7 @@ class Transcription(models.Model):
 
 	### Connections
 	project = models.ForeignKey(Project, related_name='transcriptions')
+	grammar = models.ForeignKey(Grammar, related_name='transcriptions')
 	batch = models.ForeignKey(Batch, related_name='transcriptions')
 	token = models.ForeignKey(TranscriptionToken, related_name='transcriptions', null=True)
 
