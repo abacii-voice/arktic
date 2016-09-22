@@ -88,3 +88,8 @@ class Command(BaseCommand):
 			with open(os.path.join(base, file_name), 'rb') as destination:
 				# create new utterance using open file
 				utterance = Utterance.objects.create(transcription=transcription, file=File(destination))
+
+		# dictionary data
+		dictionary = project.dictionaries.create()
+		user_dictionary = worker_role.dictionaries.create(parent=dictionary)
+		
