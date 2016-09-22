@@ -8,6 +8,14 @@ var AccountInterfaces = {
 			// base
 			UI.createComponent('transcription-base', {
 				template: UI.template('div', 'ie abs'),
+				appearance: {
+					style: {
+						'height': '70%',
+						'left': '60px',
+						'width': 'calc(100% - 70px)',
+					},
+					classes: ['centred-vertically'],
+				},
 			}),
 
 			// control panel
@@ -26,33 +34,66 @@ var AccountInterfaces = {
 				appearance: {
 					style: {
 						'width': '100px',
+						'height': '100%',
+						'float': 'left',
+						'margin-right': '{}px'.format(args.interface.margin),
 					}
 				},
 			}),
 
 			// audio caption panel
 			UI.createComponent('tb-audio-caption-panel', {
-
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': '400px',
+						'height': '100%',
+						'float': 'left',
+						'margin-right': '{}px'.format(args.interface.margin),
+					},
+				},
 			}),
-			AccountComponents.audio('tb-acp-audio', {
+			AccountComponents.audio('tb-cp-audio', {
 				appearance: {
 					style: {
 						'height': '60px',
 					},
 				},
-				options: {
-					threshold: 4,
+				state: {
+					states: {
+						'transcription-state': {
+							preFn: function (_this) {
+								_this.canvas.start();
+								return _this.update();
+							},
+						},
+					},
 				},
 			}),
+
 			AccountComponents.captionField('tb-acp-caption', {
 				appearance: {
-
+					style: {
+						'height': 'calc(100% - 70px)',
+						'width': '100%',
+						'padding': '8px',
+						'padding-left': '16px',
+						'padding-right': '0px',
+					},
 				},
 			}),
 
 			// autocomplete panel
 			UI.createComponent('tb-autocomplete-panel', {
-
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': '300px',
+						'height': '100%',
+						'float': 'left',
+						'margin-right': '{}px'.format(args.interface.margin),
+					},
+				},
 			}),
 			Components.searchableList('tb-ap-autocomplete', {
 				appearance: {
@@ -79,7 +120,395 @@ var AccountInterfaces = {
 			] = components;
 
 			// bindings
+			// Audio
+			audio.threshold = 4;
+			audio.path = function () {
+				return Promise.all([
+					Active.get('client'),
+					Promise.all([
+						Active.get('client'),
+						Permission.get(),
+					]).then(function (results) {
+						var [client_id, role_id] = results;
+						return Context.get('user.clients.{client_id}.roles.{role_id}.project'.format({client_id: client_id, role_id: role_id}));
+					}),
+				]).then(function (results) {
+					// unpack variables
+					var [client_id, project_id] = results;
 
+					// return path
+					return 'clients.{client_id}.projects.{project_id}.transcriptions'.format({client_id: client_id, project_id: project_id});
+				});
+			}
+			audio.token = function () {
+				return Promise.all([
+					Active.get('client'),
+					Permission.get(),
+				]).then(function (results) {
+					// unpack variable
+					var [client_id, role_id] = results;
+
+					// return path
+					return 'user.clients.{client_id}.roles.{role_id}.active_transcription_token'.format({client_id: client_id, role_id: role_id});
+				});
+			}
+
+			// Autocomplete
+			// KEYBINDINGS
+			Mousetrap.bind('up', function (event) {
+				event.preventDefault();
+				Promise.all([
+					autocomplete.behaviours.up(),
+					caption.behaviours.up(),
+				]);
+			});
+
+			Mousetrap.bind('down', function (event) {
+				event.preventDefault();
+				Promise.all([
+					autocomplete.behaviours.down(),
+					caption.behaviours.down(),
+				]);
+			});
+
+			Mousetrap.bind('left', function (event) {
+				Promise.all([
+					autocomplete.behaviours.left(),
+					caption.behaviours.left(),
+				]);
+			});
+
+			Mousetrap.bind('right', function (event) {
+				Promise.all([
+					autocomplete.behaviours.right(),
+					caption.behaviours.right(),
+				]);
+			});
+
+			Mousetrap.bind(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], function (event) {
+				event.preventDefault();
+				var char = String.fromCharCode(event.which);
+				Promise.all([
+					autocomplete.behaviours.number(char),
+					caption.behaviours.number(char),
+				]);
+			});
+
+			Mousetrap.bind('enter', function (event) {
+				event.preventDefault();
+				Promise.all([
+					autocomplete.behaviours.enter(),
+					caption.behaviours.enter(),
+				]);
+			});
+
+			Mousetrap.bind('backspace', function (event) {
+				Promise.all([
+					autocomplete.behaviours.backspace(),
+					caption.behaviours.backspace(),
+				]);
+			});
+
+			Mousetrap.bind('alt+backspace', function (event) {
+				Promise.all([
+					caption.behaviours.altbackspace(),
+				]);
+			});
+
+			Mousetrap.bind('space', function (event) {
+				// event.preventDefault();
+				Promise.all([
+					caption.behaviours.space(),
+				]);
+			});
+
+			Mousetrap.bind('alt+right', function (event) {
+				caption.behaviours.altright();
+			});
+
+			Mousetrap.bind('alt+left', function (event) {
+				caption.behaviours.altleft();
+			});
+
+			// CAPTION
+			caption.unit = function (text, type) {
+				var key = makeid();
+
+				// classes
+				jss.set('#{id}-{key}-base'.format({id: caption.id, key: key}), {
+					'height': '30px',
+					'margin': '0px',
+					'display': 'inline-block',
+				});
+				jss.set('#{id}-{key}-base.tag'.format({id: caption.id, key: key}), {
+
+				});
+				jss.set('#{id}-{key}-base.active .head'.format({id: caption.id, key: key}), {
+					'color': '#fff',
+				});
+
+				// components
+				return Promise.all([
+					// base
+					UI.createComponent('{id}-{key}-base'.format({id: caption.id, key: key}), {
+						template: UI.template('div', 'ie'),
+					}),
+
+					// autocomplete element
+					Components.searchableList('{id}-{key}-autocomplete'.format({id: caption.id, key: key}), {
+						appearance: {
+							style: {
+								'display': 'inline-block',
+							},
+						},
+					}),
+
+				]).then(function (unitComponents) {
+					var [
+						unitBase,
+						unitAutocomplete,
+					] = unitComponents;
+
+					// clone page autocomplete
+					unitAutocomplete.clone(autocomplete);
+					unitAutocomplete.autocomplete = true;
+					unitAutocomplete.searchExternal = {
+						onFocus: function () {
+							return caption.components.wrapper.setActive({index: unitBase.index, force: true}).then(function () {
+								return unitBase.activate();
+							});
+						},
+						onBlur: function () {
+							return (unitBase.isActive ? function () {
+								return unitAutocomplete.display();
+							} : emptyPromise)().then(function () {
+								unitBase.deactivate();
+							});
+						},
+					}
+
+					// methods
+					unitBase.focus = function (mode) {
+						return unitAutocomplete.search.focus(mode);
+					}
+					unitBase.activate = function () {
+						unitBase.isActive = true;
+						return unitBase.setAppearance({classes: {add: 'active'}});
+					}
+					unitBase.deactivate = function () {
+						unitBase.isActive = false;
+						var trimmedContent = $.trim(unitBase.getContent());
+						return Promise.all([
+							unitBase.setContent({content: trimmedContent}), // see caption.behaviours.space
+							unitAutocomplete.search.components.tail.setAppearance({html: trimmedContent}),
+							unitBase.setAppearance({classes: {remove: 'active'}}),
+						]).then(function () {
+							var content = unitBase.getContent();
+
+							// This works
+							if (!content) {
+								return caption.components.wrapper.removeChild(unitBase.id);
+							} else {
+								return emptyPromise();
+							}
+
+							// This does not
+							// return (content ? emptyPromise : caption.components.wrapper.removeChild)(unitBase.id);
+
+							// ?????
+						});
+					}
+					unitBase.getContent = function () {
+						return unitAutocomplete.getContent();
+					}
+					unitBase.setContent = function (options) {
+						return unitAutocomplete.setContent(options);
+					}
+					unitBase.isAtStart = function () {
+						return unitAutocomplete.search.isCaretInPosition('start');
+					}
+
+					// complete promises
+					return Promise.all([
+						unitAutocomplete.search.setAppearance({
+							style: {
+								'height': '30px',
+								'padding-left': '0px',
+							},
+							classes: {
+								remove: ['border', 'border-radius'],
+							},
+						}),
+					]).then(function () {
+						// children
+						unitBase.components = {
+							autocomplete: unitAutocomplete,
+						}
+						return unitBase.setChildren([
+							unitAutocomplete,
+						]);
+					}).then(function () {
+						return unitBase;
+					});
+				});
+			}
+
+			// LIST
+			autocomplete.onInput = function () {
+
+			}
+			autocomplete.components.search.onComplete = function () {
+
+			}
+			autocomplete.setSearch('on');
+			autocomplete.autocomplete = true;
+			autocomplete.targets = [
+				{
+					name: 'clients',
+					path: function () {
+						return new Promise(function(resolve, reject) {
+							resolve('clients');
+						});
+					},
+					process: function (data) {
+						return new Promise(function(resolve, reject) {
+							var results = Object.keys(data).map(function (key) {
+								var client = data[key];
+								return {
+									id: key,
+									main: client.name,
+									rule: 'client',
+								}
+							});
+
+							resolve(results);
+						});
+					},
+					filter: {
+						default: true,
+						char: '/',
+						key: 'forwardslash',
+						display: 'Client',
+						button: 'Clients',
+						rule: 'client',
+					},
+				},
+			]
+			autocomplete.unit = function (_this, datum, query, index) {
+				query = (query || '');
+
+				// base class
+				jss.set('#{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
+					'height': '30px',
+					'width': '100%',
+					'border-bottom': '1px solid #ccc',
+					'padding': '0px',
+					'padding-left': '10px',
+					'text-align': 'left',
+				});
+				jss.set('#{id}-{object}-base.active'.format({id: _this.id, object: datum.id}), {
+					'background-color': 'rgba(255,255,255,0.1)'
+				});
+				jss.set('#{id}-{object}-base.client'.format({id: _this.id, object: datum.id}), {
+					'background-color': 'rgba(255,255,0,0.05)'
+				});
+				jss.set('#{id}-{object}-base.client.active'.format({id: _this.id, object: datum.id}), {
+					'background-color': 'rgba(255,255,0,0.1)'
+				});
+
+				return Promise.all([
+					// base component
+					UI.createComponent('{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('div', 'ie button'),
+						appearance: {
+							classes: [datum.rule],
+						}
+					}),
+
+					// main wrapper
+					UI.createComponent('{id}-{object}-main-wrapper'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('div', 'ie centred-vertically'),
+						appearance: {
+							style: {
+								'left': '0px',
+							},
+						},
+					}),
+
+					// main
+					UI.createComponent('{id}-{object}-main-head'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('span', 'ie'),
+						appearance: {
+							style: {
+								'color': '#eee',
+								'display': 'inline-block',
+								'position': 'absolute',
+							},
+							html: datum.main.substring(0, query.length),
+						},
+					}),
+					UI.createComponent('{id}-{object}-main-tail'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('span', 'ie'),
+						appearance: {
+							style: {
+								'display': 'inline-block',
+							},
+							html: datum.main,
+						},
+					}),
+
+					// index
+					UI.createComponent('{id}-{object}-index'.format({id: _this.id, object: datum.id}), {
+						template: UI.template('div', 'ie abs centred-vertically'),
+						appearance: {
+							style: {
+								'right': '5px',
+							},
+							html: index,
+						},
+					}),
+
+				]).then(function (unitComponents) {
+					var [
+						unitBase,
+						unitMainWrapper,
+						unitMainHead,
+						unitMainTail,
+						unitIndex,
+					] = unitComponents;
+
+					// set metadata
+					datum.metadata = {
+						query: query,
+						complete: datum.main,
+						combined: query + datum.main.substring(query.length),
+						type: datum.rule,
+					}
+
+					unitBase.activate = function () {
+						return unitBase.setAppearance({classes: {add: ['active']}});
+					}
+
+					unitBase.deactivate = function () {
+						return unitBase.setAppearance({classes: {remove: ['active']}});
+					}
+
+					// complete promises.
+					return Promise.all([
+						unitMainWrapper.setChildren([
+							unitMainHead,
+							unitMainTail,
+						]),
+					]).then(function () {
+						return unitBase.setChildren([
+							unitMainWrapper,
+							unitIndex,
+						]);
+					}).then(function () {
+						return unitBase;
+					});
+				});
+			}
 
 			// connect
 			return Promise.all([
@@ -87,18 +516,30 @@ var AccountInterfaces = {
 					classes: ['hidden'],
 				}),
 				base.setState({
-					defaultState: {
-						classes: {add: ['hidden']},
+					defaultState: {fn: UI.functions.hide},
+					states: {
+						'transcription-state': {
+							fn: UI.functions.show,
+						},
+						'client-state': 'default',
+						'role-state': 'default',
+						'control-state': 'default',
 					},
-					states: [
-						{name: 'transcription-state', args: {
-							classes: {remove: ['hidden']},
-						}},
-						{name: 'client-state', args: 'default'},
-						{name: 'role-state', args: 'default'},
-						{name: 'control-state', args: 'default'},
-					],
 				}),
+
+				// buttonPanel
+
+				// audioCaptionPanel
+				audioCaptionPanel.setChildren([
+					audio,
+					caption,
+				]),
+
+				// autocompletePanel
+				autocompletePanel.setChildren([
+					autocomplete,
+				]),
+
 			]).then(function () {
 				base.components = {
 
@@ -106,6 +547,8 @@ var AccountInterfaces = {
 				return base.setChildren([
 					buttonPanel,
 					counter,
+					audioCaptionPanel,
+					autocompletePanel,
 				]);
 			}).then(function () {
 				return base;
@@ -514,7 +957,10 @@ var AccountInterfaces = {
 					return Promise.all([
 						unitBase.setBindings({
 							'click': function (_this) {
-								Active.set('role', datum.id).then(function () {
+								return Promise.all([
+									Active.set('role', datum.id),
+									Permission.set(datum.id),
+								]).then(function () {
 									return _this.triggerState();
 								});
 							},
@@ -556,16 +1002,16 @@ var AccountInterfaces = {
 					clientList,
 				]),
 				clientList.setState({
-					states: [
-						{name: 'client-state', args: {
+					states: {
+						'client-state': {
 							preFn: function (_this) {
 								return clientList.display({forceLoad: true});
 							},
 							fn: function () {
 								return clientList.search.clear();
 							},
-						}},
-					]
+						},
+					},
 				}),
 				clientList.setTitle({text: 'Clients', centre: true}),
 				clientList.setSearch({mode: 'off', placeholder: 'Search clients...'}),
@@ -587,16 +1033,16 @@ var AccountInterfaces = {
 					roleList,
 				]),
 				roleList.setState({
-					states: [
-						{name: 'role-state', args: {
+					states: {
+						'role-state': {
 							preFn: function (_this) {
 								return roleList.display({forceLoad: true});
 							},
 							fn: function () {
 								return roleList.search.clear();
 							},
-						}},
-					]
+						},
+					}
 				}),
 				roleList.setTitle({text: 'Roles', centre: true}),
 				roleList.setSearch({mode: 'off', placeholder: 'Search roles...'}),
@@ -608,8 +1054,8 @@ var AccountInterfaces = {
 				controlList.setTitle({text: 'Menu', centre: true}),
 				controlList.setSearch({mode: 'off', placeholder: ''}),
 				controlList.setState({
-					states: [
-						{name: 'control-state', args: {
+					states: {
+						'control-state': {
 							preFn: function (_this) {
 								return Promise.all([
 									Active.get('client'),
@@ -642,8 +1088,8 @@ var AccountInterfaces = {
 									}
 								});
 							},
-						}},
-					],
+						},
+					},
 				}),
 				controlList.list.setChildren([
 					transcriptionButton,
@@ -694,13 +1140,13 @@ var AccountInterfaces = {
 				},
 			}),
 
-			// transcription interface
-			AccountInterfaces.transcriptionInterface('transcription-interface', {
+			// control interface
+			AccountInterfaces.controlInterface('control-interface', {
 				interface: args.interface,
 			}),
 
-			// control interface
-			AccountInterfaces.controlInterface('control-interface', {
+			// transcription interface
+			AccountInterfaces.transcriptionInterface('transcription-interface', {
 				interface: args.interface,
 			}),
 
@@ -708,8 +1154,8 @@ var AccountInterfaces = {
 			// unpack components
 			var [
 				base,
-				transcriptionInterface,
 				controlInterface,
+				transcriptionInterface,
 			] = components;
 
 			// ASSOCIATE
@@ -722,12 +1168,12 @@ var AccountInterfaces = {
 			]).then(function () {
 				// base children
 				base.components = {
-					transcriptionInterface: transcriptionInterface,
 					controlInterface: controlInterface,
+					transcriptionInterface: transcriptionInterface,
 				}
 				return base.setChildren([
+					controlInterface,
 					transcriptionInterface,
-					controlInterface
 				]);
 			}).then(function () {
 				return base;
@@ -1115,13 +1561,13 @@ var AccountInterfaces = {
 
 					// list
 					autocomplete.setState({
-						states: [
-							{name: 'client-state', args: {
+						states: {
+							'client-state': {
 								fn: function (_this) {
 									_this.display();
 								},
-							}},
-						]
+							},
+						}
 					}),
 				]).then(function () {
 					base.components = {
@@ -1312,13 +1758,13 @@ var AccountInterfaces = {
 				// complete promises.
 				return Promise.all([
 					list.setState({
-						states: [
-							{name: 'client-state', args: {
+						states: {
+							'client-state': {
 								fn: function (_this) {
 									_this.display();
 								},
-							}},
-						]
+							},
+						}
 					}),
 				]).then(function (results) {
 					base.components = {
