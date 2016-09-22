@@ -1,0 +1,16 @@
+1. One token
+	a. empty
+		i. click: ---
+		ii. type: ---
+	b. text
+		i. backspace:
+			tail not cleared when clearing all text.
+
+		ii. blur, focus indirect:
+			somehow duplicates list items.
+
+		iii. blur:
+			does not clear autocomplete.
+
+
+Basically, I need to make sure exceptional methods are handled outside the main searchable list definition.

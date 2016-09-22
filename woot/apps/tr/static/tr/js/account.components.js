@@ -125,7 +125,6 @@ var AccountComponents = {
 			audioTrack.buffer = {};
 			audioTrack.active = 0;
 			audioTrack.controller = {};
-			audioTrack.threshold = (args.options.threshold || 4);
 			audioTrack.canvas = audioTrackCanvas;
 
 			// initialise node and create context
@@ -151,7 +150,7 @@ var AccountComponents = {
 					return _this.load().then(function () {
 						return _this.pre();
 					});
-				} else if (remaining < _this.threshold) {
+				} else if (remaining < (base.threshold || 4)) {
 					return Promise.all([
 						_this.load({force: true}),
 						_this.pre(),
@@ -166,15 +165,15 @@ var AccountComponents = {
 				var total = Object.keys(_this.buffer).length;
 				// load more and process into buffer
 				return Promise.all([
-					args.options.source.path(),
-					args.options.source.token().then(function (tokenPath) {
+					base.path(),
+					base.token().then(function (tokenPath) {
 						return Context.get(tokenPath, {force: force});
 					}),
 				]).then(function (options) {
 					return Context.get(options[0], {force: force, options: {filter: {token: options[1].id}}});
 				}).then(function (result) {
 					// Result is a list of transcriptions filtered by active token
-					// console.log(Object.keys(_this.buffer), Object.keys(result));
+					// // console.log(Object.keys(_this.buffer), Object.keys(result));
 					Object.keys(result).sort(function (a, b) {
 						return result[a].original_caption > result[b].original_caption ? 1 : -1;
 					}).forEach(function (key, index) {
@@ -195,8 +194,8 @@ var AccountComponents = {
 				var _this = audioTrack;
 				// determine which audio elements to load
 				// load n either side of active index.
-				var lower = _this.active > 1 ? _this.active - _this.threshold + 2 : 0;
-				var upper = _this.active > 1 ? _this.active + _this.threshold - 1 : _this.threshold + 1;
+				var lower = _this.active > 1 ? _this.active - (base.threshold || 4) + 2 : 0;
+				var upper = _this.active > 1 ? _this.active + (base.threshold || 4) - 1 : (base.threshold || 4) + 1;
 				var indices = [];
 				for (i=lower; i<upper; i++) {
 					indices.push(i);
@@ -361,12 +360,14 @@ var AccountComponents = {
 
 					// create canvas and context
 					_this.canvas = document.getElementById(_this.id);
-					_this.canvas.height = parseInt(audioTrack.model().css('height'));
-					_this.canvas.width = parseInt(audioTrack.model().css('width'));
-					_this.context = _this.canvas.getContext('2d');
+					if (_this.canvas) {
+						_this.canvas.height = parseInt(audioTrack.model().css('height'));
+						_this.canvas.width = parseInt(audioTrack.model().css('width'));
+						_this.context = _this.canvas.getContext('2d');
 
-					// start loop
-					_this.draw();
+						// start loop
+						_this.draw();
+					}
 				}
 			}
 			audioTrackCanvas.draw = function () {
@@ -504,10 +505,10 @@ var AccountComponents = {
 
 			// resolve list of components to be rendered.
 			base.next = function () {
-				audioTrack.next();
+				return audioTrack.next();
 			}
 			base.previous = function () {
-				audioTrack.previous();
+				return audioTrack.previous();
 			}
 			base.components = {
 				playButton: playButton,
@@ -774,10 +775,13 @@ var AccountComponents = {
 
 			}
 			wrapper.token = function (options) {
+				// console.log('{} caption token'.format(base.id));
 				options = (options || {});
 				var _this = wrapper;
 				if (_this.active !== undefined && !options.swap) {
-					return _this.active.focus('end').then(function () {
+					return (options.end ? _this.setActive : emptyPromise)({index: 'last'}).then(function () {
+						return _this.active.focus('end');
+					}).then(function () {
 						return _this.active;
 					});
 				} else {
@@ -789,9 +793,7 @@ var AccountComponents = {
 						if (_this.active) {
 							unit.after = options.before ? '' : _this.active.id;
 						}
-						return _this.deactivate().then(function () {
-							return _this.setChildren([unit]);
-						}).then(function () {
+						return _this.setChildren([unit]).then(function () {
 							_this.active = unit;
 							return _this.active.activate();
 						}).then(function () {
@@ -809,43 +811,41 @@ var AccountComponents = {
 				return wrapper.active.components.autocomplete.search.isComplete();
 			}
 			wrapper.setActive = function (options) {
+				// console.log('{} caption setActive'.format(base.id));
 				var _this = wrapper;
+				// args
+				options.index = (options || {}).index !== undefined ? (options.index === 'last' ? _this.children.length - 1 : options.index) : undefined; // allow keyword "last"
+
 				// changes
-				var previousIndex = _this.currentIndex !== undefined ? _this.currentIndex : 0;
+				var previousIndex = _this.currentIndex ? _this.currentIndex : 0;
 				_this.currentIndex = (options.index !== undefined ? options.index : undefined || ((_this.currentIndex || 0) + (options.increment || 0)));
 
 				// boundary conditions
 				_this.currentIndex = _this.currentIndex > _this.children.length - 1 ? _this.children.length - 1 : (_this.currentIndex < 0 ? 0 : _this.currentIndex);
 
-				if (_this.currentIndex !== previousIndex || options.force) {
-					return _this.deactivate().then(function () {
-						_this.active = _this.children[_this.currentIndex];
-						return _this.active.activate();
-					}).then(function () {
-						return new Promise(function(resolve, reject) {
-							resolve(true);
-						});
-					});
-				} else {
-					return new Promise(function(resolve, reject) {
-						resolve(false);
-					});
+				var hasChanged = _this.currentIndex !== previousIndex || options.force;
+				if (hasChanged) {
+					_this.active = _this.children[_this.currentIndex];
 				}
-			}
-			wrapper.deactivate = function () {
-				return (wrapper.active ? wrapper.active.deactivate : emptyPromise)();
+				return new Promise(function(resolve, reject) {
+					resolve(hasChanged); // returns whether anything has changed.
+				});
 			}
 			wrapper.next = function () {
+				// console.log('{} caption next'.format(base.id));
 				return wrapper.setActive({increment: 1}).then(function (indexChanged) {
 					return (indexChanged ? wrapper.active.focus : emptyPromise)('start');
 				});
 			}
 			wrapper.previous = function () {
+				// console.log('{} caption previous'.format(base.id));
 				return wrapper.setActive({increment: -1}).then(function (indexChanged) {
 					return (indexChanged ? wrapper.active.focus : emptyPromise)('end');
 				});
 			}
 			wrapper.delete = function () {
+				var content = wrapper.active.getContent();
+				var isAtStart = wrapper.active.isAtStart();
 				return wrapper.removeChild(wrapper.active.id).then(function () {
 					wrapper.active = undefined;
 					var forceNext = function () {
@@ -858,30 +858,43 @@ var AccountComponents = {
 						}
 					}
 					return (wrapper.currentIndex ? wrapper.previous : forceNext)();
+				}).then(function () {
+					if (content && isAtStart) {
+						var activeContent = wrapper.active.getContent();
+						return wrapper.active.setContent({content: (activeContent + content), trigger: true}).then(function () {
+							// set caret position to active content length
+							return wrapper.active.components.autocomplete.search.setCaretPosition(activeContent.length);
+						});
+					}
 				});
 			}
 
 			// behaviours
 			base.behaviours = {
 				up: function () {
+					// console.log('{} caption behaviours up'.format(base.id));
 					return Promise.all([
 						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.up : emptyPromise)(),
 					]);
 				},
 				down: function () {
+					// console.log('{} caption behaviours down'.format(base.id));
 					return Promise.all([
 						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.down : emptyPromise)(),
 					]);
 				},
 				left: function () {
+					// console.log('{} caption behaviours left'.format(base.id));
 					// go to previous token if at end
 					return ((wrapper.active && wrapper.isCaretInPosition('start')) ? wrapper.previous : emptyPromise)();
 				},
 				altleft: function () {
+					// console.log('{} caption behaviours altleft'.format(base.id));
 					// go to previous token
 					return (wrapper.active ? wrapper.previous : emptyPromise)();
 				},
 				right: function () {
+					// console.log('{} caption behaviours right'.format(base.id));
 					// complete or go to next token if already complete
 					return Promise.all([
 						((wrapper.active && wrapper.isCaretInPosition('end') && wrapper.isComplete()) ? wrapper.next : emptyPromise)(),
@@ -889,6 +902,7 @@ var AccountComponents = {
 					]);
 				},
 				altright: function () {
+					// console.log('{} caption behaviours altright'.format(base.id));
 					// go to next token
 					var shiftright = function () {
 						return wrapper.setActive({increment: 1}).then(function (indexChanged) {
@@ -900,6 +914,7 @@ var AccountComponents = {
 					]);
 				},
 				enter: function () {
+					// console.log('{} caption behaviours enter'.format(base.id));
 					// complete and new token
 					return Promise.all([
 						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)().then(function () {
@@ -908,20 +923,24 @@ var AccountComponents = {
 					]);
 				},
 				backspace: function () {
+					// console.log('{} caption behaviours backspace'.format(base.id));
 					// delete token if at beginning
-					return ((wrapper.active && wrapper.active.isEmpty() && wrapper.children.length > 1) ? wrapper.delete : emptyPromise)();
+					return ((wrapper.active && wrapper.active.isAtStart() && wrapper.children.length > 1) ? wrapper.delete : emptyPromise)();
 				},
 				altbackspace: function () {
+					// console.log('{} caption behaviours altbackspace'.format(base.id));
 					// delete token
 					return ((wrapper.active && wrapper.children.length) ? wrapper.delete : emptyPromise)();
 				},
 				space: function () {
+					// console.log('{} caption behaviours space'.format(base.id));
 					// new token
 					return Promise.all([
-						(wrapper.active ? wrapper.token : emptyPromise)({swap: true}),
+						// ((wrapper.active && (!wrapper.active.components.autocomplete.virtual.length || wrapper.isComplete())) ? wrapper.token : emptyPromise)({swap: true}),
 					]);
 				},
 				number: function (char) {
+					// console.log('{} caption behaviours number'.format(base.id));
 					return Promise.all([
 						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.number : emptyPromise)(char),
 					]);
@@ -932,7 +951,7 @@ var AccountComponents = {
 			return Promise.all([
 				wrapper.setBindings({
 					'click': function (_this) {
-						wrapper.token();
+						wrapper.token({end: true});
 					},
 				}),
 			]).then(function () {
