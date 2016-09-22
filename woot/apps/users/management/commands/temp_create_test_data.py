@@ -76,19 +76,6 @@ class Command(BaseCommand):
 		# fragment list
 		base = '/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/'
 		fragment_list = [f for f in os.listdir(base) if ('.DS' not in f and not os.path.isdir(os.path.join(base, f)))]
-		# fragment_list = [
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806082036x10317.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806082036x10317.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806082307x16971.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806083431x10391.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806083548x19789.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806084344x10443.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806084733x15751.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806090452x10583.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806091037x13114.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806091845x15981.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806091957x16343.wav',
-		# ]
 
 		for file_name in fragment_list:
 			# 1. create fragment
