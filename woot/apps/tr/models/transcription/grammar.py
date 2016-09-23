@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.tr.client.client import Client
+from apps.tr.models.client.project import Project, Batch
 from apps.tr.idgen import idgen
 
 ### Grammar model
@@ -13,7 +13,8 @@ class Grammar(models.Model):
 	'''
 
 	### Connections
-	client = models.ForeignKey(Client, related_name='grammars')
+	project = models.ForeignKey(Project, related_name='grammars')
+	batches = models.ManyToManyField(Batch, related_name='grammars')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
