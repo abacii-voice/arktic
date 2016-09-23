@@ -3,6 +3,7 @@ from django.db import models
 
 # local
 from apps.tr.models.client.project import Project
+from apps.tr.models.transcription.grammar import Grammar
 from apps.tr.models.role.role import Role
 from apps.tr.idgen import idgen
 
@@ -11,6 +12,7 @@ class Dictionary(models.Model):
 
 	### Connections
 	project = models.ForeignKey(Project, related_name='dictionaries')
+	grammar = models.ForeignKey(Grammar, related_name='dictionaries')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
@@ -27,6 +29,10 @@ class Dictionary(models.Model):
 		}
 
 		return data
+
+	def user_tokens(self, role):
+		user_dictionary = self.children.filter(role=role)
+
 
 class UserDictionary(models.Model):
 

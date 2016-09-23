@@ -89,6 +89,8 @@ class Command(BaseCommand):
 				utterance = Utterance.objects.create(transcription=transcription, file=File(destination))
 
 		# dictionary data
-		dictionary = project.dictionaries.create()
-		user_dictionary = worker_role.dictionaries.create(parent=dictionary)
+		dictionary = project.dictionaries.create(grammar=grammar)
+
 		
+
+		user_dictionary = worker_role.dictionaries.create(parent=dictionary)
