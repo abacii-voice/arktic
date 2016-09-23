@@ -61,12 +61,11 @@ class Command(BaseCommand):
 
 		# basic upload
 		project = production_client.production_projects.create(name='TestProject', contract_client=contract_client)
+		grammar = project.grammars.create(name='TestGrammar')
 		batch = project.batches.create(name='TestBatch')
+		grammar.batches.add(batch)
+		batch.grammars.add(grammar)
 		upload = batch.uploads.create(archive_name='test_archive.zip', relfile_name='test_relfile.csv')
-
-		dictionary = project.dictionaries.create(name='test_dictionary')
-		user_dictionary = dictionary.children.create(role=worker_role)
-		user_dictionary2 = dictionary.children.create(role=worker_role2)
 
 		worker_role.project = project
 		worker_role.save()
@@ -82,7 +81,7 @@ class Command(BaseCommand):
 			fragment = upload.fragments.create(filename=os.path.join(base, file_name))
 
 			# 2. create transcription
-			transcription = batch.transcriptions.create(project=project, filename=fragment.filename)
+			transcription = batch.transcriptions.create(project=project, grammar=grammar, filename=fragment.filename)
 
 			# 3. create utterance
 			with open(os.path.join(base, file_name), 'rb') as destination:
