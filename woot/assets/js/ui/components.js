@@ -462,6 +462,7 @@ var Components = {
 							return (base.defaultFilters.contains(datum.rule) || base.defaultFilters.length === 0) && datum.main.toLowerCase().indexOf(query.toLowerCase()) === 0 && !(base.autocomplete && query === '');
 						});
 					}
+					base.virtual = base.limit ? base.virtual.slice(0,base.limit) : base.virtual;
 
 					resolve();
 				});
@@ -568,6 +569,7 @@ var Components = {
 			base.setSearch = function (options) {
 				options.mode = (options.mode || 'on');
 				options.placeholder = (options.placeholder || 'search...');
+				base.limit = options.limit;
 
 				search.placeholder = options.placeholder;
 				return search.setAppearance({classes: {add: (options.mode === 'off' ? ['hidden'] : [])}}).then(function () {

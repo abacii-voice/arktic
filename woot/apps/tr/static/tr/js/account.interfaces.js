@@ -360,24 +360,27 @@ var AccountInterfaces = {
 			autocomplete.components.search.onComplete = function () {
 
 			}
-			autocomplete.setSearch('on');
+			autocomplete.setSearch({mode: 'on', limit: 10});
 			autocomplete.autocomplete = true;
 			autocomplete.targets = [
 				{
 					name: 'clients',
 					path: function () {
-						return new Promise(function(resolve, reject) {
-							resolve('clients');
+						return Promise.all([
+							Active.get('client'),
+							Active.get('project'),
+						]).then(function (results) {
+							return 'clients.{client_id}.projects.{project_id}.dictionaries.5fcb33bc-39d2-4b96-b8eb-81deeec5a204.tokens'.format({client_id: results[0], project_id: results[1]});
 						});
 					},
 					process: function (data) {
 						return new Promise(function(resolve, reject) {
 							var results = Object.keys(data).map(function (key) {
-								var client = data[key];
+								var token = data[key];
 								return {
 									id: key,
-									main: client.name,
-									rule: 'client',
+									main: token.content,
+									rule: 'tokens',
 								}
 							});
 
@@ -957,10 +960,15 @@ var AccountInterfaces = {
 					return Promise.all([
 						unitBase.setBindings({
 							'click': function (_this) {
-								return Promise.all([
-									Active.set('role', datum.id),
-									Permission.set(datum.id),
-								]).then(function () {
+								return Active.get('client').then(function (client_id) {
+									return Context.get('user.clients.{client_id}.roles.{role_id}.project'.format({client_id: client_id, role_id: datum.id}));
+								}).then(function (project_id) {
+									return Promise.all([
+										Active.set('project', project_id),
+										Active.set('role', datum.id),
+										Permission.set(datum.id),
+									]);
+								}).then(function () {
 									return _this.triggerState();
 								});
 							},
