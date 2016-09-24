@@ -97,8 +97,11 @@ var AccountInterfaces = {
 			}),
 			Components.searchableList('tb-ap-autocomplete', {
 				appearance: {
-
-				}
+					style: {
+						'height': '100%',
+						'width': '100%',
+					},
+				},
 			}),
 
 		]).then(function (components) {
