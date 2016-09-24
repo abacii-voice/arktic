@@ -87,9 +87,15 @@ class Command(BaseCommand):
 			# 1. create fragment
 			fragment = upload.fragments.create(filename=os.path.join(base, file_name))
 
-			# 4. create caption
+			# 2. create caption
+			caption = None
 			caption_content = relfile_data[file_name]
-			caption, caption_created = project.captions.get_or_create(grammar=grammar, content=caption_content, from_recogniser=True)
+			if caption_content:
+				caption, caption_created = dictionary.captions.get_or_create(content=caption_content, from_recogniser=True)
+
+				# 3. create tokens
+				for token_primitive in caption_content.split(' '):
+					token, token_created = dictionary.tokens.get_or_create(content=token_primitive)
 
 			# 2. create transcription
 			transcription = batch.transcriptions.create(project=project, grammar=grammar, filename=fragment.filename, caption=caption)

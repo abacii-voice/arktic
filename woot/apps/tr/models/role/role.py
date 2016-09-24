@@ -2,6 +2,7 @@
 from django.db import models
 
 # local
+from apps.tr.models.client.project import Project
 from apps.tr.idgen import idgen
 
 ### Role classes

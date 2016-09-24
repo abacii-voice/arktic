@@ -64,7 +64,7 @@ class Project(models.Model):
 
 		if path.check('transcriptions', blank=False):
 			data.update({
-				'transcriptions': {transcription.id: transcription.data(path.down('transcriptions'), permission) for transcription in self.transcriptions.filter(id__startswith=path.get_id()).filter(**path.get_filter('transcriptions')).order_by('original_caption')},
+				'transcriptions': {transcription.id: transcription.data(path.down('transcriptions'), permission) for transcription in self.transcriptions.filter(id__startswith=path.get_id()).filter(**path.get_filter('transcriptions')).order_by('caption__content')},
 			})
 
 		if path.check('moderations', blank=False):
@@ -81,7 +81,7 @@ class Project(models.Model):
 
 		'''
 
-		transcriptions = self.transcriptions.filter(is_active=True, is_available=True).order_by('original_caption', 'date_created')
+		transcriptions = self.transcriptions.filter(is_active=True, is_available=True).order_by('caption__content', 'date_created')
 		if transcriptions.count() > 0:
 			transcription = transcriptions[0]
 			transcription.is_available = False
