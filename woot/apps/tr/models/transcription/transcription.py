@@ -4,6 +4,7 @@ from django.db import models
 # local
 from apps.tr.models.client.project import Project, Batch
 from apps.tr.models.transcription.grammar import Grammar
+from apps.tr.models.transcription.caption import Caption
 from apps.tr.models.role.role import Role
 from apps.tr.idgen import idgen
 
@@ -63,12 +64,12 @@ class Transcription(models.Model):
 	project = models.ForeignKey(Project, related_name='transcriptions')
 	grammar = models.ForeignKey(Grammar, related_name='transcriptions')
 	batch = models.ForeignKey(Batch, related_name='transcriptions')
+	caption = models.ForeignKey(Caption, related_name='transcriptions')
 	token = models.ForeignKey(TranscriptionToken, related_name='transcriptions', null=True)
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
-	original_caption = models.CharField(max_length=255, default='')
 
 	# unique identifier
 	filename = models.CharField(max_length=255)

@@ -3,7 +3,7 @@ from django.db import models
 
 # local
 from apps.tr.models.transcription.dictionary import Dictionary, UserDictionary
-from apps.tr.models.transcription.caption import Caption
+from apps.tr.models.transcription.caption import CaptionInstance
 from apps.tr.idgen import idgen
 
 ### Token classes
@@ -32,7 +32,7 @@ class TokenInstance(models.Model):
 
 	### Connections
 	parent = models.ForeignKey(Token, related_name='instances')
-	caption = models.ForeignKey(Caption, related_name='tokens')
+	caption = models.ForeignKey(CaptionInstance, related_name='tokens')
 
 	### Properties
 	index = models.IntegerField(default=0)

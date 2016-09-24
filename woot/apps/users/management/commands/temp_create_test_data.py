@@ -9,6 +9,7 @@ from apps.tr.models.transcription.utterance import Utterance
 
 # util
 import os
+from os.path import join, exists, isdir
 
 ### Command: create default user
 class Command(BaseCommand):
@@ -61,36 +62,39 @@ class Command(BaseCommand):
 
 		# basic upload
 		project = production_client.production_projects.create(name='TestProject', contract_client=contract_client)
-		grammar = project.grammars.create(name='TestGrammar')
+		grammar = contract_client.grammars.create(name='TestGrammar')
 		batch = project.batches.create(name='TestBatch')
-		grammar.batches.add(batch)
-		batch.grammars.add(grammar)
-		upload = batch.uploads.create(archive_name='test_archive.zip', relfile_name='test_relfile.csv')
+		upload = batch.uploads.create(archive_name='test_archive.zip')
 
 		worker_role.project = project
 		worker_role.save()
 		worker_role2.project = project
 		worker_role2.save()
 
+		# dictionary data
+		dictionary = project.dictionaries.create(grammar=grammar)
+		user_dictionary = worker_role.dictionaries.create(parent=dictionary)
+		user_dictionary2 = worker_role2.dictionaries.create(parent=dictionary)
+
 		# fragment list
-		base = '/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/'
-		fragment_list = [f for f in os.listdir(base) if ('.DS' not in f and not os.path.isdir(os.path.join(base, f)))]
+		base = '/Users/nicholaspiano/code/abacii-voice/arktic/test/'
+		fragment_list = [f for f in os.listdir(join(base, 'selectedAudioFiles')) if ('.DS' not in f and not isdir(join(base, 'selectedAudioFiles', f)))]
+		relfile_data = {}
+		with open(join(base, 'relfile.csv'), 'r') as open_relfile:
+			relfile_data = {line.split(',')[0]:line.split(',')[1].rstrip() for line in list(open_relfile.readlines())[1:]}
 
 		for file_name in fragment_list:
 			# 1. create fragment
 			fragment = upload.fragments.create(filename=os.path.join(base, file_name))
 
+			# 4. create caption
+			caption_content = relfile_data[file_name]
+			caption, caption_created = project.captions.get_or_create(grammar=grammar, content=caption_content, from_recogniser=True)
+
 			# 2. create transcription
-			transcription = batch.transcriptions.create(project=project, grammar=grammar, filename=fragment.filename)
+			transcription = batch.transcriptions.create(project=project, grammar=grammar, filename=fragment.filename, caption=caption)
 
 			# 3. create utterance
-			with open(os.path.join(base, file_name), 'rb') as destination:
+			with open(os.path.join(base, 'selectedAudioFiles', file_name), 'rb') as destination:
 				# create new utterance using open file
 				utterance = Utterance.objects.create(transcription=transcription, file=File(destination))
-
-		# dictionary data
-		dictionary = project.dictionaries.create(grammar=grammar)
-
-		
-
-		user_dictionary = worker_role.dictionaries.create(parent=dictionary)

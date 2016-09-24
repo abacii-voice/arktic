@@ -2,26 +2,27 @@
 from django.db import models
 
 # local
-from apps.tr.models.transcription.transcription import Transcription
+from apps.tr.models.client.project import Project
+from apps.tr.models.transcription.grammar import Grammar
 from apps.tr.models.role.role import Role
 from apps.tr.idgen import idgen
 
-### Utterance classes
+### Caption classes
 class Caption(models.Model):
 
 	'''
-	A text utterance associated with a transcription.
+	A unique text associated with a grammar
 	'''
 
 	### Connections
-	transcription = models.ForeignKey(Transcription, related_name='captions')
-	role = models.ForeignKey(Role, related_name='captions')
+	project = models.ForeignKey(Project, related_name='captions')
+	grammar = models.ForeignKey(Grammar, related_name='captions')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	date_created = models.DateTimeField(auto_now_add=True)
 	from_recogniser = models.BooleanField(default=False)
-	metadata = models.TextField(default='')
+	content = models.TextField(default='')
 
 	### Methods
 	# data
@@ -29,6 +30,33 @@ class Caption(models.Model):
 		data = {
 			'date_created': str(self.date_created),
 			'from_recogniser': self.from_recogniser,
+			'content': self.caption.metadata,
+			'instances': {instances.id: instances.data(path, permission) for instances in self.instances.all()},
+		}
+
+		return data
+
+class CaptionInstance(models.Model):
+
+	'''
+	A text associated with a transcription
+	'''
+
+	### Connections
+	caption = models.ForeignKey(Caption, related_name='instances')
+	role = models.ForeignKey(Role, related_name='captions')
+	transcription = models.ForeignKey('tr.Transcription', related_name='captions')
+
+	### Properties
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	date_created = models.DateTimeField(auto_now_add=True)
+	metadata = models.TextField(default='')
+
+	### Methods
+	# data
+	def data(self, path, permission):
+		data = {
+			'date_created': str(self.date_created),
 			'metadata': self.metadata,
 			'tokens': {str(token.index): token.data(path, permission) for token in self.tokens.all()},
 			'flags': {flag.id: flag.data(path, permission) for flag in self.flags.all()},
