@@ -345,7 +345,14 @@ var Components = {
 			}),
 
 			// list
-			Components.contentPanel('{id}-list'.format({id: id}), {}),
+			Components.contentPanel('{id}-list'.format({id: id}), {
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': '100%',
+					},
+				},
+			}),
 
 			// filter
 			Components.contentPanel('{id}-filter'.format({id: id}), {}),
@@ -574,6 +581,8 @@ var Components = {
 				search.placeholder = options.placeholder;
 				return search.setAppearance({classes: {add: (options.mode === 'off' ? ['hidden'] : [])}}).then(function () {
 					return search.components.tail.setAppearance({html: options.placeholder});
+				}).then(function () {
+					return list.setAppearance({style: {'height': 'calc(100% - 40px)'}});
 				});
 			}
 
