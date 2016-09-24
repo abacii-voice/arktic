@@ -12,8 +12,7 @@ class Caption(models.Model):
 	'''
 
 	### Connections
-	project = models.ForeignKey('tr.Project', related_name='captions')
-	grammar = models.ForeignKey('tr.Grammar', related_name='captions')
+	dictionary = models.ForeignKey('tr.Dictionary', related_name='captions')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)

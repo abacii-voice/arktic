@@ -124,6 +124,8 @@ def access(original_path, permission, fltr={}):
 			'user': permission.user.client_data(path.down('user'), permission),
 		})
 
+	print(json.dumps(data, indent=2, sort_keys=True))
+
 	# cut to size
 	if original_path != '':
 		for token in original_path.split('.'):
