@@ -1,4 +1,4 @@
-from apps.tr.models.transcription.caption import Caption
+from apps.tr.models.transcription.caption import Caption, CaptionInstance
 from apps.tr.models.transcription.dictionary import Dictionary, UserDictionary
 from apps.tr.models.transcription.flag import Flag, FlagInstance
 from apps.tr.models.transcription.grammar import Grammar
