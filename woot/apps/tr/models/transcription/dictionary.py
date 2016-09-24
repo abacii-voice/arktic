@@ -22,7 +22,7 @@ class Dictionary(models.Model):
 			'total_tokens': str(self.tokens.count()),
 		}
 
-		if permission.check_client(self.project.production_client):
+		if True:
 			data.update({
 				'tokens': {token.id: token.data(path, permission) for token in self.tokens.filter(**path.get_filter('tokens'))},
 			})
