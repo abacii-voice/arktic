@@ -82,7 +82,6 @@ class Transcription(models.Model):
 	def data(self, path, permission):
 		data = {}
 		if path.is_blank:
-			print(self.caption.content if self.caption else '')
 			data.update({
 				'batch': self.batch.id,
 				'caption': self.caption.content if self.caption else '',
