@@ -2,14 +2,13 @@
 from django.db import models
 
 # local
-from apps.users.models import User
 from apps.tr.idgen import idgen
 
 ### Client model
 class Client(models.Model):
 
 	### Connections
-	users = models.ManyToManyField(User, related_name='clients')
+	users = models.ManyToManyField('users.User', related_name='clients')
 
 	### Properties
 	# Identification

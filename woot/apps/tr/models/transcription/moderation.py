@@ -2,10 +2,6 @@
 from django.db import models
 
 # local
-from apps.tr.models.client.project import Project
-from apps.tr.models.transcription.transcription import Transcription
-from apps.tr.models.transcription.caption import CaptionInstance
-from apps.tr.models.role.role import Role
 from apps.tr.idgen import idgen
 
 ### Moderation classes
@@ -19,8 +15,8 @@ class ModerationToken(models.Model):
 
 
 	### Connections
-	project = models.ForeignKey(Project, related_name='moderation_tokens')
-	role = models.ForeignKey(Role, related_name='moderation_tokens')
+	project = models.ForeignKey('tr.Project', related_name='moderation_tokens')
+	role = models.ForeignKey('tr.Role', related_name='moderation_tokens')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
@@ -55,10 +51,10 @@ class ModerationToken(models.Model):
 class Moderation(models.Model):
 
 	### Connections
-	project = models.ForeignKey(Project, related_name='moderations')
-	caption = models.ForeignKey(CaptionInstance, related_name='moderations')
-	moderator = models.ForeignKey(Role, related_name='moderations')
-	token = models.ForeignKey(ModerationToken, related_name='moderations', null=True)
+	project = models.ForeignKey('tr.Project', related_name='moderations')
+	caption = models.ForeignKey('tr.CaptionInstance', related_name='moderations')
+	moderator = models.ForeignKey('tr.Role', related_name='moderations')
+	token = models.ForeignKey('tr.ModerationToken', related_name='moderations', null=True)
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
