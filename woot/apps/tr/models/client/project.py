@@ -164,25 +164,30 @@ class Upload(models.Model):
 	date_created = models.DateTimeField(auto_now_add=True)
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	archive_name = models.CharField(max_length=255, default='')
-	relfile_name = models.CharField(max_length=255, default='')
-	total_fragments = models.PositiveIntegerField(default=0)
-	completed_fragments = models.PositiveIntegerField(default=0)
-	completion_percentage = models.FloatField(default=0.0)
 	is_complete = models.BooleanField(default=False)
 
 	### Methods
+	# stats
+	def completed(self):
+		total = self.fragments.count()
+		completed = self.fragments.filter(is_reconciled=True).count()
+		completion_percentage = completed / total
+
+		return total, completed, completion_percentage
+
 	# data
 	def data(self, path, permission):
 		data = {}
+		total_fragments, completed_fragments, completion_percentage = self.completed()
 
 		if path.is_blank:
 			data.update({
 				'date_created': str(self.date_created),
 				'archive_name': self.archive_name,
 				'relfile_name': self.relfile_name,
-				'total_fragments': str(self.total_fragments),
-				'completed_fragments': str(self.completed_fragments),
-				'completion_percentage': str(self.completion_percentage),
+				'total_fragments': str(total_fragments),
+				'completed_fragments': str(completed_fragments),
+				'completion_percentage': str(completion_percentage),
 				'is_complete': self.is_complete,
 			})
 

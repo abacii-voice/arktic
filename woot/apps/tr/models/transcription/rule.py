@@ -4,7 +4,7 @@ from django.db import models
 # local
 from apps.tr.models.client.client import Client
 from apps.tr.models.client.project import Project
-from apps.tr.models.transcription.caption import Caption
+from apps.tr.models.transcription.caption import CaptionInstance
 from apps.tr.models.role.role import Role
 from apps.tr.idgen import idgen
 
@@ -43,7 +43,7 @@ class RuleInstance(models.Model):
 
 	### Connections
 	parent = models.ForeignKey(Rule, related_name='instances')
-	caption = models.ForeignKey(Caption, related_name='rules_cited')
+	caption = models.ForeignKey(CaptionInstance, related_name='rules_cited')
 	role = models.ForeignKey(Role, related_name='rules_cited')
 
 	### Methods

@@ -4,7 +4,7 @@ from django.db import models
 # local
 from apps.tr.models.client.project import Project
 from apps.tr.models.transcription.transcription import Transcription
-from apps.tr.models.transcription.caption import Caption
+from apps.tr.models.transcription.caption import CaptionInstance
 from apps.tr.models.role.role import Role
 from apps.tr.idgen import idgen
 
@@ -56,7 +56,7 @@ class Moderation(models.Model):
 
 	### Connections
 	project = models.ForeignKey(Project, related_name='moderations')
-	caption = models.ForeignKey(Caption, related_name='moderations')
+	caption = models.ForeignKey(CaptionInstance, related_name='moderations')
 	moderator = models.ForeignKey(Role, related_name='moderations')
 	token = models.ForeignKey(ModerationToken, related_name='moderations', null=True)
 

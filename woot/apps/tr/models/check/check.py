@@ -3,7 +3,7 @@ from django.db import models
 
 # local
 from apps.tr.models.client.client import Client
-from apps.tr.models.transcription.caption import Caption
+from apps.tr.models.transcription.caption import CaptionInstance
 from apps.tr.idgen import idgen
 
 ### Correction classes
@@ -31,7 +31,7 @@ class QualityCheckInstance(models.Model):
 
 	### Connections
 	parent = models.ForeignKey(QualityCheck, related_name='instances')
-	caption = models.ForeignKey(Caption, related_name='checks')
+	caption = models.ForeignKey(CaptionInstance, related_name='checks')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
