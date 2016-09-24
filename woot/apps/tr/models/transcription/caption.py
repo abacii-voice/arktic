@@ -2,9 +2,6 @@
 from django.db import models
 
 # local
-from apps.tr.models.client.project import Project
-from apps.tr.models.transcription.grammar import Grammar
-from apps.tr.models.role.role import Role
 from apps.tr.idgen import idgen
 
 ### Caption classes
@@ -15,8 +12,8 @@ class Caption(models.Model):
 	'''
 
 	### Connections
-	project = models.ForeignKey(Project, related_name='captions')
-	grammar = models.ForeignKey(Grammar, related_name='captions')
+	project = models.ForeignKey('tr.Project', related_name='captions')
+	grammar = models.ForeignKey('tr.Grammar', related_name='captions')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
@@ -44,7 +41,7 @@ class CaptionInstance(models.Model):
 
 	### Connections
 	caption = models.ForeignKey(Caption, related_name='instances')
-	role = models.ForeignKey(Role, related_name='captions')
+	role = models.ForeignKey('tr.Role', related_name='captions')
 	transcription = models.ForeignKey('tr.Transcription', related_name='captions')
 
 	### Properties

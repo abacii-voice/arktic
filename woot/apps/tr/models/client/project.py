@@ -2,15 +2,14 @@
 from django.db import models
 
 # local
-from apps.tr.models.client.client import Client
 from apps.tr.idgen import idgen
 
 ### Project model
 class Project(models.Model):
 
 	### Connections
-	production_client = models.ForeignKey(Client, related_name='production_projects')
-	contract_client = models.ForeignKey(Client, related_name='contract_projects')
+	production_client = models.ForeignKey('tr.Client', related_name='production_projects')
+	contract_client = models.ForeignKey('tr.Client', related_name='contract_projects')
 
 	### Properties
 	# Identification
@@ -112,7 +111,7 @@ class Project(models.Model):
 class Batch(models.Model):
 
 	### Connections
-	project = models.ForeignKey(Project, related_name='batches')
+	project = models.ForeignKey('tr.Project', related_name='batches')
 
 	### Properties
 	# Identification
@@ -158,7 +157,7 @@ class Upload(models.Model):
 	'''
 
 	### Connections
-	batch = models.ForeignKey(Batch, related_name='uploads')
+	batch = models.ForeignKey('tr.Batch', related_name='uploads')
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
@@ -206,7 +205,7 @@ class Fragment(models.Model):
 	'''
 
 	### Connections
-	upload = models.ForeignKey(Upload, related_name='fragments')
+	upload = models.ForeignKey('tr.Upload', related_name='fragments')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)

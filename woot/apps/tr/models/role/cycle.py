@@ -1,14 +1,11 @@
 # django
 from django.db import models
 
-# local
-from apps.tr.models.role.role import Role
-
 ### Cycle objects
 class Cycle(models.Model):
 
 	### Connections
-	role = models.ForeignKey(Role, related_name='cycles')
+	role = models.ForeignKey('tr.Role', related_name='cycles')
 
 	### Properties
 	start = models.DateTimeField(auto_now_add=True)
@@ -22,8 +19,8 @@ class Cycle(models.Model):
 class Day(models.Model):
 
 	### Connections
-	role = models.ForeignKey(Role, related_name='days')
-	cycle = models.ForeignKey(Cycle, related_name='days')
+	role = models.ForeignKey('tr.Role', related_name='days')
+	cycle = models.ForeignKey('tr.Cycle', related_name='days')
 
 	### Properties
 	count = models.PositiveIntegerField(default=0)

@@ -2,10 +2,6 @@
 from django.db import models
 
 # local
-from apps.tr.models.client.project import Project, Batch
-from apps.tr.models.transcription.grammar import Grammar
-from apps.tr.models.transcription.caption import Caption
-from apps.tr.models.role.role import Role
 from apps.tr.idgen import idgen
 
 ### Transcription classes
@@ -19,8 +15,8 @@ class TranscriptionToken(models.Model):
 
 
 	### Connections
-	project = models.ForeignKey(Project, related_name='transcription_tokens')
-	role = models.ForeignKey(Role, related_name='transcription_tokens')
+	project = models.ForeignKey('tr.Project', related_name='transcription_tokens')
+	role = models.ForeignKey('tr.Role', related_name='transcription_tokens')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
@@ -61,11 +57,11 @@ class Transcription(models.Model):
 	'''
 
 	### Connections
-	project = models.ForeignKey(Project, related_name='transcriptions')
-	grammar = models.ForeignKey(Grammar, related_name='transcriptions')
-	batch = models.ForeignKey(Batch, related_name='transcriptions')
-	caption = models.ForeignKey(Caption, related_name='transcriptions')
-	token = models.ForeignKey(TranscriptionToken, related_name='transcriptions', null=True)
+	project = models.ForeignKey('tr.Project', related_name='transcriptions')
+	grammar = models.ForeignKey('tr.Grammar', related_name='transcriptions')
+	batch = models.ForeignKey('tr.Batch', related_name='transcriptions')
+	caption = models.ForeignKey('tr.Caption', related_name='transcriptions')
+	token = models.ForeignKey('tr.TranscriptionToken', related_name='transcriptions', null=True)
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
