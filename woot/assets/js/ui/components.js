@@ -380,19 +380,23 @@ var Components = {
 			base.lock = false;
 			base.display = function (options) {
 				// console.log('{} searchlist display'.format(base.id), base.lock);
+				console.log('display', options);
 				var query = (options || {}).query;
 				var filter = (options || {}).filter;
 				var forceLoad = ((options || {}).forceLoad || false);
+				var sort = ((options || {}).sort || 'main');
 				return base.load({forceLoad: forceLoad}).then(function () {
 					if (!base.lock) {
 						base.lock = true;
 						return base.filter(query, filter).then(function () {
 							base.currentIndex = undefined;
+							console.log(base.virtual, base.list.components.wrapper.children);
 							return base.list.removeAll();
 						}).then(function () {
 							base.virtual = base.virtual.sort(function (before, after) {
-								return before.main < after.main ? -1 : (before.main > after.main ? 1 : 0);
+								return before[sort] < after[sort] ? -1 : (before[sort] > after[sort] ? 1 : 0);
 							});
+							console.log(base.virtual, base.list.components.wrapper.children);
 							return Promise.all(base.virtual.map(function (item, index) {
 								return base.unit(base, item, query, index);
 							})).then(function (listItems) {
