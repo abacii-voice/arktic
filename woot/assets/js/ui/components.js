@@ -383,19 +383,54 @@ var Components = {
 				filters: [],
 
 				// variables
-				query: '',
-				filter: {},
+				query: :{
+					previous: '',
+					current: '',
+					changed: function () {
+						return base.data.query.current !== base.data.query.previous;
+					}
+				}
+				filter: {
+					previous: {},
+					current: {},
+					changed: function () {
+						return base.data.filter.current !== base.data.filter.previous;
+					}
+				},
+				sort: {
+					previous: '',
+					current: '',
+					changed: function () {
+						return base.data.sort.current !== base.data.sort.previous;
+					}
+				},
+				index: {
+					previous: 0,
+					current: 0,
+				},
 
-				// toggles
+				// methods
+				load: function () {
+
+				},
+				applyFilter: function () {
+
+				},
+				applySort: function () {
+
+				},
 
 			}
 
 			// operation methods
 			base.start = function () {
-				// set vars?
+				return new Promise(function(resolve, reject) {
+					// set vars?
 
-				// start loop
-				base.data.requestId = requestAnimationFrame(base.display);
+					// start loop
+					base.data.requestId = requestAnimationFrame(base.display);
+					resolve(base.data.requestId);
+				});
 			}
 			base.display = function () {
 				// 1. has the query changed?
@@ -409,7 +444,40 @@ var Components = {
 			}
 			base.stop = function () {
 				// cancel animation request
-				cancelAnimationFrame(base.data.requestId);
+				return new Promise(function(resolve, reject) {
+					cancelAnimationFrame(base.data.requestId);
+					resolve();
+				});
+			}
+
+			base.updateData = function (data) {
+				var _this = base;
+
+				// apply changes
+				_this.data.query.current = (((data || {}).query || _this.data.query.current) || '');
+				_this.data.filter.current = (((data || {}).filter || _this.data.filter.current) || {});
+				_this.data.sort.current = (((data || {}).sort || _this.data.sort.current) || 'main');
+
+				// figure out what the new virtual should be
+				var [queryChanged, formatChanged, sortChanged] = [base.data.query.changed(), base.data.filter.changed(), base.data.sort.changed()];
+				if (queryChanged || formatChanged || sortChanged) {
+
+					// filter and sort only affect the current dataset, so things should only have to be loaded
+					// if the query has changed. All loading from the server is left up to the context variable.
+					return (!queryChanged ? emptyPromise : _this.data.load)(_this.data.query.current).then(function () {
+
+						// base.data.virtual should now be set if it has changed at all.
+						return (!formatChanged ? emptyPromise : _this.data.applyFilter)(_this.data.filter.current);
+					}).then(function () {
+
+						// base.data.virtual should now be reduced according to filter
+						return (!sortChanged ? emptyPromise : _this.data.applySort)(_this.data.sort.current);
+					});
+					// base.data.virtual should now be sorted according to the correct "column".
+				}
+
+				// return empty promise if nothing has changed
+				return emptyPromise();
 			}
 
 			base.display = function (options) {
