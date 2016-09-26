@@ -277,16 +277,10 @@ var AccountInterfaces = {
 					unitAutocomplete.autocomplete = true;
 					unitAutocomplete.searchExternal = {
 						onFocus: function () {
-							return caption.components.wrapper.setActive({index: unitBase.index, force: true}).then(function () {
-								return unitBase.activate();
-							});
+							// CHANGE
 						},
 						onBlur: function () {
-							return (unitBase.isActive ? function () {
-								return unitAutocomplete.display();
-							} : emptyPromise)().then(function () {
-								unitBase.deactivate();
-							});
+							// CHANGE
 						},
 					}
 
@@ -295,31 +289,10 @@ var AccountInterfaces = {
 						return unitAutocomplete.search.focus(mode);
 					}
 					unitBase.activate = function () {
-						unitBase.isActive = true;
-						return unitBase.setAppearance({classes: {add: 'active'}});
+						// CHANGE
 					}
 					unitBase.deactivate = function () {
-						unitBase.isActive = false;
-						var trimmedContent = $.trim(unitBase.getContent());
-						return Promise.all([
-							unitBase.setContent({content: trimmedContent}), // see caption.behaviours.space
-							unitAutocomplete.search.components.tail.setAppearance({html: trimmedContent}),
-							unitBase.setAppearance({classes: {remove: 'active'}}),
-						]).then(function () {
-							var content = unitBase.getContent();
-
-							// This works
-							if (!content) {
-								return caption.components.wrapper.removeChild(unitBase.id);
-							} else {
-								return emptyPromise();
-							}
-
-							// This does not
-							// return (content ? emptyPromise : caption.components.wrapper.removeChild)(unitBase.id);
-
-							// ?????
-						});
+						// CHANGE
 					}
 					unitBase.getContent = function () {
 						return unitAutocomplete.getContent();
@@ -1016,7 +989,7 @@ var AccountInterfaces = {
 					states: {
 						'client-state': {
 							preFn: function (_this) {
-								return clientList.display({forceLoad: true});
+								return _this.start();
 							},
 							fn: function () {
 								return clientList.search.clear();
@@ -1047,7 +1020,7 @@ var AccountInterfaces = {
 					states: {
 						'role-state': {
 							preFn: function (_this) {
-								return roleList.display({forceLoad: true});
+								// CHANGE
 							},
 							fn: function () {
 								return roleList.search.clear();
