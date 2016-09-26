@@ -370,17 +370,49 @@ var Components = {
 
 			// set up promises to be completed before returning the base.
 			// logic, bindings, etc.
-			base.dataset = [];
-			base.virtual = [];
-			base.filters = {};
-			base.defaultFilters = [];
-			base.list = list; // allow for swapable components
+			// allow for swapable components
+			base.list = list;
 			base.search = search;
-			base.isFocussed = false;
-			base.lock = false;
+
+			// control operation
+			base.data = {
+
+				// data sets
+				dataset: [],
+				virtual: [],
+				filters: [],
+
+				// variables
+				query: '',
+				filter: {},
+
+				// toggles
+
+			}
+
+			// operation methods
+			base.start = function () {
+				// set vars?
+
+				// start loop
+				base.data.requestId = requestAnimationFrame(base.display);
+			}
+			base.display = function () {
+				// 1. has the query changed?
+				// 2. has the filter changed?
+				// 3. has the list changed?
+				// 4. has the active element changed?
+				// 5. does anything need to be loaded?
+
+				// continue loop
+				base.data.requestId = requestAnimationFrame(base.display);
+			}
+			base.stop = function () {
+				// cancel animation request
+				cancelAnimationFrame(base.data.requestId);
+			}
+
 			base.display = function (options) {
-				// console.log('{} searchlist display'.format(base.id), base.lock);
-				console.log(base.id, 'display', options);
 				var query = (options || {}).query;
 				var filter = (options || {}).filter;
 				var forceLoad = ((options || {}).forceLoad || false);
@@ -555,26 +587,13 @@ var Components = {
 
 			// search methods
 			search.onFocus = function () {
-				// console.log('{} search onFocus'.format(search.id));
-				base.isFocussed = true;
-				base.query = search.components.head.model().text();
-				return Promise.all([
-					base.display({query: base.query}),
-					(base.searchExternal ? base.searchExternal.onFocus : emptyPromise)(),
-				]);
+
 			}
 			search.onBlur = function () {
-				base.isFocussed = false;
-				base.currentIndex = undefined;
-				return Promise.all([
-					base.deactivate(),
-					(base.searchExternal ? base.searchExternal.onBlur : emptyPromise)(),
-				]);
+
 			}
 			search.onInput = function (value) {
-				// console.log('{} search onInput'.format(search.id));
-				base.query = value;
-				return base.display({query: base.query});
+
 			}
 			base.setSearch = function (options) {
 				options.mode = (options.mode || 'on');
