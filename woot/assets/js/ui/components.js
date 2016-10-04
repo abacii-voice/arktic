@@ -407,6 +407,9 @@ var Components = {
 				index: {
 					previous: 0,
 					current: 0,
+					changed: function () {
+						return base.data.index.current !== base.data.index.previous;
+					},
 				},
 
 				// methods
@@ -419,6 +422,28 @@ var Components = {
 				applySort: function () {
 
 				},
+
+				// 1. loop notices that query has changed, or filter has changed, or index has changed
+				// 2. query change will trigger Context.get and Context.get:force. filter only acts on current data. index only changes highlight.
+				// 3.
+
+				// Sources, including current buffer
+				// Query change will trigger Context.get and force. Force is added only after a short delay.
+				// Through common format protocol
+				// Into holding buffer queue (scanned every cycle for query match)
+				// Into filtered buffer
+				// Scan current data and remove non-matching items
+				// Renderer takes single item and places within current data based on rank
+
+				// Non-action cycle
+				// 1. check changes -> false -> no action
+				// 2. scan and remove from buffer
+				// 3. if filtered buffer is not empty, remove item and render if query match
+
+				// Action cycle
+				// 1. check changes -> true
+				// 2. scan and remove from buffer
+				// 3.
 
 			}
 
@@ -449,7 +474,6 @@ var Components = {
 					resolve();
 				});
 			}
-
 			base.updateData = function (data) {
 				var _this = base;
 
