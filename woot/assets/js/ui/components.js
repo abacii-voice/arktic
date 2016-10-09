@@ -378,49 +378,78 @@ var Components = {
 			base.data = {
 
 				// data sets
-				dataset: [],
+				dataset: {},
 				virtual: [],
 				filters: [],
 
 				// variables
-				query: :{
-					previous: '',
+				query: {
+					previous: undefined,
 					current: '',
 					changed: function () {
-						return base.data.query.current !== base.data.query.previous;
+						var changed = base.data.query.current !== base.data.query.previous;
+						base.data.query.previous = base.data.query.current;
+						return changed;
 					}
-				}
+				},
 				filter: {
-					previous: {},
+					previous: undefined,
 					current: {},
 					changed: function () {
-						return base.data.filter.current !== base.data.filter.previous;
+						var changed = base.data.filter.current !== base.data.filter.previous;
+						base.data.filter.previous = base.data.filter.current;
+						return changed;
 					}
 				},
 				sort: {
-					previous: '',
+					previous: undefined,
 					current: '',
 					changed: function () {
-						return base.data.sort.current !== base.data.sort.previous;
+						var changed = base.data.sort.current !== base.data.sort.previous;
+						base.data.sort.previous = base.data.sort.current;
+						return changed;
 					}
 				},
 				index: {
-					previous: 0,
+					previous: undefined,
 					current: 0,
 					changed: function () {
-						return base.data.index.current !== base.data.index.previous;
+						var changed = base.data.index.current !== base.data.index.previous;
+						base.data.index.previous = base.data.index.current;
+						return changed;
 					},
 				},
 
 				// methods
-				load: function () {
-
+				get: function () {
+					// this looks at the Context.get and Context.get:force, separately.
+					if (base.data.query.changed()) {
+						return Promise.all(base.targets.map(function (target) {
+							return Promise.all([
+								Context.get(target.resolvedPath, {options: {filter: base.data.query.current}}).then(target.process).then(base.data.append),
+								Context.get(target.resolvedPath, {options: {filter: base.data.query.current}, force: true}).then(target.process).then(base.data.append),
+							]);
+						}));
+					} else {
+						return emptyPromise();
+					}
 				},
-				applyFilter: function () {
-
+				append: function (data) {
+					// Add to dataset. Nothing is ever removed.
+					return Promise.all(data.map(function (datum) {
+						return new Promise(function(resolve, reject) {
+							base.data.dataset[datum.id] = datum;
+							resolve();
+						});
+					}));
 				},
-				applySort: function () {
-
+				display: function () {
+					// remove non-matches from subset and the corresponding ones from virtual
+					return Promise.all([]);
+					// add new data to subset
+					// apply filters to subset
+					// sort subset
+					// update virtual
 				},
 
 				// 1. loop notices that query has changed, or filter has changed, or index has changed
@@ -449,23 +478,28 @@ var Components = {
 
 			// operation methods
 			base.start = function () {
-				return new Promise(function(resolve, reject) {
-					// set vars?
-
-					// start loop
-					base.data.requestId = requestAnimationFrame(base.display);
-					resolve(base.data.requestId);
+				// setup paths
+				return Promise.all(base.targets.map(function (target) {
+					return target.path().then(function (path) {
+						target.resolvedPath = path; // this can be recalculated upon stopping and restarting.
+					});
+				})).then(function () {
+					return new Promise(function(resolve, reject) {
+						// start loop
+						base.data.requestId = requestAnimationFrame(base.loop);
+						resolve(base.data.requestId);
+					});
 				});
 			}
-			base.display = function () {
-				// 1. has the query changed?
-				// 2. has the filter changed?
-				// 3. has the list changed?
-				// 4. has the active element changed?
-				// 5. does anything need to be loaded?
+			base.loop = function () {
+				// start processing
+				Promise.all([
+					base.data.get(),
+					// base.data.display(),
+				]);
 
 				// continue loop
-				base.data.requestId = requestAnimationFrame(base.display);
+				base.data.requestId = requestAnimationFrame(base.loop);
 			}
 			base.stop = function () {
 				// cancel animation request
@@ -474,194 +508,175 @@ var Components = {
 					resolve();
 				});
 			}
-			base.updateData = function (data) {
+			base.updateData = function (data, defaults) {
 				var _this = base;
-
-				// apply changes
-				_this.data.query.current = (((data || {}).query || _this.data.query.current) || '');
-				_this.data.filter.current = (((data || {}).filter || _this.data.filter.current) || {});
-				_this.data.sort.current = (((data || {}).sort || _this.data.sort.current) || 'main');
-
-				// figure out what the new virtual should be
-				var [queryChanged, formatChanged, sortChanged] = [base.data.query.changed(), base.data.filter.changed(), base.data.sort.changed()];
-				if (queryChanged || formatChanged || sortChanged) {
-
-					// filter and sort only affect the current dataset, so things should only have to be loaded
-					// if the query has changed. All loading from the server is left up to the context variable.
-					return (!queryChanged ? emptyPromise : _this.data.load)(_this.data.query.current).then(function () {
-
-						// base.data.virtual should now be set if it has changed at all.
-						return (!formatChanged ? emptyPromise : _this.data.applyFilter)(_this.data.filter.current);
-					}).then(function () {
-
-						// base.data.virtual should now be reduced according to filter
-						return (!sortChanged ? emptyPromise : _this.data.applySort)(_this.data.sort.current);
-					});
-					// base.data.virtual should now be sorted according to the correct "column".
-				}
-
-				// return empty promise if nothing has changed
-				return emptyPromise();
-			}
-
-			base.display = function (options) {
-				var query = (options || {}).query;
-				var filter = (options || {}).filter;
-				var forceLoad = ((options || {}).forceLoad || false);
-				var sort = ((options || {}).sort || 'main');
-				return base.load({forceLoad: forceLoad}).then(function () {
-					if (!base.lock) {
-						base.lock = true;
-						return base.filter(query, filter).then(function () {
-							base.currentIndex = undefined;
-							console.log(base.id, base.virtual, base.list.components.wrapper.children);
-							return base.list.removeAll();
-						}).then(function () {
-							base.virtual = base.virtual.sort(function (before, after) {
-								return before[sort] < after[sort] ? -1 : (before[sort] > after[sort] ? 1 : 0);
-							});
-							return Promise.all(base.virtual.map(function (item, index) {
-								return base.unit(base, item, query, index);
-							})).then(function (listItems) {
-								return base.setActive({set: listItems}).then(function () {
-									return base.setMetadata(query);
-								}).then(function () {
-									return base.list.components.wrapper.setChildren(listItems);
-								});
-							});
-						}).then(function () {
-							return new Promise(function(resolve, reject) {
-								base.lock = false;
-								resolve();
-							});
-						});
-					} else {
-						return emptyPromise();
-					}
-				});
-			}
-			base.load = function (options) {
-				// console.log('{} searchlist load'.format(base.id));
-				// for each target, gather data and evaluate in terms of each process function. Store as virtual list.
-				if (base.dataset.length !== 0 && !options.forceLoad) {
-					return emptyPromise();
-				} else {
-					return Promise.all(base.targets.map(function (target) {
-						return target.path().then(function (path) {
-							return Context.get(path, {force: false});
-						}).then(target.process).then(function (dataset) {
-							return dataset;
-						});
-					})).then(function (datasets) {
-						// consolidate datasets into a unified dataset. Ordering comes later.
-						base.dataset = []; // might choose to do something smarter later.
-						datasets.forEach(function (dataset) {
-							dataset.forEach(function (datum) {
-								base.dataset.push(datum);
-							});
-						});
-					}).then(function () {
-						// load filters
-						return Promise.all(base.targets.map(function (target) {
-							return new Promise(function(resolve, reject) {
-								if (target.filter) {
-									base.filters[target.filter.char] = target.filter;
-									if (target.filter.default && base.defaultFilters.indexOf(target.filter.rule) === -1) {
-										base.defaultFilters.push(target.filter.rule);
-									}
-								}
-								resolve();
-							});
-						}));
-					});
-					// All data to be filtered now lives in base.dataset.
-				}
-			}
-			base.filter = function (query, filter) {
-				// console.log('{} searchlist filter'.format(base.id));
-				query = (query || '');
-				filter = (filter || '');
-				var rule = filter ? base.filters[filter].rule : '';
-				// filter called with no arguments should yield only the default filters
-				// In this way, an autocomplete is simply a list with no default filters
-				// The output of filter goes to base.buffer
-
 				return new Promise(function(resolve, reject) {
-					if (query || filter) {
-						base.virtual = base.dataset.filter(function (datum) {
-							return datum.rule.indexOf(rule) === 0 && datum.main.toLowerCase().indexOf(query.toLowerCase()) === 0 && !(base.autocomplete && query === '');
-						});
-					} else {
-						base.virtual = base.dataset.filter(function (datum) {
-							return (base.defaultFilters.contains(datum.rule) || base.defaultFilters.length === 0) && datum.main.toLowerCase().indexOf(query.toLowerCase()) === 0 && !(base.autocomplete && query === '');
-						});
-					}
-					base.virtual = base.limit ? base.virtual.slice(0,base.limit) : base.virtual;
-
+					// apply changes
+					_this.data.query.current = (((data || {}).query || _this.data.query.current) || ((defaults || {}).query || ''));
+					_this.data.filter.current = (((data || {}).filter || _this.data.filter.current) || ((defaults || {}).filter || {}));
+					_this.data.sort.current = (((data || {}).sort || _this.data.sort.current) || ((defaults || {}).sort || 'main'));
 					resolve();
 				});
 			}
-			base.setMetadata = function (query) {
-				// console.log('{} searchlist setMetadata'.format(base.id));
-				base.query = ((base.query || query) || '');
-				// condition is that there are filtered items and the query is not nothing
 
-				var metadata = {
-					query: base.query,
-				}
-				if (base.virtual.length && base.currentIndex !== undefined) {
-					var item = base.virtual[base.currentIndex].metadata;
-					metadata = {
-						query: base.query,
-						complete: item.complete,
-						combined: item.combined,
-						type: item.type,
-					}
-				}
-				return search.setMetadata(metadata);
-			}
-			base.setActive = function (options) {
-				// console.log('{} searchlist setActive'.format(base.id));
-				options = (options || {});
-				var set = (options.set || base.list.components.wrapper.children);
-
-				// if there are any results
-				if (set.length && base.isFocussed) {
-
-					// changes
-					var previousIndex = base.currentIndex;
-					base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (options.increment || 0)));
-
-					// boundary conditions
-					base.currentIndex = base.currentIndex > set.length - 1 ? set.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
-
-					if (base.currentIndex !== previousIndex) {
-						return base.deactivate().then(function () {
-							base.active = set[base.currentIndex];
-							return base.active.activate();
-						});
-					} else {
-						return emptyPromise();
-					}
-				} else {
-					return emptyPromise();
-				}
-			}
-			base.deactivate = function () {
-				// console.log('{} searchlist deactivate'.format(base.id));
-				return ((base.active || {}).deactivate || emptyPromise)().then(function () {
-					return new Promise(function(resolve, reject) {
-						base.active = undefined;
-						resolve();
-					});
-				});
-			}
-			base.getContent = function () {
-				return search.getContent();
-			}
-			base.setContent = function (options) {
-				return search.setContent(options);
-			}
+			// base.display = function (options) {
+			// 	var query = (options || {}).query;
+			// 	var filter = (options || {}).filter;
+			// 	var forceLoad = ((options || {}).forceLoad || false);
+			// 	var sort = ((options || {}).sort || 'main');
+			// 	return base.load({forceLoad: forceLoad}).then(function () {
+			// 		if (!base.lock) {
+			// 			base.lock = true;
+			// 			return base.filter(query, filter).then(function () {
+			// 				base.currentIndex = undefined;
+			// 				console.log(base.id, base.virtual, base.list.components.wrapper.children);
+			// 				return base.list.removeAll();
+			// 			}).then(function () {
+			// 				base.virtual = base.virtual.sort(function (before, after) {
+			// 					return before[sort] < after[sort] ? -1 : (before[sort] > after[sort] ? 1 : 0);
+			// 				});
+			// 				return Promise.all(base.virtual.map(function (item, index) {
+			// 					return base.unit(base, item, query, index);
+			// 				})).then(function (listItems) {
+			// 					return base.setActive({set: listItems}).then(function () {
+			// 						return base.setMetadata(query);
+			// 					}).then(function () {
+			// 						return base.list.components.wrapper.setChildren(listItems);
+			// 					});
+			// 				});
+			// 			}).then(function () {
+			// 				return new Promise(function(resolve, reject) {
+			// 					base.lock = false;
+			// 					resolve();
+			// 				});
+			// 			});
+			// 		} else {
+			// 			return emptyPromise();
+			// 		}
+			// 	});
+			// }
+			// base.load = function (options) {
+			// 	// console.log('{} searchlist load'.format(base.id));
+			// 	// for each target, gather data and evaluate in terms of each process function. Store as virtual list.
+			// 	if (base.dataset.length !== 0 && !options.forceLoad) {
+			// 		return emptyPromise();
+			// 	} else {
+			// 		return Promise.all(base.targets.map(function (target) {
+			// 			return target.path().then(function (path) {
+			// 				return Context.get(path, {force: false});
+			// 			}).then(target.process).then(function (dataset) {
+			// 				return dataset;
+			// 			});
+			// 		})).then(function (datasets) {
+			// 			// consolidate datasets into a unified dataset. Ordering comes later.
+			// 			base.dataset = []; // might choose to do something smarter later.
+			// 			datasets.forEach(function (dataset) {
+			// 				dataset.forEach(function (datum) {
+			// 					base.dataset.push(datum);
+			// 				});
+			// 			});
+			// 		}).then(function () {
+			// 			// load filters
+			// 			return Promise.all(base.targets.map(function (target) {
+			// 				return new Promise(function(resolve, reject) {
+			// 					if (target.filter) {
+			// 						base.filters[target.filter.char] = target.filter;
+			// 						if (target.filter.default && base.defaultFilters.indexOf(target.filter.rule) === -1) {
+			// 							base.defaultFilters.push(target.filter.rule);
+			// 						}
+			// 					}
+			// 					resolve();
+			// 				});
+			// 			}));
+			// 		});
+			// 		// All data to be filtered now lives in base.dataset.
+			// 	}
+			// }
+			// base.filter = function (query, filter) {
+			// 	// console.log('{} searchlist filter'.format(base.id));
+			// 	query = (query || '');
+			// 	filter = (filter || '');
+			// 	var rule = filter ? base.filters[filter].rule : '';
+			// 	// filter called with no arguments should yield only the default filters
+			// 	// In this way, an autocomplete is simply a list with no default filters
+			// 	// The output of filter goes to base.buffer
+			//
+			// 	return new Promise(function(resolve, reject) {
+			// 		if (query || filter) {
+			// 			base.virtual = base.dataset.filter(function (datum) {
+			// 				return datum.rule.indexOf(rule) === 0 && datum.main.toLowerCase().indexOf(query.toLowerCase()) === 0 && !(base.autocomplete && query === '');
+			// 			});
+			// 		} else {
+			// 			base.virtual = base.dataset.filter(function (datum) {
+			// 				return (base.defaultFilters.contains(datum.rule) || base.defaultFilters.length === 0) && datum.main.toLowerCase().indexOf(query.toLowerCase()) === 0 && !(base.autocomplete && query === '');
+			// 			});
+			// 		}
+			// 		base.virtual = base.limit ? base.virtual.slice(0,base.limit) : base.virtual;
+			//
+			// 		resolve();
+			// 	});
+			// }
+			// base.setMetadata = function (query) {
+			// 	// console.log('{} searchlist setMetadata'.format(base.id));
+			// 	base.query = ((base.query || query) || '');
+			// 	// condition is that there are filtered items and the query is not nothing
+			//
+			// 	var metadata = {
+			// 		query: base.query,
+			// 	}
+			// 	if (base.virtual.length && base.currentIndex !== undefined) {
+			// 		var item = base.virtual[base.currentIndex].metadata;
+			// 		metadata = {
+			// 			query: base.query,
+			// 			complete: item.complete,
+			// 			combined: item.combined,
+			// 			type: item.type,
+			// 		}
+			// 	}
+			// 	return search.setMetadata(metadata);
+			// }
+			// base.setActive = function (options) {
+			// 	// console.log('{} searchlist setActive'.format(base.id));
+			// 	options = (options || {});
+			// 	var set = (options.set || base.list.components.wrapper.children);
+			//
+			// 	// if there are any results
+			// 	if (set.length && base.isFocussed) {
+			//
+			// 		// changes
+			// 		var previousIndex = base.currentIndex;
+			// 		base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (options.increment || 0)));
+			//
+			// 		// boundary conditions
+			// 		base.currentIndex = base.currentIndex > set.length - 1 ? set.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
+			//
+			// 		if (base.currentIndex !== previousIndex) {
+			// 			return base.deactivate().then(function () {
+			// 				base.active = set[base.currentIndex];
+			// 				return base.active.activate();
+			// 			});
+			// 		} else {
+			// 			return emptyPromise();
+			// 		}
+			// 	} else {
+			// 		return emptyPromise();
+			// 	}
+			// }
+			// base.deactivate = function () {
+			// 	// console.log('{} searchlist deactivate'.format(base.id));
+			// 	return ((base.active || {}).deactivate || emptyPromise)().then(function () {
+			// 		return new Promise(function(resolve, reject) {
+			// 			base.active = undefined;
+			// 			resolve();
+			// 		});
+			// 	});
+			// }
+			// base.getContent = function () {
+			// 	return search.getContent();
+			// }
+			// base.setContent = function (options) {
+			// 	return search.setContent(options);
+			// }
 
 			// list methods
 			base.next = function () {
