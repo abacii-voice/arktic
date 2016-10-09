@@ -680,8 +680,8 @@ var Context = {
 	// This will get from the current store. If it does not exist, a request will be made for it. This will trigger registry.
 	get: function (path, args) {
 		// force load from the server?
-		var force = args !== undefined ? (args.force !== undefined ? args.force : false) : false;
-		var options = args !== undefined ? (args.options !== undefined ? args.options : {}) : {};
+		var force = (args || {}).force || false;
+		var options = ((args || {}).options || {});
 
 		return (path.then !== undefined ? path : new Promise(function(resolve, reject) {
 			resolve(path);
