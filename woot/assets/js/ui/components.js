@@ -400,15 +400,6 @@ var Components = {
 						return changed;
 					}
 				},
-				sort: {
-					previous: undefined,
-					current: '',
-					changed: function () {
-						var changed = base.data.sort.current !== base.data.sort.previous;
-						base.data.sort.previous = base.data.sort.current;
-						return changed;
-					}
-				},
 				index: {
 					previous: undefined,
 					current: 0,
@@ -447,6 +438,7 @@ var Components = {
 					virtual: [],
 					subset: {},
 					execute: function () {
+						// console.log(base.data.display.lock);
 						if (!base.data.display.lock) {
 							base.data.display.lock = true;
 							return base.data.display.queue();
@@ -455,14 +447,16 @@ var Components = {
 						}
 					},
 					queue: function () {
-						var query = base.data.query.current.toLowerCase();
+						var query = base.data.query.current;
+						var lowercaseQuery = query.toLowerCase();
 						var filter = base.data.filter.current;
-						var sort = base.data.sort.current;
 
 						// remove non-matches from subset and the corresponding ones from virtual
-						return Promise.all(base.data.display.virtual.filter(function (item) {
-							return !(item.rule === filter && item.main.toLowerCase().indexOf(query) === 0); // reject
+						return Promise.all(base.data.display.virtual.filter(function (item, index) {
+							item.index = index;
+							return !(((filter && item.rule === filter) || $.isEmptyObject(filter)) && item.main.toLowerCase().indexOf(lowercaseQuery) === 0); // reject
 						}).map(function (item) {
+							base.data.display.virtual.splice(item.index, 1);
 							return base.list.remove(item.id);
 						})).then(function () {
 
@@ -470,8 +464,7 @@ var Components = {
 							return new Promise(function(resolve, reject) {
 								Object.keys(base.data.dataset).forEach(function (key) {
 									var datum = base.data.dataset[key];
-									var accept = (datum.rule === filter && datum.main.toLowerCase().indexOf(query) === 0);
-									if (accept) {
+									if (((filter && datum.rule === filter) || $.isEmptyObject(filter)) && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0) {
 										base.data.display.subset[key] = datum;
 									}
 								});
@@ -479,29 +472,60 @@ var Components = {
 							});
 						}).then(function () {
 
+							// save previous virtual
+							var previousVirtual = base.data.display.virtual.map(function (datum) {
+								return datum.id;
+							});
+
 							// create virtual
 							return new Promise(function(resolve, reject) {
 								base.data.display.virtual = Object.keys(base.data.display.subset).map(function (key) {
 									return base.data.display.subset[key];
 								});
 								resolve();
-							});
-						}).then(function () {
+							}).then(function () {
 
-							// sort virtual
-							return new Promise(function(resolve, reject) {
-								base.data.display.virtual.sort(function (datum) {
-									
+								// sort virtual
+								return new Promise(function(resolve, reject) {
+									base.data.display.virtual.sort(function (d1, d2) {
+										// sort by usage
+										if (d1.usage && d2.usage) {
+											if (d1.usage > d2.usage) {
+												return 1;
+											} else if (d1.usage < d2.usage) {
+												return -1;
+											}
+										}
+
+										// then alphabetically
+										if (d1.main > d2.main) {
+											return 1;
+										} else if (d1.main < d2.main) {
+											return -1;
+										} else {
+											return 0;
+										}
+									});
+									resolve();
 								});
-								resolve();
+							}).then(function () {
+
+								// console.log(previousVirtual);
+								// console.log(base.data.display.virtual);
+
+								// determine differences in arrays and add objects one by one
+								return Promise.ordered(base.data.display.virtual.map(function (datum) {
+									return emptyPromise;
+									// console.log(datum.index || 0);
+								}));
+
+							}).then(function () {
+								base.data.display.lock = false;
 							});
-						}).then(function () {
-							base.data.display.lock = false;
+
 						});
 					},
 				},
-
-
 
 				// 1. loop notices that query has changed, or filter has changed, or index has changed
 				// 2. query change will trigger Context.get and Context.get:force. filter only acts on current data. index only changes highlight.

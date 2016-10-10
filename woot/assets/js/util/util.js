@@ -79,16 +79,13 @@ function alphaSort(key) {
 // Ordered promises
 Promise.ordered = function (promiseFunctions, input) {
 	if (promiseFunctions.length !== 0) {
-		var result = promiseFunctions[0](input);
-		promiseFunctions.forEach(function (promiseFunction, index) {
-			if (index > 0) {
-				result = result.then(promiseFunction);
-			}
-		});
-
-		return result;
+		return promiseFunctions.reduce(function (previousResult, currentPromise) {
+			return previousResult.then(function (previousValue) {
+				return currentPromise(previousValue);
+			});
+		}, emptyPromise(input));
 	} else {
-		return new Promise(function(resolve, reject) {resolve()});
+		return emptyPromise();
 	}
 }
 
@@ -152,7 +149,7 @@ function reduceSum (previous, next) {
 	return previous + next;
 }
 
-function emptyPromise () {
+function emptyPromise (arg) {
 	return new Promise(function(resolve, reject) {
 		resolve();
 	});
