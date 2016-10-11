@@ -510,13 +510,15 @@ var Components = {
 								});
 							}).then(function () {
 
-								// console.log(previousVirtual);
-								// console.log(base.data.display.virtual);
-
 								// determine differences in arrays and add objects one by one
 								return Promise.ordered(base.data.display.virtual.map(function (datum) {
-									return emptyPromise;
-									// console.log(datum.index || 0);
+									if (previousVirtual.contains(datum.id)) {
+										// datum.id is in the previousVirtual list of ids, so all that needs to be done is visually updating any index display.
+										
+									} else {
+										// Fully render a new unit using the previous id as the "after".
+
+									}
 								}));
 
 							}).then(function () {
