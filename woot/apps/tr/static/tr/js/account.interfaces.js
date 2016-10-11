@@ -716,6 +716,8 @@ var AccountInterfaces = {
 				},
 			]
 			clientList.unit = function (_this, datum, query, index) {
+				// REWRITE to take account of persistence. This current model assumes it will be removed when the query changes.
+
 				query = (query || '');
 
 				// base class
