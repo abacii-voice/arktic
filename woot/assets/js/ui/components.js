@@ -462,6 +462,7 @@ var Components = {
 							base.data.display.virtual.list.splice(item.index, 1);
 							return base.list.remove(base.data.display.virtual.ids[item.id]).then(function () {
 								delete base.data.display.virtual.ids[item.id];
+								delete base.data.display.subset[item.id]
 								return emptyPromise();
 							});
 						})).then(function () {
@@ -487,7 +488,7 @@ var Components = {
 								base.data.display.virtual.list = Object.keys(base.data.display.subset).map(function (key) {
 									return base.data.display.subset[key];
 								});
-								// console.log(base.data.display.virtual.list);
+								// console.log(base.data.display.subset);
 								resolve();
 							}).then(function () {
 
