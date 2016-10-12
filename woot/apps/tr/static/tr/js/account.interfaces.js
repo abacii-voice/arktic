@@ -1024,7 +1024,7 @@ var AccountInterfaces = {
 							},
 						},
 						'role-state': {
-							preFn: function (_this) {
+							fn: function (_this) {
 								return _this.stop();
 							}
 						}
