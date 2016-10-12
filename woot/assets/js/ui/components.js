@@ -413,7 +413,11 @@ var Components = {
 				// methods
 				get: function () {
 					// this looks at the Context.get and Context.get:force, separately.
-					if (base.data.query.changed()) {
+					if (base.data.query.changed() || base.reset) {
+						if (base.reset) {
+							base.data.dataset = {};
+							base.reset = false;
+						}
 						return Promise.all(base.targets.map(function (target) {
 							return Promise.all([
 								Context.get(target.resolvedPath, {options: {filter: base.data.query.current}}).then(target.process).then(base.data.append),
@@ -456,7 +460,7 @@ var Components = {
 						// remove non-matches from subset and the corresponding ones from virtual
 						return Promise.all(base.data.display.virtual.list.filter(function (item, index) {
 							item.index = index;
-							return !(((filter && item.rule === filter) || $.isEmptyObject(filter)) && item.main.toLowerCase().indexOf(lowercaseQuery) === 0); // reject
+							return !(((filter && item.rule === filter) || $.isEmptyObject(filter)) && item.main.toLowerCase().indexOf(lowercaseQuery) === 0 && item.id in base.data.dataset); // reject
 						}).map(function (item) {
 							base.data.display.virtual.list.splice(item.index, 1);
 							return base.list.remove(base.data.display.virtual.ids[item.id]).then(function () {
@@ -469,7 +473,7 @@ var Components = {
 							return new Promise(function(resolve, reject) {
 								Object.keys(base.data.dataset).forEach(function (key) {
 									var datum = base.data.dataset[key];
-									if (((filter && datum.rule === filter) || $.isEmptyObject(filter)) && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0) {
+									if (((filter && datum.rule === filter) || $.isEmptyObject(filter)) && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0 && datum.id in base.data.dataset) {
 										base.data.display.subset[key] = datum;
 									}
 								});
@@ -582,6 +586,7 @@ var Components = {
 			base.stop = function () {
 				// cancel animation request
 				return new Promise(function(resolve, reject) {
+					base.reset = true;
 					cancelAnimationFrame(base.data.requestId);
 					resolve();
 				});
