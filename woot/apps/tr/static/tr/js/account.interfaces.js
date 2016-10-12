@@ -782,31 +782,28 @@ var AccountInterfaces = {
 						unitMainTail,
 					] = unitComponents;
 
+					unitBase.query = query;
 					unitBase.activate = function () {
 						return unitBase.setAppearance({classes: {add: ['active']}});
 					}
-
 					unitBase.deactivate = function () {
 						return unitBase.setAppearance({classes: {remove: ['active']}});
 					}
-
 					unitBase.updateMetadata = function (query, after) {
 						// if there are changes, do stuff.
 						return Promise.all([
-							unitBase.updateQuery(query),
-							unitBase.setAfter(after).then(function () {
+							(query !== unitBase.query ? unitBase.updateQuery : emptyPromise)(query),
+							(after !== unitBase.after ? unitBase.setAfter : emptyPromise)(after).then(function () {
 								return unitBase.updateIndex();
 							}),
 						]);
 					}
-
 					unitBase.updateQuery = function (query) {
 						return Promise.all([
 							unitMainHead.setAppearance({html: datum.main.substring(0, query.length)}),
 							unitMainTail.setAppearance({html: datum.main}),
 						]);
 					}
-
 					unitBase.updateIndex = function () {
 						// change graphical index object to display the new index
 						return emptyPromise();
@@ -1023,6 +1020,11 @@ var AccountInterfaces = {
 								return clientList.search.clear();
 							},
 						},
+						'role-state': {
+							preFn: function (_this) {
+								return _this.stop();
+							}
+						}
 					},
 				}),
 				clientList.setTitle({text: 'Clients', centre: true}),
@@ -1046,9 +1048,14 @@ var AccountInterfaces = {
 				]),
 				roleList.setState({
 					states: {
+						'client-state': {
+							preFn: function (_this) {
+								return _this.stop();
+							}
+						},
 						'role-state': {
 							preFn: function (_this) {
-								// CHANGE
+								return _this.start();
 							},
 							fn: function () {
 								return roleList.search.clear();
