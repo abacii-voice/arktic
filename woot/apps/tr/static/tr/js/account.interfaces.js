@@ -716,7 +716,6 @@ var AccountInterfaces = {
 				},
 			]
 			clientList.unit = function (datum, query, index) {
-				// REWRITE to take account of persistence. This current model assumes it will be removed when the query changes.
 				query = (query || '');
 
 				// base class
@@ -864,24 +863,24 @@ var AccountInterfaces = {
 					},
 				},
 			]
-			roleList.unit = function (_this, datum, query, index) {
+			roleList.unit = function (datum, query, index) {
 				query = (query || '');
 
 				// base class
-				jss.set('#{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
+				jss.set('#{id}-{object}-base'.format({id: roleList.id, object: datum.id}), {
 					'height': '30px',
 					'width': '100%',
 					'padding': '0px',
 					'padding-left': '10px',
 					'text-align': 'left',
 				});
-				jss.set('#{id}-{object}-base.active'.format({id: _this.id, object: datum.id}), {
+				jss.set('#{id}-{object}-base.active'.format({id: roleList.id, object: datum.id}), {
 					'background-color': 'rgba(255,255,255,0.1)'
 				});
 
 				return Promise.all([
 					// base component
-					UI.createComponent('{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{id}-{object}-base'.format({id: roleList.id, object: datum.id}), {
 						template: UI.template('div', 'ie button'),
 						appearance: {
 							classes: [datum.rule],
@@ -892,7 +891,7 @@ var AccountInterfaces = {
 					}),
 
 					// main wrapper
-					UI.createComponent('{id}-{object}-main-wrapper'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{id}-{object}-main-wrapper'.format({id: roleList.id, object: datum.id}), {
 						template: UI.template('div', 'ie centred-vertically'),
 						appearance: {
 							style: {
@@ -902,7 +901,7 @@ var AccountInterfaces = {
 					}),
 
 					// main
-					UI.createComponent('{id}-{object}-main-head'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{id}-{object}-main-head'.format({id: roleList.id, object: datum.id}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -913,7 +912,7 @@ var AccountInterfaces = {
 							html: datum.main.substring(0, query.length),
 						},
 					}),
-					UI.createComponent('{id}-{object}-main-tail'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{id}-{object}-main-tail'.format({id: roleList.id, object: datum.id}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -931,20 +930,34 @@ var AccountInterfaces = {
 						unitMainTail,
 					] = unitComponents;
 
-					// set metadata
-					datum.metadata = {
-						query: query,
-						complete: datum.main,
-						combined: query + datum.main.substring(query.length),
-						type: datum.rule,
-					}
-
 					unitBase.activate = function () {
 						return unitBase.setAppearance({classes: {add: ['active']}});
 					}
 
 					unitBase.deactivate = function () {
 						return unitBase.setAppearance({classes: {remove: ['active']}});
+					}
+
+					unitBase.updateMetadata = function (query, after) {
+						// if there are changes, do stuff.
+						return Promise.all([
+							unitBase.updateQuery(query),
+							unitBase.setAfter(after).then(function () {
+								return unitBase.updateIndex();
+							}),
+						]);
+					}
+
+					unitBase.updateQuery = function (query) {
+						return Promise.all([
+							unitMainHead.setAppearance({html: datum.main.substring(0, query.length)}),
+							unitMainTail.setAppearance({html: datum.main}),
+						]);
+					}
+
+					unitBase.updateIndex = function () {
+						// change graphical index object to display the new index
+						return emptyPromise();
 					}
 
 					// complete promises.
@@ -1010,6 +1023,11 @@ var AccountInterfaces = {
 								return clientList.search.clear();
 							},
 						},
+						'role-state': {
+							preFn: function (_this) {
+								return _this.stop();
+							}
+						}
 					},
 				}),
 				clientList.setTitle({text: 'Clients', centre: true}),
