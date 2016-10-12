@@ -1023,11 +1023,6 @@ var AccountInterfaces = {
 								return clientList.search.clear();
 							},
 						},
-						'role-state': {
-							fn: function (_this) {
-								return _this.stop();
-							}
-						}
 					},
 				}),
 				clientList.setTitle({text: 'Clients', centre: true}),
