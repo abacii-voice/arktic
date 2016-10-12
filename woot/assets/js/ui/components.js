@@ -550,29 +550,6 @@ var Components = {
 						});
 					},
 				},
-
-				// 1. loop notices that query has changed, or filter has changed, or index has changed
-				// 2. query change will trigger Context.get and Context.get:force. filter only acts on current data. index only changes highlight.
-				// 3.
-
-				// Sources, including current buffer
-				// Query change will trigger Context.get and force. Force is added only after a short delay.
-				// Through common format protocol
-				// Into holding buffer queue (scanned every cycle for query match)
-				// Into filtered buffer
-				// Scan current data and remove non-matching items
-				// Renderer takes single item and places within current data based on rank
-
-				// Non-action cycle
-				// 1. check changes -> false -> no action
-				// 2. scan and remove from buffer
-				// 3. if filtered buffer is not empty, remove item and render if query match
-
-				// Action cycle
-				// 1. check changes -> true
-				// 2. scan and remove from buffer
-				// 3.
-
 			}
 
 			// operation methods
@@ -615,104 +592,6 @@ var Components = {
 					// apply changes
 					_this.data.query.current = (((data || {}).query || _this.data.query.current) || ((defaults || {}).query || ''));
 					_this.data.filter.current = (((data || {}).filter || _this.data.filter.current) || ((defaults || {}).filter || {}));
-					resolve();
-				});
-			}
-
-			base.display = function (options) {
-				var query = (options || {}).query;
-				var filter = (options || {}).filter;
-				var forceLoad = ((options || {}).forceLoad || false);
-				var sort = ((options || {}).sort || 'main');
-				return base.load({forceLoad: forceLoad}).then(function () {
-					if (!base.lock) {
-						base.lock = true;
-						return base.filter(query, filter).then(function () {
-							base.currentIndex = undefined;
-							console.log(base.id, base.virtual, base.list.components.wrapper.children);
-							return base.list.removeAll();
-						}).then(function () {
-							base.virtual = base.virtual.sort(function (before, after) {
-								return before[sort] < after[sort] ? -1 : (before[sort] > after[sort] ? 1 : 0);
-							});
-							return Promise.all(base.virtual.map(function (item, index) {
-								return base.unit(base, item, query, index);
-							})).then(function (listItems) {
-								return base.setActive({set: listItems}).then(function () {
-									return base.setMetadata(query);
-								}).then(function () {
-									return base.list.components.wrapper.setChildren(listItems);
-								});
-							});
-						}).then(function () {
-							return new Promise(function(resolve, reject) {
-								base.lock = false;
-								resolve();
-							});
-						});
-					} else {
-						return emptyPromise();
-					}
-				});
-			}
-			base.load = function (options) {
-				// console.log('{} searchlist load'.format(base.id));
-				// for each target, gather data and evaluate in terms of each process function. Store as virtual list.
-				if (base.dataset.length !== 0 && !options.forceLoad) {
-					return emptyPromise();
-				} else {
-					return Promise.all(base.targets.map(function (target) {
-						return target.path().then(function (path) {
-							return Context.get(path, {force: false});
-						}).then(target.process).then(function (dataset) {
-							return dataset;
-						});
-					})).then(function (datasets) {
-						// consolidate datasets into a unified dataset. Ordering comes later.
-						base.dataset = []; // might choose to do something smarter later.
-						datasets.forEach(function (dataset) {
-							dataset.forEach(function (datum) {
-								base.dataset.push(datum);
-							});
-						});
-					}).then(function () {
-						// load filters
-						return Promise.all(base.targets.map(function (target) {
-							return new Promise(function(resolve, reject) {
-								if (target.filter) {
-									base.filters[target.filter.char] = target.filter;
-									if (target.filter.default && base.defaultFilters.indexOf(target.filter.rule) === -1) {
-										base.defaultFilters.push(target.filter.rule);
-									}
-								}
-								resolve();
-							});
-						}));
-					});
-					// All data to be filtered now lives in base.dataset.
-				}
-			}
-			base.filter = function (query, filter) {
-				// console.log('{} searchlist filter'.format(base.id));
-				query = (query || '');
-				filter = (filter || '');
-				var rule = filter ? base.filters[filter].rule : '';
-				// filter called with no arguments should yield only the default filters
-				// In this way, an autocomplete is simply a list with no default filters
-				// The output of filter goes to base.buffer
-
-				return new Promise(function(resolve, reject) {
-					if (query || filter) {
-						base.virtual = base.dataset.filter(function (datum) {
-							return datum.rule.indexOf(rule) === 0 && datum.main.toLowerCase().indexOf(query.toLowerCase()) === 0 && !(base.autocomplete && query === '');
-						});
-					} else {
-						base.virtual = base.dataset.filter(function (datum) {
-							return (base.defaultFilters.contains(datum.rule) || base.defaultFilters.length === 0) && datum.main.toLowerCase().indexOf(query.toLowerCase()) === 0 && !(base.autocomplete && query === '');
-						});
-					}
-					base.virtual = base.limit ? base.virtual.slice(0,base.limit) : base.virtual;
-
 					resolve();
 				});
 			}
