@@ -151,7 +151,7 @@ function reduceSum (previous, next) {
 
 function emptyPromise (arg) {
 	return new Promise(function(resolve, reject) {
-		resolve();
+		resolve(arg);
 	});
 }
 

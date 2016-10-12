@@ -435,7 +435,10 @@ var Components = {
 				},
 				display: {
 					lock: false,
-					virtual: [],
+					virtual: {
+						list: [],
+						ids: {}, // translate datum id into object id
+					},
 					subset: {},
 					execute: function () {
 						// console.log(base.data.display.lock);
@@ -452,13 +455,17 @@ var Components = {
 						var filter = base.data.filter.current;
 
 						// remove non-matches from subset and the corresponding ones from virtual
-						return Promise.all(base.data.display.virtual.filter(function (item, index) {
+						return Promise.all(base.data.display.virtual.list.filter(function (item, index) {
 							item.index = index;
 							return !(((filter && item.rule === filter) || $.isEmptyObject(filter)) && item.main.toLowerCase().indexOf(lowercaseQuery) === 0); // reject
 						}).map(function (item) {
-							base.data.display.virtual.splice(item.index, 1);
-							return base.list.remove(item.id);
+							base.data.display.virtual.list.splice(item.index, 1);
+							return base.list.remove(base.data.display.virtual.ids[item.id]).then(function () {
+								delete base.data.display.virtual.ids[item.id];
+								return emptyPromise();
+							});
 						})).then(function () {
+							// console.log(base.data.display.virtual);
 
 							// add new data to subset
 							return new Promise(function(resolve, reject) {
@@ -473,21 +480,20 @@ var Components = {
 						}).then(function () {
 
 							// save previous virtual
-							var previousVirtual = base.data.display.virtual.map(function (datum) {
-								return datum.id;
-							});
+							var previousVirtualDictionary = base.data.display.virtual.ids;
 
 							// create virtual
 							return new Promise(function(resolve, reject) {
-								base.data.display.virtual = Object.keys(base.data.display.subset).map(function (key) {
+								base.data.display.virtual.list = Object.keys(base.data.display.subset).map(function (key) {
 									return base.data.display.subset[key];
 								});
+								// console.log(base.data.display.virtual.list);
 								resolve();
 							}).then(function () {
 
 								// sort virtual
 								return new Promise(function(resolve, reject) {
-									base.data.display.virtual.sort(function (d1, d2) {
+									base.data.display.virtual.list.sort(function (d1, d2) {
 										// sort by usage
 										if (d1.usage && d2.usage) {
 											if (d1.usage > d2.usage) {
@@ -509,22 +515,44 @@ var Components = {
 									resolve();
 								});
 							}).then(function () {
+								base.data.display.virtual.ids = {};
 
 								// determine differences in arrays and add objects one by one
-								return Promise.ordered(base.data.display.virtual.map(function (datum) {
-									if (previousVirtual.contains(datum.id)) {
-										// datum.id is in the previousVirtual list of ids, so all that needs to be done is visually updating any index display.
-										
-									} else {
-										// Fully render a new unit using the previous id as the "after".
-
+								return Promise.ordered(base.data.display.virtual.list.map(function (datum, index) {
+									return function (after) {
+										after = (after || '');
+										if (previousVirtualDictionary && datum.id in previousVirtualDictionary) {
+											// datum.id is in the previousVirtual list of ids, so all that needs to be done is visually updating any index display.
+											return UI.getComponent(previousVirtualDictionary[datum.id]).then(function (existingListItem) {
+												base.data.display.virtual.ids[datum.id] = existingListItem.id;
+												return existingListItem.updateMetadata(query, after);
+											}).then(function () {
+												return emptyPromise(previousVirtualDictionary[datum.id]);
+											});
+										} else {
+											// Fully render a new unit using the previous id as the "after".
+											return base.unit(datum, base.data.query.current.toLowerCase(), index).then(function (newListItem) {
+												// return base.setActive().then(function () {
+												// 	return base.setMetadata(query);
+												// }).then(function () {
+												return newListItem.setAfter(after).then(function () {
+													return base.list.components.wrapper.setChildren([newListItem]);
+												}).then(function () {
+													base.data.display.virtual.ids[datum.id] = newListItem.id;
+													return emptyPromise(newListItem.id);
+												});
+											});
+										}
 									}
 								}));
 
 							}).then(function () {
 								base.data.display.lock = false;
+								return emptyPromise();
 							});
 
+						}).catch(function (error) {
+							console.log(error);
 						});
 					},
 				},
@@ -591,7 +619,6 @@ var Components = {
 					// apply changes
 					_this.data.query.current = (((data || {}).query || _this.data.query.current) || ((defaults || {}).query || ''));
 					_this.data.filter.current = (((data || {}).filter || _this.data.filter.current) || ((defaults || {}).filter || {}));
-					_this.data.sort.current = (((data || {}).sort || _this.data.sort.current) || ((defaults || {}).sort || 'main'));
 					resolve();
 				});
 			}
