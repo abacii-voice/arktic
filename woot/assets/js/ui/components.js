@@ -441,7 +441,6 @@ var Components = {
 					},
 					subset: {},
 					execute: function () {
-						// console.log(base.data.display.lock);
 						if (!base.data.display.lock) {
 							base.data.display.lock = true;
 							return base.data.display.queue();
@@ -466,8 +465,6 @@ var Components = {
 								return emptyPromise();
 							});
 						})).then(function () {
-							// console.log(base.data.display.virtual);
-
 							// add new data to subset
 							return new Promise(function(resolve, reject) {
 								Object.keys(base.data.dataset).forEach(function (key) {
@@ -516,7 +513,6 @@ var Components = {
 								});
 							}).then(function () {
 								base.data.display.virtual.ids = {};
-
 								// determine differences in arrays and add objects one by one
 								return Promise.ordered(base.data.display.virtual.list.map(function (datum, index) {
 									return function (after) {
@@ -551,8 +547,6 @@ var Components = {
 								return emptyPromise();
 							});
 
-						}).catch(function (error) {
-							console.log(error);
 						});
 					},
 				},
@@ -604,7 +598,9 @@ var Components = {
 				]);
 
 				// continue loop
+				// setTimeout(function () {
 				base.data.requestId = requestAnimationFrame(base.loop);
+				// }, 100);
 			}
 			base.stop = function () {
 				// cancel animation request
