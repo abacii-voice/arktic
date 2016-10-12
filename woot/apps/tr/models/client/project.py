@@ -52,11 +52,6 @@ class Project(models.Model):
 				'dictionaries': {dictionary.id: dictionary.data(path.down('dictionaries'), permission) for dictionary in self.dictionaries.filter(id__startswith=path.get_id())},
 			})
 
-		if path.check('grammars') and permission.is_admin:
-			data.update({
-				'grammars': {grammar.id: grammar.data(path.down('grammars'), permission) for grammar in self.grammars.filter(id__startswith=path.get_id())},
-			})
-
 		if path.check('batches') and permission.is_admin:
 			data.update({
 				'batches': {batch.id: batch.data(path.down('batches'), permission) for batch in self.batches.filter(id__startswith=path.get_id())},
@@ -183,7 +178,6 @@ class Upload(models.Model):
 			data.update({
 				'date_created': str(self.date_created),
 				'archive_name': self.archive_name,
-				'relfile_name': self.relfile_name,
 				'total_fragments': str(total_fragments),
 				'completed_fragments': str(completed_fragments),
 				'completion_percentage': str(completion_percentage),
