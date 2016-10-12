@@ -937,10 +937,11 @@ var AccountInterfaces = {
 
 					unitBase.updateMetadata = function (query, after) {
 						// if there are changes, do stuff.
+						var currentIndex = unitBase.index;
 						return Promise.all([
-							unitBase.updateQuery(query),
-							unitBase.setAfter(after).then(function () {
-								return unitBase.updateIndex();
+							(query !== unitBase.query ? unitBase.updateQuery : emptyPromise)(query),
+							(after !== unitBase.after ? unitBase.setAfter : emptyPromise)(after).then(function () {
+								return (currentIndex === unitBase.index ? unitBase.updateIndex : emptyPromise)();
 							}),
 						]);
 					}
@@ -1060,6 +1061,11 @@ var AccountInterfaces = {
 							fn: function () {
 								return roleList.search.clear();
 							},
+						},
+						'control-state': {
+							preFn: function (_this) {
+								return _this.stop();
+							}
 						},
 					}
 				}),
