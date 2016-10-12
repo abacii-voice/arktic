@@ -64,25 +64,34 @@ var UI = {
 				// 1. Parent stays the same.
 				// 2. Or does it...
 				// 3. No other element has to change.
-				if (after !== '') {
-					return UI.getComponent(_this.after).then(function (before) {
-						return _this.setRoot(before.root).then(function (child) {
+
+				if (_this.isRendered) {
+					return (after !== '' ? function () {
+						return UI.getComponent(_this.after).then(function (before) {
+							return _this.setRoot(before.root).then(function (child) {
+								return new Promise(function(resolve, reject) {
+									_this.model().insertAfter(before.model());
+									resolve();
+								});
+							});
+						});
+					} : function () {
+						return _this.parent().then(function (parent) {
 							return new Promise(function(resolve, reject) {
-								_this.model().insertAfter(before.model());
+								_this.model().insertBefore(parent.model().children().first());
 								resolve();
 							});
 						});
+					})().then(function () {
+						return _this.parent().then(function (parent) {
+							return parent.setChildIndexes();
+						})
 					});
 				} else {
-					return _this.parent().then(function (parent) {
-						return new Promise(function(resolve, reject) {
-							_this.model().insertBefore(parent.model().children().first());
-							resolve();
-						});
-					});
+					return emptyPromise(_this.after);
 				}
 			} else {
-				return this.after;
+				return emptyPromise(this.after);
 			}
 		}
 		this.setRoot = function (root) {
