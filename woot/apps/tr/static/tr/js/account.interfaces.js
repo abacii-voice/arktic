@@ -799,6 +799,7 @@ var AccountInterfaces = {
 						]);
 					}
 					unitBase.updateQuery = function (query) {
+						unitBase.query = query;
 						return Promise.all([
 							unitMainHead.setAppearance({html: datum.main.substring(0, query.length)}),
 							unitMainTail.setAppearance({html: datum.main}),
@@ -947,6 +948,7 @@ var AccountInterfaces = {
 					}
 
 					unitBase.updateQuery = function (query) {
+						unitBase.query = query;
 						return Promise.all([
 							unitMainHead.setAppearance({html: datum.main.substring(0, query.length)}),
 							unitMainTail.setAppearance({html: datum.main}),
