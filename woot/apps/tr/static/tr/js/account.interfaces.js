@@ -1031,7 +1031,7 @@ var AccountInterfaces = {
 					},
 				}),
 				clientList.setTitle({text: 'Clients', centre: true}),
-				clientList.setSearch({mode: 'off', placeholder: 'Search clients...'}),
+				clientList.setSearch({mode: 'on', placeholder: 'Search clients...'}),
 
 				// ROLE SIDEBAR
 				roleList.search.setAppearance({
