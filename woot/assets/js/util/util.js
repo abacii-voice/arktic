@@ -116,31 +116,4 @@ var Util = {
 			resolve(input);
 		});
 	},
-
-	// cursor control
-	cursor: {
-		getCaretOffsetWithin: function (element) {
-			var caretOffset = 0;
-			var doc = element.ownerDocument;
-			var win = doc.defaultView;
-			var sel = win.getSelection();
-			if (sel.rangeCount > 0) {
-				var range = win.getSelection().getRangeAt(0);
-				var preCaretRange = range.cloneRange();
-				preCaretRange.selectNodeContents(element);
-				preCaretRange.setEnd(range.endContainer, range.endOffset);
-				caretOffset = preCaretRange.toString().length;
-			}
-			return caretOffset;
-		},
-		setEndOfContenteditable: function (contentEditableElement, start) {
-			var range = document.createRange(); // Create a range (a range is a like the selection but invisible)
-			range.selectNodeContents(contentEditableElement); // Select the entire contents of the element with the range
-			range.collapse(start); // collapse the range to the end point. false means collapse to end rather than the start
-
-			var selection = window.getSelection(); // get the selection object (allows you to change selection)
-			selection.removeAllRanges(); // remove any selections already made
-			selection.addRange(range); // make the range you have just created the visible selection
-		}
-	},
 }

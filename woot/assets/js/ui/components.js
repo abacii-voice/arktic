@@ -421,7 +421,20 @@ var Components = {
 						return Promise.all(base.targets.map(function (target) {
 							return Promise.all([
 								Context.get(target.resolvedPath, {options: {filter: base.data.query.current}}).then(target.process).then(base.data.append),
-								Context.get(target.resolvedPath, {options: {filter: base.data.query.current}, force: true}).then(target.process).then(base.data.append),
+
+								// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
+								new Promise(function(resolve, reject) {
+									var queryAtStart = base.data.query.current;
+									setTimeout(function () {
+										resolve(queryAtStart === base.data.query.current);
+									}, 1000);
+								}).then(function (timeout) {
+									if (timeout) {
+										return Context.get(target.resolvedPath, {options: {filter: base.data.query.current}, force: true}).then(target.process).then(base.data.append);
+									} else {
+										return Util.ep();
+									}
+								}),
 							]);
 						}));
 					} else {
@@ -596,6 +609,7 @@ var Components = {
 				return new Promise(function(resolve, reject) {
 					// apply changes
 					_this.data.query.current = (((data || {}).query || _this.data.query.current) || ((defaults || {}).query || ''));
+					console.log(_this.data.query.current);
 					_this.data.filter.current = (((data || {}).filter || _this.data.filter.current) || ((defaults || {}).filter || {}));
 					resolve();
 				});
@@ -678,13 +692,17 @@ var Components = {
 
 			// search methods
 			search.onFocus = function () {
-
+				base.isFocussed = true;
+				return Promise.all([
+					(base.searchExternal ? base.searchExternal.onFocus : Util.ep)(),
+					base.updateData({query: search.components.head.model().text()}),
+				]);
 			}
 			search.onBlur = function () {
-
+				return Util.ep();
 			}
 			search.onInput = function (value) {
-
+				return base.updateData({query: search.components.head.model().text()});
 			}
 			base.setSearch = function (options) {
 				options.mode = (options.mode || 'on');
