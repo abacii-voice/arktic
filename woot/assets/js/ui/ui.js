@@ -88,10 +88,10 @@ var UI = {
 						})
 					});
 				} else {
-					return emptyPromise(_this.after);
+					return Util.ep(_this.after);
 				}
 			} else {
-				return emptyPromise(this.after);
+				return Util.ep(this.after);
 			}
 		}
 		this.setRoot = function (root) {
@@ -122,7 +122,7 @@ var UI = {
 						return newParent.addChild(_this);
 					});
 				} else {
-					return emptyPromise();
+					return Util.ep();
 				}
 			} else {
 				_this.root = newRoot;
@@ -180,9 +180,9 @@ var UI = {
 				var html = _this.html !== undefined ? _this.html : '';
 				var renderedTemplate = _this.template.format({
 					id: _this.id,
-					classes: formatClasses(classes),
-					style: formatStyle(style),
-					properties: formatProperties(properties),
+					classes: Util.format.classes(classes),
+					style: Util.format.style(style),
+					properties: Util.format.properties(properties),
 					html: html,
 				});
 				resolve(renderedTemplate);
@@ -516,7 +516,7 @@ var UI = {
 			var _this = this;
 
 			// 1. Run preFn
-			return (state.preFn || emptyPromise)(_this).then(function () {
+			return (state.preFn || Util.ep)(_this).then(function () {
 				// 2. Run appearance
 				return _this.setAppearance({
 					classes: state.classes,
@@ -525,7 +525,7 @@ var UI = {
 				});
 			}).then(function () {
 				// 3. Run fn
-				return (state.fn || emptyPromise)(_this);
+				return (state.fn || Util.ep)(_this);
 			});
 		}
 

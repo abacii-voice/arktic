@@ -200,16 +200,16 @@ var Components = {
 			base.focus = function (position) {
 				if (!base.isFocussed) {
 					base.isFocussed = true;
-					return (base.onFocus || emptyPromise)().then(function () {
+					return (base.onFocus || Util.ep)().then(function () {
 						return base.setCaretPosition(position);
 					});
 				} else {
-					return emptyPromise();
+					return Util.ep();
 				}
 			}
 			base.blur = function () {
 				base.isFocussed = false;
-				return (base.onBlur || emptyPromise)().then(function () {
+				return (base.onBlur || Util.ep)().then(function () {
 					return tail.setAppearance({html: (head.model().text() || base.placeholder)});
 				});
 			}
@@ -239,7 +239,7 @@ var Components = {
 							return base.onInput(base.metadata.complete);
 						});
 					} else {
-						return emptyPromise();
+						return Util.ep();
 					}
 				},
 				left: function () {
@@ -267,7 +267,7 @@ var Components = {
 				head.setBindings({
 					'input': function (_this) {
 						// console.log('{} search bindings head input'.format(base.id));
-						(base.onInput || emptyPromise)(_this.model().text());
+						(base.onInput || Util.ep)(_this.model().text());
 					},
 					'focus': function (_this) {
 						// console.log('{} search bindings head focus'.format(base.id));
@@ -425,7 +425,7 @@ var Components = {
 							]);
 						}));
 					} else {
-						return emptyPromise();
+						return Util.ep();
 					}
 				},
 				append: function (data) {
@@ -449,7 +449,7 @@ var Components = {
 							base.data.display.lock = true;
 							return base.data.display.queue();
 						} else {
-							return emptyPromise();
+							return Util.ep();
 						}
 					},
 					queue: function () {
@@ -466,7 +466,7 @@ var Components = {
 							return base.list.remove(base.data.display.virtual.ids[item.id]).then(function () {
 								delete base.data.display.virtual.ids[item.id]; // remove from id check
 								delete base.data.display.subset[item.id]; // remove from filtered data
-								return emptyPromise();
+								return Util.ep();
 							});
 						})).then(function () {
 							// add new data to subset
@@ -527,7 +527,7 @@ var Components = {
 												base.data.display.virtual.ids[datum.id] = existingListItem.id;
 												return existingListItem.updateMetadata(query, after);
 											}).then(function () {
-												return emptyPromise(previousVirtualDictionary[datum.id]);
+												return Util.ep(previousVirtualDictionary[datum.id]);
 											});
 										} else {
 											// Fully render a new unit using the previous id as the "after".
@@ -539,7 +539,7 @@ var Components = {
 													return base.list.components.wrapper.setChildren([newListItem]);
 												}).then(function () {
 													base.data.display.virtual.ids[datum.id] = newListItem.id;
-													return emptyPromise(newListItem.id);
+													return Util.ep(newListItem.id);
 												});
 											});
 										}
@@ -548,7 +548,7 @@ var Components = {
 
 							}).then(function () {
 								base.data.display.lock = false;
-								return emptyPromise();
+								return Util.ep();
 							});
 
 						});
@@ -640,15 +640,15 @@ var Components = {
 							return base.active.activate();
 						});
 					} else {
-						return emptyPromise();
+						return Util.ep();
 					}
 				} else {
-					return emptyPromise();
+					return Util.ep();
 				}
 			}
 			base.deactivate = function () {
 				// console.log('{} searchlist deactivate'.format(base.id));
-				return ((base.active || {}).deactivate || emptyPromise)().then(function () {
+				return ((base.active || {}).deactivate || Util.ep)().then(function () {
 					return new Promise(function(resolve, reject) {
 						base.active = undefined;
 						resolve();
@@ -859,33 +859,56 @@ var Components = {
 			] = components;
 
 			// process states
-			Object.keys(args.state).forEach(function (category) {
-				var stateSet = args.state[category];
-				if (!$.isArray(stateSet)) {
-					stateSet = [stateSet];
-				}
-
-				// This structure sets up the sidebar to have primary, secondary, and deactivate states
-				// These can be sets of states. Primary, main is active; secondary, back is active; deactivate, neither is active.
-				stateSet.forEach(function (state) {
-					if (category === 'primary') {
-						main.addState(state, onOff(args.position.main.on));
-						back.addState(state, onOff(args.position.back.off));
-					} else if (category === 'secondary') {
-						main.addState(state, onOff(args.position.main.off));
-						back.addState(state, onOff(args.position.back.on));
-					} else if (category === 'deactivate') {
-						main.addState(state, onOff(args.position.main.off));
-						back.addState(state, onOff(args.position.back.off));
-					}
-				});
-			});
+			// Object.keys(args.state).forEach(function (category) {
+			// 	var stateSet = args.state[category];
+			// 	if (!$.isArray(stateSet)) {
+			// 		stateSet = [stateSet];
+			// 	}
+			//
+			// 	// This structure sets up the sidebar to have primary, secondary, and deactivate states
+			// 	// These can be sets of states. Primary, main is active; secondary, back is active; deactivate, neither is active.
+			// 	stateSet.forEach(function (state) {
+			// 		if (category === 'primary') {
+			// 			main.addState(state, onOff(args.position.main.on));
+			// 			back.addState(state, onOff(args.position.back.off));
+			// 		} else if (category === 'secondary') {
+			// 			main.addState(state, onOff(args.position.main.off));
+			// 			back.addState(state, onOff(args.position.back.on));
+			// 		} else if (category === 'deactivate') {
+			// 			main.addState(state, onOff(args.position.main.off));
+			// 			back.addState(state, onOff(args.position.back.off));
+			// 		}
+			// 	});
+			// });
 
 			// complete promises.
 			return Promise.all([
 				back.setChildren([
 					backButton,
 				]),
+				Promise.all(Object.keys(args.state).map(function (category) {
+					// get array of sets
+					var stateSet = args.state[category];
+					if (!$.isArray(stateSet)) {
+						stateSet = [stateSet];
+					}
+
+					// add each one as a state
+					return Promise.all(stateSet.map(function (stateName) {
+						return Promise.all([
+							main.addState(stateName, {
+								style: {
+									'left': category === 'primary' ? args.position.main.on : args.position.main.off,
+								},
+							}),
+							back.addState(stateName, {
+								style: {
+									'left': category === 'secondary' ? args.position.back.on : args.position.back.off,
+								},
+							}),
+						]);
+					}));
+				})),
 			]).then(function (results) {
 				base.components = {
 					main: main,

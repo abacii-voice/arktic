@@ -388,7 +388,7 @@ var AccountComponents = {
 					_this.sample = Array.apply(null, Array(_this.canvas.width)).map(Number.prototype.valueOf, 0);
 				} else {
 					_this.waveform = _this.data.getChannelData(0);
-					_this.sample = getAbsNormalised(interpolateArray(_this.waveform, _this.canvas.width / _this.barWidth), _this.canvas.height);
+					_this.sample = Util.arrays.getAbsNormalised(Util.arrays.interpolateArray(_this.waveform, _this.canvas.width / _this.barWidth), _this.canvas.height);
 				}
 				// ANIMATING https://www.kirupa.com/html5/animating_many_things_on_a_canvas.htm
 
@@ -779,7 +779,7 @@ var AccountComponents = {
 				options = (options || {});
 				var _this = wrapper;
 				if (_this.active !== undefined && !options.swap) {
-					return (options.end ? _this.setActive : emptyPromise)({index: 'last'}).then(function () {
+					return (options.end ? _this.setActive : Util.ep)({index: 'last'}).then(function () {
 						return _this.active.focus('end');
 					}).then(function () {
 						return _this.active;
@@ -834,13 +834,13 @@ var AccountComponents = {
 			wrapper.next = function () {
 				// console.log('{} caption next'.format(base.id));
 				return wrapper.setActive({increment: 1}).then(function (indexChanged) {
-					return (indexChanged ? wrapper.active.focus : emptyPromise)('start');
+					return (indexChanged ? wrapper.active.focus : Util.ep)('start');
 				});
 			}
 			wrapper.previous = function () {
 				// console.log('{} caption previous'.format(base.id));
 				return wrapper.setActive({increment: -1}).then(function (indexChanged) {
-					return (indexChanged ? wrapper.active.focus : emptyPromise)('end');
+					return (indexChanged ? wrapper.active.focus : Util.ep)('end');
 				});
 			}
 			wrapper.delete = function () {
@@ -874,31 +874,31 @@ var AccountComponents = {
 				up: function () {
 					// console.log('{} caption behaviours up'.format(base.id));
 					return Promise.all([
-						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.up : emptyPromise)(),
+						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.up : Util.ep)(),
 					]);
 				},
 				down: function () {
 					// console.log('{} caption behaviours down'.format(base.id));
 					return Promise.all([
-						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.down : emptyPromise)(),
+						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.down : Util.ep)(),
 					]);
 				},
 				left: function () {
 					// console.log('{} caption behaviours left'.format(base.id));
 					// go to previous token if at end
-					return ((wrapper.active && wrapper.isCaretInPosition('start')) ? wrapper.previous : emptyPromise)();
+					return ((wrapper.active && wrapper.isCaretInPosition('start')) ? wrapper.previous : Util.ep)();
 				},
 				altleft: function () {
 					// console.log('{} caption behaviours altleft'.format(base.id));
 					// go to previous token
-					return (wrapper.active ? wrapper.previous : emptyPromise)();
+					return (wrapper.active ? wrapper.previous : Util.ep)();
 				},
 				right: function () {
 					// console.log('{} caption behaviours right'.format(base.id));
 					// complete or go to next token if already complete
 					return Promise.all([
-						((wrapper.active && wrapper.isCaretInPosition('end') && wrapper.isComplete()) ? wrapper.next : emptyPromise)(),
-						(wrapper.active && !wrapper.isComplete() ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)(),
+						((wrapper.active && wrapper.isCaretInPosition('end') && wrapper.isComplete()) ? wrapper.next : Util.ep)(),
+						(wrapper.active && !wrapper.isComplete() ? wrapper.active.components.autocomplete.behaviours.right : Util.ep)(),
 					]);
 				},
 				altright: function () {
@@ -906,43 +906,43 @@ var AccountComponents = {
 					// go to next token
 					var shiftright = function () {
 						return wrapper.setActive({increment: 1}).then(function (indexChanged) {
-							return (indexChanged ? wrapper.active.focus : emptyPromise)('end');
+							return (indexChanged ? wrapper.active.focus : Util.ep)('end');
 						});
 					}
 					return Promise.all([
-						(wrapper.active ? shiftright : emptyPromise)(),
+						(wrapper.active ? shiftright : Util.ep)(),
 					]);
 				},
 				enter: function () {
 					// console.log('{} caption behaviours enter'.format(base.id));
 					// complete and new token
 					return Promise.all([
-						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)().then(function () {
-							return (wrapper.active ? wrapper.token : emptyPromise)({swap: true});
+						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : Util.ep)().then(function () {
+							return (wrapper.active ? wrapper.token : Util.ep)({swap: true});
 						}),
 					]);
 				},
 				backspace: function () {
 					// console.log('{} caption behaviours backspace'.format(base.id));
 					// delete token if at beginning
-					return ((wrapper.active && wrapper.active.isAtStart() && wrapper.children.length > 1) ? wrapper.delete : emptyPromise)();
+					return ((wrapper.active && wrapper.active.isAtStart() && wrapper.children.length > 1) ? wrapper.delete : Util.ep)();
 				},
 				altbackspace: function () {
 					// console.log('{} caption behaviours altbackspace'.format(base.id));
 					// delete token
-					return ((wrapper.active && wrapper.children.length) ? wrapper.delete : emptyPromise)();
+					return ((wrapper.active && wrapper.children.length) ? wrapper.delete : Util.ep)();
 				},
 				space: function () {
 					// console.log('{} caption behaviours space'.format(base.id));
 					// new token
 					return Promise.all([
-						// ((wrapper.active && (!wrapper.active.components.autocomplete.virtual.length || wrapper.isComplete())) ? wrapper.token : emptyPromise)({swap: true}),
+						// ((wrapper.active && (!wrapper.active.components.autocomplete.virtual.length || wrapper.isComplete())) ? wrapper.token : Util.ep)({swap: true}),
 					]);
 				},
 				number: function (char) {
 					// console.log('{} caption behaviours number'.format(base.id));
 					return Promise.all([
-						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.number : emptyPromise)(char),
+						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.number : Util.ep)(char),
 					]);
 				},
 			}
