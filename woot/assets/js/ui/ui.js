@@ -484,7 +484,11 @@ var UI = {
 				return new Promise(function(resolve, reject) {
 					if (root.children().length !== 0) {
 						if (_this.after !== undefined) {
-							root.children('#{id}'.format({id: _this.after})).after(renderedTemplate); // add as child after 'after'.
+							if (_this.after) {
+								root.children('#{id}'.format({id: _this.after})).after(renderedTemplate); // add as child after 'after'.
+							} else {
+								root.children().first().before(renderedTemplate); // add as child before first child.
+							}
 						} else {
 							root.children().last().after(renderedTemplate); // add as child after last child.
 						}
