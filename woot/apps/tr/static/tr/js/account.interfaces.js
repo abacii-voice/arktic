@@ -235,7 +235,7 @@ var AccountInterfaces = {
 
 			// CAPTION
 			caption.unit = function (text, type) {
-				var key = makeid();
+				var key = Util.makeid();
 
 				// classes
 				jss.set('#{id}-{key}-base'.format({id: caption.id, key: key}), {
@@ -792,8 +792,8 @@ var AccountInterfaces = {
 					unitBase.updateMetadata = function (query, after) {
 						// if there are changes, do stuff.
 						return Promise.all([
-							(query !== unitBase.query ? unitBase.updateQuery : emptyPromise)(query),
-							(after !== unitBase.after ? unitBase.setAfter : emptyPromise)(after).then(function () {
+							(query !== unitBase.query ? unitBase.updateQuery : Util.ep)(query),
+							(after !== unitBase.after ? unitBase.setAfter : Util.ep)(after).then(function () {
 								return unitBase.updateIndex();
 							}),
 						]);
@@ -807,7 +807,7 @@ var AccountInterfaces = {
 					}
 					unitBase.updateIndex = function () {
 						// change graphical index object to display the new index
-						return emptyPromise();
+						return Util.ep();
 					}
 
 					// complete promises.
@@ -940,9 +940,9 @@ var AccountInterfaces = {
 						// if there are changes, do stuff.
 						var currentIndex = unitBase.index;
 						return Promise.all([
-							(query !== unitBase.query ? unitBase.updateQuery : emptyPromise)(query),
-							(after !== unitBase.after ? unitBase.setAfter : emptyPromise)(after).then(function () {
-								return (currentIndex === unitBase.index ? unitBase.updateIndex : emptyPromise)();
+							(query !== unitBase.query ? unitBase.updateQuery : Util.ep)(query),
+							(after !== unitBase.after ? unitBase.setAfter : Util.ep)(after).then(function () {
+								return (currentIndex === unitBase.index ? unitBase.updateIndex : Util.ep)();
 							}),
 						]);
 					}
@@ -957,7 +957,7 @@ var AccountInterfaces = {
 
 					unitBase.updateIndex = function () {
 						// change graphical index object to display the new index
-						return emptyPromise();
+						return Util.ep();
 					}
 
 					// complete promises.
@@ -1336,7 +1336,7 @@ var AccountInterfaces = {
 
 				// CAPTION
 				caption.unit = function (text, type) {
-					var key = makeid();
+					var key = Util.makeid();
 
 					// classes
 					jss.set('#{id}-{key}-base'.format({id: caption.id, key: key}), {
