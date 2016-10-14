@@ -858,29 +858,6 @@ var Components = {
 				backButton,
 			] = components;
 
-			// process states
-			// Object.keys(args.state).forEach(function (category) {
-			// 	var stateSet = args.state[category];
-			// 	if (!$.isArray(stateSet)) {
-			// 		stateSet = [stateSet];
-			// 	}
-			//
-			// 	// This structure sets up the sidebar to have primary, secondary, and deactivate states
-			// 	// These can be sets of states. Primary, main is active; secondary, back is active; deactivate, neither is active.
-			// 	stateSet.forEach(function (state) {
-			// 		if (category === 'primary') {
-			// 			main.addState(state, onOff(args.position.main.on));
-			// 			back.addState(state, onOff(args.position.back.off));
-			// 		} else if (category === 'secondary') {
-			// 			main.addState(state, onOff(args.position.main.off));
-			// 			back.addState(state, onOff(args.position.back.on));
-			// 		} else if (category === 'deactivate') {
-			// 			main.addState(state, onOff(args.position.main.off));
-			// 			back.addState(state, onOff(args.position.back.off));
-			// 		}
-			// 	});
-			// });
-
 			// complete promises.
 			return Promise.all([
 				back.setChildren([
