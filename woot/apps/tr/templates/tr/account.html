@@ -31,17 +31,18 @@
 {% endblock %}
 
 {% block pre_main_script %}
-<!-- general utility stuff comes before everything. -->
-{# <script src='{% static "js/util/preventzoom.js" %}'></script>#}
-<script src='{% static "js/util/util.js" %}'></script>
+<!-- Third party (no local deps) -->
 <script src='{% static "js/util/dropzone.js" %}'></script>
-<script src='{% static "js/util/mods.js" %}'></script>
 <script src='{% static "js/util/string-format.js" %}' onload='format.extend(String.prototype);'></script>
 <script src='{% static "js/util/mousetrap.js" %}'></script> <!-- keyboard shortcuts -->
-<script src='{% static "js/util/shortcuts.js" %}'></script>
 <script src='{% static "js/util/jss.min.js" %}'></script>
-<script src='{% static "js/util/csrf.js" %}'></script>
 <script src='{% static "js/util/jzip.js" %}'></script>
+
+<!-- general utility stuff comes before local -->
+<script src='{% static "js/util/util.js" %}'></script>
+<script src='{% static "js/util/mods.js" %}'></script>
+<script src='{% static "js/util/shortcuts.js" %}'></script>
+<script src='{% static "js/util/csrf.js" %}'></script>
 
 <!-- UI -->
 <script src='{% static "js/ui/ui.js" %}'></script>
@@ -50,6 +51,7 @@
 {% endblock %}
 
 {% block post_main_script %}
+<!-- specific UI -->
 <script src="{% static 'tr/js/account.components.js' %}"></script>
 <script src="{% static 'tr/js/account.interfaces.js' %}"></script>
 <script src="{% static 'tr/js/account.js' %}"></script>
