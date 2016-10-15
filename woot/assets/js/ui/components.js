@@ -420,7 +420,7 @@ var Components = {
 						}
 						return Promise.all(base.targets.map(function (target) {
 							return Promise.all([
-								Context.get(target.resolvedPath, {options: {filter: base.data.query.current}}).then(target.process).then(base.data.append),
+								Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}}).then(target.process).then(base.data.append),
 
 								// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
 								new Promise(function(resolve, reject) {
@@ -430,7 +430,7 @@ var Components = {
 									}, 1000);
 								}).then(function (timeout) {
 									if (timeout) {
-										return Context.get(target.resolvedPath, {options: {filter: base.data.query.current}, force: true}).then(target.process).then(base.data.append);
+										return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}, force: true}).then(target.process).then(base.data.append);
 									} else {
 										return Util.ep();
 									}
@@ -557,7 +557,9 @@ var Components = {
 											});
 										}
 									}
-								}));
+								})).catch(function (error) {
+									console.log(error);
+								});
 
 							}).then(function () {
 								base.data.display.lock = false;
@@ -608,8 +610,7 @@ var Components = {
 				var _this = base;
 				return new Promise(function(resolve, reject) {
 					// apply changes
-					_this.data.query.current = (((data || {}).query || _this.data.query.current) || ((defaults || {}).query || ''));
-					console.log(_this.data.query.current);
+					_this.data.query.current = (((data || {}).query !== undefined ? (data || {}).query : _this.data.query.current) || ((defaults || {}).query || ''));
 					_this.data.filter.current = (((data || {}).filter || _this.data.filter.current) || ((defaults || {}).filter || {}));
 					resolve();
 				});
