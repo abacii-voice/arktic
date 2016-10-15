@@ -531,7 +531,7 @@ var Components = {
 							}).then(function () {
 								base.data.display.virtual.ids = {};
 								// determine differences in arrays and add objects one by one
-								return Promise.ordered(base.data.display.virtual.list.map(function (datum, index) {
+								return Promise.ordered(base.data.display.virtual.list.slice(0,10).map(function (datum, index) {
 									return function (after) {
 										after = (after || '');
 										if (previousVirtualDictionary && datum.id in previousVirtualDictionary) {
@@ -557,9 +557,7 @@ var Components = {
 											});
 										}
 									}
-								})).catch(function (error) {
-									console.log(error);
-								});
+								}));
 
 							}).then(function () {
 								base.data.display.lock = false;
