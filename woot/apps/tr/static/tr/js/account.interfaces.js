@@ -340,7 +340,7 @@ var AccountInterfaces = {
 			autocomplete.autocomplete = true;
 			autocomplete.targets = [
 				{
-					name: 'clients',
+					name: 'tokens',
 					path: function () {
 						return Promise.all([
 							Active.get('client'),
@@ -373,11 +373,11 @@ var AccountInterfaces = {
 					},
 				},
 			]
-			autocomplete.unit = function (_this, datum, query, index) {
+			autocomplete.unit = function (datum, query, index) {
 				query = (query || '');
 
 				// base class
-				jss.set('#{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
+				jss.set('#{id}-{object}-base'.format({id: autocomplete.id, object: datum.id}), {
 					'height': '30px',
 					'width': '100%',
 					'border-bottom': '1px solid #ccc',
@@ -385,19 +385,19 @@ var AccountInterfaces = {
 					'padding-left': '10px',
 					'text-align': 'left',
 				});
-				jss.set('#{id}-{object}-base.active'.format({id: _this.id, object: datum.id}), {
+				jss.set('#{id}-{object}-base.active'.format({id: autocomplete.id, object: datum.id}), {
 					'background-color': 'rgba(255,255,255,0.1)'
 				});
-				jss.set('#{id}-{object}-base.client'.format({id: _this.id, object: datum.id}), {
+				jss.set('#{id}-{object}-base.client'.format({id: autocomplete.id, object: datum.id}), {
 					'background-color': 'rgba(255,255,0,0.05)'
 				});
-				jss.set('#{id}-{object}-base.client.active'.format({id: _this.id, object: datum.id}), {
+				jss.set('#{id}-{object}-base.client.active'.format({id: autocomplete.id, object: datum.id}), {
 					'background-color': 'rgba(255,255,0,0.1)'
 				});
 
 				return Promise.all([
 					// base component
-					UI.createComponent('{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{id}-{object}-base'.format({id: autocomplete.id, object: datum.id}), {
 						template: UI.template('div', 'ie button'),
 						appearance: {
 							classes: [datum.rule],
@@ -405,7 +405,7 @@ var AccountInterfaces = {
 					}),
 
 					// main wrapper
-					UI.createComponent('{id}-{object}-main-wrapper'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{id}-{object}-main-wrapper'.format({id: autocomplete.id, object: datum.id}), {
 						template: UI.template('div', 'ie centred-vertically'),
 						appearance: {
 							style: {
@@ -415,7 +415,7 @@ var AccountInterfaces = {
 					}),
 
 					// main
-					UI.createComponent('{id}-{object}-main-head'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{id}-{object}-main-head'.format({id: autocomplete.id, object: datum.id}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -426,7 +426,7 @@ var AccountInterfaces = {
 							html: datum.main.substring(0, query.length),
 						},
 					}),
-					UI.createComponent('{id}-{object}-main-tail'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{id}-{object}-main-tail'.format({id: autocomplete.id, object: datum.id}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -437,7 +437,7 @@ var AccountInterfaces = {
 					}),
 
 					// index
-					UI.createComponent('{id}-{object}-index'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{id}-{object}-index'.format({id: autocomplete.id, object: datum.id}), {
 						template: UI.template('div', 'ie abs centred-vertically'),
 						appearance: {
 							style: {
@@ -456,20 +456,31 @@ var AccountInterfaces = {
 						unitIndex,
 					] = unitComponents;
 
-					// set metadata
-					datum.metadata = {
-						query: query,
-						complete: datum.main,
-						combined: query + datum.main.substring(query.length),
-						type: datum.rule,
-					}
-
 					unitBase.activate = function () {
 						return unitBase.setAppearance({classes: {add: ['active']}});
 					}
-
 					unitBase.deactivate = function () {
 						return unitBase.setAppearance({classes: {remove: ['active']}});
+					}
+					unitBase.updateMetadata = function (query, after) {
+						// if there are changes, do stuff.
+						return Promise.all([
+							(query !== unitBase.query ? unitBase.updateQuery : Util.ep)(query),
+							(after !== unitBase.after ? unitBase.setAfter : Util.ep)(after).then(function () {
+								return unitBase.updateIndex();
+							}),
+						]);
+					}
+					unitBase.updateQuery = function (query) {
+						unitBase.query = query;
+						return Promise.all([
+							unitMainHead.setAppearance({html: datum.main.substring(0, query.length)}),
+							unitMainTail.setAppearance({html: datum.main}),
+						]);
+					}
+					unitBase.updateIndex = function () {
+						// change graphical index object to display the new index
+						return Util.ep();
 					}
 
 					// complete promises.
@@ -518,6 +529,25 @@ var AccountInterfaces = {
 				autocompletePanel.setChildren([
 					autocomplete,
 				]),
+
+				// autocomplete
+				autocomplete.setState({
+					states: {
+						'transcription-state': {
+							preFn: function (_this) {
+								return _this.start();
+							},
+							fn: function () {
+								return autocomplete.search.clear();
+							},
+						},
+						'control-state': {
+							preFn: function (_this) {
+								return _this.stop();
+							}
+						}
+					},
+				}),
 
 			]).then(function () {
 				base.components = {
