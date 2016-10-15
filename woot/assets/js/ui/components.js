@@ -423,18 +423,18 @@ var Components = {
 								Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}}).then(target.process).then(base.data.append),
 
 								// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
-								new Promise(function(resolve, reject) {
-									var queryAtStart = base.data.query.current;
-									setTimeout(function () {
-										resolve(queryAtStart === base.data.query.current);
-									}, 1000);
-								}).then(function (timeout) {
-									if (timeout) {
-										return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}, force: true}).then(target.process).then(base.data.append);
-									} else {
-										return Util.ep();
-									}
-								}),
+								// new Promise(function(resolve, reject) {
+								// 	var queryAtStart = base.data.query.current;
+								// 	setTimeout(function () {
+								// 		resolve(queryAtStart === base.data.query.current);
+								// 	}, 1000);
+								// }).then(function (timeout) {
+								// 	if (timeout) {
+								// 		return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}, force: true}).then(target.process).then(base.data.append);
+								// 	} else {
+								// 		return Util.ep();
+								// 	}
+								// }),
 							]);
 						}));
 					} else {
@@ -562,6 +562,8 @@ var Components = {
 							}).then(function () {
 								base.data.display.lock = false;
 								return Util.ep();
+							}).catch(function (error) {
+								console.log(error);
 							});
 
 						});
