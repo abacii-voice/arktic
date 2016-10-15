@@ -768,8 +768,12 @@ var Context = {
 							// if (typeof value === 'object' && typeof sub[context_path[i]] === 'object') {
 							//
 							// } else {
-							sub[context_path[i]] = value;
 							// }
+							if (sub[context_path[i]] !== undefined) {
+								$.extend(sub[context_path[i]], value);
+							} else {
+								sub[context_path[i]] = value;
+							}
 						} else {
 							if (sub[context_path[i]] === undefined) {
 								sub[context_path[i]] = {};
