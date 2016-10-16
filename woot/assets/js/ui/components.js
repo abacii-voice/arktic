@@ -530,35 +530,34 @@ var Components = {
 								});
 							}).then(function () {
 								base.data.display.virtual.ids = {};
+								var newList = [];
 								// determine differences in arrays and add objects one by one
-								return Promise.ordered(base.data.display.virtual.list.slice(0,10).map(function (datum, index) {
+								return Promise.ordered(base.data.display.virtual.list.slice(0).map(function (datum, index) {
 									return function (after) {
 										after = (after || '');
 										if (previousVirtualDictionary && datum.id in previousVirtualDictionary) {
 											// datum.id is in the previousVirtual list of ids, so all that needs to be done is visually updating any index display.
 											return UI.getComponent(previousVirtualDictionary[datum.id]).then(function (existingListItem) {
 												base.data.display.virtual.ids[datum.id] = existingListItem.id;
-												return existingListItem.updateMetadata(query, after);
+												return existingListItem.updateMetadata(lowercaseQuery, after);
 											}).then(function () {
 												return Util.ep(previousVirtualDictionary[datum.id]);
 											});
 										} else {
+											console.log('new', base.id, index);
 											// Fully render a new unit using the previous id as the "after".
-											return base.unit(datum, base.data.query.current.toLowerCase(), index).then(function (newListItem) {
-												// return base.setActive().then(function () {
-												// 	return base.setMetadata(query);
-												// }).then(function () {
+											return base.unit(datum, lowercaseQuery, index).then(function (newListItem) {
 												return newListItem.setAfter(after).then(function () {
-													return base.list.components.wrapper.setChildren([newListItem]);
-												}).then(function () {
 													base.data.display.virtual.ids[datum.id] = newListItem.id;
+													newList.push(newListItem);
 													return Util.ep(newListItem.id);
 												});
 											});
 										}
 									}
-								}));
-
+								})).then(function () {
+									return (newList.length ? base.list.components.wrapper.setChildren : Util.ep)(newList);
+								});
 							}).then(function () {
 								base.data.display.lock = false;
 								return Util.ep();
