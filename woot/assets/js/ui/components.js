@@ -532,6 +532,9 @@ var Components = {
 								base.data.display.virtual.ids = {};
 								var newList = [];
 								// determine differences in arrays and add objects one by one
+								
+
+
 								return Promise.ordered(base.data.display.virtual.list.slice(0).map(function (datum, index) {
 									return function (after) {
 										after = (after || '');
