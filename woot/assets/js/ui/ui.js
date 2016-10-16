@@ -373,7 +373,6 @@ var UI = {
 		}
 		this.setChildren = function (children) {
 			var _this = this;
-			console.log(_this.id);
 			_this.children = (_this.children || []);
 			if (children !== undefined) {
 				return Promise.ordered(children.map(function (child) {
