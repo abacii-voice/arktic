@@ -556,7 +556,11 @@ var Components = {
 										}
 									}
 								})).then(function () {
-									return (newList.length ? base.list.components.wrapper.setChildren : Util.ep)(newList);
+									if (newList.length) {
+										return base.list.components.wrapper.setChildren(newList);
+									} else {
+										return Util.ep();
+									}
 								});
 							}).then(function () {
 								base.data.display.lock = false;
