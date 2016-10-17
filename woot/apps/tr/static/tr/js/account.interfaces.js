@@ -396,23 +396,23 @@ var AccountInterfaces = {
 				query = (query || '');
 
 				// base class
-				jss.set('#{id}-{object}-base'.format({id: autocomplete.id, object: datum.id}), {
-					'height': '30px',
-					'width': '100%',
-					'border-bottom': '1px solid #ccc',
-					'padding': '0px',
-					'padding-left': '10px',
-					'text-align': 'left',
-				});
-				jss.set('#{id}-{object}-base.active'.format({id: autocomplete.id, object: datum.id}), {
-					'background-color': 'rgba(255,255,255,0.1)'
-				});
-				jss.set('#{id}-{object}-base.client'.format({id: autocomplete.id, object: datum.id}), {
-					'background-color': 'rgba(255,255,0,0.05)'
-				});
-				jss.set('#{id}-{object}-base.client.active'.format({id: autocomplete.id, object: datum.id}), {
-					'background-color': 'rgba(255,255,0,0.1)'
-				});
+				// jss.set('#{id}-{object}-base'.format({id: autocomplete.id, object: datum.id}), {
+				// 	'height': '30px',
+				// 	'width': '100%',
+				// 	'border-bottom': '1px solid #ccc',
+				// 	'padding': '0px',
+				// 	'padding-left': '10px',
+				// 	'text-align': 'left',
+				// });
+				// jss.set('#{id}-{object}-base.active'.format({id: autocomplete.id, object: datum.id}), {
+				// 	'background-color': 'rgba(255,255,255,0.1)'
+				// });
+				// jss.set('#{id}-{object}-base.client'.format({id: autocomplete.id, object: datum.id}), {
+				// 	'background-color': 'rgba(255,255,0,0.05)'
+				// });
+				// jss.set('#{id}-{object}-base.client.active'.format({id: autocomplete.id, object: datum.id}), {
+				// 	'background-color': 'rgba(255,255,0,0.1)'
+				// });
 
 				return Promise.all([
 					// base component

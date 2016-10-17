@@ -519,7 +519,7 @@ var Components = {
 								// determine differences in arrays and add objects one by one
 								// console.log(base.data.display.virtual.list.length);
 								// if (!base.id.contains('autocomplete')) {
-									return Promise.ordered(base.data.display.virtual.list.slice(0, base.limit).map(function (datum, index) {
+									return Promise.ordered(base.data.display.virtual.list.slice(0).map(function (datum, index) {
 										return function (after) {
 											after = (after || '');
 											if (previousVirtualIds.contains(datum.id)) {
@@ -530,8 +530,10 @@ var Components = {
 													return Util.ep(base.data.keygen(datum.id));
 												});
 											} else {
+												var start = Date.now();
 												// Fully render a new unit using the previous id as the "after".
 												return base.unit(datum, lowercaseQuery, index).then(function (newListItem) {
+													console.log(Date.now() - start);
 													return newListItem.setAfter(after).then(function () {
 														base.data.display.virtual.ids.push(datum.id);
 														newList.push(newListItem);
