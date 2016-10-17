@@ -363,6 +363,17 @@ var AccountInterfaces = {
 							resolve(results);
 						});
 					},
+					setStyle: function () {
+						return new Promise(function(resolve, reject) {
+							jss.set('#{id} .base.word'.format({id: autocomplete.id}), {
+								'background-color': 'rgba(255,255,0,0.05)'
+							});
+							jss.set('#{id} .base.word.active'.format({id: autocomplete.id}), {
+								'background-color': 'rgba(255,255,0,0.1)'
+							});
+							resolve();
+						});
+					},
 					filter: {
 						default: true,
 						char: '/',
@@ -394,29 +405,9 @@ var AccountInterfaces = {
 			}
 			autocomplete.unit = function (datum, query, index) {
 				query = (query || '');
-
-				// base class
-				// jss.set('#{id}-{object}-base'.format({id: autocomplete.id, object: datum.id}), {
-				// 	'height': '30px',
-				// 	'width': '100%',
-				// 	'border-bottom': '1px solid #ccc',
-				// 	'padding': '0px',
-				// 	'padding-left': '10px',
-				// 	'text-align': 'left',
-				// });
-				// jss.set('#{id}-{object}-base.active'.format({id: autocomplete.id, object: datum.id}), {
-				// 	'background-color': 'rgba(255,255,255,0.1)'
-				// });
-				// jss.set('#{id}-{object}-base.client'.format({id: autocomplete.id, object: datum.id}), {
-				// 	'background-color': 'rgba(255,255,0,0.05)'
-				// });
-				// jss.set('#{id}-{object}-base.client.active'.format({id: autocomplete.id, object: datum.id}), {
-				// 	'background-color': 'rgba(255,255,0,0.1)'
-				// });
-
 				return Promise.all([
 					// base component
-					UI.createComponent(autocomplete.data.keygen(datum.id), {
+					UI.createComponent(autocomplete.data.idgen(datum.id), {
 						template: UI.template('div', 'ie button'),
 						appearance: {
 							classes: [datum.rule],
@@ -424,7 +415,7 @@ var AccountInterfaces = {
 					}),
 
 					// main wrapper
-					UI.createComponent('{base}-main-wrapper'.format({base: autocomplete.data.keygen(datum.id)}), {
+					UI.createComponent('{base}-main-wrapper'.format({base: autocomplete.data.idgen(datum.id)}), {
 						template: UI.template('div', 'ie centred-vertically'),
 						appearance: {
 							style: {
@@ -434,7 +425,7 @@ var AccountInterfaces = {
 					}),
 
 					// main
-					UI.createComponent('{base}-main-head'.format({base: autocomplete.data.keygen(datum.id)}), {
+					UI.createComponent('{base}-main-head'.format({base: autocomplete.data.idgen(datum.id)}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -445,7 +436,7 @@ var AccountInterfaces = {
 							html: datum.main.substring(0, query.length),
 						},
 					}),
-					UI.createComponent('{base}-main-tail'.format({base: autocomplete.data.keygen(datum.id)}), {
+					UI.createComponent('{base}-main-tail'.format({base: autocomplete.data.idgen(datum.id)}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -456,7 +447,7 @@ var AccountInterfaces = {
 					}),
 
 					// index
-					UI.createComponent('{base}-index'.format({base: autocomplete.data.keygen(datum.id)}), {
+					UI.createComponent('{base}-index'.format({base: autocomplete.data.idgen(datum.id)}), {
 						template: UI.template('div', 'ie abs centred-vertically'),
 						appearance: {
 							style: {
@@ -755,7 +746,7 @@ var AccountInterfaces = {
 								return {
 									id: key,
 									main: client.name,
-									rule: 'client',
+									rule: 'clients',
 								}
 							});
 
@@ -767,23 +758,10 @@ var AccountInterfaces = {
 			clientList.sort = Util.sort.alpha('main');
 			clientList.unit = function (datum, query, index) {
 				query = (query || '');
-
-				// base class
-				jss.set('#{id}-{object}-base'.format({id: clientList.id, object: datum.id}), {
-					'height': '30px',
-					'width': '100%',
-					'padding': '0px',
-					'padding-left': '10px',
-					'text-align': 'left',
-				});
-				jss.set('#{id}-{object}-base.active'.format({id: clientList.id, object: datum.id}), {
-					'background-color': 'rgba(255,255,255,0.1)'
-				});
-
 				return Promise.all([
 					// base component
-					UI.createComponent('{id}-{object}-base'.format({id: clientList.id, object: datum.id}), {
-						template: UI.template('div', 'ie button'),
+					UI.createComponent(clientList.data.idgen(datum.id), {
+						template: UI.template('div', 'ie button base'),
 						appearance: {
 							classes: [datum.rule],
 						},
@@ -793,7 +771,7 @@ var AccountInterfaces = {
 					}),
 
 					// main wrapper
-					UI.createComponent('{id}-{object}-main-wrapper'.format({id: clientList.id, object: datum.id}), {
+					UI.createComponent('{base}-main-wrapper'.format({base: clientList.data.idgen(datum.id)}), {
 						template: UI.template('div', 'ie centred-vertically'),
 						appearance: {
 							style: {
@@ -803,7 +781,7 @@ var AccountInterfaces = {
 					}),
 
 					// main
-					UI.createComponent('{id}-{object}-main-head'.format({id: clientList.id, object: datum.id}), {
+					UI.createComponent('{base}-main-head'.format({base: clientList.data.idgen(datum.id)}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -814,7 +792,7 @@ var AccountInterfaces = {
 							html: datum.main.substring(0, query.length),
 						},
 					}),
-					UI.createComponent('{id}-{object}-main-tail'.format({id: clientList.id, object: datum.id}), {
+					UI.createComponent('{base}-main-tail'.format({base: clientList.data.idgen(datum.id)}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -902,7 +880,7 @@ var AccountInterfaces = {
 								return {
 									id: key,
 									main: role.type,
-									rule: 'role',
+									rule: 'roles',
 								}
 							});
 
@@ -914,23 +892,10 @@ var AccountInterfaces = {
 			roleList.sort = Util.sort.alpha('main');
 			roleList.unit = function (datum, query, index) {
 				query = (query || '');
-
-				// base class
-				jss.set('#{id}-{object}-base'.format({id: roleList.id, object: datum.id}), {
-					'height': '30px',
-					'width': '100%',
-					'padding': '0px',
-					'padding-left': '10px',
-					'text-align': 'left',
-				});
-				jss.set('#{id}-{object}-base.active'.format({id: roleList.id, object: datum.id}), {
-					'background-color': 'rgba(255,255,255,0.1)'
-				});
-
 				return Promise.all([
 					// base component
-					UI.createComponent('{id}-{object}-base'.format({id: roleList.id, object: datum.id}), {
-						template: UI.template('div', 'ie button'),
+					UI.createComponent(roleList.data.idgen(datum.id), {
+						template: UI.template('div', 'ie button base'),
 						appearance: {
 							classes: [datum.rule],
 						},
@@ -940,7 +905,7 @@ var AccountInterfaces = {
 					}),
 
 					// main wrapper
-					UI.createComponent('{id}-{object}-main-wrapper'.format({id: roleList.id, object: datum.id}), {
+					UI.createComponent('{base}-main-wrapper'.format({base: roleList.data.idgen(datum.id)}), {
 						template: UI.template('div', 'ie centred-vertically'),
 						appearance: {
 							style: {
@@ -950,7 +915,7 @@ var AccountInterfaces = {
 					}),
 
 					// main
-					UI.createComponent('{id}-{object}-main-head'.format({id: roleList.id, object: datum.id}), {
+					UI.createComponent('{base}-main-head'.format({base: roleList.data.idgen(datum.id)}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -961,7 +926,7 @@ var AccountInterfaces = {
 							html: datum.main.substring(0, query.length),
 						},
 					}),
-					UI.createComponent('{id}-{object}-main-tail'.format({id: roleList.id, object: datum.id}), {
+					UI.createComponent('{base}-main-tail'.format({base: roleList.data.idgen(datum.id)}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -1049,6 +1014,7 @@ var AccountInterfaces = {
 			return Promise.all([
 
 				// CLIENT SIDEBAR
+				clientList.setStyle(),
 				clientList.search.setAppearance({
 					style: {
 						'left': '0px',
@@ -1085,6 +1051,7 @@ var AccountInterfaces = {
 				clientList.setSearch({mode: 'on', placeholder: 'Search clients...'}),
 
 				// ROLE SIDEBAR
+				roleList.setStyle(),
 				roleList.search.setAppearance({
 					style: {
 						'left': '0px',

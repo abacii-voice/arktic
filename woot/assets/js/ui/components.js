@@ -412,8 +412,8 @@ var Components = {
 				},
 
 				// methods
-				keygen: function (id) {
-					return '{base}-{id}-base'.format({base: base.id, id: id})
+				idgen: function (id) {
+					return '{base}-{id}'.format({base: base.id, id: id})
 				},
 				get: function () {
 					// this looks at the Context.get and Context.get:force, separately.
@@ -479,9 +479,11 @@ var Components = {
 							item.index = index;
 							return !(((filter && item.rule === filter) || $.isEmptyObject(filter)) && item.main.toLowerCase().indexOf(lowercaseQuery) === 0 && item.id in base.data.dataset); // reject
 						}).map(function (item) {
-							base.data.display.virtual.list.splice(item.index, 1);
-							delete base.data.display.subset[item.id]; // remove from filtered data
-							return Util.ep();
+							return base.list.remove(base.data.idgen(item.id)).then(function () {
+								base.data.display.virtual.list.splice(item.index, 1);
+								delete base.data.display.subset[item.id]; // remove from filtered data
+								return Util.ep();
+							});
 						})).then(function () {
 							// add new data to subset
 							return new Promise(function(resolve, reject) {
@@ -517,41 +519,34 @@ var Components = {
 								// The elements such as text and indicies would simply be swapped out when the order of the top elements is determined.
 
 								// determine differences in arrays and add objects one by one
-								// console.log(base.data.display.virtual.list.length);
-								// if (!base.id.contains('autocomplete')) {
-									return Promise.ordered(base.data.display.virtual.list.slice(0).map(function (datum, index) {
-										return function (after) {
-											after = (after || '');
-											if (previousVirtualIds.contains(datum.id)) {
-												// datum.id is in the previousVirtual list of ids, so all that needs to be done is visually updating any index display.
-												return UI.getComponent(base.data.keygen(datum.id)).then(function (existingListItem) {
-													return existingListItem.updateMetadata(lowercaseQuery, after);
-												}).then(function () {
-													return Util.ep(base.data.keygen(datum.id));
-												});
-											} else {
-												var start = Date.now();
-												// Fully render a new unit using the previous id as the "after".
-												return base.unit(datum, lowercaseQuery, index).then(function (newListItem) {
-													console.log(Date.now() - start);
-													return newListItem.setAfter(after).then(function () {
-														base.data.display.virtual.ids.push(datum.id);
-														newList.push(newListItem);
-														return Util.ep(newListItem.id);
-													});
-												});
-											}
-										}
-									})).then(function () {
-										if (newList.length) {
-											return base.list.components.wrapper.setChildren(newList);
+								return Promise.ordered(base.data.display.virtual.list.slice(0).map(function (datum, index) {
+									return function (after) {
+										after = (after || '');
+										if (previousVirtualIds.contains(datum.id)) {
+											// datum.id is in the previousVirtual list of ids, so all that needs to be done is visually updating any index display.
+											return UI.getComponent(base.data.idgen(datum.id)).then(function (existingListItem) {
+												return existingListItem.updateMetadata(lowercaseQuery, after);
+											}).then(function () {
+												return Util.ep(base.data.idgen(datum.id));
+											});
 										} else {
-											return Util.ep();
+											// Fully render a new unit using the previous id as the "after".
+											return base.unit(datum, lowercaseQuery, index).then(function (newListItem) {
+												return newListItem.setAfter(after).then(function () {
+													base.data.display.virtual.ids.push(datum.id);
+													newList.push(newListItem);
+													return Util.ep(newListItem.id);
+												});
+											});
 										}
-									});
-								// } else {
-								// 	return Util.ep();
-								// }
+									}
+								})).then(function () {
+									if (newList.length) {
+										return base.list.components.wrapper.setChildren(newList);
+									} else {
+										return Util.ep();
+									}
+								});
 							}).then(function () {
 								base.data.display.lock = false;
 								return Util.ep();
@@ -625,6 +620,42 @@ var Components = {
 					}
 				}
 				return search.setMetadata(metadata);
+			}
+			base.baseUnitStyle = function () {
+				return new Promise(function(resolve, reject) {
+					// base class
+					jss.set('#{id} .base'.format({id: base.id}), {
+						'height': '30px',
+						'width': '100%',
+						'padding': '0px',
+						'padding-left': '10px',
+						'text-align': 'left',
+					});
+					jss.set('#{id} .base.active'.format({id: base.id}), {
+						'background-color': 'rgba(255,255,255,0.1)'
+					});
+					resolve();
+				});
+			}
+			base.defaultUnitStyle = function (type) {
+				return function () {
+					return new Promise(function(resolve, reject) {
+						jss.set('#{id} .{type}'.format({id: base.id, type: type}), {
+							'background-color': 'rgba(255,255,255,0.00)'
+						});
+						jss.set('#{id} .base.{type}.active'.format({id: base.id, type: type}), {
+							'background-color': 'rgba(255,255,255,0.1)'
+						});
+						resolve();
+					});
+				}
+			}
+			base.setStyle = function () {
+				return base.baseUnitStyle().then(function () {
+					return Promise.all(base.targets.map(function (target) {
+						return (target.setStyle || base.defaultUnitStyle(target.name))();
+					}));
+				});
 			}
 			base.setActive = function (options) {
 				// console.log('{} searchlist setActive'.format(base.id));
