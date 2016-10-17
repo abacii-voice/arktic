@@ -479,8 +479,9 @@ var Components = {
 							item.index = index;
 							return !(((filter && item.rule === filter) || $.isEmptyObject(filter)) && item.main.toLowerCase().indexOf(lowercaseQuery) === 0 && item.id in base.data.dataset); // reject
 						}).map(function (item) {
+							base.data.display.virtual.list.splice(item.index, 1);
+							base.data.display.virtual.ids.splice(item.index, 1);
 							return base.list.remove(base.data.idgen(item.id)).then(function () {
-								base.data.display.virtual.list.splice(item.index, 1);
 								delete base.data.display.subset[item.id]; // remove from filtered data
 								return Util.ep();
 							});
