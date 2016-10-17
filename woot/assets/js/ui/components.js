@@ -488,7 +488,7 @@ var Components = {
 							return new Promise(function(resolve, reject) {
 								Object.keys(base.data.dataset).forEach(function (key) {
 									var datum = base.data.dataset[key];
-									if (((filter && datum.rule === filter) || $.isEmptyObject(filter)) && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (datum.id in base.data.dataset && !$.isEmptyObject(base.data.dataset))) {
+									if (((filter && datum.rule === filter) || $.isEmptyObject(filter)) && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (datum.id in base.data.dataset || $.isEmptyObject(base.data.dataset))) {
 										base.data.display.subset[key] = datum;
 									}
 								});
