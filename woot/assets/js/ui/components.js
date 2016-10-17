@@ -382,6 +382,7 @@ var Components = {
 				filters: [],
 
 				// variables
+				limit: undefined, // if limit is undefined, there is no limit
 				query: {
 					previous: undefined,
 					current: '',
@@ -411,6 +412,9 @@ var Components = {
 				},
 
 				// methods
+				keygen: function (id) {
+					return '{base}-{id}-base'.format({base: base.id, id: id})
+				},
 				get: function () {
 					// this looks at the Context.get and Context.get:force, separately.
 					if (base.data.query.changed() || base.reset) {
@@ -454,7 +458,7 @@ var Components = {
 					lock: false,
 					virtual: {
 						list: [],
-						ids: {}, // translate datum id into object id
+						ids: [],
 					},
 					subset: {},
 					execute: function () {
@@ -476,11 +480,8 @@ var Components = {
 							return !(((filter && item.rule === filter) || $.isEmptyObject(filter)) && item.main.toLowerCase().indexOf(lowercaseQuery) === 0 && item.id in base.data.dataset); // reject
 						}).map(function (item) {
 							base.data.display.virtual.list.splice(item.index, 1);
-							return base.list.remove(base.data.display.virtual.ids[item.id]).then(function () {
-								delete base.data.display.virtual.ids[item.id]; // remove from id check
-								delete base.data.display.subset[item.id]; // remove from filtered data
-								return Util.ep();
-							});
+							delete base.data.display.subset[item.id]; // remove from filtered data
+							return Util.ep();
 						})).then(function () {
 							// add new data to subset
 							return new Promise(function(resolve, reject) {
@@ -495,7 +496,7 @@ var Components = {
 						}).then(function () {
 
 							// save previous virtual
-							var previousVirtualDictionary = base.data.display.virtual.ids;
+							var previousVirtualIds = base.data.display.virtual.ids;
 
 							// create virtual
 							return new Promise(function(resolve, reject) {
@@ -507,71 +508,54 @@ var Components = {
 
 								// sort virtual
 								return new Promise(function(resolve, reject) {
-									base.data.display.virtual.list.sort(function (d1, d2) {
-										// sort by usage
-										if (d1.usage && d2.usage) {
-											if (d1.usage > d2.usage) {
-												return 1;
-											} else if (d1.usage < d2.usage) {
-												return -1;
-											}
-										}
-
-										// then alphabetically
-										if (d1.main > d2.main) {
-											return 1;
-										} else if (d1.main < d2.main) {
-											return -1;
-										} else {
-											return 0;
-										}
-									});
+									base.data.display.virtual.list.sort(base.sort);
 									resolve();
 								});
 							}).then(function () {
-								base.data.display.virtual.ids = {};
 								var newList = [];
+								// So the new idea is to have constant list items with no specific id.
+								// The elements such as text and indicies would simply be swapped out when the order of the top elements is determined.
+
 								// determine differences in arrays and add objects one by one
-								
-
-
-								return Promise.ordered(base.data.display.virtual.list.slice(0).map(function (datum, index) {
-									return function (after) {
-										after = (after || '');
-										if (previousVirtualDictionary && datum.id in previousVirtualDictionary) {
-											// datum.id is in the previousVirtual list of ids, so all that needs to be done is visually updating any index display.
-											return UI.getComponent(previousVirtualDictionary[datum.id]).then(function (existingListItem) {
-												base.data.display.virtual.ids[datum.id] = existingListItem.id;
-												return existingListItem.updateMetadata(lowercaseQuery, after);
-											}).then(function () {
-												return Util.ep(previousVirtualDictionary[datum.id]);
-											});
-										} else {
-											console.log('new', base.id, index);
-											// Fully render a new unit using the previous id as the "after".
-											return base.unit(datum, lowercaseQuery, index).then(function (newListItem) {
-												return newListItem.setAfter(after).then(function () {
-													base.data.display.virtual.ids[datum.id] = newListItem.id;
-													newList.push(newListItem);
-													return Util.ep(newListItem.id);
+								// console.log(base.data.display.virtual.list.length);
+								// if (!base.id.contains('autocomplete')) {
+									return Promise.ordered(base.data.display.virtual.list.slice(0, base.limit).map(function (datum, index) {
+										return function (after) {
+											after = (after || '');
+											if (previousVirtualIds.contains(datum.id)) {
+												// datum.id is in the previousVirtual list of ids, so all that needs to be done is visually updating any index display.
+												return UI.getComponent(base.data.keygen(datum.id)).then(function (existingListItem) {
+													return existingListItem.updateMetadata(lowercaseQuery, after);
+												}).then(function () {
+													return Util.ep(base.data.keygen(datum.id));
 												});
-											});
+											} else {
+												// Fully render a new unit using the previous id as the "after".
+												return base.unit(datum, lowercaseQuery, index).then(function (newListItem) {
+													return newListItem.setAfter(after).then(function () {
+														base.data.display.virtual.ids.push(datum.id);
+														newList.push(newListItem);
+														return Util.ep(newListItem.id);
+													});
+												});
+											}
 										}
-									}
-								})).then(function () {
-									if (newList.length) {
-										return base.list.components.wrapper.setChildren(newList);
-									} else {
-										return Util.ep();
-									}
-								});
+									})).then(function () {
+										if (newList.length) {
+											return base.list.components.wrapper.setChildren(newList);
+										} else {
+											return Util.ep();
+										}
+									});
+								// } else {
+								// 	return Util.ep();
+								// }
 							}).then(function () {
 								base.data.display.lock = false;
 								return Util.ep();
 							}).catch(function (error) {
 								console.log(error);
 							});
-
 						});
 					},
 				},

@@ -373,6 +373,25 @@ var AccountInterfaces = {
 					},
 				},
 			]
+			autocomplete.sort = function (d1, d2) {
+				// sort by usage
+				if (d1.usage && d2.usage) {
+					if (d1.usage > d2.usage) {
+						return 1;
+					} else if (d1.usage < d2.usage) {
+						return -1;
+					}
+				}
+
+				// then alphabetically
+				if (d1.main > d2.main) {
+					return 1;
+				} else if (d1.main < d2.main) {
+					return -1;
+				} else {
+					return 0;
+				}
+			}
 			autocomplete.unit = function (datum, query, index) {
 				query = (query || '');
 
@@ -397,7 +416,7 @@ var AccountInterfaces = {
 
 				return Promise.all([
 					// base component
-					UI.createComponent('{id}-{object}-base'.format({id: autocomplete.id, object: datum.id}), {
+					UI.createComponent(autocomplete.data.keygen(datum.id), {
 						template: UI.template('div', 'ie button'),
 						appearance: {
 							classes: [datum.rule],
@@ -405,7 +424,7 @@ var AccountInterfaces = {
 					}),
 
 					// main wrapper
-					UI.createComponent('{id}-{object}-main-wrapper'.format({id: autocomplete.id, object: datum.id}), {
+					UI.createComponent('{base}-main-wrapper'.format({base: autocomplete.data.keygen(datum.id)}), {
 						template: UI.template('div', 'ie centred-vertically'),
 						appearance: {
 							style: {
@@ -415,7 +434,7 @@ var AccountInterfaces = {
 					}),
 
 					// main
-					UI.createComponent('{id}-{object}-main-head'.format({id: autocomplete.id, object: datum.id}), {
+					UI.createComponent('{base}-main-head'.format({base: autocomplete.data.keygen(datum.id)}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -426,7 +445,7 @@ var AccountInterfaces = {
 							html: datum.main.substring(0, query.length),
 						},
 					}),
-					UI.createComponent('{id}-{object}-main-tail'.format({id: autocomplete.id, object: datum.id}), {
+					UI.createComponent('{base}-main-tail'.format({base: autocomplete.data.keygen(datum.id)}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -437,7 +456,7 @@ var AccountInterfaces = {
 					}),
 
 					// index
-					UI.createComponent('{id}-{object}-index'.format({id: autocomplete.id, object: datum.id}), {
+					UI.createComponent('{base}-index'.format({base: autocomplete.data.keygen(datum.id)}), {
 						template: UI.template('div', 'ie abs centred-vertically'),
 						appearance: {
 							style: {
@@ -745,6 +764,7 @@ var AccountInterfaces = {
 					},
 				},
 			]
+			clientList.sort = Util.sort.alpha('main');
 			clientList.unit = function (datum, query, index) {
 				query = (query || '');
 
@@ -891,6 +911,7 @@ var AccountInterfaces = {
 					},
 				},
 			]
+			roleList.sort = Util.sort.alpha('main');
 			roleList.unit = function (datum, query, index) {
 				query = (query || '');
 
