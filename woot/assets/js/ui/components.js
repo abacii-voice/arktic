@@ -477,20 +477,18 @@ var Components = {
 						// remove non-matches from subset and the corresponding ones from virtual
 						return Promise.all(base.data.display.virtual.list.filter(function (item, index) {
 							item.index = index;
-							return !(((filter && item.rule === filter) || $.isEmptyObject(filter)) && item.main.toLowerCase().indexOf(lowercaseQuery) === 0 && item.id in base.data.dataset); // reject
+							return !(((filter && item.rule === filter) || $.isEmptyObject(filter)) && item.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (item.id in base.data.dataset || $.isEmptyObject(base.data.dataset))); // reject
 						}).map(function (item) {
 							base.data.display.virtual.list.splice(item.index, 1);
 							base.data.display.virtual.ids.splice(item.index, 1);
-							return base.list.remove(base.data.idgen(item.id)).then(function () {
-								delete base.data.display.subset[item.id]; // remove from filtered data
-								return Util.ep();
-							});
+							delete base.data.display.subset[item.id]; // remove from filtered data
+							return base.list.remove(base.data.idgen(item.id));
 						})).then(function () {
 							// add new data to subset
 							return new Promise(function(resolve, reject) {
 								Object.keys(base.data.dataset).forEach(function (key) {
 									var datum = base.data.dataset[key];
-									if (((filter && datum.rule === filter) || $.isEmptyObject(filter)) && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0 && datum.id in base.data.dataset) {
+									if (((filter && datum.rule === filter) || $.isEmptyObject(filter)) && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (datum.id in base.data.dataset && !$.isEmptyObject(base.data.dataset))) {
 										base.data.display.subset[key] = datum;
 									}
 								});
@@ -520,7 +518,7 @@ var Components = {
 								// The elements such as text and indicies would simply be swapped out when the order of the top elements is determined.
 
 								// determine differences in arrays and add objects one by one
-								return Promise.ordered(base.data.display.virtual.list.slice(0).map(function (datum, index) {
+								return Promise.ordered(base.data.display.virtual.list.map(function (datum, index) {
 									return function (after) {
 										after = (after || '');
 										if (previousVirtualIds.contains(datum.id)) {
