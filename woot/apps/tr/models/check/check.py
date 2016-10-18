@@ -2,15 +2,13 @@
 from django.db import models
 
 # local
-from apps.tr.models.client.client import Client
-from apps.tr.models.transcription.caption import Caption
 from apps.tr.idgen import idgen
 
 ### Correction classes
 class QualityCheck(models.Model):
 
 	### Connections
-	client = models.ForeignKey(Client, related_name='checks')
+	client = models.ForeignKey('tr.Client', related_name='checks')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
@@ -30,8 +28,8 @@ class QualityCheck(models.Model):
 class QualityCheckInstance(models.Model):
 
 	### Connections
-	parent = models.ForeignKey(QualityCheck, related_name='instances')
-	caption = models.ForeignKey(Caption, related_name='checks')
+	parent = models.ForeignKey('tr.QualityCheck', related_name='instances')
+	caption = models.ForeignKey('tr.CaptionInstance', related_name='checks')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)

@@ -97,8 +97,11 @@ var AccountInterfaces = {
 			}),
 			Components.searchableList('tb-ap-autocomplete', {
 				appearance: {
-
-				}
+					style: {
+						'height': '100%',
+						'width': '100%',
+					},
+				},
 			}),
 
 		]).then(function (components) {
@@ -232,7 +235,7 @@ var AccountInterfaces = {
 
 			// CAPTION
 			caption.unit = function (text, type) {
-				var key = makeid();
+				var key = Util.makeid();
 
 				// classes
 				jss.set('#{id}-{key}-base'.format({id: caption.id, key: key}), {
@@ -274,16 +277,10 @@ var AccountInterfaces = {
 					unitAutocomplete.autocomplete = true;
 					unitAutocomplete.searchExternal = {
 						onFocus: function () {
-							return caption.components.wrapper.setActive({index: unitBase.index, force: true}).then(function () {
-								return unitBase.activate();
-							});
+							// CHANGE
 						},
 						onBlur: function () {
-							return (unitBase.isActive ? function () {
-								return unitAutocomplete.display();
-							} : emptyPromise)().then(function () {
-								unitBase.deactivate();
-							});
+							// CHANGE
 						},
 					}
 
@@ -292,31 +289,10 @@ var AccountInterfaces = {
 						return unitAutocomplete.search.focus(mode);
 					}
 					unitBase.activate = function () {
-						unitBase.isActive = true;
-						return unitBase.setAppearance({classes: {add: 'active'}});
+						// CHANGE
 					}
 					unitBase.deactivate = function () {
-						unitBase.isActive = false;
-						var trimmedContent = $.trim(unitBase.getContent());
-						return Promise.all([
-							unitBase.setContent({content: trimmedContent}), // see caption.behaviours.space
-							unitAutocomplete.search.components.tail.setAppearance({html: trimmedContent}),
-							unitBase.setAppearance({classes: {remove: 'active'}}),
-						]).then(function () {
-							var content = unitBase.getContent();
-
-							// This works
-							if (!content) {
-								return caption.components.wrapper.removeChild(unitBase.id);
-							} else {
-								return emptyPromise();
-							}
-
-							// This does not
-							// return (content ? emptyPromise : caption.components.wrapper.removeChild)(unitBase.id);
-
-							// ?????
-						});
+						// CHANGE
 					}
 					unitBase.getContent = function () {
 						return unitAutocomplete.getContent();
@@ -360,28 +336,40 @@ var AccountInterfaces = {
 			autocomplete.components.search.onComplete = function () {
 
 			}
-			autocomplete.setSearch('on');
-			autocomplete.autocomplete = true;
 			autocomplete.targets = [
 				{
-					name: 'clients',
+					name: 'tokens',
 					path: function () {
-						return new Promise(function(resolve, reject) {
-							resolve('clients');
+						return Promise.all([
+							Active.get('client'),
+							Active.get('project'),
+						]).then(function (results) {
+							return 'clients.{client_id}.projects.{project_id}.dictionaries.5fcb33bc-39d2-4b96-b8eb-81deeec5a204.tokens'.format({client_id: results[0], project_id: results[1]});
 						});
 					},
 					process: function (data) {
 						return new Promise(function(resolve, reject) {
 							var results = Object.keys(data).map(function (key) {
-								var client = data[key];
+								var token = data[key];
 								return {
 									id: key,
-									main: client.name,
-									rule: 'client',
+									main: token.content,
+									rule: 'tokens',
 								}
 							});
 
 							resolve(results);
+						});
+					},
+					setStyle: function () {
+						return new Promise(function(resolve, reject) {
+							jss.set('#{id} .tokens'.format({id: autocomplete.id}), {
+								'background-color': 'rgba(255,255,255,0.05)'
+							});
+							jss.set('#{id} .tokens.active'.format({id: autocomplete.id}), {
+								'background-color': 'rgba(255,255,255,0.1)'
+							});
+							resolve();
 						});
 					},
 					filter: {
@@ -394,39 +382,56 @@ var AccountInterfaces = {
 					},
 				},
 			]
-			autocomplete.unit = function (_this, datum, query, index) {
+			autocomplete.baseUnitStyle = function () {
+				return new Promise(function(resolve, reject) {
+					// base class
+					jss.set('#{id} .base'.format({id: base.id}), {
+						'height': '30px',
+						'width': '100%',
+						'padding': '0px',
+						'padding-left': '10px',
+						'text-align': 'left',
+						'border-bottom': '1px solid #ccc',
+					});
+					jss.set('#{id} .base.active'.format({id: base.id}), {
+						'background-color': 'rgba(255,255,255,0.1)'
+					});
+					resolve();
+				});
+			}
+			autocomplete.sort = function (d1, d2) {
+				// sort by usage
+				if (d1.usage && d2.usage) {
+					if (d1.usage > d2.usage) {
+						return 1;
+					} else if (d1.usage < d2.usage) {
+						return -1;
+					}
+				}
+
+				// then alphabetically
+				if (d1.main > d2.main) {
+					return 1;
+				} else if (d1.main < d2.main) {
+					return -1;
+				} else {
+					return 0;
+				}
+			}
+			autocomplete.unit = function (datum, query, index) {
 				query = (query || '');
-
-				// base class
-				jss.set('#{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
-					'height': '30px',
-					'width': '100%',
-					'border-bottom': '1px solid #ccc',
-					'padding': '0px',
-					'padding-left': '10px',
-					'text-align': 'left',
-				});
-				jss.set('#{id}-{object}-base.active'.format({id: _this.id, object: datum.id}), {
-					'background-color': 'rgba(255,255,255,0.1)'
-				});
-				jss.set('#{id}-{object}-base.client'.format({id: _this.id, object: datum.id}), {
-					'background-color': 'rgba(255,255,0,0.05)'
-				});
-				jss.set('#{id}-{object}-base.client.active'.format({id: _this.id, object: datum.id}), {
-					'background-color': 'rgba(255,255,0,0.1)'
-				});
-
+				var base = autocomplete.data.idgen(index);
 				return Promise.all([
 					// base component
-					UI.createComponent('{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
-						template: UI.template('div', 'ie button'),
+					UI.createComponent(base, {
+						template: UI.template('div', 'ie button base'),
 						appearance: {
 							classes: [datum.rule],
 						}
 					}),
 
 					// main wrapper
-					UI.createComponent('{id}-{object}-main-wrapper'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{base}-main-wrapper'.format({base: base}), {
 						template: UI.template('div', 'ie centred-vertically'),
 						appearance: {
 							style: {
@@ -436,7 +441,7 @@ var AccountInterfaces = {
 					}),
 
 					// main
-					UI.createComponent('{id}-{object}-main-head'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{base}-main-head'.format({base: base}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -447,7 +452,7 @@ var AccountInterfaces = {
 							html: datum.main.substring(0, query.length),
 						},
 					}),
-					UI.createComponent('{id}-{object}-main-tail'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{base}-main-tail'.format({base: base}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -458,7 +463,7 @@ var AccountInterfaces = {
 					}),
 
 					// index
-					UI.createComponent('{id}-{object}-index'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{base}-index'.format({base: base}), {
 						template: UI.template('div', 'ie abs centred-vertically'),
 						appearance: {
 							style: {
@@ -477,20 +482,40 @@ var AccountInterfaces = {
 						unitIndex,
 					] = unitComponents;
 
-					// set metadata
-					datum.metadata = {
-						query: query,
-						complete: datum.main,
-						combined: query + datum.main.substring(query.length),
-						type: datum.rule,
-					}
-
 					unitBase.activate = function () {
 						return unitBase.setAppearance({classes: {add: ['active']}});
 					}
-
 					unitBase.deactivate = function () {
 						return unitBase.setAppearance({classes: {remove: ['active']}});
+					}
+					unitBase.hide = function () {
+						unitBase.isHidden = true;
+						return unitBase.setAppearance({classes: {add: 'hidden'}});
+					}
+					unitBase.show = function () {
+						unitBase.isHidden = false;
+						return unitBase.setAppearance({classes: {remove: 'hidden'}});
+					}
+					unitBase.updateMetadata = function (ndatum, query) {
+						// if there are changes, do stuff.
+						return ((!unitBase.datum || ndatum.id !== unitBase.datum.id) ? unitBase.updateDatum : Util.ep)(ndatum).then(function () {
+							return (query !== unitBase.query ? unitBase.updateQuery : Util.ep)(query);
+						}).then(function () {
+							return (unitBase.isHidden ? unitBase.show : Util.ep)();
+						});
+					}
+					unitBase.updateDatum = function (ndatum) {
+						return unitBase.setAppearance({classes: {add: ndatum.rule, remove: (unitBase.datum || datum).rule}}).then(function () {
+							unitBase.datum = ndatum;
+							return Util.ep();
+						});
+					}
+					unitBase.updateQuery = function (query) {
+						unitBase.query = query;
+						return Promise.all([
+							unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+							unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
+						]);
 					}
 
 					// complete promises.
@@ -539,6 +564,27 @@ var AccountInterfaces = {
 				autocompletePanel.setChildren([
 					autocomplete,
 				]),
+
+				// autocomplete
+				autocomplete.setSearch({mode: 'on', limit: 10, autocomplete: true}),
+				autocomplete.setStyle(),
+				autocomplete.setState({
+					states: {
+						'transcription-state': {
+							preFn: function (_this) {
+								return _this.start();
+							},
+							fn: function () {
+								return autocomplete.search.clear();
+							},
+						},
+						'control-state': {
+							preFn: function (_this) {
+								return _this.stop();
+							}
+						}
+					},
+				}),
 
 			]).then(function () {
 				base.components = {
@@ -727,7 +773,7 @@ var AccountInterfaces = {
 								return {
 									id: key,
 									main: client.name,
-									rule: 'client',
+									rule: 'clients',
 								}
 							});
 
@@ -736,25 +782,14 @@ var AccountInterfaces = {
 					},
 				},
 			]
-			clientList.unit = function (_this, datum, query, index) {
+			clientList.sort = Util.sort.alpha('main');
+			clientList.unit = function (datum, query, index) {
 				query = (query || '');
-
-				// base class
-				jss.set('#{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
-					'height': '30px',
-					'width': '100%',
-					'padding': '0px',
-					'padding-left': '10px',
-					'text-align': 'left',
-				});
-				jss.set('#{id}-{object}-base.active'.format({id: _this.id, object: datum.id}), {
-					'background-color': 'rgba(255,255,255,0.1)'
-				});
-
+				var base = clientList.data.idgen(index);
 				return Promise.all([
 					// base component
-					UI.createComponent('{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
-						template: UI.template('div', 'ie button'),
+					UI.createComponent(base, {
+						template: UI.template('div', 'ie button base'),
 						appearance: {
 							classes: [datum.rule],
 						},
@@ -764,7 +799,7 @@ var AccountInterfaces = {
 					}),
 
 					// main wrapper
-					UI.createComponent('{id}-{object}-main-wrapper'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{base}-main-wrapper'.format({base: base}), {
 						template: UI.template('div', 'ie centred-vertically'),
 						appearance: {
 							style: {
@@ -774,7 +809,7 @@ var AccountInterfaces = {
 					}),
 
 					// main
-					UI.createComponent('{id}-{object}-main-head'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{base}-main-head'.format({base: base}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -785,7 +820,7 @@ var AccountInterfaces = {
 							html: datum.main.substring(0, query.length),
 						},
 					}),
-					UI.createComponent('{id}-{object}-main-tail'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{base}-main-tail'.format({base: base}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -803,20 +838,40 @@ var AccountInterfaces = {
 						unitMainTail,
 					] = unitComponents;
 
-					// set metadata
-					datum.metadata = {
-						query: query,
-						complete: datum.main,
-						combined: query + datum.main.substring(query.length),
-						type: datum.rule,
-					}
-
 					unitBase.activate = function () {
 						return unitBase.setAppearance({classes: {add: ['active']}});
 					}
-
 					unitBase.deactivate = function () {
 						return unitBase.setAppearance({classes: {remove: ['active']}});
+					}
+					unitBase.hide = function () {
+						unitBase.isHidden = true;
+						return unitBase.setAppearance({classes: {add: 'hidden'}});
+					}
+					unitBase.show = function () {
+						unitBase.isHidden = false;
+						return unitBase.setAppearance({classes: {remove: 'hidden'}});
+					}
+					unitBase.updateMetadata = function (ndatum, query) {
+						// if there are changes, do stuff.
+						return ((!unitBase.datum || ndatum.id !== unitBase.datum.id) ? unitBase.updateDatum : Util.ep)(ndatum).then(function () {
+							return (query !== unitBase.query ? unitBase.updateQuery : Util.ep)(query);
+						}).then(function () {
+							return (unitBase.isHidden ? unitBase.show : Util.ep)();
+						});
+					}
+					unitBase.updateDatum = function (ndatum) {
+						return unitBase.setAppearance({classes: {add: ndatum.rule, remove: (unitBase.datum || datum).rule}}).then(function () {
+							unitBase.datum = ndatum;
+							return Util.ep();
+						});
+					}
+					unitBase.updateQuery = function (query) {
+						unitBase.query = query;
+						return Promise.all([
+							unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+							unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
+						]);
 					}
 
 					// complete promises.
@@ -861,7 +916,7 @@ var AccountInterfaces = {
 								return {
 									id: key,
 									main: role.type,
-									rule: 'role',
+									rule: 'roles',
 								}
 							});
 
@@ -870,25 +925,14 @@ var AccountInterfaces = {
 					},
 				},
 			]
-			roleList.unit = function (_this, datum, query, index) {
+			roleList.sort = Util.sort.alpha('main');
+			roleList.unit = function (datum, query, index) {
 				query = (query || '');
-
-				// base class
-				jss.set('#{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
-					'height': '30px',
-					'width': '100%',
-					'padding': '0px',
-					'padding-left': '10px',
-					'text-align': 'left',
-				});
-				jss.set('#{id}-{object}-base.active'.format({id: _this.id, object: datum.id}), {
-					'background-color': 'rgba(255,255,255,0.1)'
-				});
-
+				var base = roleList.data.idgen(index);
 				return Promise.all([
 					// base component
-					UI.createComponent('{id}-{object}-base'.format({id: _this.id, object: datum.id}), {
-						template: UI.template('div', 'ie button'),
+					UI.createComponent(base, {
+						template: UI.template('div', 'ie button base'),
 						appearance: {
 							classes: [datum.rule],
 						},
@@ -898,7 +942,7 @@ var AccountInterfaces = {
 					}),
 
 					// main wrapper
-					UI.createComponent('{id}-{object}-main-wrapper'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{base}-main-wrapper'.format({base: base}), {
 						template: UI.template('div', 'ie centred-vertically'),
 						appearance: {
 							style: {
@@ -908,7 +952,7 @@ var AccountInterfaces = {
 					}),
 
 					// main
-					UI.createComponent('{id}-{object}-main-head'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{base}-main-head'.format({base: base}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -919,7 +963,7 @@ var AccountInterfaces = {
 							html: datum.main.substring(0, query.length),
 						},
 					}),
-					UI.createComponent('{id}-{object}-main-tail'.format({id: _this.id, object: datum.id}), {
+					UI.createComponent('{base}-main-tail'.format({base: base}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -937,30 +981,55 @@ var AccountInterfaces = {
 						unitMainTail,
 					] = unitComponents;
 
-					// set metadata
-					datum.metadata = {
-						query: query,
-						complete: datum.main,
-						combined: query + datum.main.substring(query.length),
-						type: datum.rule,
-					}
-
 					unitBase.activate = function () {
 						return unitBase.setAppearance({classes: {add: ['active']}});
 					}
-
 					unitBase.deactivate = function () {
 						return unitBase.setAppearance({classes: {remove: ['active']}});
+					}
+					unitBase.hide = function () {
+						unitBase.isHidden = true;
+						return unitBase.setAppearance({classes: {add: 'hidden'}});
+					}
+					unitBase.show = function () {
+						unitBase.isHidden = false;
+						return unitBase.setAppearance({classes: {remove: 'hidden'}});
+					}
+					unitBase.updateMetadata = function (ndatum, query) {
+						// if there are changes, do stuff.
+						return ((!unitBase.datum || ndatum.id !== unitBase.datum.id) ? unitBase.updateDatum : Util.ep)(ndatum).then(function () {
+							return (query !== unitBase.query ? unitBase.updateQuery : Util.ep)(query);
+						}).then(function () {
+							return (unitBase.isHidden ? unitBase.show : Util.ep)();
+						});
+					}
+					unitBase.updateDatum = function (ndatum) {
+						return unitBase.setAppearance({classes: {add: ndatum.rule, remove: (unitBase.datum || datum).rule}}).then(function () {
+							unitBase.datum = ndatum;
+							return Util.ep();
+						});
+					}
+					unitBase.updateQuery = function (query) {
+						unitBase.query = query;
+						return Promise.all([
+							unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+							unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
+						]);
 					}
 
 					// complete promises.
 					return Promise.all([
 						unitBase.setBindings({
 							'click': function (_this) {
-								return Promise.all([
-									Active.set('role', datum.id),
-									Permission.set(datum.id),
-								]).then(function () {
+								return Active.get('client').then(function (client_id) {
+									return Context.get('user.clients.{client_id}.roles.{role_id}.project'.format({client_id: client_id, role_id: datum.id}));
+								}).then(function (project_id) {
+									return Promise.all([
+										Active.set('project', project_id),
+										Active.set('role', datum.id),
+										Permission.set(datum.id),
+									]);
+								}).then(function () {
 									return _this.triggerState();
 								});
 							},
@@ -986,6 +1055,7 @@ var AccountInterfaces = {
 			return Promise.all([
 
 				// CLIENT SIDEBAR
+				clientList.setStyle(),
 				clientList.search.setAppearance({
 					style: {
 						'left': '0px',
@@ -1005,18 +1075,24 @@ var AccountInterfaces = {
 					states: {
 						'client-state': {
 							preFn: function (_this) {
-								return clientList.display({forceLoad: true});
+								return _this.start();
 							},
 							fn: function () {
 								return clientList.search.clear();
 							},
 						},
+						'role-state': {
+							preFn: function (_this) {
+								return _this.stop();
+							}
+						}
 					},
 				}),
 				clientList.setTitle({text: 'Clients', centre: true}),
-				clientList.setSearch({mode: 'off', placeholder: 'Search clients...'}),
+				clientList.setSearch({mode: 'on', placeholder: 'Search clients...'}),
 
 				// ROLE SIDEBAR
+				roleList.setStyle(),
 				roleList.search.setAppearance({
 					style: {
 						'left': '0px',
@@ -1034,13 +1110,23 @@ var AccountInterfaces = {
 				]),
 				roleList.setState({
 					states: {
+						'client-state': {
+							preFn: function (_this) {
+								return _this.stop();
+							}
+						},
 						'role-state': {
 							preFn: function (_this) {
-								return roleList.display({forceLoad: true});
+								return _this.start();
 							},
 							fn: function () {
 								return roleList.search.clear();
 							},
+						},
+						'control-state': {
+							preFn: function (_this) {
+								return _this.stop();
+							}
 						},
 					}
 				}),
@@ -1309,7 +1395,7 @@ var AccountInterfaces = {
 
 				// CAPTION
 				caption.unit = function (text, type) {
-					var key = makeid();
+					var key = Util.makeid();
 
 					// classes
 					jss.set('#{id}-{key}-base'.format({id: caption.id, key: key}), {

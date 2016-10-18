@@ -2,8 +2,6 @@
 from django.db import models
 
 # local
-from apps.tr.models.client.project import Project, Batch
-from apps.tr.models.role.role import Role
 from apps.tr.idgen import idgen
 
 ### Transcription classes
@@ -17,8 +15,8 @@ class TranscriptionToken(models.Model):
 
 
 	### Connections
-	project = models.ForeignKey(Project, related_name='transcription_tokens')
-	role = models.ForeignKey(Role, related_name='transcription_tokens')
+	project = models.ForeignKey('tr.Project', related_name='transcription_tokens')
+	role = models.ForeignKey('tr.Role', related_name='transcription_tokens')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
@@ -59,14 +57,15 @@ class Transcription(models.Model):
 	'''
 
 	### Connections
-	project = models.ForeignKey(Project, related_name='transcriptions')
-	batch = models.ForeignKey(Batch, related_name='transcriptions')
-	token = models.ForeignKey(TranscriptionToken, related_name='transcriptions', null=True)
+	project = models.ForeignKey('tr.Project', related_name='transcriptions')
+	grammar = models.ForeignKey('tr.Grammar', related_name='transcriptions')
+	batch = models.ForeignKey('tr.Batch', related_name='transcriptions')
+	caption = models.ForeignKey('tr.Caption', related_name='transcriptions', null=True)
+	token = models.ForeignKey('tr.TranscriptionToken', related_name='transcriptions', null=True)
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
-	original_caption = models.CharField(max_length=255, default='')
 
 	# unique identifier
 	filename = models.CharField(max_length=255)
@@ -85,8 +84,8 @@ class Transcription(models.Model):
 		if path.is_blank:
 			data.update({
 				'batch': self.batch.id,
+				'caption': self.caption.content if self.caption else '',
 				'date_created': str(self.date_created),
-				'original_caption': self.original_caption,
 				'requests': str(self.requests),
 				'request_allowance': str(self.request_allowance),
 				'date_last_requested': str(self.date_last_requested),
