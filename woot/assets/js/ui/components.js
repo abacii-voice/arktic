@@ -379,6 +379,7 @@ var Components = {
 
 				// data sets
 				dataset: {},
+				queries: [],
 				filters: [],
 
 				// variables
@@ -420,6 +421,7 @@ var Components = {
 					if (base.data.query.changed() || base.reset) {
 						if (base.reset) {
 							base.data.dataset = {};
+							base.data.queries = [];
 							base.reset = false;
 						}
 						return Promise.all(base.targets.map(function (target) {
@@ -427,18 +429,22 @@ var Components = {
 								Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}}).then(target.process).then(base.data.append),
 
 								// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
-								new Promise(function(resolve, reject) {
-									var queryAtStart = base.data.query.current;
-									setTimeout(function () {
-										resolve(queryAtStart === base.data.query.current);
-									}, 1000);
-								}).then(function (timeout) {
-									if (timeout) {
-										return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}, force: true}).then(target.process).then(base.data.append);
-									} else {
-										return Util.ep();
-									}
-								}),
+								// Also, only query if this query has never been queried before
+								(!base.data.queries.contains(base.data.query.current) ? function () {
+									base.data.queries.push(base.data.query.current);
+									return new Promise(function(resolve, reject) {
+										var queryAtStart = base.data.query.current;
+										setTimeout(function () {
+											resolve(queryAtStart === base.data.query.current);
+										}, 1000);
+									}).then(function (timeout) {
+										if (timeout) {
+											return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}, force: true}).then(target.process).then(base.data.append);
+										} else {
+											return Util.ep();
+										}
+									});
+								} : Util.ep)(),
 							]);
 						}));
 					} else {
@@ -477,7 +483,7 @@ var Components = {
 						// remove non-matches from subset and the corresponding ones from virtual
 						return Promise.all(base.data.display.virtual.list.filter(function (item, index) {
 							item.index = index;
-							return !(((filter && item.rule === filter) || $.isEmptyObject(filter)) && item.main.toLowerCase().indexOf(lowercaseQuery) === 0 && item.id in base.data.dataset); // reject
+							return !(((filter && item.rule === filter) || $.isEmptyObject(filter)) && item.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (!base.autocomplete || (base.autocomplete && lowercaseQuery !== '')) && item.id in base.data.dataset); // reject
 						}).map(function (item) {
 							base.data.display.virtual.list.splice(item.index, 1);
 							delete base.data.display.subset[item.id]; // remove from filtered data
@@ -487,7 +493,7 @@ var Components = {
 							return new Promise(function(resolve, reject) {
 								Object.keys(base.data.dataset).forEach(function (key) {
 									var datum = base.data.dataset[key];
-									if (((filter && datum.rule === filter) || $.isEmptyObject(filter)) && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0 && datum.id in base.data.dataset) {
+									if (((filter && datum.rule === filter) || $.isEmptyObject(filter)) && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (!base.autocomplete || (base.autocomplete && lowercaseQuery !== '')) && datum.id in base.data.dataset) {
 										base.data.display.subset[key] = datum;
 									}
 								});
@@ -511,13 +517,14 @@ var Components = {
 							}).then(function () {
 								// for each item in the list, generate a new list item and add to it using the setMetadata function.
 								// Never remove a list item, simply make it display:none if the end of the list is reached.
-								return Promise.ordered(base.data.display.virtual.list.map(function (datum, index) {
+								return Promise.ordered(base.data.display.virtual.list.slice(0, base.limit).map(function (datum, index) {
 									return function () {
 										if (index < base.data.display.virtual.rendered.length) {
 											// element already exists. Update using info in datum.
-											return UI.getComponent(base.data.display.virtual.rendered[index]).then(function (existingListItem) {
+											// NO RETURN: releases promise immediately. No need to wait for order if one exists.
+											UI.getComponent(base.data.display.virtual.rendered[index]).then(function (existingListItem) {
 												return existingListItem.updateMetadata(datum, lowercaseQuery);
-											})
+											});
 										} else {
 											// element does not exist. Create using info in datum.
 											return base.unit(datum, lowercaseQuery, index).then(function (newListItem) {
@@ -716,6 +723,7 @@ var Components = {
 				options.mode = (options.mode || 'on');
 				options.placeholder = (options.placeholder || 'search...');
 				base.limit = options.limit;
+				base.autocomplete = (options.autocomplete || false);
 
 				search.placeholder = options.placeholder;
 				return search.setAppearance({classes: {add: (options.mode === 'off' ? ['hidden'] : [])}}).then(function () {
