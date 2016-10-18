@@ -23,8 +23,10 @@ class Command(BaseCommand):
 		client = Client.objects.get(name__contains='Production')
 		project = client.production_projects.get()
 
-		path = 'clients.{client}.projects.{project}.transcriptions'.format(client=client.id, project=project.id)
-		fltr = {'token': role.active_transcription_token()}
+		# path = 'clients.{client}.projects.{project}.transcriptions'.format(client=client.id, project=project.id)
+		# fltr = {'token': role.active_transcription_token()}
+		path = 'clients'
+		fltr = {}
 
 		# request data using path
 		permission = Permission(user, role=role)

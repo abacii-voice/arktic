@@ -2,8 +2,6 @@
 from django.db import models
 
 # local
-from apps.tr.models.client.project import Project, Batch
-from apps.tr.models.transcription.transcription import Transcription
 from apps.tr.idgen import idgen
 
 # util
@@ -24,7 +22,7 @@ class Utterance(models.Model):
 	'''
 
 	### Connections
-	transcription = models.OneToOneField(Transcription, related_name='utterance')
+	transcription = models.OneToOneField('tr.Transcription', related_name='utterance')
 
 	### Properties
 	# https://docs.djangoproject.com/en/1.9/ref/models/fields/#uuidfield

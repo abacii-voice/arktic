@@ -9,6 +9,7 @@ from apps.tr.models.transcription.utterance import Utterance
 
 # util
 import os
+from os.path import join, exists, isdir
 
 ### Command: create default user
 class Command(BaseCommand):
@@ -61,43 +62,45 @@ class Command(BaseCommand):
 
 		# basic upload
 		project = production_client.production_projects.create(name='TestProject', contract_client=contract_client)
+		grammar = contract_client.grammars.create(name='TestGrammar')
 		batch = project.batches.create(name='TestBatch')
-		upload = batch.uploads.create(archive_name='test_archive.zip', relfile_name='test_relfile.csv')
-
-		dictionary = project.dictionaries.create(name='test_dictionary')
-		user_dictionary = dictionary.children.create(role=worker_role)
-		user_dictionary2 = dictionary.children.create(role=worker_role2)
+		upload = batch.uploads.create(archive_name='test_archive.zip')
 
 		worker_role.project = project
 		worker_role.save()
 		worker_role2.project = project
 		worker_role2.save()
 
+		# dictionary data
+		dictionary = project.dictionaries.create(grammar=grammar)
+		user_dictionary = worker_role.dictionaries.create(parent=dictionary)
+		user_dictionary2 = worker_role2.dictionaries.create(parent=dictionary)
+
 		# fragment list
-		base = '/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/'
-		fragment_list = [f for f in os.listdir(base) if ('.DS' not in f and not os.path.isdir(os.path.join(base, f)))]
-		# fragment_list = [
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806082036x10317.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806082036x10317.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806082307x16971.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806083431x10391.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806083548x19789.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806084344x10443.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806084733x15751.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806090452x10583.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806091037x13114.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806091845x15981.wav',
-		# 	'/Users/nicholaspiano/code/abacii-voice/arktic/test/selectedAudioFiles/20150806091957x16343.wav',
-		# ]
+		base = '/Users/nicholaspiano/code/abacii-voice/arktic/test/'
+		fragment_list = [f for f in os.listdir(join(base, 'selectedAudioFiles')) if ('.DS' not in f and not isdir(join(base, 'selectedAudioFiles', f)))]
+		relfile_data = {}
+		with open(join(base, 'relfile.csv'), 'r') as open_relfile:
+			relfile_data = {line.split(',')[0]:line.split(',')[1].rstrip() for line in list(open_relfile.readlines())[1:]}
 
 		for file_name in fragment_list:
 			# 1. create fragment
 			fragment = upload.fragments.create(filename=os.path.join(base, file_name))
 
+			# 2. create caption
+			caption = None
+			caption_content = relfile_data[file_name]
+			if caption_content:
+				caption, caption_created = dictionary.captions.get_or_create(content=caption_content, from_recogniser=True)
+
+				# 3. create tokens
+				for token_primitive in caption_content.split(' '):
+					token, token_created = dictionary.tokens.get_or_create(content=token_primitive)
+
 			# 2. create transcription
-			transcription = batch.transcriptions.create(project=project, filename=fragment.filename)
+			transcription = batch.transcriptions.create(project=project, grammar=grammar, filename=fragment.filename, caption=caption)
 
 			# 3. create utterance
-			with open(os.path.join(base, file_name), 'rb') as destination:
+			with open(os.path.join(base, 'selectedAudioFiles', file_name), 'rb') as destination:
 				# create new utterance using open file
 				utterance = Utterance.objects.create(transcription=transcription, file=File(destination))

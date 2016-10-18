@@ -64,25 +64,34 @@ var UI = {
 				// 1. Parent stays the same.
 				// 2. Or does it...
 				// 3. No other element has to change.
-				if (after !== '') {
-					return UI.getComponent(_this.after).then(function (before) {
-						return _this.setRoot(before.root).then(function (child) {
+
+				if (_this.isRendered) {
+					return (after !== '' ? function () {
+						return UI.getComponent(_this.after).then(function (before) {
+							return _this.setRoot(before.root).then(function (child) {
+								return new Promise(function(resolve, reject) {
+									_this.model().insertAfter(before.model());
+									resolve();
+								});
+							});
+						});
+					} : function () {
+						return _this.parent().then(function (parent) {
 							return new Promise(function(resolve, reject) {
-								_this.model().insertAfter(before.model());
+								_this.model().insertBefore(parent.model().children().first());
 								resolve();
 							});
 						});
+					})().then(function () {
+						return _this.parent().then(function (parent) {
+							return parent.setChildIndexes();
+						})
 					});
 				} else {
-					return _this.parent().then(function (parent) {
-						return new Promise(function(resolve, reject) {
-							_this.model().insertBefore(parent.model().children().first());
-							resolve();
-						});
-					});
+					return Util.ep(_this.after);
 				}
 			} else {
-				return this.after;
+				return Util.ep(this.after);
 			}
 		}
 		this.setRoot = function (root) {
@@ -113,7 +122,7 @@ var UI = {
 						return newParent.addChild(_this);
 					});
 				} else {
-					return emptyPromise();
+					return Util.ep();
 				}
 			} else {
 				_this.root = newRoot;
@@ -171,9 +180,9 @@ var UI = {
 				var html = _this.html !== undefined ? _this.html : '';
 				var renderedTemplate = _this.template.format({
 					id: _this.id,
-					classes: formatClasses(classes),
-					style: formatStyle(style),
-					properties: formatProperties(properties),
+					classes: Util.format.classes(classes),
+					style: Util.format.style(style),
+					properties: Util.format.properties(properties),
 					html: html,
 				});
 				resolve(renderedTemplate);
@@ -475,7 +484,11 @@ var UI = {
 				return new Promise(function(resolve, reject) {
 					if (root.children().length !== 0) {
 						if (_this.after !== undefined) {
-							root.children('#{id}'.format({id: _this.after})).after(renderedTemplate); // add as child after 'after'.
+							if (_this.after) {
+								root.children('#{id}'.format({id: _this.after})).after(renderedTemplate); // add as child after 'after'.
+							} else {
+								root.children().first().before(renderedTemplate); // add as child before first child.
+							}
 						} else {
 							root.children().last().after(renderedTemplate); // add as child after last child.
 						}
@@ -507,7 +520,7 @@ var UI = {
 			var _this = this;
 
 			// 1. Run preFn
-			return (state.preFn || emptyPromise)(_this).then(function () {
+			return (state.preFn || Util.ep)(_this).then(function () {
 				// 2. Run appearance
 				return _this.setAppearance({
 					classes: state.classes,
@@ -516,7 +529,7 @@ var UI = {
 				});
 			}).then(function () {
 				// 3. Run fn
-				return (state.fn || emptyPromise)(_this);
+				return (state.fn || Util.ep)(_this);
 			});
 		}
 
@@ -680,8 +693,8 @@ var Context = {
 	// This will get from the current store. If it does not exist, a request will be made for it. This will trigger registry.
 	get: function (path, args) {
 		// force load from the server?
-		var force = args !== undefined ? (args.force !== undefined ? args.force : false) : false;
-		var options = args !== undefined ? (args.options !== undefined ? args.options : {}) : {};
+		var force = (args || {}).force || false;
+		var options = ((args || {}).options || {});
 
 		return (path.then !== undefined ? path : new Promise(function(resolve, reject) {
 			resolve(path);
@@ -755,8 +768,12 @@ var Context = {
 							// if (typeof value === 'object' && typeof sub[context_path[i]] === 'object') {
 							//
 							// } else {
-							sub[context_path[i]] = value;
 							// }
+							if (sub[context_path[i]] !== undefined) {
+								$.extend(sub[context_path[i]], value);
+							} else {
+								sub[context_path[i]] = value;
+							}
 						} else {
 							if (sub[context_path[i]] === undefined) {
 								sub[context_path[i]] = {};
