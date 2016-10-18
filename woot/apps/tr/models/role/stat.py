@@ -2,8 +2,6 @@
 from django.db import models
 
 # local
-from apps.tr.models.client.client import Client
-from apps.tr.models.role.role import Role
 from apps.tr.idgen import idgen
 
 ### Stat models
@@ -15,8 +13,8 @@ class Stat(models.Model):
 class StatInstance(models.Model):
 
 	### Connections
-	parent = models.ForeignKey(Stat, related_name='instances')
-	role = models.ForeignKey(Role, related_name='stats')
+	parent = models.ForeignKey('tr.Stat', related_name='instances')
+	role = models.ForeignKey('tr.Role', related_name='stats')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)

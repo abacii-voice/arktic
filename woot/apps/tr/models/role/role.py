@@ -2,18 +2,16 @@
 from django.db import models
 
 # local
-from apps.tr.models.client.client import Client
 from apps.tr.models.client.project import Project
-from apps.users.models import User
 from apps.tr.idgen import idgen
 
 ### Role classes
 class Role(models.Model):
 	### Connections
-	client = models.ForeignKey(Client, related_name='roles')
-	project = models.ForeignKey(Project, related_name='assigned', null=True)
-	supervisor = models.ForeignKey('self', related_name='subordinates', null=True)
-	user = models.ForeignKey(User, related_name='roles')
+	client = models.ForeignKey('tr.Client', related_name='roles')
+	project = models.ForeignKey('tr.Project', related_name='assigned', null=True)
+	supervisor = models.ForeignKey('tr.Role', related_name='subordinates', null=True)
+	user = models.ForeignKey('users.User', related_name='roles')
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
@@ -129,8 +127,8 @@ class Role(models.Model):
 class Threshold(models.Model):
 
 	### Connections
-	project = models.ForeignKey(Project, related_name='thresholds')
-	role = models.ForeignKey(Role, related_name='thresholds')
+	project = models.ForeignKey('tr.Project', related_name='thresholds')
+	role = models.ForeignKey('tr.Role', related_name='thresholds')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)

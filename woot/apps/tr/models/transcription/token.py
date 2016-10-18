@@ -2,16 +2,14 @@
 from django.db import models
 
 # local
-from apps.tr.models.transcription.dictionary import Dictionary, UserDictionary
-from apps.tr.models.transcription.caption import Caption
 from apps.tr.idgen import idgen
 
 ### Token classes
 class Token(models.Model):
 
 	### Connections
-	dictionary = models.ForeignKey(Dictionary, related_name='tokens')
-	user_dictionary = models.ForeignKey(UserDictionary, related_name='tokens', null=True) # for exclusion purposes
+	dictionary = models.ForeignKey('tr.Dictionary', related_name='tokens')
+	user_dictionary = models.ForeignKey('tr.UserDictionary', related_name='tokens', null=True) # for exclusion purposes
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
@@ -31,8 +29,8 @@ class Token(models.Model):
 class TokenInstance(models.Model):
 
 	### Connections
-	parent = models.ForeignKey(Token, related_name='instances')
-	caption = models.ForeignKey(Caption, related_name='tokens')
+	parent = models.ForeignKey('tr.Token', related_name='instances')
+	caption = models.ForeignKey('tr.CaptionInstance', related_name='tokens')
 
 	### Properties
 	index = models.IntegerField(default=0)
