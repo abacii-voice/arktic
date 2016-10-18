@@ -498,9 +498,6 @@ var Components = {
 							});
 						}).then(function () {
 
-							// save previous virtual
-							var previousVirtualDictionary = base.data.display.virtual.ids;
-
 							// create virtual
 							return new Promise(function(resolve, reject) {
 								base.data.display.virtual.list = Object.keys(base.data.display.subset).map(function (key) {
@@ -517,39 +514,12 @@ var Components = {
 							}).then(function () {
 								base.data.display.virtual.ids = {};
 								// determine differences in arrays and add objects one by one
-								return Promise.ordered(base.data.display.virtual.list.map(function (datum, index) {
-									return function (after) {
-										after = (after || '');
-										if (previousVirtualDictionary && datum.id in previousVirtualDictionary) {
-											// datum.id is in the previousVirtual list of ids, so all that needs to be done is visually updating any index display.
-											return UI.getComponent(previousVirtualDictionary[datum.id]).then(function (existingListItem) {
-												base.data.display.virtual.ids[datum.id] = existingListItem.id;
-												return existingListItem.updateMetadata(query, after);
-											}).then(function () {
-												return Util.ep(previousVirtualDictionary[datum.id]);
-											});
-										} else {
-											// Fully render a new unit using the previous id as the "after".
-											return base.unit(datum, base.data.query.current.toLowerCase(), index).then(function (newListItem) {
-												// return base.setActive().then(function () {
-												// 	return base.setMetadata(query);
-												// }).then(function () {
-												return newListItem.setAfter(after).then(function () {
-													return base.list.components.wrapper.setChildren([newListItem]);
-												}).then(function () {
-													base.data.display.virtual.ids[datum.id] = newListItem.id;
-													return Util.ep(newListItem.id);
-												});
-											});
-										}
-									}
-								})).catch(function (error) {
-									console.log(error);
-								});
 
 							}).then(function () {
 								base.data.display.lock = false;
 								return Util.ep();
+							}).catch(function (error) {
+								console.log(error);
 							});
 
 						});
