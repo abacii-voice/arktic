@@ -379,6 +379,7 @@ var Components = {
 
 				// data sets
 				dataset: {},
+				queries: [],
 				filters: [],
 
 				// variables
@@ -420,6 +421,7 @@ var Components = {
 					if (base.data.query.changed() || base.reset) {
 						if (base.reset) {
 							base.data.dataset = {};
+							base.data.queries = [];
 							base.reset = false;
 						}
 						return Promise.all(base.targets.map(function (target) {
@@ -427,18 +429,22 @@ var Components = {
 								Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}}).then(target.process).then(base.data.append),
 
 								// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
-								// new Promise(function(resolve, reject) {
-								// 	var queryAtStart = base.data.query.current;
-								// 	setTimeout(function () {
-								// 		resolve(queryAtStart === base.data.query.current);
-								// 	}, 1000);
-								// }).then(function (timeout) {
-								// 	if (timeout) {
-								// 		return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}, force: true}).then(target.process).then(base.data.append);
-								// 	} else {
-								// 		return Util.ep();
-								// 	}
-								// }),
+								// Also, only query if this query has never been queried before
+								(!base.data.queries.contains(base.data.query.current) ? function () {
+									base.data.queries.push(base.data.query.current);
+									return new Promise(function(resolve, reject) {
+										var queryAtStart = base.data.query.current;
+										setTimeout(function () {
+											resolve(queryAtStart === base.data.query.current);
+										}, 1000);
+									}).then(function (timeout) {
+										if (timeout) {
+											return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}, force: true}).then(target.process).then(base.data.append);
+										} else {
+											return Util.ep();
+										}
+									});
+								} : Util.ep)(),
 							]);
 						}));
 					} else {
@@ -458,7 +464,7 @@ var Components = {
 					lock: false,
 					virtual: {
 						list: [],
-						ids: [],
+						rendered: [],
 					},
 					subset: {},
 					execute: function () {
@@ -477,29 +483,23 @@ var Components = {
 						// remove non-matches from subset and the corresponding ones from virtual
 						return Promise.all(base.data.display.virtual.list.filter(function (item, index) {
 							item.index = index;
-							return !(((filter && item.rule === filter) || $.isEmptyObject(filter)) && item.main.toLowerCase().indexOf(lowercaseQuery) === 0 && item.id in base.data.dataset); // reject
+							return !(((filter && item.rule === filter) || $.isEmptyObject(filter)) && item.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (!base.autocomplete || (base.autocomplete && lowercaseQuery !== '')) && item.id in base.data.dataset); // reject
 						}).map(function (item) {
 							base.data.display.virtual.list.splice(item.index, 1);
-							return base.list.remove(base.data.display.virtual.ids[item.id]).then(function () {
-								delete base.data.display.virtual.ids[item.id]; // remove from id check
-								delete base.data.display.subset[item.id]; // remove from filtered data
-								return Util.ep();
-							});
+							delete base.data.display.subset[item.id]; // remove from filtered data
+							return Util.ep();
 						})).then(function () {
 							// add new data to subset
 							return new Promise(function(resolve, reject) {
 								Object.keys(base.data.dataset).forEach(function (key) {
 									var datum = base.data.dataset[key];
-									if (((filter && datum.rule === filter) || $.isEmptyObject(filter)) && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0 && datum.id in base.data.dataset) {
+									if (((filter && datum.rule === filter) || $.isEmptyObject(filter)) && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (!base.autocomplete || (base.autocomplete && lowercaseQuery !== '')) && datum.id in base.data.dataset) {
 										base.data.display.subset[key] = datum;
 									}
 								});
 								resolve();
 							});
 						}).then(function () {
-
-							// save previous virtual
-							var previousVirtualDictionary = base.data.display.virtual.ids;
 
 							// create virtual
 							return new Promise(function(resolve, reject) {
@@ -515,127 +515,37 @@ var Components = {
 									resolve();
 								});
 							}).then(function () {
-								base.data.display.virtual.ids = {};
-								// determine differences in arrays and add objects one by one
-								return Promise.ordered(base.data.display.virtual.list.map(function (datum, index) {
-									return function (after) {
-										after = (after || '');
-										if (previousVirtualDictionary && datum.id in previousVirtualDictionary) {
-											// datum.id is in the previousVirtual list of ids, so all that needs to be done is visually updating any index display.
-											return UI.getComponent(previousVirtualDictionary[datum.id]).then(function (existingListItem) {
-												base.data.display.virtual.ids[datum.id] = existingListItem.id;
-												return existingListItem.updateMetadata(query, after);
-											}).then(function () {
-												return Util.ep(previousVirtualDictionary[datum.id]);
+								// for each item in the list, generate a new list item and add to it using the setMetadata function.
+								// Never remove a list item, simply make it display:none if the end of the list is reached.
+								return Promise.ordered(base.data.display.virtual.list.slice(0, base.limit).map(function (datum, index) {
+									return function () {
+										if (index < base.data.display.virtual.rendered.length) {
+											// element already exists. Update using info in datum.
+											// NO RETURN: releases promise immediately. No need to wait for order if one exists.
+											UI.getComponent(base.data.display.virtual.rendered[index]).then(function (existingListItem) {
+												return existingListItem.updateMetadata(datum, lowercaseQuery);
 											});
 										} else {
-											// Fully render a new unit using the previous id as the "after".
-											return base.unit(datum, base.data.query.current.toLowerCase(), index).then(function (newListItem) {
-												// return base.setActive().then(function () {
-												// 	return base.setMetadata(query);
-												// }).then(function () {
-												return newListItem.setAfter(after).then(function () {
-													return base.list.components.wrapper.setChildren([newListItem]);
-												}).then(function () {
-													base.data.display.virtual.ids[datum.id] = newListItem.id;
-													return Util.ep(newListItem.id);
-												});
+											// element does not exist. Create using info in datum.
+											return base.unit(datum, lowercaseQuery, index).then(function (newListItem) {
+												base.data.display.virtual.rendered.push(newListItem.id);
+												return base.list.components.wrapper.setChildren([newListItem]);
 											});
 										}
 									}
-								})).catch(function (error) {
-									console.log(error);
-								});
-
+								})).then(function () {
+									return Promise.all(base.data.display.virtual.rendered.slice(base.data.display.virtual.list.length).map(function (listItemId) {
+										return UI.getComponent(listItemId).then(function (listItem) {
+											return listItem.hide();
+										});
+									}));
+								}); // add shutting down for further elements
 							}).then(function () {
 								base.data.display.lock = false;
 								return Util.ep();
 							});
-
 						});
 					},
-				// 	queue: function () {
-				// 		var query = base.data.query.current;
-				// 		var lowercaseQuery = query.toLowerCase();
-				// 		var filter = base.data.filter.current;
-				//
-				// 		// remove non-matches from subset and the corresponding ones from virtual
-				// 		return Promise.all(base.data.display.virtual.list.filter(function (item, index) {
-				// 			item.index = index;
-				// 			return !(((filter && item.rule === filter) || $.isEmptyObject(filter)) && item.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (item.id in base.data.dataset || $.isEmptyObject(base.data.dataset))); // reject
-				// 		}).map(function (item) {
-				// 			base.data.display.virtual.list.splice(item.index, 1);
-				// 			base.data.display.virtual.ids.splice(item.index, 1);
-				// 			delete base.data.display.subset[item.id]; // remove from filtered data
-				// 			return base.list.remove(base.data.idgen(item.id));
-				// 		})).then(function () {
-				// 			// add new data to subset
-				// 			return new Promise(function(resolve, reject) {
-				// 				Object.keys(base.data.dataset).forEach(function (key) {
-				// 					var datum = base.data.dataset[key];
-				// 					if (((filter && datum.rule === filter) || $.isEmptyObject(filter)) && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (datum.id in base.data.dataset || $.isEmptyObject(base.data.dataset))) {
-				// 						base.data.display.subset[key] = datum;
-				// 					}
-				// 				});
-				// 				resolve();
-				// 			});
-				// 		}).then(function () {
-				//
-				// 			// save previous virtual
-				// 			var previousVirtualIds = base.data.display.virtual.ids;
-				//
-				// 			// create virtual
-				// 			return new Promise(function(resolve, reject) {
-				// 				base.data.display.virtual.list = Object.keys(base.data.display.subset).map(function (key) {
-				// 					return base.data.display.subset[key];
-				// 				});
-				// 				resolve();
-				// 			}).then(function () {
-				//
-				// 				// sort virtual
-				// 				return new Promise(function(resolve, reject) {
-				// 					base.data.display.virtual.list.sort(base.sort);
-				// 					resolve();
-				// 				});
-				// 			}).then(function () {
-				// 				console.log(base.data.display.virtual.list);
-				// 				// So the new idea is to have constant list items with no specific id.
-				// 				// The elements such as text and indicies would simply be swapped out when the order of the top elements is determined.
-				//
-				// 				// determine differences in arrays and add objects one by one
-				// 				return Promise.ordered(base.data.display.virtual.list.map(function (datum, index) {
-				// 					return function (after) {
-				// 						after = (after || '');
-				// 						if (previousVirtualIds.contains(datum.id)) {
-				// 							// console.log(previousVirtualIds, datum.id, base.data.idgen(datum.id), $('#{id}'.format({id: base.data.idgen(datum.id)})));
-				// 							// datum.id is in the previousVirtual list of ids, so all that needs to be done is visually updating any index display.
-				// 							return UI.getComponent(base.data.idgen(datum.id)).then(function (existingListItem) {
-				// 								return existingListItem.updateMetadata(lowercaseQuery, after);
-				// 							}).then(function () {
-				// 								return Util.ep(base.data.idgen(datum.id));
-				// 							});
-				// 						} else {
-				// 							// Fully render a new unit using the previous id as the "after".
-				// 							return base.unit(datum, lowercaseQuery, index).then(function (newListItem) {
-				// 								return newListItem.setAfter(after).then(function () {
-				// 									return base.list.components.wrapper.setChildren([newListItem]);
-				// 								}).then(function () {
-				// 									base.data.display.virtual.ids.push(datum.id);
-				// 									return Util.ep(newListItem.id);
-				// 								});
-				// 							});
-				// 						}
-				// 					}
-				// 				}));
-				// 			}).then(function () {
-				// 				base.data.display.lock = false;
-				// 				return Util.ep();
-				// 			}).catch(function (error) {
-				// 				console.log(error);
-				// 			});
-				// 		});
-				// 	},
-				// },
 				},
 			}
 
@@ -813,6 +723,7 @@ var Components = {
 				options.mode = (options.mode || 'on');
 				options.placeholder = (options.placeholder || 'search...');
 				base.limit = options.limit;
+				base.autocomplete = (options.autocomplete || false);
 
 				search.placeholder = options.placeholder;
 				return search.setAppearance({classes: {add: (options.mode === 'off' ? ['hidden'] : [])}}).then(function () {
