@@ -365,11 +365,11 @@ var AccountInterfaces = {
 					},
 					setStyle: function () {
 						return new Promise(function(resolve, reject) {
-							jss.set('#{id} .base.word'.format({id: autocomplete.id}), {
-								'background-color': 'rgba(255,255,0,0.05)'
+							jss.set('#{id} .tokens'.format({id: autocomplete.id}), {
+								'background-color': 'rgba(255,255,255,0.05)'
 							});
-							jss.set('#{id} .base.word.active'.format({id: autocomplete.id}), {
-								'background-color': 'rgba(255,255,0,0.1)'
+							jss.set('#{id} .tokens.active'.format({id: autocomplete.id}), {
+								'background-color': 'rgba(255,255,255,0.1)'
 							});
 							resolve();
 						});
@@ -384,6 +384,23 @@ var AccountInterfaces = {
 					},
 				},
 			]
+			autocomplete.baseUnitStyle = function () {
+				return new Promise(function(resolve, reject) {
+					// base class
+					jss.set('#{id} .base'.format({id: base.id}), {
+						'height': '30px',
+						'width': '100%',
+						'padding': '0px',
+						'padding-left': '10px',
+						'text-align': 'left',
+						'border-bottom': '1px solid #ccc',
+					});
+					jss.set('#{id} .base.active'.format({id: base.id}), {
+						'background-color': 'rgba(255,255,255,0.1)'
+					});
+					resolve();
+				});
+			}
 			autocomplete.sort = function (d1, d2) {
 				// sort by usage
 				if (d1.usage && d2.usage) {
@@ -405,17 +422,18 @@ var AccountInterfaces = {
 			}
 			autocomplete.unit = function (datum, query, index) {
 				query = (query || '');
+				var base = autocomplete.data.idgen(index);
 				return Promise.all([
 					// base component
-					UI.createComponent(autocomplete.data.idgen(datum.id), {
-						template: UI.template('div', 'ie button'),
+					UI.createComponent(base, {
+						template: UI.template('div', 'ie button base'),
 						appearance: {
 							classes: [datum.rule],
 						}
 					}),
 
 					// main wrapper
-					UI.createComponent('{base}-main-wrapper'.format({base: autocomplete.data.idgen(datum.id)}), {
+					UI.createComponent('{base}-main-wrapper'.format({base: base}), {
 						template: UI.template('div', 'ie centred-vertically'),
 						appearance: {
 							style: {
@@ -425,7 +443,7 @@ var AccountInterfaces = {
 					}),
 
 					// main
-					UI.createComponent('{base}-main-head'.format({base: autocomplete.data.idgen(datum.id)}), {
+					UI.createComponent('{base}-main-head'.format({base: base}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -436,7 +454,7 @@ var AccountInterfaces = {
 							html: datum.main.substring(0, query.length),
 						},
 					}),
-					UI.createComponent('{base}-main-tail'.format({base: autocomplete.data.idgen(datum.id)}), {
+					UI.createComponent('{base}-main-tail'.format({base: base}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -447,7 +465,7 @@ var AccountInterfaces = {
 					}),
 
 					// index
-					UI.createComponent('{base}-index'.format({base: autocomplete.data.idgen(datum.id)}), {
+					UI.createComponent('{base}-index'.format({base: base}), {
 						template: UI.template('div', 'ie abs centred-vertically'),
 						appearance: {
 							style: {
@@ -472,25 +490,34 @@ var AccountInterfaces = {
 					unitBase.deactivate = function () {
 						return unitBase.setAppearance({classes: {remove: ['active']}});
 					}
-					unitBase.updateMetadata = function (query, after) {
+					unitBase.hide = function () {
+						unitBase.isHidden = true;
+						return unitBase.setAppearance({classes: {add: 'hidden'}});
+					}
+					unitBase.show = function () {
+						unitBase.isHidden = false;
+						return unitBase.setAppearance({classes: {remove: 'hidden'}});
+					}
+					unitBase.updateMetadata = function (ndatum, query) {
 						// if there are changes, do stuff.
-						return Promise.all([
-							(query !== unitBase.query ? unitBase.updateQuery : Util.ep)(query),
-							(after !== unitBase.after ? unitBase.setAfter : Util.ep)(after).then(function () {
-								return unitBase.updateIndex();
-							}),
-						]);
+						return ((!unitBase.datum || ndatum.id !== unitBase.datum.id) ? unitBase.updateDatum : Util.ep)(ndatum).then(function () {
+							return (query !== unitBase.query ? unitBase.updateQuery : Util.ep)(query);
+						}).then(function () {
+							return (unitBase.isHidden ? unitBase.show : Util.ep)();
+						});
+					}
+					unitBase.updateDatum = function (ndatum) {
+						return unitBase.setAppearance({classes: {add: ndatum.rule, remove: (unitBase.datum || datum).rule}}).then(function () {
+							unitBase.datum = ndatum;
+							return Util.ep();
+						});
 					}
 					unitBase.updateQuery = function (query) {
 						unitBase.query = query;
 						return Promise.all([
-							unitMainHead.setAppearance({html: datum.main.substring(0, query.length)}),
-							unitMainTail.setAppearance({html: datum.main}),
+							unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+							unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
 						]);
-					}
-					unitBase.updateIndex = function () {
-						// change graphical index object to display the new index
-						return Util.ep();
 					}
 
 					// complete promises.
@@ -541,6 +568,7 @@ var AccountInterfaces = {
 				]),
 
 				// autocomplete
+				autocomplete.setStyle(),
 				autocomplete.setState({
 					states: {
 						'transcription-state': {
@@ -758,9 +786,10 @@ var AccountInterfaces = {
 			clientList.sort = Util.sort.alpha('main');
 			clientList.unit = function (datum, query, index) {
 				query = (query || '');
+				var base = clientList.data.idgen(index);
 				return Promise.all([
 					// base component
-					UI.createComponent(clientList.data.idgen(datum.id), {
+					UI.createComponent(base, {
 						template: UI.template('div', 'ie button base'),
 						appearance: {
 							classes: [datum.rule],
@@ -771,7 +800,7 @@ var AccountInterfaces = {
 					}),
 
 					// main wrapper
-					UI.createComponent('{base}-main-wrapper'.format({base: clientList.data.idgen(datum.id)}), {
+					UI.createComponent('{base}-main-wrapper'.format({base: base}), {
 						template: UI.template('div', 'ie centred-vertically'),
 						appearance: {
 							style: {
@@ -781,7 +810,7 @@ var AccountInterfaces = {
 					}),
 
 					// main
-					UI.createComponent('{base}-main-head'.format({base: clientList.data.idgen(datum.id)}), {
+					UI.createComponent('{base}-main-head'.format({base: base}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -792,7 +821,7 @@ var AccountInterfaces = {
 							html: datum.main.substring(0, query.length),
 						},
 					}),
-					UI.createComponent('{base}-main-tail'.format({base: clientList.data.idgen(datum.id)}), {
+					UI.createComponent('{base}-main-tail'.format({base: base}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -810,32 +839,40 @@ var AccountInterfaces = {
 						unitMainTail,
 					] = unitComponents;
 
-					unitBase.query = query;
 					unitBase.activate = function () {
 						return unitBase.setAppearance({classes: {add: ['active']}});
 					}
 					unitBase.deactivate = function () {
 						return unitBase.setAppearance({classes: {remove: ['active']}});
 					}
-					unitBase.updateMetadata = function (query, after) {
+					unitBase.hide = function () {
+						unitBase.isHidden = true;
+						return unitBase.setAppearance({classes: {add: 'hidden'}});
+					}
+					unitBase.show = function () {
+						unitBase.isHidden = false;
+						return unitBase.setAppearance({classes: {remove: 'hidden'}});
+					}
+					unitBase.updateMetadata = function (ndatum, query) {
 						// if there are changes, do stuff.
-						return Promise.all([
-							(query !== unitBase.query ? unitBase.updateQuery : Util.ep)(query),
-							(after !== unitBase.after ? unitBase.setAfter : Util.ep)(after).then(function () {
-								return unitBase.updateIndex();
-							}),
-						]);
+						return ((!unitBase.datum || ndatum.id !== unitBase.datum.id) ? unitBase.updateDatum : Util.ep)(ndatum).then(function () {
+							return (query !== unitBase.query ? unitBase.updateQuery : Util.ep)(query);
+						}).then(function () {
+							return (unitBase.isHidden ? unitBase.show : Util.ep)();
+						});
+					}
+					unitBase.updateDatum = function (ndatum) {
+						return unitBase.setAppearance({classes: {add: ndatum.rule, remove: (unitBase.datum || datum).rule}}).then(function () {
+							unitBase.datum = ndatum;
+							return Util.ep();
+						});
 					}
 					unitBase.updateQuery = function (query) {
 						unitBase.query = query;
 						return Promise.all([
-							unitMainHead.setAppearance({html: datum.main.substring(0, query.length)}),
-							unitMainTail.setAppearance({html: datum.main}),
+							unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+							unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
 						]);
-					}
-					unitBase.updateIndex = function () {
-						// change graphical index object to display the new index
-						return Util.ep();
 					}
 
 					// complete promises.
@@ -892,9 +929,10 @@ var AccountInterfaces = {
 			roleList.sort = Util.sort.alpha('main');
 			roleList.unit = function (datum, query, index) {
 				query = (query || '');
+				var base = roleList.data.idgen(index);
 				return Promise.all([
 					// base component
-					UI.createComponent(roleList.data.idgen(datum.id), {
+					UI.createComponent(base, {
 						template: UI.template('div', 'ie button base'),
 						appearance: {
 							classes: [datum.rule],
@@ -905,7 +943,7 @@ var AccountInterfaces = {
 					}),
 
 					// main wrapper
-					UI.createComponent('{base}-main-wrapper'.format({base: roleList.data.idgen(datum.id)}), {
+					UI.createComponent('{base}-main-wrapper'.format({base: base}), {
 						template: UI.template('div', 'ie centred-vertically'),
 						appearance: {
 							style: {
@@ -915,7 +953,7 @@ var AccountInterfaces = {
 					}),
 
 					// main
-					UI.createComponent('{base}-main-head'.format({base: roleList.data.idgen(datum.id)}), {
+					UI.createComponent('{base}-main-head'.format({base: base}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -926,7 +964,7 @@ var AccountInterfaces = {
 							html: datum.main.substring(0, query.length),
 						},
 					}),
-					UI.createComponent('{base}-main-tail'.format({base: roleList.data.idgen(datum.id)}), {
+					UI.createComponent('{base}-main-tail'.format({base: base}), {
 						template: UI.template('span', 'ie'),
 						appearance: {
 							style: {
@@ -947,33 +985,37 @@ var AccountInterfaces = {
 					unitBase.activate = function () {
 						return unitBase.setAppearance({classes: {add: ['active']}});
 					}
-
 					unitBase.deactivate = function () {
 						return unitBase.setAppearance({classes: {remove: ['active']}});
 					}
-
-					unitBase.updateMetadata = function (query, after) {
-						// if there are changes, do stuff.
-						var currentIndex = unitBase.index;
-						return Promise.all([
-							(query !== unitBase.query ? unitBase.updateQuery : Util.ep)(query),
-							(after !== unitBase.after ? unitBase.setAfter : Util.ep)(after).then(function () {
-								return (currentIndex === unitBase.index ? unitBase.updateIndex : Util.ep)();
-							}),
-						]);
+					unitBase.hide = function () {
+						unitBase.isHidden = true;
+						return unitBase.setAppearance({classes: {add: 'hidden'}});
 					}
-
+					unitBase.show = function () {
+						unitBase.isHidden = false;
+						return unitBase.setAppearance({classes: {remove: 'hidden'}});
+					}
+					unitBase.updateMetadata = function (ndatum, query) {
+						// if there are changes, do stuff.
+						return ((!unitBase.datum || ndatum.id !== unitBase.datum.id) ? unitBase.updateDatum : Util.ep)(ndatum).then(function () {
+							return (query !== unitBase.query ? unitBase.updateQuery : Util.ep)(query);
+						}).then(function () {
+							return (unitBase.isHidden ? unitBase.show : Util.ep)();
+						});
+					}
+					unitBase.updateDatum = function (ndatum) {
+						return unitBase.setAppearance({classes: {add: ndatum.rule, remove: (unitBase.datum || datum).rule}}).then(function () {
+							unitBase.datum = ndatum;
+							return Util.ep();
+						});
+					}
 					unitBase.updateQuery = function (query) {
 						unitBase.query = query;
 						return Promise.all([
-							unitMainHead.setAppearance({html: datum.main.substring(0, query.length)}),
-							unitMainTail.setAppearance({html: datum.main}),
+							unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+							unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
 						]);
-					}
-
-					unitBase.updateIndex = function () {
-						// change graphical index object to display the new index
-						return Util.ep();
 					}
 
 					// complete promises.
