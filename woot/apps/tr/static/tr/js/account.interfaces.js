@@ -336,8 +336,6 @@ var AccountInterfaces = {
 			autocomplete.components.search.onComplete = function () {
 
 			}
-			autocomplete.setSearch({mode: 'on', limit: 10});
-			autocomplete.autocomplete = true;
 			autocomplete.targets = [
 				{
 					name: 'tokens',
@@ -568,6 +566,7 @@ var AccountInterfaces = {
 				]),
 
 				// autocomplete
+				autocomplete.setSearch({mode: 'on', limit: 10, autocomplete: true}),
 				autocomplete.setStyle(),
 				autocomplete.setState({
 					states: {
