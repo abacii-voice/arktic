@@ -445,10 +445,8 @@ var AccountInterfaces = {
 				// then alphabetically
 				if (d1.main > d2.main) {
 					return 1;
-				} else if (d1.main < d2.main) {
-					return -1;
 				} else {
-					return 0;
+					return -1;
 				}
 			}
 			autocomplete.unit = function (datum, query, index) {

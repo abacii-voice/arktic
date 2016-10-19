@@ -233,7 +233,6 @@ var Components = {
 			// behaviours
 			base.behaviours = {
 				right: function () {
-					// console.log('{} search behaviours right'.format(base.id));
 					if (base.isCaretInPosition('end')) {
 						return base.complete().then(function () {
 							return base.onInput(base.metadata.complete);
@@ -526,7 +525,7 @@ var Components = {
 												return existingListItem.updateMetadata(datum, lowercaseQuery);
 											}).then(function () {
 												if (index === 0) {
-													return base.search.setMetadata({combined: lowercaseQuery + datum.main.substring(lowercaseQuery.length), query: lowercaseQuery});
+													return base.search.setMetadata({combined: lowercaseQuery + datum.main.substring(lowercaseQuery.length), query: lowercaseQuery, complete: datum.main});
 												} else {
 													return Util.ep();
 												}
@@ -682,10 +681,10 @@ var Components = {
 
 					// changes
 					var previousIndex = base.currentIndex;
-					base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (options.increment || 0)));
+					base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (base.currentIndex !== undefined ? (options.increment || 0) : 0)));
 
 					// boundary conditions
-					base.currentIndex = base.currentIndex > set.length - 1 ? set.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
+					base.currentIndex = base.currentIndex > base.data.display.virtual.list.length - 1 ? base.data.display.virtual.list.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
 
 					if (base.currentIndex !== previousIndex) {
 						return base.deactivate().then(function () {
