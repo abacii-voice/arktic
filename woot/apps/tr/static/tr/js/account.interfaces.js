@@ -381,6 +381,39 @@ var AccountInterfaces = {
 						rule: 'client',
 					},
 				},
+				{
+					name: 'clients',
+					path: function () {
+						return new Promise(function(resolve, reject) {
+							resolve('clients');
+						});
+					},
+					setStyle: function () {
+						return new Promise(function(resolve, reject) {
+							jss.set('#{id} .clients'.format({id: autocomplete.id}), {
+								'background-color': 'rgba(255,255,0,0.05)'
+							});
+							jss.set('#{id} .clients.active'.format({id: autocomplete.id}), {
+								'background-color': 'rgba(255,255,0,0.1)'
+							});
+							resolve();
+						});
+					},
+					process: function (data) {
+						return new Promise(function(resolve, reject) {
+							var results = Object.keys(data).map(function (key) {
+								var client = data[key];
+								return {
+									id: key,
+									main: client.name,
+									rule: 'clients',
+								}
+							});
+
+							resolve(results);
+						});
+					},
+				},
 			]
 			autocomplete.baseUnitStyle = function () {
 				return new Promise(function(resolve, reject) {
@@ -566,7 +599,7 @@ var AccountInterfaces = {
 				]),
 
 				// autocomplete
-				autocomplete.setSearch({mode: 'on', limit: 10, autocomplete: true}),
+				autocomplete.setSearch({mode: 'on', limit: 20, autocomplete: true}),
 				autocomplete.setStyle(),
 				autocomplete.setState({
 					states: {
@@ -1089,7 +1122,7 @@ var AccountInterfaces = {
 					},
 				}),
 				clientList.setTitle({text: 'Clients', centre: true}),
-				clientList.setSearch({mode: 'on', placeholder: 'Search clients...'}),
+				clientList.setSearch({mode: 'off', placeholder: 'Search clients...'}),
 
 				// ROLE SIDEBAR
 				roleList.setStyle(),
