@@ -140,9 +140,11 @@ var Components = {
 
 			// logic, bindings, etc.
 			base.setMetadata = function (metadata) {
-				// console.log('{} search setMetadata'.format(base.id));
-				base.metadata = metadata;
-				return tail.setAppearance({html: (metadata.combined || metadata.query || base.placeholder || '')});
+				base.metadata = (base.metadata || {});
+				base.metadata.query = (metadata.query || base.metadata.query);
+				base.metadata.combined = (metadata.combined || base.metadata.combined);
+				base.metadata.complete = (metadata.complete || base.metadata.complete);
+				return tail.setAppearance({html: (base.metadata.combined || base.metadata.query || base.placeholder || '')});
 			}
 			base.isCaretInPosition = function (mode) {
 				// console.log('{} search isCaretInPosition'.format(base.id));
@@ -616,25 +618,6 @@ var Components = {
 					resolve();
 				});
 			}
-			base.setMetadata = function (query) {
-				// console.log('{} searchlist setMetadata'.format(base.id));
-				base.query = ((base.query || query) || '');
-				// condition is that there are filtered items and the query is not nothing
-
-				var metadata = {
-					query: base.query,
-				}
-				if (base.virtual.length && base.currentIndex !== undefined) {
-					var item = base.virtual[base.currentIndex].metadata;
-					metadata = {
-						query: base.query,
-						complete: item.complete,
-						combined: item.combined,
-						type: item.type,
-					}
-				}
-				return search.setMetadata(metadata);
-			}
 			base.baseUnitStyle = function () {
 				return new Promise(function(resolve, reject) {
 					// base class
@@ -689,7 +672,10 @@ var Components = {
 					if (base.currentIndex !== previousIndex) {
 						return base.deactivate().then(function () {
 							base.active = set[base.currentIndex];
-							return base.active.activate();
+							return Promise.all([
+								base.active.activate(),
+								base.search.setMetadata({complete: base.data.display.virtual.list[base.currentIndex].main}),
+							]);
 						});
 					} else {
 						return Util.ep();
@@ -717,15 +703,11 @@ var Components = {
 			// list methods
 			base.next = function () {
 				// console.log('{} searchlist next'.format(base.id));
-				return base.setActive({increment: 1}).then(function () {
-					return base.setMetadata();
-				});
+				return base.setActive({increment: 1});
 			}
 			base.previous = function () {
 				// console.log('{} searchlist previous'.format(base.id));
-				return base.setActive({increment: -1}).then(function () {
-					return base.setMetadata();
-				});
+				return base.setActive({increment: -1});
 			}
 
 			// search methods
