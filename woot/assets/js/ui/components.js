@@ -430,8 +430,8 @@ var Components = {
 
 								// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
 								// Also, only query if this query has never been queried before
-								(!base.data.queries.contains(base.data.query.current) ? function () {
-									base.data.queries.push(base.data.query.current);
+								(!target.queries.contains(base.data.query.current) ? function () {
+									target.queries.push(base.data.query.current);
 									return new Promise(function(resolve, reject) {
 										var queryAtStart = base.data.query.current;
 										setTimeout(function () {
@@ -555,6 +555,7 @@ var Components = {
 				return Promise.all(base.targets.map(function (target) {
 					return target.path().then(function (path) {
 						target.resolvedPath = path; // this can be recalculated upon stopping and restarting.
+						target.queries = [];
 					});
 				})).then(function () {
 					return Promise.ordered(Array.range(base.limit).map(function (index) {
@@ -566,9 +567,7 @@ var Components = {
 								});
 							});
 						}
-					})).catch(function (error) {
-						console.log(error);
-					});
+					}));
 				}).then(function () {
 					return new Promise(function(resolve, reject) {
 						// start loop
