@@ -557,6 +557,19 @@ var Components = {
 						target.resolvedPath = path; // this can be recalculated upon stopping and restarting.
 					});
 				})).then(function () {
+					return Promise.ordered(Array.range(base.limit).map(function (index) {
+						return function () {
+							return base.unit({main: ''}, '', index).then(function (newListItem) {
+								base.data.display.virtual.rendered.push(newListItem.id);
+								return newListItem.setAppearance({classes: {add: 'hidden'}}).then(function () {
+									return base.list.components.wrapper.setChildren([newListItem]);
+								});
+							});
+						}
+					})).catch(function (error) {
+						console.log(error);
+					});
+				}).then(function () {
 					return new Promise(function(resolve, reject) {
 						// start loop
 						base.data.requestId = requestAnimationFrame(base.loop);
