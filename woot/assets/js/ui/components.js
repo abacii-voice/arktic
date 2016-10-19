@@ -141,9 +141,9 @@ var Components = {
 			// logic, bindings, etc.
 			base.setMetadata = function (metadata) {
 				base.metadata = (base.metadata || {});
-				base.metadata.query = (metadata.query || base.metadata.query);
-				base.metadata.combined = (metadata.combined || base.metadata.combined);
-				base.metadata.complete = (metadata.complete || base.metadata.complete);
+				base.metadata.query = metadata.query !== undefined ? metadata.query : base.metadata.query;
+				base.metadata.combined = metadata.combined !== undefined ? metadata.combined : base.metadata.combined;
+				base.metadata.complete = metadata.complete !== undefined ? metadata.complete : base.metadata.complete;
 				return tail.setAppearance({html: (base.metadata.combined || base.metadata.query || base.placeholder || '')});
 			}
 			base.isCaretInPosition = function (mode) {
@@ -526,8 +526,8 @@ var Components = {
 											UI.getComponent(base.data.display.virtual.rendered[index]).then(function (existingListItem) {
 												return existingListItem.updateMetadata(datum, lowercaseQuery);
 											}).then(function () {
-												if (index === 0) {
-													return base.search.setMetadata({combined: lowercaseQuery + datum.main.substring(lowercaseQuery.length), query: lowercaseQuery, complete: datum.main});
+												if (base.currentIndex === undefined) {
+													return base.setActive({index: 0});
 												} else {
 													return Util.ep();
 												}
@@ -550,12 +550,17 @@ var Components = {
 									if (!lowercaseQuery) {
 										return base.search.setMetadata({combined: '', query: ''});
 									} else {
-										return Util.ep();
+										var datum = base.data.display.virtual.list[base.currentIndex];
+										var combined = lowercaseQuery + (datum || {main: ''}).main.substring(lowercaseQuery.length)
+										var complete = (datum || {main: lowercaseQuery}).main;
+										return base.search.setMetadata({combined: combined, query: lowercaseQuery, complete: complete});
 									}
 								});
 							}).then(function () {
 								base.data.display.lock = false;
 								return Util.ep();
+							}).catch(function (error) {
+								console.log(error);
 							});
 						});
 					},
@@ -657,10 +662,9 @@ var Components = {
 			base.setActive = function (options) {
 				// console.log('{} searchlist setActive'.format(base.id));
 				options = (options || {});
-				var set = (options.set || base.list.components.wrapper.children);
 
 				// if there are any results
-				if (set.length && base.isFocussed) {
+				if (base.data.display.virtual.rendered.length && base.isFocussed) {
 
 					// changes
 					var previousIndex = base.currentIndex;
@@ -671,11 +675,10 @@ var Components = {
 
 					if (base.currentIndex !== previousIndex) {
 						return base.deactivate().then(function () {
-							base.active = set[base.currentIndex];
-							return Promise.all([
-								base.active.activate(),
-								base.search.setMetadata({complete: base.data.display.virtual.list[base.currentIndex].main}),
-							]);
+							return UI.getComponent(base.data.display.virtual.rendered[base.currentIndex]).then(function (activeComponent) {
+								base.active = activeComponent;
+								return base.active.activate();
+							})
 						});
 					} else {
 						return Util.ep();
@@ -779,8 +782,6 @@ var Components = {
 					var index = parseInt(char);
 					if (index < base.list.components.wrapper.children.length) {
 						return base.setActive({index: index}).then(function () {
-							return base.setMetadata();
-						}).then(function () {
 							// don't know what behaviour to have here
 							return search.behaviours.right();
 							// return search.behaviours.enter();
