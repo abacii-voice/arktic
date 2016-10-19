@@ -141,9 +141,9 @@ var Components = {
 			// logic, bindings, etc.
 			base.setMetadata = function (metadata) {
 				base.metadata = (base.metadata || {});
-				base.metadata.query = metadata.query !== undefined ? metadata.query : base.metadata.query;
-				base.metadata.combined = metadata.combined !== undefined ? metadata.combined : base.metadata.combined;
-				base.metadata.complete = metadata.complete !== undefined ? metadata.complete : base.metadata.complete;
+				base.metadata.query = metadata.query !== undefined ? metadata.query : (base.metadata.query || '');
+				base.metadata.complete = metadata.complete !== undefined ? metadata.complete : base.metadata.query;
+				base.metadata.combined = base.metadata.query + base.metadata.complete.substring(base.metadata.query.length)
 				return tail.setAppearance({html: (base.metadata.combined || base.metadata.query || base.placeholder || '')});
 			}
 			base.isCaretInPosition = function (mode) {
@@ -235,13 +235,15 @@ var Components = {
 			// behaviours
 			base.behaviours = {
 				right: function () {
-					if (base.isCaretInPosition('end')) {
-						return base.complete().then(function () {
-							return base.onInput(base.metadata.complete);
-						});
-					} else {
-						return Util.ep();
-					}
+					return Util.ep().then(function () {
+						if (base.isCaretInPosition('end')) {
+							return base.complete().then(function () {
+								return base.onInput(base.metadata.complete);
+							});
+						} else {
+							return Util.ep();
+						}
+					});
 				},
 				left: function () {
 
@@ -547,13 +549,13 @@ var Components = {
 										});
 									}));
 								}).then(function () {
-									if (!lowercaseQuery) {
-										return base.search.setMetadata({combined: '', query: ''});
+									if (!lowercaseQuery ) {
+										base.currentIndex = undefined;
+										return base.search.setMetadata({query: '', complete: ''});
 									} else {
 										var datum = base.data.display.virtual.list[base.currentIndex];
-										var combined = lowercaseQuery + (datum || {main: ''}).main.substring(lowercaseQuery.length)
-										var complete = (datum || {main: lowercaseQuery}).main;
-										return base.search.setMetadata({combined: combined, query: lowercaseQuery, complete: complete});
+										var complete = (datum || {}).main;
+										return base.search.setMetadata({query: lowercaseQuery, complete: complete});
 									}
 								});
 							}).then(function () {
@@ -660,7 +662,6 @@ var Components = {
 				});
 			}
 			base.setActive = function (options) {
-				// console.log('{} searchlist setActive'.format(base.id));
 				options = (options || {});
 
 				// if there are any results
@@ -675,9 +676,13 @@ var Components = {
 
 					if (base.currentIndex !== previousIndex) {
 						return base.deactivate().then(function () {
-							return UI.getComponent(base.data.display.virtual.rendered[base.currentIndex]).then(function (activeComponent) {
-								base.active = activeComponent;
-								return base.active.activate();
+							return UI.getComponent(base.data.display.virtual.rendered[base.currentIndex]).then(function (activeListItem) {
+								base.active = activeListItem;
+								return base.active.activate().then(function () {
+									var datum = base.data.display.virtual.list[base.currentIndex];
+									var complete = (datum || {}).main;
+									return base.search.setMetadata({complete: complete});
+								});
 							})
 						});
 					} else {
@@ -780,10 +785,20 @@ var Components = {
 				number: function (char) {
 					// console.log('{} searchlist behaviours number'.format(base.id));
 					var index = parseInt(char);
-					if (index < base.list.components.wrapper.children.length) {
+					if (index < base.data.display.virtual.rendered.length) {
 						return base.setActive({index: index}).then(function () {
 							// don't know what behaviour to have here
-							return search.behaviours.right();
+							// OK WHAT THE HELL
+							// 1. This works: search.behaviours.right is a solid promise all the way down
+							// return Util.ep().then(function () {
+							// 	return search.behaviours.right();
+							// });
+
+							// 2. This does not work
+							// Could be to do with the base.isCaretInPosition method of the search (investigate further)
+							return search.behaviours.right(); // works if Util.ep is inside this method (WUT)
+
+							// Maybe do this
 							// return search.behaviours.enter();
 						});
 					}
