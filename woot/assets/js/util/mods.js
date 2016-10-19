@@ -17,6 +17,7 @@ String.prototype.contains = function (object) {
 	return this.indexOf(object) !== -1;
 }
 
+// Arrays
 Array.prototype.contains = function (object) {
 	return this.indexOf(object) !== -1;
 }
@@ -25,6 +26,23 @@ Array.prototype.sum = function (object) {
 	return this.reduce(function (f, s) {
 		return f+s;
 	});
+}
+
+Array.range = function (start, end, step) {
+	// options
+	var End = (end || start);
+	start = end ? start : 0;
+	step = (step || 1);
+	step = End > start ? step : -step;
+
+	//
+	var range = [];
+	while (step > 0 ? End >= start : End <= start) {
+		range.push(start);
+		start += step;
+	}
+
+	return range;
 }
 
 // Ordered promises
