@@ -524,6 +524,12 @@ var Components = {
 											// NO RETURN: releases promise immediately. No need to wait for order if one exists.
 											UI.getComponent(base.data.display.virtual.rendered[index]).then(function (existingListItem) {
 												return existingListItem.updateMetadata(datum, lowercaseQuery);
+											}).then(function () {
+												if (index === 0) {
+													return base.search.setMetadata({combined: lowercaseQuery + datum.main.substring(lowercaseQuery.length), query: lowercaseQuery});
+												} else {
+													return Util.ep();
+												}
 											});
 										} else {
 											// element does not exist. Create using info in datum.
@@ -539,7 +545,13 @@ var Components = {
 											return listItem.hide();
 										});
 									}));
-								}); // add shutting down for further elements
+								}).then(function () {
+									if (!lowercaseQuery) {
+										return base.search.setMetadata({combined: '', query: ''});
+									} else {
+										return Util.ep();
+									}
+								});
 							}).then(function () {
 								base.data.display.lock = false;
 								return Util.ep();
