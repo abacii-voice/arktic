@@ -71,14 +71,12 @@ var AccountInterfaces = {
 				},
 			}),
 
-			AccountComponents.captionField('tb-acp-caption', {
+			AccountComponents.testCaptionField('tb-cp-caption', {
 				appearance: {
 					style: {
-						'height': 'calc(100% - 70px)',
+						'height': '400px',
 						'width': '100%',
-						'padding': '8px',
-						'padding-left': '16px',
-						'padding-right': '0px',
+						'border': '1px solid #ccc',
 					},
 				},
 			}),
@@ -232,102 +230,6 @@ var AccountInterfaces = {
 			Mousetrap.bind('alt+left', function (event) {
 				caption.behaviours.altleft();
 			});
-
-			// CAPTION
-			caption.unit = function (text, type) {
-				var key = Util.makeid();
-
-				// classes
-				jss.set('#{id}-{key}-base'.format({id: caption.id, key: key}), {
-					'height': '30px',
-					'margin': '0px',
-					'display': 'inline-block',
-				});
-				jss.set('#{id}-{key}-base.tag'.format({id: caption.id, key: key}), {
-
-				});
-				jss.set('#{id}-{key}-base.active .head'.format({id: caption.id, key: key}), {
-					'color': '#fff',
-				});
-
-				// components
-				return Promise.all([
-					// base
-					UI.createComponent('{id}-{key}-base'.format({id: caption.id, key: key}), {
-						template: UI.template('div', 'ie'),
-					}),
-
-					// autocomplete element
-					Components.searchableList('{id}-{key}-autocomplete'.format({id: caption.id, key: key}), {
-						appearance: {
-							style: {
-								'display': 'inline-block',
-							},
-						},
-					}),
-
-				]).then(function (unitComponents) {
-					var [
-						unitBase,
-						unitAutocomplete,
-					] = unitComponents;
-
-					// clone page autocomplete
-					unitAutocomplete.clone(autocomplete);
-					unitAutocomplete.autocomplete = true;
-					unitAutocomplete.searchExternal = {
-						onFocus: function () {
-							// CHANGE
-						},
-						onBlur: function () {
-							// CHANGE
-						},
-					}
-
-					// methods
-					unitBase.focus = function (mode) {
-						return unitAutocomplete.search.focus(mode);
-					}
-					unitBase.activate = function () {
-						// CHANGE
-					}
-					unitBase.deactivate = function () {
-						// CHANGE
-					}
-					unitBase.getContent = function () {
-						return unitAutocomplete.getContent();
-					}
-					unitBase.setContent = function (options) {
-						return unitAutocomplete.setContent(options);
-					}
-					unitBase.isAtStart = function () {
-						return unitAutocomplete.search.isCaretInPosition('start');
-					}
-
-					// complete promises
-					return Promise.all([
-						unitAutocomplete.search.setAppearance({
-							style: {
-								'height': '30px',
-								'padding-left': '0px',
-							},
-							classes: {
-								remove: ['border', 'border-radius'],
-							},
-						}),
-					]).then(function () {
-						// children
-						unitBase.components = {
-							autocomplete: unitAutocomplete,
-						}
-						return unitBase.setChildren([
-							unitAutocomplete,
-						]);
-					}).then(function () {
-						return unitBase;
-					});
-				});
-			}
 
 			// LIST
 			autocomplete.onInput = function () {
@@ -565,6 +467,9 @@ var AccountInterfaces = {
 					});
 				});
 			}
+
+			// CAPTION
+			caption.link = autocomplete;
 
 			// connect
 			return Promise.all([

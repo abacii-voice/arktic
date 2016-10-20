@@ -15,7 +15,7 @@ var Components = {
 		// set up components
 		return Promise.all([
 			// base component
-			UI.createComponent('{id}-base'.format({id: id}), {
+			UI.createComponent('{id}'.format({id: id}), {
 				template: UI.template('div', 'ie'),
 				appearance: args.appearance,
 			}),
@@ -98,7 +98,7 @@ var Components = {
 		// set up components
 		return Promise.all([
 			// base component
-			UI.createComponent('{id}-base'.format({id: id}), {
+			UI.createComponent('{id}'.format({id: id}), {
 				template: UI.template('div', 'ie input'),
 				appearance: args.appearance,
 			}),
@@ -323,7 +323,7 @@ var Components = {
 		// set up components
 		return Promise.all([
 			// base component
-			UI.createComponent('{id}-base'.format({id: id}), {
+			UI.createComponent('{id}'.format({id: id}), {
 				template: UI.template('div', 'ie'),
 				appearance: (args.appearance || defaultAppearance),
 			}),
@@ -619,6 +619,7 @@ var Components = {
 				});
 			}
 			base.updateData = function (data, defaults) {
+				// console.log(base.id, data, defaults);
 				var _this = base;
 				return new Promise(function(resolve, reject) {
 					// apply changes
@@ -809,12 +810,8 @@ var Components = {
 
 			// clone
 			base.clone = function (copy) {
-				// console.log('{} searchlist clone'.format(base.id));
-				// confusing, but properties of copy get sent to this object.
-				base.autocomplete = copy.autocomplete;
-				base.targets = copy.targets;
-				base.list = copy.list;
-				base.unit = copy.unit;
+				// All that needs to happen is updatedata needs to be rigged to the copy
+				base.updateData = copy.updateData;
 			}
 
 			// complete promises.
