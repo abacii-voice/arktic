@@ -148,21 +148,23 @@ var Components = {
 			}
 			base.isCaretInPosition = function (mode) {
 				// console.log('{} search isCaretInPosition'.format(base.id));
-				mode = (mode || 'end');
-				// determine caret position after an action. Only important thing is whether or not it is at the end.
-				var selection = window.getSelection();
-				var caretInPosition = false;
-				if (base.isFocussed && head.element() === selection.focusNode.parentNode) { // is the selection inside
-					var range = selection.getRangeAt(0); // get the only range
-					if (mode === 'end') {
-						caretInPosition = range.endOffset === selection.focusNode.length; // check the offset == the node value length
-					} else if (mode === 'start') {
-						caretInPosition = range.endOffset === 0; // or 0
+				return new Promise(function(resolve, reject) {
+					mode = (mode || 'end');
+					// determine caret position after an action. Only important thing is whether or not it is at the end.
+					var selection = window.getSelection();
+					var caretInPosition = false;
+					if (base.isFocussed && head.element() === selection.focusNode.parentNode) { // is the selection inside
+						var range = selection.getRangeAt(0); // get the only range
+						if (mode === 'end') {
+							caretInPosition = range.endOffset === selection.focusNode.length; // check the offset == the node value length
+						} else if (mode === 'start') {
+							caretInPosition = range.endOffset === 0; // or 0
+						}
+					} else if (head.element() === selection.focusNode) {
+						caretInPosition = true;
 					}
-				} else if (head.element() === selection.focusNode) {
-					caretInPosition = true;
-				}
-				return caretInPosition;
+					resolve(caretInPosition);
+				});
 			}
 			base.setCaretPosition = function (position) {
 				// set position
@@ -235,8 +237,8 @@ var Components = {
 			// behaviours
 			base.behaviours = {
 				right: function () {
-					return Util.ep().then(function () {
-						if (base.isCaretInPosition('end')) {
+					return base.isCaretInPosition('end').then(function (inPosition) {
+						if (inPosition) {
 							return base.complete().then(function () {
 								return base.onInput(base.metadata.complete);
 							});
@@ -797,6 +799,8 @@ var Components = {
 							// 2. This does not work
 							// Could be to do with the base.isCaretInPosition method of the search (investigate further)
 							return search.behaviours.right(); // works if Util.ep is inside this method (WUT)
+
+							// 3. Solved: works if the caret check function is also a promise. committing and deleting.
 
 							// Maybe do this
 							// return search.behaviours.enter();
