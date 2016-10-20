@@ -790,17 +790,7 @@ var Components = {
 					if (index < base.data.display.virtual.rendered.length) {
 						return base.setActive({index: index}).then(function () {
 							// don't know what behaviour to have here
-							// OK WHAT THE HELL
-							// 1. This works: search.behaviours.right is a solid promise all the way down
-							// return Util.ep().then(function () {
-							// 	return search.behaviours.right();
-							// });
-
-							// 2. This does not work
-							// Could be to do with the base.isCaretInPosition method of the search (investigate further)
-							return search.behaviours.right(); // works if Util.ep is inside this method (WUT)
-
-							// 3. Solved: works if the caret check function is also a promise. committing and deleting.
+							return search.behaviours.right();
 
 							// Maybe do this
 							// return search.behaviours.enter();
