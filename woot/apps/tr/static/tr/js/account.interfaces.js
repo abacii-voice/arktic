@@ -443,7 +443,7 @@ var AccountInterfaces = {
 				}
 
 				// then alphabetically
-				if (d1.main > d2.main) {
+				if (d1.main.toLowerCase() > d2.main.toLowerCase()) {
 					return 1;
 				} else {
 					return -1;
