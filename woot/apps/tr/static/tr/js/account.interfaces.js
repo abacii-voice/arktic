@@ -597,7 +597,7 @@ var AccountInterfaces = {
 				]),
 
 				// autocomplete
-				autocomplete.setSearch({mode: 'on', limit: 20, autocomplete: true}),
+				autocomplete.setSearch({mode: 'on', limit: 10, autocomplete: true}),
 				autocomplete.setStyle(),
 				autocomplete.setState({
 					states: {
