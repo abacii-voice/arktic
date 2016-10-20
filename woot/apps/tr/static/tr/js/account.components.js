@@ -1011,7 +1011,10 @@ var AccountComponents = {
 				content.setBindings({
 					'input': function (_this) {
 						var selection = window.getSelection();
-						console.log(_this.element().childNodes, selection.focusNode, selection.focusNode.nodeType);
+						console.log(_this.model().contents().map(function () {
+							return this.nodeType;
+						}));
+						console.log(_this.element().textContent, selection.focusNode, selection.focusNode.nodeType);
 					},
 				}),
 
