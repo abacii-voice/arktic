@@ -967,6 +967,67 @@ var AccountComponents = {
 		});;
 	},
 
+	testCaptionField: function (id, args) {
+		return Promise.all([
+
+			// wrapper
+			UI.createComponent('{id}'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: args.appearance,
+			}),
+
+			// contenteditable child
+			UI.createComponent('{id}-content'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'top': '5%',
+						'left': '5%',
+						'height': '90%',
+						'width': '90%',
+						'box-sizing': 'border-box',
+						'outline': 'none',
+						'font-size': '15px',
+					},
+					properties: {
+						'contenteditable': 'true',
+					},
+				},
+			}),
+
+		]).then(function (components) {
+
+			// unpack
+			var [
+				base,
+				content,
+			] = components;
+
+			// base.link should be the autocomplete
+
+
+			// promises
+			return Promise.all([
+				content.setBindings({
+					'input': function (_this) {
+						var selection = window.getSelection();
+						console.log(_this.element().childNodes, selection.focusNode, selection.focusNode.nodeType);
+					},
+				}),
+
+			]).then(function () {
+				// set base children and components
+				base.content = content;
+				return base.setChildren([
+					content,
+				]);
+			}).then(function () {
+				// return base
+				return base;
+			});
+		});
+	},
+
 	// ROLE DISPLAY ICON
 	roleDisplayIcon: function (id, args) {
 
