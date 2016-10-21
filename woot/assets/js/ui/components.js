@@ -572,7 +572,7 @@ var Components = {
 			}
 
 			// operation methods
-			base.start = function () {
+			base.setup = function () {
 				// setup paths
 				return Promise.all(base.targets.map(function (target) {
 					return target.path().then(function (path) {
@@ -589,36 +589,21 @@ var Components = {
 								});
 							});
 						}
-					}));
+					})).then(function () {
+						return base.run();
+					});
 				});
-
-				// .then(function () {
-				// 	return new Promise(function(resolve, reject) {
-				// 		// start loop
-				// 		base.data.requestId = requestAnimationFrame(base.loop);
-				// 		resolve(base.data.requestId);
-				// 	});
-				// });
 			}
-			base.loop = function () {
+			base.stop = function () {
+				base.reset = true;
+				return Util.ep();
+			}
+			base.run = function () {
 				// start processing
 				return Promise.all([
 					base.data.get(),
 					base.data.display.execute(),
 				]);
-
-				// continue loop
-				// setTimeout(function () {
-				// base.data.requestId = requestAnimationFrame(base.loop);
-				// }, 100);
-			}
-			base.stop = function () {
-				// cancel animation request
-				return new Promise(function(resolve, reject) {
-					base.reset = true;
-					// cancelAnimationFrame(base.data.requestId);
-					resolve();
-				});
 			}
 			base.updateData = function (data, defaults) {
 				// console.log(base.id, data, defaults);
@@ -736,7 +721,7 @@ var Components = {
 			}
 			search.onInput = function (value) {
 				return base.updateData({query: search.components.head.model().text()}).then(function () {
-					return base.loop();
+					return base.run();
 				});
 			}
 			base.setSearch = function (options) {
