@@ -590,31 +590,33 @@ var Components = {
 							});
 						}
 					}));
-				}).then(function () {
-					return new Promise(function(resolve, reject) {
-						// start loop
-						base.data.requestId = requestAnimationFrame(base.loop);
-						resolve(base.data.requestId);
-					});
 				});
+
+				// .then(function () {
+				// 	return new Promise(function(resolve, reject) {
+				// 		// start loop
+				// 		base.data.requestId = requestAnimationFrame(base.loop);
+				// 		resolve(base.data.requestId);
+				// 	});
+				// });
 			}
 			base.loop = function () {
 				// start processing
-				Promise.all([
+				return Promise.all([
 					base.data.get(),
 					base.data.display.execute(),
 				]);
 
 				// continue loop
 				// setTimeout(function () {
-				base.data.requestId = requestAnimationFrame(base.loop);
+				// base.data.requestId = requestAnimationFrame(base.loop);
 				// }, 100);
 			}
 			base.stop = function () {
 				// cancel animation request
 				return new Promise(function(resolve, reject) {
 					base.reset = true;
-					cancelAnimationFrame(base.data.requestId);
+					// cancelAnimationFrame(base.data.requestId);
 					resolve();
 				});
 			}
@@ -733,7 +735,9 @@ var Components = {
 				return Util.ep();
 			}
 			search.onInput = function (value) {
-				return base.updateData({query: search.components.head.model().text()});
+				return base.updateData({query: search.components.head.model().text()}).then(function () {
+					return base.loop();
+				});
 			}
 			base.setSearch = function (options) {
 				options.mode = (options.mode || 'on');
