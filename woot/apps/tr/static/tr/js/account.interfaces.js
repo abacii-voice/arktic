@@ -508,7 +508,7 @@ var AccountInterfaces = {
 					states: {
 						'transcription-state': {
 							preFn: function (_this) {
-								return _this.start();
+								return _this.setup();
 							},
 							fn: function () {
 								return autocomplete.search.clear();
@@ -1011,7 +1011,7 @@ var AccountInterfaces = {
 					states: {
 						'client-state': {
 							preFn: function (_this) {
-								return _this.start();
+								return _this.setup();
 							},
 							fn: function () {
 								return clientList.search.clear();
@@ -1053,7 +1053,7 @@ var AccountInterfaces = {
 						},
 						'role-state': {
 							preFn: function (_this) {
-								return _this.start();
+								return _this.setup();
 							},
 							fn: function () {
 								return roleList.search.clear();
