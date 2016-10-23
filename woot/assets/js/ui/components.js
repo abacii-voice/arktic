@@ -695,11 +695,9 @@ var Components = {
 
 			// list methods
 			base.next = function () {
-				// console.log('{} searchlist next'.format(base.id));
 				return base.setActive({increment: 1});
 			}
 			base.previous = function () {
-				// console.log('{} searchlist previous'.format(base.id));
 				return base.setActive({increment: -1});
 			}
 
