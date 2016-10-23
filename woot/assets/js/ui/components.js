@@ -539,7 +539,7 @@ var Components = {
 								})).then(function () {
 									return Promise.all(base.data.display.virtual.rendered.slice(base.data.display.virtual.list.length).map(function (listItemId) {
 										return UI.getComponent(listItemId).then(function (listItem) {
-											console.log(listItemId);
+											// console.log(listItemId);
 											return listItem.hide();
 										});
 									}));
@@ -568,23 +568,31 @@ var Components = {
 						target.queries = [];
 					});
 				})).then(function () {
-					return Promise.ordered(Array.range(base.limit).map(function (index) {
-						return function () {
-							return base.unit({main: ''}, '', index).then(function (newListItem) {
-								base.data.display.virtual.rendered.push(newListItem.id);
-								return newListItem.setAppearance({classes: {add: 'hidden'}}).then(function () {
-									return base.list.components.wrapper.setChildren([newListItem]);
+					if (base.data.display.virtual.rendered.length === 0) {
+						return Promise.ordered(Array.range(base.limit).map(function (index) {
+							return function () {
+								return base.unit({main: ''}, '', index).then(function (newListItem) {
+									base.data.display.virtual.rendered.push(newListItem.id);
+									return newListItem.setAppearance({classes: {add: 'hidden'}}).then(function () {
+										return base.list.components.wrapper.setChildren([newListItem]);
+									});
 								});
-							});
-						}
-					})).then(function () {
-						return base.run();
-					});
-				});
+							}
+						}));
+					} else {
+						return Util.ep();
+					}
+				}).then(function () {
+					return base.run();
+				});;
 			}
 			base.stop = function () {
 				base.reset = true;
-				return Util.ep();
+				return base.updateData({query: '', filter: {}}).then(function () {
+					return base.search.clear();
+				}).then(function () {
+					return base.search.setMetadata({query: '', complete: ''});
+				});
 			}
 			base.run = function () {
 				// start processing
@@ -707,7 +715,6 @@ var Components = {
 				return Util.ep();
 			}
 			search.onInput = function (value) {
-				console.log('input');
 				return base.updateData({query: search.components.head.model().text()}).then(function () {
 					return base.run();
 				});

@@ -30,7 +30,7 @@ Array.prototype.sum = function (object) {
 
 Array.range = function (start, end, step) {
 	// options
-	var End = (end || start);
+	var End = (end || start) - 1;
 	start = end ? start : 0;
 	step = (step || 1);
 	step = End > start ? step : -step;
