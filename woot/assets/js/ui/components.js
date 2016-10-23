@@ -431,7 +431,7 @@ var Components = {
 						}
 						return Promise.all(base.targets.map(function (target) {
 							return Promise.all([
-								Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}}).then(target.process).then(base.data.append),
+								Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}}).then(target.process).then(base.data.append).then(base.data.display.queue),
 
 								// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
 								// Also, only query if this query has never been queried before
@@ -444,7 +444,7 @@ var Components = {
 										}, 1000);
 									}).then(function (timeout) {
 										if (timeout) {
-											return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}, force: true}).then(target.process).then(base.data.append);
+											return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}, force: true}).then(target.process).then(base.data.append).then(base.data.display.queue);
 										} else {
 											return Util.ep();
 										}
@@ -472,14 +472,6 @@ var Components = {
 						rendered: [],
 					},
 					subset: {},
-					execute: function () {
-						if (!base.data.display.lock) {
-							base.data.display.lock = true;
-							return base.data.display.queue();
-						} else {
-							return Util.ep();
-						}
-					},
 					queue: function () {
 						var query = base.data.query.current;
 						var lowercaseQuery = query.toLowerCase();
@@ -547,6 +539,7 @@ var Components = {
 								})).then(function () {
 									return Promise.all(base.data.display.virtual.rendered.slice(base.data.display.virtual.list.length).map(function (listItemId) {
 										return UI.getComponent(listItemId).then(function (listItem) {
+											// console.log(listItemId);
 											return listItem.hide();
 										});
 									}));
@@ -560,11 +553,6 @@ var Components = {
 										return base.search.setMetadata({query: lowercaseQuery, complete: complete});
 									}
 								});
-							}).then(function () {
-								base.data.display.lock = false;
-								return Util.ep();
-							}).catch(function (error) {
-								console.log(error);
 							});
 						});
 					},
@@ -580,29 +568,36 @@ var Components = {
 						target.queries = [];
 					});
 				})).then(function () {
-					return Promise.ordered(Array.range(base.limit).map(function (index) {
-						return function () {
-							return base.unit({main: ''}, '', index).then(function (newListItem) {
-								base.data.display.virtual.rendered.push(newListItem.id);
-								return newListItem.setAppearance({classes: {add: 'hidden'}}).then(function () {
-									return base.list.components.wrapper.setChildren([newListItem]);
+					if (base.data.display.virtual.rendered.length === 0) {
+						return Promise.ordered(Array.range(base.limit).map(function (index) {
+							return function () {
+								return base.unit({main: ''}, '', index).then(function (newListItem) {
+									base.data.display.virtual.rendered.push(newListItem.id);
+									return newListItem.setAppearance({classes: {add: 'hidden'}}).then(function () {
+										return base.list.components.wrapper.setChildren([newListItem]);
+									});
 								});
-							});
-						}
-					})).then(function () {
-						return base.run();
-					});
-				});
+							}
+						}));
+					} else {
+						return Util.ep();
+					}
+				}).then(function () {
+					return base.run();
+				});;
 			}
 			base.stop = function () {
 				base.reset = true;
-				return Util.ep();
+				return base.updateData({query: '', filter: {}}).then(function () {
+					return base.search.clear();
+				}).then(function () {
+					return base.search.setMetadata({query: '', complete: ''});
+				});
 			}
 			base.run = function () {
 				// start processing
 				return Promise.all([
 					base.data.get(),
-					base.data.display.execute(),
 				]);
 			}
 			base.updateData = function (data, defaults) {
@@ -700,11 +695,9 @@ var Components = {
 
 			// list methods
 			base.next = function () {
-				// console.log('{} searchlist next'.format(base.id));
 				return base.setActive({increment: 1});
 			}
 			base.previous = function () {
-				// console.log('{} searchlist previous'.format(base.id));
 				return base.setActive({increment: -1});
 			}
 

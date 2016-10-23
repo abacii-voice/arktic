@@ -510,12 +510,9 @@ var AccountInterfaces = {
 							preFn: function (_this) {
 								return _this.setup();
 							},
-							fn: function () {
-								return autocomplete.search.clear();
-							},
 						},
 						'control-state': {
-							preFn: function (_this) {
+							fn: function (_this) {
 								return _this.stop();
 							}
 						}
@@ -1054,9 +1051,6 @@ var AccountInterfaces = {
 						'role-state': {
 							preFn: function (_this) {
 								return _this.setup();
-							},
-							fn: function () {
-								return roleList.search.clear();
 							},
 						},
 						'control-state': {
