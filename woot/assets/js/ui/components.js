@@ -431,7 +431,7 @@ var Components = {
 						}
 						return Promise.all(base.targets.map(function (target) {
 							return Promise.all([
-								Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}}).then(target.process).then(base.data.append),
+								Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}}).then(target.process).then(base.data.append).then(base.data.display.queue),
 
 								// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
 								// Also, only query if this query has never been queried before
@@ -444,7 +444,7 @@ var Components = {
 										}, 1000);
 									}).then(function (timeout) {
 										if (timeout) {
-											return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}, force: true}).then(target.process).then(base.data.append);
+											return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}, force: true}).then(target.process).then(base.data.append).then(base.data.display.queue);
 										} else {
 											return Util.ep();
 										}
@@ -472,14 +472,6 @@ var Components = {
 						rendered: [],
 					},
 					subset: {},
-					execute: function () {
-						if (!base.data.display.lock) {
-							base.data.display.lock = true;
-							return base.data.display.queue();
-						} else {
-							return Util.ep();
-						}
-					},
 					queue: function () {
 						var query = base.data.query.current;
 						var lowercaseQuery = query.toLowerCase();
@@ -547,6 +539,7 @@ var Components = {
 								})).then(function () {
 									return Promise.all(base.data.display.virtual.rendered.slice(base.data.display.virtual.list.length).map(function (listItemId) {
 										return UI.getComponent(listItemId).then(function (listItem) {
+											console.log(listItemId);
 											return listItem.hide();
 										});
 									}));
@@ -560,11 +553,6 @@ var Components = {
 										return base.search.setMetadata({query: lowercaseQuery, complete: complete});
 									}
 								});
-							}).then(function () {
-								base.data.display.lock = false;
-								return Util.ep();
-							}).catch(function (error) {
-								console.log(error);
 							});
 						});
 					},
@@ -602,7 +590,6 @@ var Components = {
 				// start processing
 				return Promise.all([
 					base.data.get(),
-					base.data.display.execute(),
 				]);
 			}
 			base.updateData = function (data, defaults) {
@@ -720,6 +707,7 @@ var Components = {
 				return Util.ep();
 			}
 			search.onInput = function (value) {
+				console.log('input');
 				return base.updateData({query: search.components.head.model().text()}).then(function () {
 					return base.run();
 				});
