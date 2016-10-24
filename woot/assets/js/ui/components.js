@@ -22,6 +22,7 @@ var Components = {
 
 			// wrapper
 			UI.createComponent('{id}-wrapper'.format({id: id}), {
+				name: 'wrapper',
 				template: UI.template('div', 'ie'),
 				appearance: {
 					style: {
@@ -74,9 +75,6 @@ var Components = {
 			return Promise.all([
 
 			]).then(function (results) {
-				base.components = {
-					wrapper: wrapper,
-				}
 				return base.setWrapper([wrapper]);
 			}).then(function () {
 				return base;
@@ -92,14 +90,13 @@ var Components = {
 			style: {
 				'width': '100%',
 			},
-			classes: ['border', 'border-radius'],
 		});
 
 		// set up components
 		return Promise.all([
 			// base component
 			UI.createComponent('{id}'.format({id: id}), {
-				template: UI.template('div', 'ie input'),
+				template: UI.template('div', 'ie input border border-radius'),
 				appearance: args.appearance,
 			}),
 
@@ -304,8 +301,33 @@ var Components = {
 	},
 
 	// FILTER ICON
-	filterIcon: function (id, args) {
+	filterButton: function (id, args) {
+		return Promise.all([
+			// base
+			UI.createComponent('{id}'.format({id: id}), {
+				template: UI.template('div', 'ie button border border-radius'),
+				appearance: {
+					style: {
+						'height': '40px',
+						'width': '40px',
+						'float': 'left',
+					},
+				},
+			}),
+		]).then(function (components) {
+			// bindings
+			var [
+				base,
+			] = components;
 
+			return Promise.all([]).then(function () {
+				return base.setChildren([
+
+				]);
+			}).then(function () {
+				return base;
+			});
+		});
 	},
 
 	// SEARCHABLE LIST
@@ -345,8 +367,8 @@ var Components = {
 			Components.search('{id}-search'.format({id: id}), {}),
 
 			// filter button
-			UI.createComponent('{id}-filter-button'.format({id: id}), {
-				template: UI.template('div', 'ie button'),
+			Components.filterButton('{id}-filter-button'.format({id: id}), {
+
 			}),
 
 			// list
@@ -385,37 +407,13 @@ var Components = {
 				// data sets
 				dataset: {},
 				queries: [],
-				filters: [],
+				filters: {},
+				defaultfilters: [],
 
 				// variables
 				limit: undefined, // if limit is undefined, there is no limit
-				query: {
-					previous: undefined,
-					current: '',
-					changed: function () {
-						var changed = base.data.query.current !== base.data.query.previous;
-						base.data.query.previous = base.data.query.current;
-						return changed;
-					}
-				},
-				filter: {
-					previous: undefined,
-					current: {},
-					changed: function () {
-						var changed = base.data.filter.current !== base.data.filter.previous;
-						base.data.filter.previous = base.data.filter.current;
-						return changed;
-					}
-				},
-				index: {
-					previous: undefined,
-					current: 0,
-					changed: function () {
-						var changed = base.data.index.current !== base.data.index.previous;
-						base.data.index.previous = base.data.index.current;
-						return changed;
-					},
-				},
+				query: '',
+				filter: '',
 
 				// methods
 				idgen: function (id) {
@@ -423,38 +421,34 @@ var Components = {
 				},
 				get: function () {
 					// this looks at the Context.get and Context.get:force, separately.
-					if (base.data.query.changed() || base.reset) {
-						if (base.reset) {
-							base.data.dataset = {};
-							base.data.queries = [];
-							base.reset = false;
-						}
-						return Promise.all(base.targets.map(function (target) {
-							return Promise.all([
-								Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}}).then(target.process).then(base.data.append).then(base.data.display.queue),
-
-								// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
-								// Also, only query if this query has never been queried before
-								(!target.queries.contains(base.data.query.current) ? function () {
-									target.queries.push(base.data.query.current);
-									return new Promise(function(resolve, reject) {
-										var queryAtStart = base.data.query.current;
-										setTimeout(function () {
-											resolve(queryAtStart === base.data.query.current);
-										}, 1000);
-									}).then(function (timeout) {
-										if (timeout) {
-											return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}, force: true}).then(target.process).then(base.data.append).then(base.data.display.queue);
-										} else {
-											return Util.ep();
-										}
-									});
-								} : Util.ep)(),
-							]);
-						}));
-					} else {
-						return Util.ep();
+					if (base.reset) {
+						base.data.dataset = {};
+						base.data.queries = [];
+						base.reset = false;
 					}
+					return Promise.all(base.targets.map(function (target) {
+						return Promise.all([
+							Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query}}}).then(target.process).then(base.data.append).then(base.data.display.queue),
+
+							// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
+							// Also, only query if this query has never been queried before
+							(!target.queries.contains(base.data.query) ? function () {
+								target.queries.push(base.data.query);
+								return new Promise(function(resolve, reject) {
+									var queryAtStart = base.data.query;
+									setTimeout(function () {
+										resolve(queryAtStart === base.data.query);
+									}, 1000);
+								}).then(function (timeout) {
+									if (timeout) {
+										return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query}}, force: true}).then(target.process).then(base.data.append).then(base.data.display.queue);
+									} else {
+										return Util.ep();
+									}
+								});
+							} : Util.ep)(),
+						]);
+					}));
 				},
 				append: function (data) {
 					// Add to dataset. Nothing is ever removed.
@@ -466,31 +460,30 @@ var Components = {
 					}));
 				},
 				display: {
-					lock: false,
 					virtual: {
 						list: [],
 						rendered: [],
 					},
 					subset: {},
 					queue: function () {
-						var query = base.data.query.current;
+						var query = base.data.query;
 						var lowercaseQuery = query.toLowerCase();
-						var filter = base.data.filter.current;
+						var filter = base.data.filter;
 
 						// remove non-matches from subset and the corresponding ones from virtual
-						return Promise.all(base.data.display.virtual.list.filter(function (item, index) {
-							item.index = index;
-							return !(((filter && item.rule === filter) || $.isEmptyObject(filter)) && item.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (!base.autocomplete || (base.autocomplete && lowercaseQuery !== '')) && item.id in base.data.dataset); // reject
-						}).map(function (item) {
-							base.data.display.virtual.list.splice(item.index, 1);
-							delete base.data.display.subset[item.id]; // remove from filtered data
+						return Promise.all(base.data.display.virtual.list.filter(function (datum, index) {
+							datum.index = index;
+							return !((datum.rule === filter || filter === '') && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (!base.autocomplete || (base.autocomplete && lowercaseQuery !== '')) && datum.id in base.data.dataset); // reject
+						}).map(function (datum) {
+							base.data.display.virtual.list.splice(datum.index, 1);
+							delete base.data.display.subset[datum.id]; // remove from filtered data
 							return Util.ep();
 						})).then(function () {
 							// add new data to subset
 							return new Promise(function(resolve, reject) {
 								Object.keys(base.data.dataset).forEach(function (key) {
 									var datum = base.data.dataset[key];
-									if (((filter && datum.rule === filter) || $.isEmptyObject(filter)) && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (!base.autocomplete || (base.autocomplete && lowercaseQuery !== '')) && datum.id in base.data.dataset) {
+									if ((datum.rule === filter || filter === '') && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (!base.autocomplete || (base.autocomplete && lowercaseQuery !== '')) && datum.id in base.data.dataset) {
 										base.data.display.subset[key] = datum;
 									}
 								});
@@ -539,7 +532,6 @@ var Components = {
 								})).then(function () {
 									return Promise.all(base.data.display.virtual.rendered.slice(base.data.display.virtual.list.length).map(function (listItemId) {
 										return UI.getComponent(listItemId).then(function (listItem) {
-											// console.log(listItemId);
 											return listItem.hide();
 										});
 									}));
@@ -588,7 +580,7 @@ var Components = {
 			}
 			base.stop = function () {
 				base.reset = true;
-				return base.updateData({query: '', filter: {}}).then(function () {
+				return base.updateData({query: '', filter: ''}).then(function () {
 					return base.search.clear();
 				}).then(function () {
 					return base.search.setMetadata({query: '', complete: ''});
@@ -605,9 +597,12 @@ var Components = {
 				var _this = base;
 				return new Promise(function(resolve, reject) {
 					// apply changes
-					_this.data.query.current = (((data || {}).query !== undefined ? (data || {}).query : _this.data.query.current) || ((defaults || {}).query || ''));
-					_this.data.filter.current = (((data || {}).filter || _this.data.filter.current) || ((defaults || {}).filter || {}));
+					_this.data.query = (((data || {}).query !== undefined ? (data || {}).query : _this.data.query) || ((defaults || {}).query || ''));
+					_this.data.filter = (((data || {}).filter || _this.data.filter) || ((defaults || {}).filter || ''));
 					resolve();
+				}).then(function () {
+					// handle filters
+
 				});
 			}
 			base.baseUnitStyle = function () {
@@ -798,7 +793,6 @@ var Components = {
 
 			// complete promises.
 			return Promise.all([
-
 			]).then(function (results) {
 				base.components = {
 					title: title,

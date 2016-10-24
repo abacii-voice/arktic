@@ -256,31 +256,19 @@ var AccountInterfaces = {
 								return {
 									id: key,
 									main: token.content,
-									rule: 'tokens',
+									rule: 'words',
 								}
 							});
-
 							resolve(results);
-						});
-					},
-					setStyle: function () {
-						return new Promise(function(resolve, reject) {
-							jss.set('#{id} .tokens'.format({id: autocomplete.id}), {
-								'background-color': 'rgba(255,255,255,0.05)'
-							});
-							jss.set('#{id} .tokens.active'.format({id: autocomplete.id}), {
-								'background-color': 'rgba(255,255,255,0.1)'
-							});
-							resolve();
 						});
 					},
 					filter: {
 						default: true,
 						char: '/',
 						key: 'forwardslash',
-						display: 'Client',
-						button: 'Clients',
-						rule: 'client',
+						display: 'Word',
+						button: 'Words',
+						rule: 'words',
 					},
 				},
 				{
@@ -314,6 +302,14 @@ var AccountInterfaces = {
 
 							resolve(results);
 						});
+					},
+					filter: {
+						default: true,
+						char: ':',
+						key: 'colon',
+						display: 'Client',
+						button: 'Clients',
+						rule: 'client',
 					},
 				},
 			]
@@ -520,9 +516,6 @@ var AccountInterfaces = {
 				}),
 
 			]).then(function () {
-				base.components = {
-
-				}
 				return base.setChildren([
 					buttonPanel,
 					counter,
@@ -1177,16 +1170,14 @@ var AccountInterfaces = {
 			// ASSOCIATE
 			// key bindings and other
 			// TRANSCRIPTION INTERFACE
+			controlInterface.name = 'controlInterface';
+			transcriptionInterface.name = 'transcriptionInterface';
 
 			// complete promises
 			return Promise.all([
 
 			]).then(function () {
 				// base children
-				base.components = {
-					controlInterface: controlInterface,
-					transcriptionInterface: transcriptionInterface,
-				}
 				return base.setChildren([
 					controlInterface,
 					transcriptionInterface,
