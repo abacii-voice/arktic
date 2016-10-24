@@ -54,6 +54,22 @@ var UI = {
 				return this.id;
 			}
 		}
+		this.setName = function (name) {
+			var currentName = this.name;
+			name = (name || currentName);
+
+			if (name !== currentName) {
+				var _this = this;
+				_this.name = name;
+				return _this.parent().then(function (parent) {
+					if (parent) {
+						parent.components[_this.name] = _this;
+						delete parent.components[currentName];	
+					}
+					return Util.ep();
+				});
+			}
+		}
 		this.setAfter = function (after) {
 			var currentAfter = this.after;
 			after = after !== undefined ? after : currentAfter;
@@ -346,6 +362,9 @@ var UI = {
 			var _this = this;
 			return new Promise(function(resolve, reject) {
 				child.index = (child.index || _this.children.length);
+				if (child.name) {
+					_this.components[child.name] = child;
+				}
 				child.isAddedToParent = true;
 				_this.children.splice(child.index, 0, child);
 				resolve(child);
@@ -374,6 +393,7 @@ var UI = {
 		this.setChildren = function (children) {
 			var _this = this;
 			_this.children = (_this.children || []);
+			_this.components = (_this.components || {});
 			if (children !== undefined) {
 				return Promise.ordered(children.map(function (child) {
 					return function () {
@@ -441,6 +461,7 @@ var UI = {
 			return Promise.all([
 				// id, root, after, template
 				_this.setId(args.id),
+				_this.setName(args.name),
 				_this.setRoot(args.root),
 				_this.setAfter(args.after),
 				_this.setTemplate(args.template),
