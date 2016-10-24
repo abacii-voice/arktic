@@ -89,7 +89,7 @@ var Components = {
 		args.appearance = (args.appearance || {
 			style: {
 				'width': '100%',
-				'height': '100px',
+				'height': '40px',
 			},
 		});
 
@@ -306,13 +306,14 @@ var Components = {
 		return Promise.all([
 			// base
 			UI.createComponent('{id}'.format({id: id}), {
-				template: UI.template('div', 'ie abs button border'),
+				template: UI.template('div', 'ie abs button border border-radius'),
 				appearance: {
 					style: {
-						'height': '80px',
-						'width': '100px',
+						'height': '28px',
+						'width': '28px',
 						'right': '5px',
 						'top': '5px',
+						'padding-top': '6px',
 					},
 				},
 			}),
