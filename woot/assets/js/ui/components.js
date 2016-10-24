@@ -89,6 +89,7 @@ var Components = {
 		args.appearance = (args.appearance || {
 			style: {
 				'width': '100%',
+				'height': '100px',
 			},
 		});
 
@@ -305,24 +306,32 @@ var Components = {
 		return Promise.all([
 			// base
 			UI.createComponent('{id}'.format({id: id}), {
-				template: UI.template('div', 'ie button border border-radius'),
+				template: UI.template('div', 'ie abs button border'),
 				appearance: {
 					style: {
-						'height': '40px',
-						'width': '40px',
-						'float': 'left',
+						'height': '80px',
+						'width': '100px',
+						'right': '5px',
+						'top': '5px',
 					},
 				},
 			}),
+
+			// glyphs
+			UI.createComponent('{id}-filter-glyph'.format({id: id}), {
+				template: UI.template('span', 'glyphicon glyphicon-filter'),
+			}),
+
 		]).then(function (components) {
 			// bindings
 			var [
 				base,
+				filterGlyph,
 			] = components;
 
 			return Promise.all([]).then(function () {
 				return base.setChildren([
-
+					filterGlyph
 				]);
 			}).then(function () {
 				return base;
@@ -793,6 +802,9 @@ var Components = {
 
 			// complete promises.
 			return Promise.all([
+				search.setChildren([
+					filterButton,
+				]),
 			]).then(function (results) {
 				base.components = {
 					title: title,
