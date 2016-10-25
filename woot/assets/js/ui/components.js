@@ -373,6 +373,17 @@ var Components = {
 				},
 			}),
 
+			// search filter bar
+			UI.createComponent('{id}-search-filter-bar'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': '40px',
+					},
+				},
+			}),
+
 			// search input
 			Components.search('{id}-search'.format({id: id}), {}),
 
@@ -399,6 +410,7 @@ var Components = {
 			var [
 				base,
 				title,
+				searchFilterBar,
 				search,
 				filterButton,
 				list,
@@ -803,7 +815,8 @@ var Components = {
 
 			// complete promises.
 			return Promise.all([
-				search.setChildren([
+				searchFilterBar.setChildren([
+					search,
 					filterButton,
 				]),
 			]).then(function (results) {
@@ -815,7 +828,7 @@ var Components = {
 				}
 				return base.setChildren([
 					title,
-					search,
+					searchFilterBar,
 					list,
 					filter,
 				]);
