@@ -403,7 +403,15 @@ var Components = {
 			}),
 
 			// filter
-			Components.contentPanel('{id}-filter'.format({id: id}), {}),
+			Components.contentPanel('{id}-filter'.format({id: id}), {
+				// appearance: {
+				// 	style: {
+				// 		'width': '100%',
+				// 		'height': '100%',
+				// 	},
+				// 	classes: ['hidden'],
+				// },
+			}),
 
 		]).then(function (components) {
 			// unpack components
@@ -601,7 +609,16 @@ var Components = {
 					if (Util.isEmptyObject(base.data.filters)) {
 						return Promise.ordered(base.targets.map(function (target) {
 							var filter = target.filter;
+							// 1. create item in filter list
+							// 2. bind char to selection
+							// 3. Word is used in autocomplete input
 
+							// Mousetrap.bind('backspace', function (event) {
+							// 	Promise.all([
+							// 		autocomplete.behaviours.backspace(),
+							// 		caption.behaviours.backspace(),
+							// 	]);
+							// });
 
 						}));
 					} else {
@@ -672,6 +689,60 @@ var Components = {
 					return Promise.all(base.targets.map(function (target) {
 						return (target.setStyle || base.defaultUnitStyle(target.name))();
 					}));
+				});
+			}
+			base.defaultFilterUnit = function (id, args) {
+				return Promise.all([
+					// base
+					UI.createComponent('{id}'.format({id: id}), {
+
+					}),
+
+					// Title
+					UI.createComponent('{id}-title'.format({id: id}), {
+
+					}),
+
+					// Description
+					UI.createComponent('{id}-description'.format({id: id}), {
+
+					}),
+
+					// Button
+					UI.createComponent('{id}-button'.format({id: id}), {
+
+					}),
+
+					// Button content
+					UI.createComponent('{id}-button-content'.format({id: id}), {
+
+					}),
+
+				]).then(function (components) {
+					var [
+						base,
+						title,
+						description,
+						button,
+						buttonContent,
+					] = components;
+
+					return Promise.all([
+
+						// button
+						button.setChildren([
+							buttonContent,
+						]),
+
+					]).then(function () {
+						return base.setChildren([
+							title,
+							description,
+							button,
+						]);
+					}).then(function () {
+						return base;
+					});
 				});
 			}
 			base.setActive = function (options) {
