@@ -306,13 +306,13 @@ var Components = {
 		return Promise.all([
 			// base
 			UI.createComponent('{id}'.format({id: id}), {
-				template: UI.template('div', 'ie abs button border border-radius'),
+				template: UI.template('div', 'ie abs button border border-radius hidden'),
 				appearance: {
 					style: {
 						'height': '28px',
 						'width': '28px',
-						'right': '5px',
-						'top': '5px',
+						'right': '6px',
+						'top': '6px',
 						'padding-top': '6px',
 					},
 				},
@@ -597,8 +597,19 @@ var Components = {
 						return Util.ep();
 					}
 				}).then(function () {
+					// filters
+					if (Util.isEmptyObject(base.data.filters)) {
+						return Promise.ordered(base.targets.map(function (target) {
+							var filter = target.filter;
+
+
+						}));
+					} else {
+						return Util.ep();
+					}
+				}).then(function () {
 					return base.run();
-				});;
+				});
 			}
 			base.stop = function () {
 				base.reset = true;
@@ -727,6 +738,7 @@ var Components = {
 				]);
 			}
 			search.onBlur = function () {
+				base.isFocussed = false;
 				return Util.ep();
 			}
 			search.onInput = function (value) {
