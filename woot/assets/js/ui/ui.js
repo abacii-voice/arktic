@@ -64,7 +64,7 @@ var UI = {
 				return _this.parent().then(function (parent) {
 					if (parent) {
 						parent.components[_this.name] = _this;
-						delete parent.components[currentName];	
+						delete parent.components[currentName];
 					}
 					return Util.ep();
 				});
@@ -678,21 +678,13 @@ var UI = {
 	// FUNCTIONS
 	functions: {
 		show: function (_this) {
-			return _this.setAppearance({
-				classes: {remove: ['hidden']},
-			}).then(function () {
-				return _this.setAppearance({
-					style: {opacity: 1},
-				});
+			return _this.setAppearance({classes: {remove: ['hidden']}}).then(function () {
+				return _this.setAppearance({style: {opacity: 1}});
 			});
 		},
 		hide: function (_this) {
-			return _this.setAppearance({
-				style: {opacity: 0},
-			}).then(function () {
-				return _this.setAppearance({
-					classes: {add: ['hidden']},
-				});
+			return _this.setAppearance({style: {opacity: 0}}).then(function () {
+				return _this.setAppearance({classes: {add: ['hidden']}});
 			});
 		},
 		triggerState: function (_this) {
