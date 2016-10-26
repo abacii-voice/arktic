@@ -142,7 +142,7 @@ var Components = {
 				base.metadata.query = metadata.query !== undefined ? metadata.query : (base.metadata.query || '');
 				base.metadata.complete = metadata.complete !== undefined ? metadata.complete : base.metadata.query;
 				base.metadata.combined = base.metadata.query + base.metadata.complete.substring(base.metadata.query.length)
-				return tail.setAppearance({html: (base.metadata.combined || base.metadata.query || base.placeholder || '')});
+				return tail.setAppearance({html: (base.metadata.combined || base.metadata.query || base.placeholder || base.filterString || '')});
 			}
 			base.isCaretInPosition = function (mode) {
 				// console.log('{} search isCaretInPosition'.format(base.id));
@@ -323,16 +323,35 @@ var Components = {
 				template: UI.template('span', 'glyphicon glyphicon-filter'),
 			}),
 
+			// content
+			UI.createComponent('{id}-content'.format({id: id}), {
+				template: UI.template('span', 'ie hidden'),
+			}),
+
 		]).then(function (components) {
 			// bindings
 			var [
 				base,
-				filterGlyph,
+				glyph,
+				content,
 			] = components;
+
+			base.setContent = function (char) {
+				if (char) {
+					return glyph.setAppearance({classes: {add: 'hidden'}}).then(function () {
+						return content.setAppearance({classes: {remove: 'hidden'}, html: char});
+					});
+				} else {
+					return glyph.setAppearance({classes: {remove: 'hidden'}}).then(function () {
+						return content.setAppearance({classes: {add: 'hidden'}, html: ''});
+					});
+				}
+			}
 
 			return Promise.all([]).then(function () {
 				return base.setChildren([
-					filterGlyph
+					glyph,
+					content,
 				]);
 			}).then(function () {
 				return base;
@@ -404,13 +423,13 @@ var Components = {
 
 			// filter
 			Components.contentPanel('{id}-filter'.format({id: id}), {
-				// appearance: {
-				// 	style: {
-				// 		'width': '100%',
-				// 		'height': '100%',
-				// 	},
-				// 	classes: ['hidden'],
-				// },
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': '100%',
+					},
+					classes: ['hidden'],
+				},
 			}),
 
 		]).then(function (components) {
@@ -608,18 +627,32 @@ var Components = {
 					// filters
 					if (Util.isEmptyObject(base.data.filters)) {
 						return Promise.ordered(base.targets.map(function (target) {
-							var filter = target.filter;
-							// 1. create item in filter list
-							// 2. bind char to selection
-							// 3. Word is used in autocomplete input
 
-							// Mousetrap.bind('backspace', function (event) {
-							// 	Promise.all([
-							// 		autocomplete.behaviours.backspace(),
-							// 		caption.behaviours.backspace(),
-							// 	]);
-							// });
+							return function () {
+								// add to filters and default filters
+								base.data.filters[target.filter.rule] = target.filter;
+								if (target.filter.default) {
+									base.data.defaultfilters.push(target.filter.rule);
+								}
 
+								// create filter unit and add to list
+								return base.defaultFilterUnit('{filterid}-{rule}'.format({filterid: filter.id, rule: target.filter.rule})).then(function (filterUnit) {
+									// bindings
+									return filterUnit.setBindings({
+										'click': function (_this) {
+											return base.updateFilter(target.filter.rule);
+										},
+									}).then(function () {
+										filter.setChildren([filterUnit]);
+									});
+								}).then(function () {
+									Mousetrap.bind(target.filter.char, function (event) {
+										event.preventDefault();
+										base.updateFilter(target.filter.rule);
+									});
+									return Util.ep();
+								});
+							}
 						}));
 					} else {
 						return Util.ep();
@@ -691,6 +724,9 @@ var Components = {
 					}));
 				});
 			}
+			base.defaultUnit = function () {
+				//
+			}
 			base.defaultFilterUnit = function (id, args) {
 				return Promise.all([
 					// Base
@@ -731,6 +767,7 @@ var Components = {
 				]).then(function (components) {
 					var [
 						base,
+						titleDescriptionBar,
 						title,
 						description,
 						button,
@@ -739,6 +776,12 @@ var Components = {
 
 					return Promise.all([
 
+						// title and description
+						titleDescriptionBar.setChildren([
+							title,
+							description,
+						]),
+
 						// button
 						button.setChildren([
 							buttonContent,
@@ -746,14 +789,24 @@ var Components = {
 
 					]).then(function () {
 						return base.setChildren([
-							title,
-							description,
+							titleDescriptionBar,
 							button,
 						]);
 					}).then(function () {
 						return base;
 					});
 				});
+			}
+			base.setFilter = function (rule) {
+				// 1. update search
+				search.filterString = base.data.filters[rule].input;
+				return Promise.all([
+					// 2. update data
+					base.updateData({filter: rule}),
+
+					// 3. update filter button
+					filterButton.setContent(base.data.filters[rule].char),
+				]);
 			}
 			base.setActive = function (options) {
 				options = (options || {});
@@ -837,7 +890,10 @@ var Components = {
 				return search.setAppearance({classes: {add: (options.mode === 'off' ? ['hidden'] : [])}}).then(function () {
 					return search.components.tail.setAppearance({html: options.placeholder});
 				}).then(function () {
-					return list.setAppearance({style: {'height': 'calc(100% - 40px)'}});
+					return Promise.all([
+						list.setAppearance({style: {'height': 'calc(100% - 40px)'}}),
+						filter.setAppearance({style: {'height': 'calc(100% - 40px)'}}),
+					]);
 				});
 			}
 
