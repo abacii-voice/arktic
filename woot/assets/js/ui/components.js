@@ -138,11 +138,12 @@ var Components = {
 
 			// logic, bindings, etc.
 			base.setMetadata = function (metadata) {
+				metadata = (metadata || {});
 				base.metadata = (base.metadata || {});
 				base.metadata.query = metadata.query !== undefined ? metadata.query : (base.metadata.query || '');
 				base.metadata.complete = metadata.complete !== undefined ? metadata.complete : base.metadata.query;
-				base.metadata.combined = base.metadata.query + base.metadata.complete.substring(base.metadata.query.length)
-				return tail.setAppearance({html: (base.metadata.combined || base.metadata.query || base.placeholder || base.filterString || '')});
+				base.metadata.combined = base.metadata.query + base.metadata.complete.substring(base.metadata.query.length);
+				return tail.setAppearance({html: (base.metadata.combined || base.metadata.query || base.filterString || base.placeholder || '')});
 			}
 			base.isCaretInPosition = function (mode) {
 				// console.log('{} search isCaretInPosition'.format(base.id));
@@ -320,7 +321,18 @@ var Components = {
 
 			// glyphs
 			UI.createComponent('{id}-filter-glyph'.format({id: id}), {
-				template: UI.template('span', 'glyphicon glyphicon-filter'),
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '100%',
+					},
+				},
+				children: [
+					UI.createComponent('{id}-filter-glyph'.format({id: id}), {
+						template: UI.template('span', 'glyphicon glyphicon-filter'),
+					}),
+				],
 			}),
 
 			// content
@@ -522,8 +534,11 @@ var Components = {
 						// remove non-matches from subset and the corresponding ones from virtual
 						return Promise.all(base.data.display.virtual.list.filter(function (datum, index) {
 							datum.index = index;
+							// console.log(datum);
 							return !((datum.rule === filter || filter === '') && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (!base.autocomplete || (base.autocomplete && lowercaseQuery !== '')) && datum.id in base.data.dataset); // reject
 						}).map(function (datum) {
+							// console.log('remove');
+							// console.log(datum);
 							base.data.display.virtual.list.splice(datum.index, 1);
 							delete base.data.display.subset[datum.id]; // remove from filtered data
 							return Util.ep();
@@ -562,6 +577,7 @@ var Components = {
 											// element already exists. Update using info in datum.
 											// NO RETURN: releases promise immediately. No need to wait for order if one exists.
 											UI.getComponent(base.data.display.virtual.rendered[index]).then(function (existingListItem) {
+												// console.log(datum);
 												return existingListItem.updateMetadata(datum, lowercaseQuery);
 											}).then(function () {
 												if (base.currentIndex === undefined) {
@@ -630,28 +646,38 @@ var Components = {
 
 							return function () {
 								// add to filters and default filters
-								base.data.filters[target.filter.rule] = target.filter;
-								if (target.filter.default) {
-									base.data.defaultfilters.push(target.filter.rule);
-								}
+								if (target.filter) {
+									base.data.filters[target.filter.rule] = target.filter;
+									if (target.filter.default) {
+										base.data.defaultfilters.push(target.filter.rule);
+									}
 
-								// create filter unit and add to list
-								return base.defaultFilterUnit('{filterid}-{rule}'.format({filterid: filter.id, rule: target.filter.rule})).then(function (filterUnit) {
-									// bindings
-									return filterUnit.setBindings({
-										'click': function (_this) {
-											return base.updateFilter(target.filter.rule);
-										},
+									// create filter unit and add to list
+									return base.defaultFilterUnit('{filterid}-{rule}'.format({filterid: filter.id, rule: target.filter.rule}), target.filter).then(function (filterUnit) {
+										// bindings
+										return filterUnit.setBindings({
+											'click': function (_this) {
+												return base.setFilter(target.filter.rule);
+											},
+										}).then(function () {
+											filter.setChildren([filterUnit]);
+										});
 									}).then(function () {
-										filter.setChildren([filterUnit]);
+										Mousetrap.bind(target.filter.char, function (event) {
+											event.preventDefault();
+											if (base.isFocussed) {
+												if (base.data.filter === target.filter.rule) {
+													base.setFilter();
+												} else {
+													base.setFilter(target.filter.rule);
+												}
+											}
+										});
+										return Util.ep();
 									});
-								}).then(function () {
-									Mousetrap.bind(target.filter.char, function (event) {
-										event.preventDefault();
-										base.updateFilter(target.filter.rule);
-									});
+								} else {
 									return Util.ep();
-								});
+								}
 							}
 						})).then(function () {
 							// if any filters have been added, make the filter button appear
@@ -741,6 +767,7 @@ var Components = {
 						template: UI.template('div', 'ie'),
 						appearance: {
 							style: {
+								'height': '80px',
 								'width': '100%',
 								'border-bottom': '1px solid #ccc',
 							},
@@ -753,6 +780,7 @@ var Components = {
 						appearance: {
 							style: {
 								'float': 'left',
+								'height': '100%',
 								'width': 'calc(100% - 30px)',
 							},
 						},
@@ -782,11 +810,15 @@ var Components = {
 
 					// Button
 					UI.createComponent('{id}-button'.format({id: id}), {
-						template: UI.template('div', 'ie button'),
+						template: UI.template('div', 'ie button border border-radius'),
 						appearance: {
 							style: {
 								'float': 'left',
-								'width': '30px',
+								'width': '28px',
+								'height': '28px',
+								'padding-top': '4px',
+								'top': '5px',
+								'right': '5px',
 							},
 						},
 					}),
@@ -794,6 +826,9 @@ var Components = {
 					// Button content
 					UI.createComponent('{id}-button-content'.format({id: id}), {
 						template: UI.template('span', 'ie'),
+						appearance: {
+							html: args.char,
+						},
 					}),
 
 				]).then(function (components) {
@@ -830,15 +865,23 @@ var Components = {
 				});
 			}
 			base.setFilter = function (rule) {
+				// 0. update data filter
+				base.data.filter = rule;
+
 				// 1. update search
-				search.filterString = base.data.filters[rule].input;
+				search.filterString = rule ? base.data.filters[rule].input : undefined;
 				return Promise.all([
 					// 2. update data
-					base.updateData({filter: rule}),
+					base.updateData({filter: (rule || '')}),
 
 					// 3. update filter button
-					filterButton.setContent(base.data.filters[rule].char),
-				]);
+					filterButton.setContent(rule ? base.data.filters[rule].char : undefined),
+
+					// 4. search
+					search.setMetadata(),
+				]).then(function () {
+					return base.run();
+				});
 			}
 			base.setActive = function (options) {
 				options = (options || {});
@@ -905,7 +948,7 @@ var Components = {
 			}
 			search.onBlur = function () {
 				base.isFocussed = false;
-				return Util.ep();
+				return base.setFilter();
 			}
 			search.onInput = function (value) {
 				return base.updateData({query: search.components.head.model().text()}).then(function () {
@@ -998,35 +1041,9 @@ var Components = {
 					search,
 					filterButton,
 				]),
-				filterButton.setState({
-					stateMap: {
-						'transcription-state': 'transcription-state-filter',
-						'transcription-state-filter': 'transcription-state',
-					},
-				}),
 				filterButton.setBindings({
 					'click': function (_this) {
 						return _this.triggerState();
-					},
-				}),
-				list.setState({
-					states: {
-						'transcription-state': {
-							classes: {remove: 'hidden'},
-						},
-						'transcription-state-filter': {
-							classes: {add: 'hidden'},
-						},
-					},
-				}),
-				filter.setState({
-					states: {
-						'transcription-state': {
-							classes: {add: 'hidden'},
-						},
-						'transcription-state-filter': {
-							classes: {remove: 'hidden'},
-						},
 					},
 				}),
 			]).then(function (results) {
@@ -1035,6 +1052,7 @@ var Components = {
 					search: search,
 					list: list,
 					filter: filter,
+					filterButton: filterButton,
 				}
 				return base.setChildren([
 					title,
