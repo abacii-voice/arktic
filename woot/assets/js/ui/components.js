@@ -693,9 +693,19 @@ var Components = {
 			}
 			base.defaultFilterUnit = function (id, args) {
 				return Promise.all([
-					// base
+					// Base
 					UI.createComponent('{id}'.format({id: id}), {
+						template: UI.template('div', 'ie'),
+						appearance: {
+							style: {
+								'width': '100%',
+							},
+						},
+					}),
 
+					// Title description bar
+					UI.createComponent('{id}-title-description-bar'.format({id: id}), {
+						template: UI.template('div', 'ie'),
 					}),
 
 					// Title
