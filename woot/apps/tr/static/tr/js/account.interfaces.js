@@ -307,9 +307,9 @@ var AccountInterfaces = {
 						default: true,
 						char: ':',
 						key: 'colon',
+						input: 'Clients',
 						display: 'Client',
-						button: 'Clients',
-						rule: 'client',
+						rule: 'clients',
 					},
 				},
 			]
@@ -427,8 +427,8 @@ var AccountInterfaces = {
 					}
 					unitBase.updateMetadata = function (ndatum, query) {
 						// if there are changes, do stuff.
-						return ((!unitBase.datum || ndatum.id !== unitBase.datum.id) ? unitBase.updateDatum : Util.ep)(ndatum).then(function () {
-							return (query !== unitBase.query ? unitBase.updateQuery : Util.ep)(query);
+						return unitBase.updateDatum(ndatum).then(function () {
+							return unitBase.updateQuery(query);
 						}).then(function () {
 							return (unitBase.isHidden ? unitBase.show : Util.ep)();
 						});
@@ -498,6 +498,33 @@ var AccountInterfaces = {
 				]),
 
 				// autocomplete
+
+				autocomplete.components.filterButton.setState({
+					stateMap: {
+						'transcription-state': 'transcription-state-filter',
+						'transcription-state-filter': 'transcription-state',
+					},
+				}),
+				autocomplete.list.setState({
+					states: {
+						'transcription-state': {
+							classes: {remove: 'hidden'},
+						},
+						'transcription-state-filter': {
+							classes: {add: 'hidden'},
+						},
+					},
+				}),
+				autocomplete.components.filter.setState({
+					states: {
+						'transcription-state': {
+							classes: {add: 'hidden'},
+						},
+						'transcription-state-filter': {
+							classes: {remove: 'hidden'},
+						},
+					},
+				}),
 				autocomplete.setSearch({mode: 'on', limit: 10, autocomplete: true}),
 				autocomplete.setStyle(),
 				autocomplete.setState({
