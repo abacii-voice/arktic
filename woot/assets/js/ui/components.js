@@ -653,7 +653,14 @@ var Components = {
 									return Util.ep();
 								});
 							}
-						}));
+						})).then(function () {
+							// if any filters have been added, make the filter button appear
+							if (!Util.isEmptyObject(base.data.filters)) {
+								return filterButton.setAppearance({classes: {remove: 'hidden'}});
+							} else {
+								return Util.ep();
+							}
+						});
 					} else {
 						return Util.ep();
 					}
@@ -735,6 +742,7 @@ var Components = {
 						appearance: {
 							style: {
 								'width': '100%',
+								'border-bottom': '1px solid #ccc',
 							},
 						},
 					}),
@@ -742,26 +750,50 @@ var Components = {
 					// Title description bar
 					UI.createComponent('{id}-title-description-bar'.format({id: id}), {
 						template: UI.template('div', 'ie'),
+						appearance: {
+							style: {
+								'float': 'left',
+								'width': 'calc(100% - 30px)',
+							},
+						},
 					}),
 
 					// Title
 					UI.createComponent('{id}-title'.format({id: id}), {
-
+						template: UI.template('div', 'ie'),
+						appearance: {
+							style: {
+								'float': 'left',
+								'width': '100%',
+							},
+						},
 					}),
 
 					// Description
 					UI.createComponent('{id}-description'.format({id: id}), {
-
+						template: UI.template('div', 'ie'),
+						appearance: {
+							style: {
+								'float': 'left',
+								'width': '100%',
+							},
+						},
 					}),
 
 					// Button
 					UI.createComponent('{id}-button'.format({id: id}), {
-
+						template: UI.template('div', 'ie button'),
+						appearance: {
+							style: {
+								'float': 'left',
+								'width': '30px',
+							},
+						},
 					}),
 
 					// Button content
 					UI.createComponent('{id}-button-content'.format({id: id}), {
-
+						template: UI.template('span', 'ie'),
 					}),
 
 				]).then(function (components) {
@@ -887,13 +919,17 @@ var Components = {
 				base.autocomplete = (options.autocomplete || false);
 
 				search.placeholder = options.placeholder;
-				return search.setAppearance({classes: {add: (options.mode === 'off' ? ['hidden'] : [])}}).then(function () {
+				return searchFilterBar.setAppearance({classes: {add: (options.mode === 'off' ? ['hidden'] : [])}}).then(function () {
 					return search.components.tail.setAppearance({html: options.placeholder});
 				}).then(function () {
-					return Promise.all([
-						list.setAppearance({style: {'height': 'calc(100% - 40px)'}}),
-						filter.setAppearance({style: {'height': 'calc(100% - 40px)'}}),
-					]);
+					if (options.mode !== 'off') {
+						return Promise.all([
+							list.setAppearance({style: {'height': 'calc(100% - 40px)'}}),
+							filter.setAppearance({style: {'height': 'calc(100% - 40px)'}}),
+						]);
+					} else {
+						return Util.ep();
+					}
 				});
 			}
 
@@ -956,18 +992,43 @@ var Components = {
 				},
 			}
 
-			// clone
-			base.clone = function (copy) {
-				// All that needs to happen is updatedata needs to be rigged to the copy
-				base.updateData = copy.updateData;
-			}
-
 			// complete promises.
 			return Promise.all([
 				searchFilterBar.setChildren([
 					search,
 					filterButton,
 				]),
+				filterButton.setState({
+					stateMap: {
+						'transcription-state': 'transcription-state-filter',
+						'transcription-state-filter': 'transcription-state',
+					},
+				}),
+				filterButton.setBindings({
+					'click': function (_this) {
+						return _this.triggerState();
+					},
+				}),
+				list.setState({
+					states: {
+						'transcription-state': {
+							classes: {remove: 'hidden'},
+						},
+						'transcription-state-filter': {
+							classes: {add: 'hidden'},
+						},
+					},
+				}),
+				filter.setState({
+					states: {
+						'transcription-state': {
+							classes: {add: 'hidden'},
+						},
+						'transcription-state-filter': {
+							classes: {remove: 'hidden'},
+						},
+					},
+				}),
 			]).then(function (results) {
 				base.components = {
 					title: title,
