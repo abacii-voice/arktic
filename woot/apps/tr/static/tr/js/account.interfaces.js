@@ -269,6 +269,7 @@ var AccountInterfaces = {
 						input: 'Words',
 						display: 'Word',
 						rule: 'words',
+						limit: 0,
 					},
 				},
 				{
@@ -310,6 +311,7 @@ var AccountInterfaces = {
 						input: 'Clients',
 						display: 'Client',
 						rule: 'clients',
+						limit: 10,
 					},
 				},
 			]
