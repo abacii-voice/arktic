@@ -482,6 +482,7 @@ var Components = {
 				},
 				get: function () {
 					// this looks at the Context.get and Context.get:force, separately.
+					base.lock = false;
 					if (base.reset) {
 						base.data.dataset = {};
 						base.data.queries = [];
@@ -571,9 +572,16 @@ var Components = {
 							}).then(function () {
 								// for each item in the list, generate a new list item and add to it using the setMetadata function.
 								// Never remove a list item, simply make it display:none if the end of the list is reached.
-								return Promise.ordered(base.data.display.virtual.list.slice(0, base.limit).map(function (datum, index) {
+								var virtualList;
+								if (base.limit) {
+									virtualList = base.data.display.virtual.list.slice(0, base.limit);
+								} else {
+									virtualList = base.data.display.virtual.list;
+								}
+								return Promise.ordered(virtualList.map(function (datum, index) {
 									return function () {
 										if (index < base.data.display.virtual.rendered.length) {
+											// console.log(index)
 											// element already exists. Update using info in datum.
 											// NO RETURN: releases promise immediately. No need to wait for order if one exists.
 											UI.getComponent(base.data.display.virtual.rendered[index]).then(function (existingListItem) {
@@ -587,15 +595,25 @@ var Components = {
 												}
 											});
 										} else {
-											// element does not exist. Create using info in datum.
-											return base.unit(datum, lowercaseQuery, index).then(function (newListItem) {
-												base.data.display.virtual.rendered.push(newListItem.id);
-												return base.list.components.wrapper.setChildren([newListItem]);
-											});
+											if (!base.lock) {
+												base.lock = true;
+												// element does not exist. Create using info in datum.
+												// console.log(index)
+												return base.unit(datum, lowercaseQuery, index).then(function (newListItem) {
+													base.data.display.virtual.rendered.push(newListItem.id);
+													return base.list.components.wrapper.setChildren([newListItem]);
+												}).then(function () {
+													base.lock = false;
+													return Util.ep();
+												});
+											} else {
+												base.lock = true;
+												return Util.ep();
+											}
 										}
 									}
 								})).then(function () {
-									return Promise.all(base.data.display.virtual.rendered.slice(base.data.display.virtual.list.length).map(function (listItemId) {
+									return Promise.all(base.data.display.virtual.rendered.slice(virtualList.length).map(function (listItemId) {
 										return UI.getComponent(listItemId).then(function (listItem) {
 											return listItem.hide();
 										});
@@ -867,6 +885,11 @@ var Components = {
 			base.setFilter = function (rule) {
 				// 0. update data filter
 				base.data.filter = rule;
+				if (base.data.filters[rule]) {
+					base.limit = base.data.filters[rule].limit !== 0 ? (base.data.filters[rule].limit !== undefined ? base.data.filters[rule].limit : base.defaultLimit) : undefined;
+				} else {
+					base.limit = base.defaultLimit;
+				}
 
 				// 1. update search
 				search.filterString = rule ? base.data.filters[rule].input : undefined;
@@ -959,6 +982,7 @@ var Components = {
 				options.mode = (options.mode || 'on');
 				options.placeholder = (options.placeholder || 'search...');
 				base.limit = options.limit;
+				base.defaultLimit = base.limit;
 				base.autocomplete = (options.autocomplete || false);
 
 				search.placeholder = options.placeholder;
