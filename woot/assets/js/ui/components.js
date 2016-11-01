@@ -607,7 +607,6 @@ var Components = {
 													return Util.ep();
 												});
 											} else {
-												base.lock = true;
 												return Util.ep();
 											}
 										}
@@ -634,111 +633,332 @@ var Components = {
 				},
 			}
 
-			// operation methods
-			base.setup = function () {
-				// setup paths
-				return Promise.all(base.targets.map(function (target) {
-					return target.path().then(function (path) {
-						target.resolvedPath = path; // this can be recalculated upon stopping and restarting.
-						target.queries = [];
-					});
-				})).then(function () {
-					if (base.data.display.virtual.rendered.length === 0) {
-						return Promise.ordered(Array.range(base.limit).map(function (index) {
-							return function () {
-								return base.unit({main: ''}, '', index).then(function (newListItem) {
-									base.data.display.virtual.rendered.push(newListItem.id);
-									return newListItem.setAppearance({classes: {add: 'hidden'}}).then(function () {
-										return base.list.components.wrapper.setChildren([newListItem]);
-									});
-								});
-							}
-						}));
-					} else {
-						return Util.ep();
+			// storage
+			base.data = {
+				// variables
+				limit: undefined,
+				query: '',
+				filter: '',
+				lock: false,
+				reset: false,
+
+				// actual datasets
+				storage = {
+					dataset: {},
+					subset: {},
+					virtual: {
+						list: [],
+						rendered: [],
+					},
+					queries: [],
+					filters: {},
+					defaultfilters: [],
+				},
+
+				// methods
+				idgen: function (id) {
+					return '{base}-{id}'.format({base: base.id, id: id});
+				},
+				defaultSort: function (d1, d2) {
+					// sort by usage
+					if (d1.usage && d2.usage) {
+						if (d1.usage > d2.usage) {
+							return 1;
+						} else if (d1.usage < d2.usage) {
+							return -1;
+						}
 					}
-				}).then(function () {
-					// filters
-					if (Util.isEmptyObject(base.data.filters)) {
-						return Promise.ordered(base.targets.map(function (target) {
 
-							return function () {
-								// add to filters and default filters
-								if (target.filter) {
-									base.data.filters[target.filter.rule] = target.filter;
-									if (target.filter.default) {
-										base.data.defaultfilters.push(target.filter.rule);
-									}
+					// then alphabetically
+					if (d1.main.toLowerCase() > d2.main.toLowerCase()) {
+						return 1;
+					} else {
+						return -1;
+					}
+				},
+				load: {
+					get: function () {
+						// this looks at the Context.get and Context.get:force, separately.
+						base.data.lock = false;
+						if (base.data.reset) {
+							base.data.storage.dataset = {};
+							base.data.storage.subset = {};
+							base.data.storage.queries = [];
+							base.data.reset = false;
+						}
 
-									// create filter unit and add to list
-									return base.defaultFilterUnit('{filterid}-{rule}'.format({filterid: filter.id, rule: target.filter.rule}), target.filter).then(function (filterUnit) {
-										// bindings
-										return filterUnit.setBindings({
-											'click': function (_this) {
-												return base.setFilter(target.filter.rule);
-											},
-										}).then(function () {
-											filter.setChildren([filterUnit]);
-										});
-									}).then(function () {
-										Mousetrap.bind(target.filter.char, function (event) {
-											event.preventDefault();
-											if (base.isFocussed) {
-												if (base.data.filter === target.filter.rule) {
-													base.setFilter();
-												} else {
-													base.setFilter(target.filter.rule);
-												}
-											}
-										});
-										return Util.ep();
+						// Load each target
+						return Promise.all(base.targets.map(function (target) {
+							return Promise.all([
+								Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query}}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
+
+								// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
+								// Also, only query if this query has never been queried before
+								(!target.queries.contains(base.data.query) ? function () {
+									target.queries.push(base.data.query);
+									return new Promise(function(resolve, reject) {
+										var queryAtStart = base.data.query;
+										setTimeout(function () {
+											resolve(queryAtStart === base.data.query);
+										}, 1000);
+									}).then(function (timeout) {
+										if (timeout) {
+											return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query}}, force: true}).then(target.process).then(base.data.load.append).then(base.data.display.main);
+										} else {
+											return Util.ep();
+										}
 									});
+								} : Util.ep)(),
+							]);
+						}));
+					},
+					append: function (data) {
+						// Add to dataset. Nothing is ever removed.
+						return Promise.all(data.map(function (datum) {
+							return new Promise(function(resolve, reject) {
+								base.data.dataset[datum.id] = datum;
+								resolve();
+							});
+						}));
+					},
+				},
+				display: {
+					main: function () {
+						// 1. filter the current dataset
+						return base.data.display.filter.main().then(function () {
+
+							// 2. render the current dataset
+							return base.data.display.render();
+						});
+					},
+					filter: {
+						main: function () {
+							// 1. remove non matching in subset
+							return base.data.display.filter.out().then(function () {
+
+								// 2. filter dataset to produce new subset
+								return base.data.display.filter.in();
+							})
+						},
+						condition: function (datum) {
+							var conditions = [
+								(datum.rule === base.data.filter || base.data.filter === ''), // filter matches or no filter
+								datum.main.toLowerCase().indexOf(base.data.query.toLowerCase()) === 0, // lower case query match at beginning
+								(!base.autocomplete || (base.autocomplete && base.data.query !== '')), // autocomplete mode or no query
+								datum.id in base.data.storage.dataset, // datum is currently in dataset (prevent bleed over from change of dataset)
+							]
+							return Util.ep(conditions.reduce(function (a,b) {
+								return a && b;
+							}));
+						},
+						out: function () {
+							return Promise.all(base.data.storage.virtual.list.map(function (datum, index) {
+								datum.index = index;
+								return base.data.display.filter.condition().then(function (condition) {
+									if (!condition) {
+										base.data.storage.virtual.list.splice(datum.index, 1);
+										delete base.data.storage.subset[datum.id]; // remove from filtered data
+									}
+									return Util.ep();
+								})
+							}));
+						},
+						in: function () {
+							return Promise.all(Object.keys(base.data.storage.dataset).map(function (key) {
+								var datum = base.data.storage.dataset[key];
+								return base.data.display.filter.condition().then(function (condition) {
+									if (condition) {
+										base.data.storage.subset[key] = datum;
+									}
+									return Util.ep();
+								});
+							}));
+						},
+					},
+					render: {
+						main: function () {
+							base.data.display.render.virtual().then(function () {
+								return base.data.display.render.sort();
+							}).then(function () {
+								// for each item in the list, generate a new list item and add to it using the setMetadata function.
+								// Never remove a list item, simply make it display:none if the end of the list is reached.
+								var virtualList = base.limit ? base.data.storage.virtual.list.slice(0, base.limit) : base.data.storage.virtual.list;
+								return Promise.ordered(virtualList.map(function (datum, index) {
+									return function () {
+										if (index < base.data.display.virtual.rendered.length) {
+											// console.log(index)
+											// element already exists. Update using info in datum.
+											// NO RETURN: releases promise immediately. No need to wait for order if one exists.
+											UI.getComponent(base.data.display.virtual.rendered[index]).then(function (existingListItem) {
+												// console.log(datum);
+												return existingListItem.updateMetadata(datum, lowercaseQuery);
+											}).then(function () {
+												if (base.currentIndex === undefined) {
+													return base.setActive({index: 0});
+												} else {
+													return Util.ep();
+												}
+											});
+										} else {
+											if (!base.lock) {
+												base.lock = true;
+												// element does not exist. Create using info in datum.
+												// console.log(index)
+												return base.unit(datum, lowercaseQuery, index).then(function (newListItem) {
+													base.data.display.virtual.rendered.push(newListItem.id);
+													return base.list.components.wrapper.setChildren([newListItem]);
+												}).then(function () {
+													base.lock = false;
+													return Util.ep();
+												});
+											} else {
+												return Util.ep();
+											}
+										}
+									}
+								})).then(function () {
+									// hide anything that does not contain something to display
+									return Promise.all(base.data.display.virtual.rendered.slice(virtualList.length).map(function (listItemId) {
+										return UI.getComponent(listItemId).then(function (listItem) {
+											return listItem.hide();
+										});
+									}));
+								})
+							}).then(function () {
+								return base.data.display.render.setMetadata();
+							});
+						},
+						virtual: function () {
+							base.data.storage.virtual.list = Object.keys(base.data.storage.subset).map(function (key) {
+								return base.data.storage.subset[key];
+							});
+							return Util.ep();
+						},
+						sort: function () {
+							base.data.storage.virtual.list.sort((base.sort || base.data.defaultSort));
+							return Util.ep();
+						},
+						setMetadata: function () {
+							if (!base.data.query) {
+								base.currentIndex = undefined;
+								return base.search.setMetadata({query: '', complete: ''});
+							} else {
+								var datum = base.data.storage.virtual.list[base.currentIndex];
+								var complete = (datum || {}).main;
+								return base.search.setMetadata({query: lowercaseQuery, complete: complete});
+							}
+						},
+					},
+				},
+			}
+
+			// actions
+			base.control = {
+				setup: {
+					main: function () {
+						return Promise.all([
+							base.control.setup.resolvePaths(),
+							base.control.setup.extractFilters(),
+						]);
+					},
+					resolvePaths: function () {
+						return Promise.all(base.targets.map(function (target) {
+							return target.path().then(function (path) {
+								target.resolvedPath = path; // this can be recalculated upon stopping and restarting.
+								target.queries = [];
+							});
+						}));
+					},
+					extractFilters: function () {
+						// filters
+						if (Util.isEmptyObject(base.data.storage.filters)) {
+							return Promise.ordered(base.targets.map(function (target) {
+
+								return function () {
+									// add to filters and default filters
+									if (target.filter) {
+										base.data.storage.filters[target.filter.rule] = target.filter;
+										if (target.filter.default) {
+											base.data.storage.defaultfilters.push(target.filter.rule);
+										}
+
+										// create filter unit and add to list
+										return base.unit.filter.default('{filterid}-{rule}'.format({filterid: filter.id, rule: target.filter.rule}), target.filter).then(function (filterUnit) {
+											// bindings
+											return filterUnit.setBindings({
+												'click': function (_this) {
+													return base.setFilter(target.filter.rule);
+												},
+											}).then(function () {
+												filter.setChildren([filterUnit]);
+											});
+										}).then(function () {
+											Mousetrap.bind(target.filter.char, function (event) {
+												event.preventDefault();
+												if (base.isFocussed) {
+													if (base.data.filter === target.filter.rule) {
+														base.setFilter();
+													} else {
+														base.setFilter(target.filter.rule);
+													}
+												}
+											});
+											return Util.ep();
+										});
+									} else {
+										return Util.ep();
+									}
+								}
+							})).then(function () {
+								// if any filters have been added, make the filter button appear
+								if (!Util.isEmptyObject(base.data.filters)) {
+									return filterButton.setAppearance({classes: {remove: 'hidden'}});
 								} else {
 									return Util.ep();
 								}
-							}
-						})).then(function () {
-							// if any filters have been added, make the filter button appear
-							if (!Util.isEmptyObject(base.data.filters)) {
-								return filterButton.setAppearance({classes: {remove: 'hidden'}});
-							} else {
-								return Util.ep();
-							}
-						});
-					} else {
-						return Util.ep();
-					}
-				}).then(function () {
-					return base.run();
-				});
-			}
-			base.stop = function () {
-				base.reset = true;
-				return base.updateData({query: '', filter: ''}).then(function () {
-					return base.search.clear();
-				}).then(function () {
-					return base.search.setMetadata({query: '', complete: ''});
-				});
-			}
-			base.run = function () {
-				// start processing
-				return Promise.all([
-					base.data.get(),
-				]);
-			}
-			base.updateData = function (data, defaults) {
-				// console.log(base.id, data, defaults);
-				var _this = base;
-				return new Promise(function(resolve, reject) {
+							});
+						} else {
+							return Util.ep();
+						}
+					},
+				},
+				reset: function () {
+					base.reset = true;
+					return base.updateData({query: '', filter: ''}).then(function () {
+						return base.search.clear();
+					}).then(function () {
+						return base.search.setMetadata({query: '', complete: ''});
+					});
+				},
+				update: function () {
 					// apply changes
-					_this.data.query = (((data || {}).query !== undefined ? (data || {}).query : _this.data.query) || ((defaults || {}).query || ''));
-					_this.data.filter = (((data || {}).filter || _this.data.filter) || ((defaults || {}).filter || ''));
-					resolve();
-				}).then(function () {
-					// handle filters
-
-				});
+					base.data.query = (((data || {}).query !== undefined ? (data || {}).query : base.data.query) || ((defaults || {}).query || ''));
+					base.data.filter = (((data || {}).filter || base.data.filter) || ((defaults || {}).filter || ''));
+					return Util.ep();
+				},
+				start: function () {
+					return base.data.load.main();
+				},
 			}
+
+			// list item formatting
+			base.unitStyle = {
+				apply: function (target) {
+
+				},
+				default: function (target) {
+
+				},
+			}
+			base.unit = {
+				generate: function (target) {
+
+				},
+				default: function (target) {
+
+				},
+			}
+
 			base.baseUnitStyle = function () {
 				return new Promise(function(resolve, reject) {
 					// base class
@@ -1000,7 +1220,7 @@ var Components = {
 				});
 			}
 
-			// set title
+			// title methods
 			base.setTitle = function (options) {
 				if (options.text) {
 					return title.setAppearance({
