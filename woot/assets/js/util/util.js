@@ -116,4 +116,12 @@ var Util = {
 			resolve(input);
 		});
 	},
+
+	// objects
+	isEmptyObject: function (e) {
+		for (var t in e) {
+			return false;
+		}
+		return true;
+	},
 }
