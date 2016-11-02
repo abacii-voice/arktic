@@ -256,31 +256,20 @@ var AccountInterfaces = {
 								return {
 									id: key,
 									main: token.content,
-									rule: 'tokens',
+									rule: 'words',
 								}
 							});
-
 							resolve(results);
-						});
-					},
-					setStyle: function () {
-						return new Promise(function(resolve, reject) {
-							jss.set('#{id} .tokens'.format({id: autocomplete.id}), {
-								'background-color': 'rgba(255,255,255,0.05)'
-							});
-							jss.set('#{id} .tokens.active'.format({id: autocomplete.id}), {
-								'background-color': 'rgba(255,255,255,0.1)'
-							});
-							resolve();
 						});
 					},
 					filter: {
 						default: true,
 						char: '/',
 						key: 'forwardslash',
-						display: 'Client',
-						button: 'Clients',
-						rule: 'client',
+						input: 'Words',
+						display: 'Word',
+						rule: 'words',
+						limit: 0,
 					},
 				},
 				{
@@ -315,9 +304,18 @@ var AccountInterfaces = {
 							resolve(results);
 						});
 					},
+					filter: {
+						default: true,
+						char: ':',
+						key: 'colon',
+						input: 'Clients',
+						display: 'Client',
+						rule: 'clients',
+						limit: 10,
+					},
 				},
 			]
-			autocomplete.baseUnitStyle = function () {
+			autocomplete.unitStyle.base = function () {
 				return new Promise(function(resolve, reject) {
 					// base class
 					jss.set('#{id} .base'.format({id: base.id}), {
@@ -431,8 +429,8 @@ var AccountInterfaces = {
 					}
 					unitBase.updateMetadata = function (ndatum, query) {
 						// if there are changes, do stuff.
-						return ((!unitBase.datum || ndatum.id !== unitBase.datum.id) ? unitBase.updateDatum : Util.ep)(ndatum).then(function () {
-							return (query !== unitBase.query ? unitBase.updateQuery : Util.ep)(query);
+						return unitBase.updateDatum(ndatum).then(function () {
+							return unitBase.updateQuery(query);
 						}).then(function () {
 							return (unitBase.isHidden ? unitBase.show : Util.ep)();
 						});
@@ -502,27 +500,51 @@ var AccountInterfaces = {
 				]),
 
 				// autocomplete
+
+				autocomplete.components.filterButton.setState({
+					stateMap: {
+						'transcription-state': 'transcription-state-filter',
+						'transcription-state-filter': 'transcription-state',
+					},
+				}),
+				autocomplete.list.setState({
+					states: {
+						'transcription-state': {
+							classes: {remove: 'hidden'},
+						},
+						'transcription-state-filter': {
+							classes: {add: 'hidden'},
+						},
+					},
+				}),
+				autocomplete.components.filter.setState({
+					states: {
+						'transcription-state': {
+							classes: {add: 'hidden'},
+						},
+						'transcription-state-filter': {
+							classes: {remove: 'hidden'},
+						},
+					},
+				}),
 				autocomplete.setSearch({mode: 'on', limit: 10, autocomplete: true}),
-				autocomplete.setStyle(),
+				autocomplete.unitStyle.apply(),
 				autocomplete.setState({
 					states: {
 						'transcription-state': {
 							preFn: function (_this) {
-								return _this.setup();
+								return _this.control.setup.main();
 							},
 						},
 						'control-state': {
 							fn: function (_this) {
-								return _this.stop();
+								return _this.control.reset();
 							}
 						}
 					},
 				}),
 
 			]).then(function () {
-				base.components = {
-
-				}
 				return base.setChildren([
 					buttonPanel,
 					counter,
@@ -988,7 +1010,7 @@ var AccountInterfaces = {
 			return Promise.all([
 
 				// CLIENT SIDEBAR
-				clientList.setStyle(),
+				clientList.unitStyle.apply(),
 				clientList.search.setAppearance({
 					style: {
 						'left': '0px',
@@ -1008,7 +1030,7 @@ var AccountInterfaces = {
 					states: {
 						'client-state': {
 							preFn: function (_this) {
-								return _this.setup();
+								return _this.control.setup.main();
 							},
 							fn: function () {
 								return clientList.search.clear();
@@ -1016,7 +1038,7 @@ var AccountInterfaces = {
 						},
 						'role-state': {
 							preFn: function (_this) {
-								return _this.stop();
+								return _this.control.reset();
 							}
 						}
 					},
@@ -1025,7 +1047,7 @@ var AccountInterfaces = {
 				clientList.setSearch({mode: 'off', placeholder: 'Search clients...'}),
 
 				// ROLE SIDEBAR
-				roleList.setStyle(),
+				roleList.unitStyle.apply(),
 				roleList.search.setAppearance({
 					style: {
 						'left': '0px',
@@ -1045,17 +1067,17 @@ var AccountInterfaces = {
 					states: {
 						'client-state': {
 							preFn: function (_this) {
-								return _this.stop();
+								return _this.control.reset();
 							}
 						},
 						'role-state': {
 							preFn: function (_this) {
-								return _this.setup();
+								return _this.control.setup.main();
 							},
 						},
 						'control-state': {
 							preFn: function (_this) {
-								return _this.stop();
+								return _this.control.reset();
 							}
 						},
 					}
@@ -1177,16 +1199,14 @@ var AccountInterfaces = {
 			// ASSOCIATE
 			// key bindings and other
 			// TRANSCRIPTION INTERFACE
+			controlInterface.name = 'controlInterface';
+			transcriptionInterface.name = 'transcriptionInterface';
 
 			// complete promises
 			return Promise.all([
 
 			]).then(function () {
 				// base children
-				base.components = {
-					controlInterface: controlInterface,
-					transcriptionInterface: transcriptionInterface,
-				}
 				return base.setChildren([
 					controlInterface,
 					transcriptionInterface,

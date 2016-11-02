@@ -22,6 +22,7 @@ var Components = {
 
 			// wrapper
 			UI.createComponent('{id}-wrapper'.format({id: id}), {
+				name: 'wrapper',
 				template: UI.template('div', 'ie'),
 				appearance: {
 					style: {
@@ -74,9 +75,6 @@ var Components = {
 			return Promise.all([
 
 			]).then(function (results) {
-				base.components = {
-					wrapper: wrapper,
-				}
 				return base.setWrapper([wrapper]);
 			}).then(function () {
 				return base;
@@ -91,15 +89,15 @@ var Components = {
 		args.appearance = (args.appearance || {
 			style: {
 				'width': '100%',
+				'height': '40px',
 			},
-			classes: ['border', 'border-radius'],
 		});
 
 		// set up components
 		return Promise.all([
 			// base component
 			UI.createComponent('{id}'.format({id: id}), {
-				template: UI.template('div', 'ie input'),
+				template: UI.template('div', 'ie input border border-radius'),
 				appearance: args.appearance,
 			}),
 
@@ -140,11 +138,12 @@ var Components = {
 
 			// logic, bindings, etc.
 			base.setMetadata = function (metadata) {
+				metadata = (metadata || {});
 				base.metadata = (base.metadata || {});
 				base.metadata.query = metadata.query !== undefined ? metadata.query : (base.metadata.query || '');
 				base.metadata.complete = metadata.complete !== undefined ? metadata.complete : base.metadata.query;
-				base.metadata.combined = base.metadata.query + base.metadata.complete.substring(base.metadata.query.length)
-				return tail.setAppearance({html: (base.metadata.combined || base.metadata.query || base.placeholder || '')});
+				base.metadata.combined = base.metadata.query + base.metadata.complete.substring(base.metadata.query.length);
+				return tail.setAppearance({html: (base.metadata.combined || base.metadata.query || base.filterString || base.placeholder || '')});
 			}
 			base.isCaretInPosition = function (mode) {
 				// console.log('{} search isCaretInPosition'.format(base.id));
@@ -304,8 +303,72 @@ var Components = {
 	},
 
 	// FILTER ICON
-	filterIcon: function (id, args) {
+	filterButton: function (id, args) {
+		return Promise.all([
+			// base
+			UI.createComponent('{id}'.format({id: id}), {
+				template: UI.template('div', 'ie abs button border border-radius hidden'),
+				appearance: {
+					style: {
+						'height': '28px',
+						'width': '28px',
+						'right': '6px',
+						'top': '6px',
+						'padding-top': '6px',
+					},
+				},
+			}),
 
+			// glyphs
+			UI.createComponent('{id}-filter-glyph'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '100%',
+					},
+				},
+				children: [
+					UI.createComponent('{id}-filter-glyph'.format({id: id}), {
+						template: UI.template('span', 'glyphicon glyphicon-filter'),
+					}),
+				],
+			}),
+
+			// content
+			UI.createComponent('{id}-content'.format({id: id}), {
+				template: UI.template('span', 'ie hidden'),
+			}),
+
+		]).then(function (components) {
+			// bindings
+			var [
+				base,
+				glyph,
+				content,
+			] = components;
+
+			base.setContent = function (char) {
+				if (char) {
+					return glyph.setAppearance({classes: {add: 'hidden'}}).then(function () {
+						return content.setAppearance({classes: {remove: 'hidden'}, html: char});
+					});
+				} else {
+					return glyph.setAppearance({classes: {remove: 'hidden'}}).then(function () {
+						return content.setAppearance({classes: {add: 'hidden'}, html: ''});
+					});
+				}
+			}
+
+			return Promise.all([]).then(function () {
+				return base.setChildren([
+					glyph,
+					content,
+				]);
+			}).then(function () {
+				return base;
+			});
+		});
 	},
 
 	// SEARCHABLE LIST
@@ -341,12 +404,23 @@ var Components = {
 				},
 			}),
 
+			// search filter bar
+			UI.createComponent('{id}-search-filter-bar'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': '40px',
+					},
+				},
+			}),
+
 			// search input
 			Components.search('{id}-search'.format({id: id}), {}),
 
 			// filter button
-			UI.createComponent('{id}-filter-button'.format({id: id}), {
-				template: UI.template('div', 'ie button'),
+			Components.filterButton('{id}-filter-button'.format({id: id}), {
+
 			}),
 
 			// list
@@ -360,13 +434,22 @@ var Components = {
 			}),
 
 			// filter
-			Components.contentPanel('{id}-filter'.format({id: id}), {}),
+			Components.contentPanel('{id}-filter'.format({id: id}), {
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': '100%',
+					},
+					classes: ['hidden'],
+				},
+			}),
 
 		]).then(function (components) {
 			// unpack components
 			var [
 				base,
 				title,
+				searchFilterBar,
 				search,
 				filterButton,
 				list,
@@ -379,72 +462,77 @@ var Components = {
 			base.list = list;
 			base.search = search;
 
-			// control operation
+			// storage
 			base.data = {
-
-				// data sets
-				dataset: {},
-				queries: [],
-				filters: [],
-
 				// variables
-				limit: undefined, // if limit is undefined, there is no limit
-				query: {
-					previous: undefined,
-					current: '',
-					changed: function () {
-						var changed = base.data.query.current !== base.data.query.previous;
-						base.data.query.previous = base.data.query.current;
-						return changed;
-					}
-				},
-				filter: {
-					previous: undefined,
-					current: {},
-					changed: function () {
-						var changed = base.data.filter.current !== base.data.filter.previous;
-						base.data.filter.previous = base.data.filter.current;
-						return changed;
-					}
-				},
-				index: {
-					previous: undefined,
-					current: 0,
-					changed: function () {
-						var changed = base.data.index.current !== base.data.index.previous;
-						base.data.index.previous = base.data.index.current;
-						return changed;
+				limit: undefined,
+				query: '',
+				filter: '',
+				lock: false,
+				reset: false,
+
+				// actual datasets
+				storage: {
+					dataset: {},
+					subset: {},
+					virtual: {
+						list: [],
+						rendered: [],
 					},
+					queries: [],
+					filters: {},
+					defaultfilters: [],
 				},
 
 				// methods
 				idgen: function (id) {
-					return '{base}-{id}'.format({base: base.id, id: id})
+					return '{base}-{id}'.format({base: base.id, id: id});
 				},
-				get: function () {
-					// this looks at the Context.get and Context.get:force, separately.
-					if (base.data.query.changed() || base.reset) {
-						if (base.reset) {
-							base.data.dataset = {};
-							base.data.queries = [];
-							base.reset = false;
+				defaultSort: function (d1, d2) {
+					// sort by usage
+					if (d1.usage && d2.usage) {
+						if (d1.usage > d2.usage) {
+							return 1;
+						} else if (d1.usage < d2.usage) {
+							return -1;
 						}
+					}
+
+					// then alphabetically
+					if (d1.main.toLowerCase() > d2.main.toLowerCase()) {
+						return 1;
+					} else {
+						return -1;
+					}
+				},
+				load: {
+					get: function () {
+						// this looks at the Context.get and Context.get:force, separately.
+						base.data.lock = false;
+						if (base.data.reset) {
+							base.data.storage.dataset = {};
+							base.data.storage.subset = {};
+							base.data.storage.queries = [];
+							base.data.reset = false;
+						}
+
+						// Load each target
 						return Promise.all(base.targets.map(function (target) {
 							return Promise.all([
-								Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}}).then(target.process).then(base.data.append).then(base.data.display.queue),
+								Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query}}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
 
 								// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
 								// Also, only query if this query has never been queried before
-								(!target.queries.contains(base.data.query.current) ? function () {
-									target.queries.push(base.data.query.current);
+								(!target.queries.contains(base.data.query) ? function () {
+									target.queries.push(base.data.query);
 									return new Promise(function(resolve, reject) {
-										var queryAtStart = base.data.query.current;
+										var queryAtStart = base.data.query;
 										setTimeout(function () {
-											resolve(queryAtStart === base.data.query.current);
+											resolve(queryAtStart === base.data.query);
 										}, 1000);
 									}).then(function (timeout) {
 										if (timeout) {
-											return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query.current}}, force: true}).then(target.process).then(base.data.append).then(base.data.display.queue);
+											return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query}}, force: true}).then(target.process).then(base.data.load.append).then(base.data.display.main);
 										} else {
 											return Util.ep();
 										}
@@ -452,166 +540,333 @@ var Components = {
 								} : Util.ep)(),
 							]);
 						}));
-					} else {
-						return Util.ep();
-					}
-				},
-				append: function (data) {
-					// Add to dataset. Nothing is ever removed.
-					return Promise.all(data.map(function (datum) {
-						return new Promise(function(resolve, reject) {
-							base.data.dataset[datum.id] = datum;
-							resolve();
-						});
-					}));
-				},
-				display: {
-					lock: false,
-					virtual: {
-						list: [],
-						rendered: [],
 					},
-					subset: {},
-					queue: function () {
-						var query = base.data.query.current;
-						var lowercaseQuery = query.toLowerCase();
-						var filter = base.data.filter.current;
-
-						// remove non-matches from subset and the corresponding ones from virtual
-						return Promise.all(base.data.display.virtual.list.filter(function (item, index) {
-							item.index = index;
-							return !(((filter && item.rule === filter) || $.isEmptyObject(filter)) && item.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (!base.autocomplete || (base.autocomplete && lowercaseQuery !== '')) && item.id in base.data.dataset); // reject
-						}).map(function (item) {
-							base.data.display.virtual.list.splice(item.index, 1);
-							delete base.data.display.subset[item.id]; // remove from filtered data
-							return Util.ep();
-						})).then(function () {
-							// add new data to subset
+					append: function (data) {
+						// Add to dataset. Nothing is ever removed.
+						return Promise.all(data.map(function (datum) {
 							return new Promise(function(resolve, reject) {
-								Object.keys(base.data.dataset).forEach(function (key) {
-									var datum = base.data.dataset[key];
-									if (((filter && datum.rule === filter) || $.isEmptyObject(filter)) && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (!base.autocomplete || (base.autocomplete && lowercaseQuery !== '')) && datum.id in base.data.dataset) {
-										base.data.display.subset[key] = datum;
-									}
-								});
+								base.data.storage.dataset[datum.id] = datum;
 								resolve();
 							});
-						}).then(function () {
+						}));
+					},
+				},
+				display: {
+					main: function () {
+						// 1. filter the current dataset
+						return base.data.display.filter.main().then(function () {
+							// 2. render the current dataset
+							return base.data.display.render.main().catch(function (error) {
+								console.log(error);
+							});
+						});
+					},
+					filter: {
+						main: function () {
+							// 1. remove non matching in subset
+							return base.data.display.filter.out().then(function () {
 
-							// create virtual
-							return new Promise(function(resolve, reject) {
-								base.data.display.virtual.list = Object.keys(base.data.display.subset).map(function (key) {
-									return base.data.display.subset[key];
+								// 2. filter dataset to produce new subset
+								return base.data.display.filter.in();
+							})
+						},
+						condition: function (datum) {
+							var conditions = [
+								(datum.rule === base.data.filter || base.data.filter === ''), // filter matches or no filter
+								datum.main.toLowerCase().indexOf(base.data.query.toLowerCase()) === 0, // lower case query match at beginning
+								(!base.autocomplete || (base.autocomplete && base.data.query !== '')), // autocomplete mode or no query
+								datum.id in base.data.storage.dataset, // datum is currently in dataset (prevent bleed over from change of dataset)
+							]
+							return Util.ep(conditions.reduce(function (a,b) {
+								return a && b;
+							}));
+						},
+						out: function () {
+							return Promise.all(base.data.storage.virtual.list.map(function (datum, index) {
+								datum.index = index;
+								return base.data.display.filter.condition(datum).then(function (condition) {
+									if (!condition) {
+										base.data.storage.virtual.list.splice(datum.index, 1);
+										delete base.data.storage.subset[datum.id]; // remove from filtered data
+									}
+									return Util.ep();
+								})
+							}));
+						},
+						in: function () {
+							return Promise.all(Object.keys(base.data.storage.dataset).map(function (key) {
+								var datum = base.data.storage.dataset[key];
+								return base.data.display.filter.condition(datum).then(function (condition) {
+									if (condition) {
+										base.data.storage.subset[key] = datum;
+									}
+									return Util.ep();
 								});
-								resolve();
-							}).then(function () {
-
-								// sort virtual
-								return new Promise(function(resolve, reject) {
-									base.data.display.virtual.list.sort(base.sort);
-									resolve();
-								});
+							}));
+						},
+					},
+					render: {
+						main: function () {
+							return base.data.display.render.virtual().then(function () {
+								return base.data.display.render.sort();
 							}).then(function () {
 								// for each item in the list, generate a new list item and add to it using the setMetadata function.
 								// Never remove a list item, simply make it display:none if the end of the list is reached.
-								return Promise.ordered(base.data.display.virtual.list.slice(0, base.limit).map(function (datum, index) {
+								var virtualList = base.limit ? base.data.storage.virtual.list.slice(0, base.limit) : base.data.storage.virtual.list;
+								return Promise.ordered(virtualList.map(function (datum, index) {
 									return function () {
-										if (index < base.data.display.virtual.rendered.length) {
+										if (index < base.data.storage.virtual.rendered.length) {
 											// element already exists. Update using info in datum.
 											// NO RETURN: releases promise immediately. No need to wait for order if one exists.
-											UI.getComponent(base.data.display.virtual.rendered[index]).then(function (existingListItem) {
-												return existingListItem.updateMetadata(datum, lowercaseQuery);
+											UI.getComponent(base.data.storage.virtual.rendered[index]).then(function (existingListItem) {
+												// console.log(datum);
+												return existingListItem.updateMetadata(datum, base.data.query.toLowerCase());
 											}).then(function () {
 												if (base.currentIndex === undefined) {
-													return base.setActive({index: 0});
+													return base.control.setActive({index: 0});
 												} else {
 													return Util.ep();
 												}
 											});
 										} else {
-											// element does not exist. Create using info in datum.
-											return base.unit(datum, lowercaseQuery, index).then(function (newListItem) {
-												base.data.display.virtual.rendered.push(newListItem.id);
-												return base.list.components.wrapper.setChildren([newListItem]);
-											});
+											if (!base.lock) {
+												base.lock = true;
+												// element does not exist. Create using info in datum.
+												return base.unit(datum, base.data.query.toLowerCase(), index).then(function (newListItem) {
+													base.data.storage.virtual.rendered.push(newListItem.id);
+													return base.list.components.wrapper.setChildren([newListItem]);
+												}).then(function () {
+													base.lock = false;
+													return Util.ep();
+												});
+											} else {
+												return Util.ep();
+											}
 										}
 									}
 								})).then(function () {
-									return Promise.all(base.data.display.virtual.rendered.slice(base.data.display.virtual.list.length).map(function (listItemId) {
+									// hide anything that does not contain something to display
+									return Promise.all(base.data.storage.virtual.rendered.slice(virtualList.length).map(function (listItemId) {
 										return UI.getComponent(listItemId).then(function (listItem) {
-											// console.log(listItemId);
 											return listItem.hide();
 										});
 									}));
-								}).then(function () {
-									if (!lowercaseQuery ) {
-										base.currentIndex = undefined;
-										return base.search.setMetadata({query: '', complete: ''});
-									} else {
-										var datum = base.data.display.virtual.list[base.currentIndex];
-										var complete = (datum || {}).main;
-										return base.search.setMetadata({query: lowercaseQuery, complete: complete});
-									}
-								});
+								})
+							}).then(function () {
+								return base.data.display.render.setMetadata();
 							});
-						});
+						},
+						virtual: function () {
+							base.data.storage.virtual.list = Object.keys(base.data.storage.subset).map(function (key) {
+								return base.data.storage.subset[key];
+							});
+							return Util.ep();
+						},
+						sort: function () {
+							base.data.storage.virtual.list.sort((base.sort || base.data.defaultSort));
+							return Util.ep();
+						},
+						setMetadata: function () {
+							if (!base.data.query) {
+								base.currentIndex = undefined;
+								return base.search.setMetadata({query: '', complete: ''});
+							} else {
+								var datum = base.data.storage.virtual.list[base.currentIndex];
+								var complete = (datum || {}).main;
+								return base.search.setMetadata({query: base.data.query.toLowerCase(), complete: complete});
+							}
+						},
 					},
 				},
 			}
 
-			// operation methods
-			base.setup = function () {
-				// setup paths
-				return Promise.all(base.targets.map(function (target) {
-					return target.path().then(function (path) {
-						target.resolvedPath = path; // this can be recalculated upon stopping and restarting.
-						target.queries = [];
-					});
-				})).then(function () {
-					if (base.data.display.virtual.rendered.length === 0) {
-						return Promise.ordered(Array.range(base.limit).map(function (index) {
-							return function () {
-								return base.unit({main: ''}, '', index).then(function (newListItem) {
-									base.data.display.virtual.rendered.push(newListItem.id);
-									return newListItem.setAppearance({classes: {add: 'hidden'}}).then(function () {
-										return base.list.components.wrapper.setChildren([newListItem]);
-									});
-								});
-							}
+			// actions
+			base.control = {
+				// global control
+				setup: {
+					main: function () {
+						return Promise.all([
+							base.control.setup.resolvePaths(),
+							base.control.setup.renderUntilDefaultLimit(),
+							base.control.setup.extractFilters(),
+						]).then(function () {
+							return base.control.start();
+						});
+					},
+					resolvePaths: function () {
+						return Promise.all(base.targets.map(function (target) {
+							return target.path().then(function (path) {
+								target.resolvedPath = path; // this can be recalculated upon stopping and restarting.
+								target.queries = [];
+							});
 						}));
+					},
+					renderUntilDefaultLimit: function () {
+						if (base.data.storage.virtual.rendered.length === 0) {
+							return Promise.ordered(Array.range(base.limit).map(function (index) {
+								return function () {
+									return base.unit({main: ''}, '', index).then(function (newListItem) {
+										base.data.storage.virtual.rendered.push(newListItem.id);
+										return newListItem.setAppearance({classes: {add: 'hidden'}}).then(function () {
+											return base.list.components.wrapper.setChildren([newListItem]);
+										});
+									});
+								}
+							}));
+						} else {
+							return Util.ep();
+						}
+					},
+					extractFilters: function () {
+						// filters
+						if (Util.isEmptyObject(base.data.storage.filters)) {
+							return Promise.ordered(base.targets.map(function (target) {
+
+								return function () {
+									// add to filters and default filters
+									if (target.filter) {
+										base.data.storage.filters[target.filter.rule] = target.filter;
+										if (target.filter.default) {
+											base.data.storage.defaultfilters.push(target.filter.rule);
+										}
+
+										// create filter unit and add to list
+										return base.defaultFilterUnit('{filterid}-{rule}'.format({filterid: filter.id, rule: target.filter.rule}), target.filter).then(function (filterUnit) {
+											// bindings
+											return filterUnit.setBindings({
+												'click': function (_this) {
+													return base.control.setFilter(target.filter.rule);
+												},
+											}).then(function () {
+												filter.setChildren([filterUnit]);
+											});
+										}).then(function () {
+											Mousetrap.bind(target.filter.char, function (event) {
+												event.preventDefault();
+												if (base.isFocussed) {
+													if (base.data.filter === target.filter.rule) {
+														base.control.setFilter();
+													} else {
+														base.control.setFilter(target.filter.rule);
+													}
+												}
+											});
+											return Util.ep();
+										});
+									} else {
+										return Util.ep();
+									}
+								}
+							})).then(function () {
+								// if any filters have been added, make the filter button appear
+								if (!Util.isEmptyObject(base.data.storage.filters)) {
+									return filterButton.setAppearance({classes: {remove: 'hidden'}});
+								} else {
+									return Util.ep();
+								}
+							});
+						} else {
+							return Util.ep();
+						}
+					},
+				},
+				reset: function () {
+					base.reset = true;
+					return base.control.update({query: '', filter: ''}).then(function () {
+						return base.search.clear();
+					}).then(function () {
+						return base.search.setMetadata({query: '', complete: ''});
+					});
+				},
+				update: function (data, defaults) {
+					// apply changes
+					base.data.query = (((data || {}).query !== undefined ? (data || {}).query : base.data.query) || ((defaults || {}).query || ''));
+					base.data.filter = (((data || {}).filter || base.data.filter) || ((defaults || {}).filter || ''));
+					return Util.ep();
+				},
+				start: function () {
+					return base.data.load.get();
+				},
+
+				// element control
+				setFilter: function (rule) {
+					// 0. update data filter
+					base.data.filter = rule;
+					if (rule in base.data.storage.filters) {
+						base.limit = base.data.storage.filters[rule].limit !== 0 ? (base.data.storage.filters[rule].limit !== undefined ? base.data.storage.filters[rule].limit : base.data.limit) : undefined;
+					} else {
+						base.limit = base.defaultLimit;
+					}
+
+					// 1. update search
+					search.filterString = rule ? base.data.storage.filters[rule].input : undefined;
+					return Promise.all([
+						// 2. update data
+						base.control.update({filter: (rule || '')}),
+
+						// 3. update filter button
+						filterButton.setContent(rule ? base.data.storage.filters[rule].char : undefined),
+
+						// 4. search
+						search.setMetadata(),
+					]).then(function () {
+						return base.control.start();
+					});
+				},
+				setActive: function (options) {
+					options = (options || {});
+
+					// if there are any results
+					if (base.data.storage.virtual.rendered.length && base.isFocussed) {
+
+						// changes
+						var previousIndex = base.currentIndex;
+						base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (base.currentIndex !== undefined ? (options.increment || 0) : 0)));
+
+						// boundary conditions
+						base.currentIndex = base.currentIndex > base.data.storage.virtual.list.length - 1 ? base.data.storage.virtual.list.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
+
+						if (base.currentIndex !== previousIndex) {
+							return base.control.deactivate().then(function () {
+								return UI.getComponent(base.data.storage.virtual.rendered[base.currentIndex]).then(function (activeListItem) {
+									base.active = activeListItem;
+									return base.active.activate().then(function () {
+										var datum = base.data.storage.virtual.list[base.currentIndex];
+										var complete = (datum || {}).main;
+										return base.search.setMetadata({complete: complete});
+									});
+								})
+							});
+						} else {
+							return Util.ep();
+						}
 					} else {
 						return Util.ep();
 					}
-				}).then(function () {
-					return base.run();
-				});;
+				},
+				deactivate: function () {
+					return ((base.active || {}).deactivate || Util.ep)().then(function () {
+						return new Promise(function(resolve, reject) {
+							base.active = undefined;
+							resolve();
+						});
+					});
+				},
 			}
-			base.stop = function () {
-				base.reset = true;
-				return base.updateData({query: '', filter: {}}).then(function () {
-					return base.search.clear();
-				}).then(function () {
-					return base.search.setMetadata({query: '', complete: ''});
-				});
-			}
-			base.run = function () {
-				// start processing
-				return Promise.all([
-					base.data.get(),
-				]);
-			}
-			base.updateData = function (data, defaults) {
-				// console.log(base.id, data, defaults);
-				var _this = base;
-				return new Promise(function(resolve, reject) {
-					// apply changes
-					_this.data.query.current = (((data || {}).query !== undefined ? (data || {}).query : _this.data.query.current) || ((defaults || {}).query || ''));
-					_this.data.filter.current = (((data || {}).filter || _this.data.filter.current) || ((defaults || {}).filter || {}));
-					resolve();
-				});
-			}
-			base.baseUnitStyle = function () {
-				return new Promise(function(resolve, reject) {
+
+			// list item formatting
+			base.unitStyle = {
+				apply: function () {
+					return base.unitStyle.base().then(function () {
+						return Promise.all(base.targets.map(function (target) {
+							return base.unitStyle.set(target);
+						}));
+					});
+				},
+				set: function (target) {
+					return (target.setStyle || base.unitStyle.default(target))();
+				},
+				base: function () {
 					// base class
 					jss.set('#{id} .base'.format({id: base.id}), {
 						'height': '30px',
@@ -623,82 +878,131 @@ var Components = {
 					jss.set('#{id} .base.active'.format({id: base.id}), {
 						'background-color': 'rgba(255,255,255,0.1)'
 					});
-					resolve();
-				});
-			}
-			base.defaultUnitStyle = function (type) {
-				return function () {
-					return new Promise(function(resolve, reject) {
-						jss.set('#{id} .{type}'.format({id: base.id, type: type}), {
+					return Util.ep();
+				},
+				default: function (target) {
+					return function () {
+						jss.set('#{id} .{type}'.format({id: base.id, type: target.name}), {
 							'background-color': 'rgba(255,255,255,0.00)'
 						});
-						jss.set('#{id} .base.{type}.active'.format({id: base.id, type: type}), {
+						jss.set('#{id} .base.{type}.active'.format({id: base.id, type: target.name}), {
 							'background-color': 'rgba(255,255,255,0.1)'
 						});
-						resolve();
-					});
-				}
-			}
-			base.setStyle = function () {
-				return base.baseUnitStyle().then(function () {
-					return Promise.all(base.targets.map(function (target) {
-						return (target.setStyle || base.defaultUnitStyle(target.name))();
-					}));
-				});
-			}
-			base.setActive = function (options) {
-				options = (options || {});
-
-				// if there are any results
-				if (base.data.display.virtual.rendered.length && base.isFocussed) {
-
-					// changes
-					var previousIndex = base.currentIndex;
-					base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (base.currentIndex !== undefined ? (options.increment || 0) : 0)));
-
-					// boundary conditions
-					base.currentIndex = base.currentIndex > base.data.display.virtual.list.length - 1 ? base.data.display.virtual.list.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
-
-					if (base.currentIndex !== previousIndex) {
-						return base.deactivate().then(function () {
-							return UI.getComponent(base.data.display.virtual.rendered[base.currentIndex]).then(function (activeListItem) {
-								base.active = activeListItem;
-								return base.active.activate().then(function () {
-									var datum = base.data.display.virtual.list[base.currentIndex];
-									var complete = (datum || {}).main;
-									return base.search.setMetadata({complete: complete});
-								});
-							})
-						});
-					} else {
 						return Util.ep();
 					}
-				} else {
-					return Util.ep();
-				}
+				},
 			}
-			base.deactivate = function () {
-				// console.log('{} searchlist deactivate'.format(base.id));
-				return ((base.active || {}).deactivate || Util.ep)().then(function () {
-					return new Promise(function(resolve, reject) {
-						base.active = undefined;
-						resolve();
+			base.defaultFilterUnit = function (id, args) {
+				return Promise.all([
+					// Base
+					UI.createComponent('{id}'.format({id: id}), {
+						template: UI.template('div', 'ie'),
+						appearance: {
+							style: {
+								'height': '80px',
+								'width': '100%',
+								'border-bottom': '1px solid #ccc',
+							},
+						},
+					}),
+
+					// Title description bar
+					UI.createComponent('{id}-title-description-bar'.format({id: id}), {
+						template: UI.template('div', 'ie'),
+						appearance: {
+							style: {
+								'float': 'left',
+								'height': '100%',
+								'width': 'calc(100% - 30px)',
+							},
+						},
+					}),
+
+					// Title
+					UI.createComponent('{id}-title'.format({id: id}), {
+						template: UI.template('div', 'ie'),
+						appearance: {
+							style: {
+								'float': 'left',
+								'width': '100%',
+							},
+						},
+					}),
+
+					// Description
+					UI.createComponent('{id}-description'.format({id: id}), {
+						template: UI.template('div', 'ie'),
+						appearance: {
+							style: {
+								'float': 'left',
+								'width': '100%',
+							},
+						},
+					}),
+
+					// Button
+					UI.createComponent('{id}-button'.format({id: id}), {
+						template: UI.template('div', 'ie button border border-radius'),
+						appearance: {
+							style: {
+								'float': 'left',
+								'width': '28px',
+								'height': '28px',
+								'padding-top': '4px',
+								'top': '5px',
+								'right': '5px',
+							},
+						},
+					}),
+
+					// Button content
+					UI.createComponent('{id}-button-content'.format({id: id}), {
+						template: UI.template('span', 'ie'),
+						appearance: {
+							html: args.char,
+						},
+					}),
+
+				]).then(function (components) {
+					var [
+						base,
+						titleDescriptionBar,
+						title,
+						description,
+						button,
+						buttonContent,
+					] = components;
+
+					return Promise.all([
+
+						// title and description
+						titleDescriptionBar.setChildren([
+							title,
+							description,
+						]),
+
+						// button
+						button.setChildren([
+							buttonContent,
+						]),
+
+					]).then(function () {
+						return base.setChildren([
+							titleDescriptionBar,
+							button,
+						]);
+					}).then(function () {
+						return base;
 					});
 				});
-			}
-			base.getContent = function () {
-				return search.getContent();
-			}
-			base.setContent = function (options) {
-				return search.setContent(options);
 			}
 
 			// list methods
 			base.next = function () {
-				return base.setActive({increment: 1});
+				return base.control.setActive({increment: 1});
 			}
 			base.previous = function () {
-				return base.setActive({increment: -1});
+				return base.control.setActive({increment: -1});
 			}
 
 			// search methods
@@ -706,32 +1010,41 @@ var Components = {
 				base.isFocussed = true;
 				return Promise.all([
 					(base.searchExternal ? base.searchExternal.onFocus : Util.ep)(),
-					base.updateData({query: search.components.head.model().text()}),
+					base.control.update({query: search.components.head.model().text()}),
 				]);
 			}
 			search.onBlur = function () {
-				return Util.ep();
+				base.isFocussed = false;
+				return base.control.setFilter();
 			}
 			search.onInput = function (value) {
-				return base.updateData({query: search.components.head.model().text()}).then(function () {
-					return base.run();
+				return base.control.update({query: search.components.head.model().text()}).then(function () {
+					return base.control.start();
 				});
 			}
 			base.setSearch = function (options) {
 				options.mode = (options.mode || 'on');
 				options.placeholder = (options.placeholder || 'search...');
 				base.limit = options.limit;
+				base.defaultLimit = base.limit;
 				base.autocomplete = (options.autocomplete || false);
 
 				search.placeholder = options.placeholder;
-				return search.setAppearance({classes: {add: (options.mode === 'off' ? ['hidden'] : [])}}).then(function () {
+				return searchFilterBar.setAppearance({classes: {add: (options.mode === 'off' ? ['hidden'] : [])}}).then(function () {
 					return search.components.tail.setAppearance({html: options.placeholder});
 				}).then(function () {
-					return list.setAppearance({style: {'height': 'calc(100% - 40px)'}});
+					if (options.mode !== 'off') {
+						return Promise.all([
+							list.setAppearance({style: {'height': 'calc(100% - 40px)'}}),
+							filter.setAppearance({style: {'height': 'calc(100% - 40px)'}}),
+						]);
+					} else {
+						return Util.ep();
+					}
 				});
 			}
 
-			// set title
+			// title methods
 			base.setTitle = function (options) {
 				if (options.text) {
 					return title.setAppearance({
@@ -770,8 +1083,8 @@ var Components = {
 				number: function (char) {
 					// console.log('{} searchlist behaviours number'.format(base.id));
 					var index = parseInt(char);
-					if (index < base.data.display.virtual.rendered.length) {
-						return base.setActive({index: index}).then(function () {
+					if (index < base.data.storage.virtual.rendered.length) {
+						return base.control.setActive({index: index}).then(function () {
 							// don't know what behaviour to have here
 							return search.behaviours.right();
 
@@ -790,25 +1103,28 @@ var Components = {
 				},
 			}
 
-			// clone
-			base.clone = function (copy) {
-				// All that needs to happen is updatedata needs to be rigged to the copy
-				base.updateData = copy.updateData;
-			}
-
 			// complete promises.
 			return Promise.all([
-
+				searchFilterBar.setChildren([
+					search,
+					filterButton,
+				]),
+				filterButton.setBindings({
+					'click': function (_this) {
+						return _this.triggerState();
+					},
+				}),
 			]).then(function (results) {
 				base.components = {
 					title: title,
 					search: search,
 					list: list,
 					filter: filter,
+					filterButton: filterButton,
 				}
 				return base.setChildren([
 					title,
-					search,
+					searchFilterBar,
 					list,
 					filter,
 				]);
