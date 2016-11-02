@@ -17,6 +17,7 @@ var AccountComponents = {
 
 			// play button
 			UI.createComponent('{id}-play-button'.format({id: id}), {
+				name: 'playButton',
 				template: UI.template('div', 'ie button border abs'),
 				appearance: {
 					style: {
@@ -32,6 +33,7 @@ var AccountComponents = {
 			// AUDIO GROUP
 			// audio wrapper
 			UI.createComponent('{id}-audio-wrapper'.format({id: id}), {
+				name: 'audioWrapper',
 				template: UI.template('div', 'ie abs border'),
 				appearance: {
 					style: {
@@ -47,6 +49,7 @@ var AccountComponents = {
 
 			// audio track wrapper
 			UI.createComponent('{id}-audio-track-wrapper'.format({id: id}), {
+				name: 'audioTrackWrapper',
 				template: UI.template('div', 'ie abs'),
 				appearance: {
 					style: {
@@ -510,11 +513,6 @@ var AccountComponents = {
 			base.previous = function () {
 				return audioTrack.previous();
 			}
-			base.components = {
-				playButton: playButton,
-				audioWrapper: audioWrapper,
-				audioTrackWrapper: audioTrackWrapper,
-			}
 			base.setChildren([
 				audioWrapper,
 				playButton,
@@ -955,9 +953,7 @@ var AccountComponents = {
 					},
 				}),
 			]).then(function () {
-				base.components = {
-					wrapper: wrapper,
-				}
+				base.components['wrapper'] = wrapper;
 				return base.setChildren([
 					content,
 				]);
