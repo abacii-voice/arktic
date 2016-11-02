@@ -462,177 +462,6 @@ var Components = {
 			base.list = list;
 			base.search = search;
 
-			// control operation
-			base.data = {
-
-				// data sets
-				dataset: {},
-				queries: [],
-				filters: {},
-				defaultfilters: [],
-
-				// variables
-				limit: undefined, // if limit is undefined, there is no limit
-				query: '',
-				filter: '',
-
-				// methods
-				idgen: function (id) {
-					return '{base}-{id}'.format({base: base.id, id: id})
-				},
-				get: function () {
-					// this looks at the Context.get and Context.get:force, separately.
-					base.lock = false;
-					if (base.reset) {
-						base.data.dataset = {};
-						base.data.queries = [];
-						base.reset = false;
-					}
-					return Promise.all(base.targets.map(function (target) {
-						return Promise.all([
-							Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query}}}).then(target.process).then(base.data.append).then(base.data.display.queue),
-
-							// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
-							// Also, only query if this query has never been queried before
-							(!target.queries.contains(base.data.query) ? function () {
-								target.queries.push(base.data.query);
-								return new Promise(function(resolve, reject) {
-									var queryAtStart = base.data.query;
-									setTimeout(function () {
-										resolve(queryAtStart === base.data.query);
-									}, 1000);
-								}).then(function (timeout) {
-									if (timeout) {
-										return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query}}, force: true}).then(target.process).then(base.data.append).then(base.data.display.queue);
-									} else {
-										return Util.ep();
-									}
-								});
-							} : Util.ep)(),
-						]);
-					}));
-				},
-				append: function (data) {
-					// Add to dataset. Nothing is ever removed.
-					return Promise.all(data.map(function (datum) {
-						return new Promise(function(resolve, reject) {
-							base.data.dataset[datum.id] = datum;
-							resolve();
-						});
-					}));
-				},
-				display: {
-					virtual: {
-						list: [],
-						rendered: [],
-					},
-					subset: {},
-					queue: function () {
-						var query = base.data.query;
-						var lowercaseQuery = query.toLowerCase();
-						var filter = base.data.filter;
-
-						// remove non-matches from subset and the corresponding ones from virtual
-						return Promise.all(base.data.display.virtual.list.filter(function (datum, index) {
-							datum.index = index;
-							// console.log(datum);
-							return !((datum.rule === filter || filter === '') && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (!base.autocomplete || (base.autocomplete && lowercaseQuery !== '')) && datum.id in base.data.dataset); // reject
-						}).map(function (datum) {
-							// console.log('remove');
-							// console.log(datum);
-							base.data.display.virtual.list.splice(datum.index, 1);
-							delete base.data.display.subset[datum.id]; // remove from filtered data
-							return Util.ep();
-						})).then(function () {
-							// add new data to subset
-							return new Promise(function(resolve, reject) {
-								Object.keys(base.data.dataset).forEach(function (key) {
-									var datum = base.data.dataset[key];
-									if ((datum.rule === filter || filter === '') && datum.main.toLowerCase().indexOf(lowercaseQuery) === 0 && (!base.autocomplete || (base.autocomplete && lowercaseQuery !== '')) && datum.id in base.data.dataset) {
-										base.data.display.subset[key] = datum;
-									}
-								});
-								resolve();
-							});
-						}).then(function () {
-
-							// create virtual
-							return new Promise(function(resolve, reject) {
-								base.data.display.virtual.list = Object.keys(base.data.display.subset).map(function (key) {
-									return base.data.display.subset[key];
-								});
-								resolve();
-							}).then(function () {
-
-								// sort virtual
-								return new Promise(function(resolve, reject) {
-									base.data.display.virtual.list.sort(base.sort);
-									resolve();
-								});
-							}).then(function () {
-								// for each item in the list, generate a new list item and add to it using the setMetadata function.
-								// Never remove a list item, simply make it display:none if the end of the list is reached.
-								var virtualList;
-								if (base.limit) {
-									virtualList = base.data.display.virtual.list.slice(0, base.limit);
-								} else {
-									virtualList = base.data.display.virtual.list;
-								}
-								return Promise.ordered(virtualList.map(function (datum, index) {
-									return function () {
-										if (index < base.data.display.virtual.rendered.length) {
-											// console.log(index)
-											// element already exists. Update using info in datum.
-											// NO RETURN: releases promise immediately. No need to wait for order if one exists.
-											UI.getComponent(base.data.display.virtual.rendered[index]).then(function (existingListItem) {
-												// console.log(datum);
-												return existingListItem.updateMetadata(datum, lowercaseQuery);
-											}).then(function () {
-												if (base.currentIndex === undefined) {
-													return base.setActive({index: 0});
-												} else {
-													return Util.ep();
-												}
-											});
-										} else {
-											if (!base.lock) {
-												base.lock = true;
-												// element does not exist. Create using info in datum.
-												// console.log(index)
-												return base.unit(datum, lowercaseQuery, index).then(function (newListItem) {
-													base.data.display.virtual.rendered.push(newListItem.id);
-													return base.list.components.wrapper.setChildren([newListItem]);
-												}).then(function () {
-													base.lock = false;
-													return Util.ep();
-												});
-											} else {
-												return Util.ep();
-											}
-										}
-									}
-								})).then(function () {
-									return Promise.all(base.data.display.virtual.rendered.slice(virtualList.length).map(function (listItemId) {
-										return UI.getComponent(listItemId).then(function (listItem) {
-											return listItem.hide();
-										});
-									}));
-								}).then(function () {
-									if (!lowercaseQuery ) {
-										base.currentIndex = undefined;
-										return base.search.setMetadata({query: '', complete: ''});
-									} else {
-										var datum = base.data.display.virtual.list[base.currentIndex];
-										var complete = (datum || {}).main;
-										return base.search.setMetadata({query: lowercaseQuery, complete: complete});
-									}
-								});
-							});
-						});
-					},
-				},
-			}
-
 			// storage
 			base.data = {
 				// variables
@@ -643,7 +472,7 @@ var Components = {
 				reset: false,
 
 				// actual datasets
-				storage = {
+				storage: {
 					dataset: {},
 					subset: {},
 					virtual: {
@@ -716,7 +545,7 @@ var Components = {
 						// Add to dataset. Nothing is ever removed.
 						return Promise.all(data.map(function (datum) {
 							return new Promise(function(resolve, reject) {
-								base.data.dataset[datum.id] = datum;
+								base.data.storage.dataset[datum.id] = datum;
 								resolve();
 							});
 						}));
@@ -726,9 +555,10 @@ var Components = {
 					main: function () {
 						// 1. filter the current dataset
 						return base.data.display.filter.main().then(function () {
-
 							// 2. render the current dataset
-							return base.data.display.render();
+							return base.data.display.render.main().catch(function (error) {
+								console.log(error);
+							});
 						});
 					},
 					filter: {
@@ -754,7 +584,7 @@ var Components = {
 						out: function () {
 							return Promise.all(base.data.storage.virtual.list.map(function (datum, index) {
 								datum.index = index;
-								return base.data.display.filter.condition().then(function (condition) {
+								return base.data.display.filter.condition(datum).then(function (condition) {
 									if (!condition) {
 										base.data.storage.virtual.list.splice(datum.index, 1);
 										delete base.data.storage.subset[datum.id]; // remove from filtered data
@@ -766,7 +596,7 @@ var Components = {
 						in: function () {
 							return Promise.all(Object.keys(base.data.storage.dataset).map(function (key) {
 								var datum = base.data.storage.dataset[key];
-								return base.data.display.filter.condition().then(function (condition) {
+								return base.data.display.filter.condition(datum).then(function (condition) {
 									if (condition) {
 										base.data.storage.subset[key] = datum;
 									}
@@ -777,7 +607,7 @@ var Components = {
 					},
 					render: {
 						main: function () {
-							base.data.display.render.virtual().then(function () {
+							return base.data.display.render.virtual().then(function () {
 								return base.data.display.render.sort();
 							}).then(function () {
 								// for each item in the list, generate a new list item and add to it using the setMetadata function.
@@ -785,16 +615,15 @@ var Components = {
 								var virtualList = base.limit ? base.data.storage.virtual.list.slice(0, base.limit) : base.data.storage.virtual.list;
 								return Promise.ordered(virtualList.map(function (datum, index) {
 									return function () {
-										if (index < base.data.display.virtual.rendered.length) {
-											// console.log(index)
+										if (index < base.data.storage.virtual.rendered.length) {
 											// element already exists. Update using info in datum.
 											// NO RETURN: releases promise immediately. No need to wait for order if one exists.
-											UI.getComponent(base.data.display.virtual.rendered[index]).then(function (existingListItem) {
+											UI.getComponent(base.data.storage.virtual.rendered[index]).then(function (existingListItem) {
 												// console.log(datum);
-												return existingListItem.updateMetadata(datum, lowercaseQuery);
+												return existingListItem.updateMetadata(datum, base.data.query.toLowerCase());
 											}).then(function () {
 												if (base.currentIndex === undefined) {
-													return base.setActive({index: 0});
+													return base.control.setActive({index: 0});
 												} else {
 													return Util.ep();
 												}
@@ -803,9 +632,8 @@ var Components = {
 											if (!base.lock) {
 												base.lock = true;
 												// element does not exist. Create using info in datum.
-												// console.log(index)
-												return base.unit(datum, lowercaseQuery, index).then(function (newListItem) {
-													base.data.display.virtual.rendered.push(newListItem.id);
+												return base.unit(datum, base.data.query.toLowerCase(), index).then(function (newListItem) {
+													base.data.storage.virtual.rendered.push(newListItem.id);
 													return base.list.components.wrapper.setChildren([newListItem]);
 												}).then(function () {
 													base.lock = false;
@@ -818,7 +646,7 @@ var Components = {
 									}
 								})).then(function () {
 									// hide anything that does not contain something to display
-									return Promise.all(base.data.display.virtual.rendered.slice(virtualList.length).map(function (listItemId) {
+									return Promise.all(base.data.storage.virtual.rendered.slice(virtualList.length).map(function (listItemId) {
 										return UI.getComponent(listItemId).then(function (listItem) {
 											return listItem.hide();
 										});
@@ -845,7 +673,7 @@ var Components = {
 							} else {
 								var datum = base.data.storage.virtual.list[base.currentIndex];
 								var complete = (datum || {}).main;
-								return base.search.setMetadata({query: lowercaseQuery, complete: complete});
+								return base.search.setMetadata({query: base.data.query.toLowerCase(), complete: complete});
 							}
 						},
 					},
@@ -854,12 +682,16 @@ var Components = {
 
 			// actions
 			base.control = {
+				// global control
 				setup: {
 					main: function () {
 						return Promise.all([
 							base.control.setup.resolvePaths(),
+							base.control.setup.renderUntilDefaultLimit(),
 							base.control.setup.extractFilters(),
-						]);
+						]).then(function () {
+							return base.control.start();
+						});
 					},
 					resolvePaths: function () {
 						return Promise.all(base.targets.map(function (target) {
@@ -868,6 +700,22 @@ var Components = {
 								target.queries = [];
 							});
 						}));
+					},
+					renderUntilDefaultLimit: function () {
+						if (base.data.storage.virtual.rendered.length === 0) {
+							return Promise.ordered(Array.range(base.limit).map(function (index) {
+								return function () {
+									return base.unit({main: ''}, '', index).then(function (newListItem) {
+										base.data.storage.virtual.rendered.push(newListItem.id);
+										return newListItem.setAppearance({classes: {add: 'hidden'}}).then(function () {
+											return base.list.components.wrapper.setChildren([newListItem]);
+										});
+									});
+								}
+							}));
+						} else {
+							return Util.ep();
+						}
 					},
 					extractFilters: function () {
 						// filters
@@ -883,11 +731,11 @@ var Components = {
 										}
 
 										// create filter unit and add to list
-										return base.unit.filter.default('{filterid}-{rule}'.format({filterid: filter.id, rule: target.filter.rule}), target.filter).then(function (filterUnit) {
+										return base.defaultFilterUnit('{filterid}-{rule}'.format({filterid: filter.id, rule: target.filter.rule}), target.filter).then(function (filterUnit) {
 											// bindings
 											return filterUnit.setBindings({
 												'click': function (_this) {
-													return base.setFilter(target.filter.rule);
+													return base.control.setFilter(target.filter.rule);
 												},
 											}).then(function () {
 												filter.setChildren([filterUnit]);
@@ -897,9 +745,9 @@ var Components = {
 												event.preventDefault();
 												if (base.isFocussed) {
 													if (base.data.filter === target.filter.rule) {
-														base.setFilter();
+														base.control.setFilter();
 													} else {
-														base.setFilter(target.filter.rule);
+														base.control.setFilter(target.filter.rule);
 													}
 												}
 											});
@@ -911,7 +759,7 @@ var Components = {
 								}
 							})).then(function () {
 								// if any filters have been added, make the filter button appear
-								if (!Util.isEmptyObject(base.data.filters)) {
+								if (!Util.isEmptyObject(base.data.storage.filters)) {
 									return filterButton.setAppearance({classes: {remove: 'hidden'}});
 								} else {
 									return Util.ep();
@@ -924,43 +772,101 @@ var Components = {
 				},
 				reset: function () {
 					base.reset = true;
-					return base.updateData({query: '', filter: ''}).then(function () {
+					return base.control.update({query: '', filter: ''}).then(function () {
 						return base.search.clear();
 					}).then(function () {
 						return base.search.setMetadata({query: '', complete: ''});
 					});
 				},
-				update: function () {
+				update: function (data, defaults) {
 					// apply changes
 					base.data.query = (((data || {}).query !== undefined ? (data || {}).query : base.data.query) || ((defaults || {}).query || ''));
 					base.data.filter = (((data || {}).filter || base.data.filter) || ((defaults || {}).filter || ''));
 					return Util.ep();
 				},
 				start: function () {
-					return base.data.load.main();
+					return base.data.load.get();
+				},
+
+				// element control
+				setFilter: function (rule) {
+					// 0. update data filter
+					base.data.filter = rule;
+					if (rule in base.data.storage.filters) {
+						base.limit = base.data.storage.filters[rule].limit !== 0 ? (base.data.storage.filters[rule].limit !== undefined ? base.data.storage.filters[rule].limit : base.data.limit) : undefined;
+					} else {
+						base.limit = base.defaultLimit;
+					}
+
+					// 1. update search
+					search.filterString = rule ? base.data.storage.filters[rule].input : undefined;
+					return Promise.all([
+						// 2. update data
+						base.control.update({filter: (rule || '')}),
+
+						// 3. update filter button
+						filterButton.setContent(rule ? base.data.storage.filters[rule].char : undefined),
+
+						// 4. search
+						search.setMetadata(),
+					]).then(function () {
+						return base.control.start();
+					});
+				},
+				setActive: function (options) {
+					options = (options || {});
+
+					// if there are any results
+					if (base.data.storage.virtual.rendered.length && base.isFocussed) {
+
+						// changes
+						var previousIndex = base.currentIndex;
+						base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (base.currentIndex !== undefined ? (options.increment || 0) : 0)));
+
+						// boundary conditions
+						base.currentIndex = base.currentIndex > base.data.storage.virtual.list.length - 1 ? base.data.storage.virtual.list.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
+
+						if (base.currentIndex !== previousIndex) {
+							return base.control.deactivate().then(function () {
+								return UI.getComponent(base.data.storage.virtual.rendered[base.currentIndex]).then(function (activeListItem) {
+									base.active = activeListItem;
+									return base.active.activate().then(function () {
+										var datum = base.data.storage.virtual.list[base.currentIndex];
+										var complete = (datum || {}).main;
+										return base.search.setMetadata({complete: complete});
+									});
+								})
+							});
+						} else {
+							return Util.ep();
+						}
+					} else {
+						return Util.ep();
+					}
+				},
+				deactivate: function () {
+					return ((base.active || {}).deactivate || Util.ep)().then(function () {
+						return new Promise(function(resolve, reject) {
+							base.active = undefined;
+							resolve();
+						});
+					});
 				},
 			}
 
 			// list item formatting
 			base.unitStyle = {
-				apply: function (target) {
-
+				apply: function () {
+					return base.unitStyle.base().then(function () {
+						return Promise.all(base.targets.map(function (target) {
+							return base.unitStyle.set(target);
+						}));
+					});
 				},
-				default: function (target) {
-
+				set: function (target) {
+					return (target.setStyle || base.unitStyle.default(target))();
 				},
-			}
-			base.unit = {
-				generate: function (target) {
-
-				},
-				default: function (target) {
-
-				},
-			}
-
-			base.baseUnitStyle = function () {
-				return new Promise(function(resolve, reject) {
+				base: function () {
 					// base class
 					jss.set('#{id} .base'.format({id: base.id}), {
 						'height': '30px',
@@ -972,31 +878,19 @@ var Components = {
 					jss.set('#{id} .base.active'.format({id: base.id}), {
 						'background-color': 'rgba(255,255,255,0.1)'
 					});
-					resolve();
-				});
-			}
-			base.defaultUnitStyle = function (type) {
-				return function () {
-					return new Promise(function(resolve, reject) {
-						jss.set('#{id} .{type}'.format({id: base.id, type: type}), {
+					return Util.ep();
+				},
+				default: function (target) {
+					return function () {
+						jss.set('#{id} .{type}'.format({id: base.id, type: target.name}), {
 							'background-color': 'rgba(255,255,255,0.00)'
 						});
-						jss.set('#{id} .base.{type}.active'.format({id: base.id, type: type}), {
+						jss.set('#{id} .base.{type}.active'.format({id: base.id, type: target.name}), {
 							'background-color': 'rgba(255,255,255,0.1)'
 						});
-						resolve();
-					});
-				}
-			}
-			base.setStyle = function () {
-				return base.baseUnitStyle().then(function () {
-					return Promise.all(base.targets.map(function (target) {
-						return (target.setStyle || base.defaultUnitStyle(target.name))();
-					}));
-				});
-			}
-			base.defaultUnit = function () {
-				//
+						return Util.ep();
+					}
+				},
 			}
 			base.defaultFilterUnit = function (id, args) {
 				return Promise.all([
@@ -1102,83 +996,13 @@ var Components = {
 					});
 				});
 			}
-			base.setFilter = function (rule) {
-				// 0. update data filter
-				base.data.filter = rule;
-				if (base.data.filters[rule]) {
-					base.limit = base.data.filters[rule].limit !== 0 ? (base.data.filters[rule].limit !== undefined ? base.data.filters[rule].limit : base.defaultLimit) : undefined;
-				} else {
-					base.limit = base.defaultLimit;
-				}
-
-				// 1. update search
-				search.filterString = rule ? base.data.filters[rule].input : undefined;
-				return Promise.all([
-					// 2. update data
-					base.updateData({filter: (rule || '')}),
-
-					// 3. update filter button
-					filterButton.setContent(rule ? base.data.filters[rule].char : undefined),
-
-					// 4. search
-					search.setMetadata(),
-				]).then(function () {
-					return base.run();
-				});
-			}
-			base.setActive = function (options) {
-				options = (options || {});
-
-				// if there are any results
-				if (base.data.display.virtual.rendered.length && base.isFocussed) {
-
-					// changes
-					var previousIndex = base.currentIndex;
-					base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (base.currentIndex !== undefined ? (options.increment || 0) : 0)));
-
-					// boundary conditions
-					base.currentIndex = base.currentIndex > base.data.display.virtual.list.length - 1 ? base.data.display.virtual.list.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
-
-					if (base.currentIndex !== previousIndex) {
-						return base.deactivate().then(function () {
-							return UI.getComponent(base.data.display.virtual.rendered[base.currentIndex]).then(function (activeListItem) {
-								base.active = activeListItem;
-								return base.active.activate().then(function () {
-									var datum = base.data.display.virtual.list[base.currentIndex];
-									var complete = (datum || {}).main;
-									return base.search.setMetadata({complete: complete});
-								});
-							})
-						});
-					} else {
-						return Util.ep();
-					}
-				} else {
-					return Util.ep();
-				}
-			}
-			base.deactivate = function () {
-				// console.log('{} searchlist deactivate'.format(base.id));
-				return ((base.active || {}).deactivate || Util.ep)().then(function () {
-					return new Promise(function(resolve, reject) {
-						base.active = undefined;
-						resolve();
-					});
-				});
-			}
-			base.getContent = function () {
-				return search.getContent();
-			}
-			base.setContent = function (options) {
-				return search.setContent(options);
-			}
 
 			// list methods
 			base.next = function () {
-				return base.setActive({increment: 1});
+				return base.control.setActive({increment: 1});
 			}
 			base.previous = function () {
-				return base.setActive({increment: -1});
+				return base.control.setActive({increment: -1});
 			}
 
 			// search methods
@@ -1186,16 +1010,16 @@ var Components = {
 				base.isFocussed = true;
 				return Promise.all([
 					(base.searchExternal ? base.searchExternal.onFocus : Util.ep)(),
-					base.updateData({query: search.components.head.model().text()}),
+					base.control.update({query: search.components.head.model().text()}),
 				]);
 			}
 			search.onBlur = function () {
 				base.isFocussed = false;
-				return base.setFilter();
+				return base.control.setFilter();
 			}
 			search.onInput = function (value) {
-				return base.updateData({query: search.components.head.model().text()}).then(function () {
-					return base.run();
+				return base.control.update({query: search.components.head.model().text()}).then(function () {
+					return base.control.start();
 				});
 			}
 			base.setSearch = function (options) {
@@ -1259,8 +1083,8 @@ var Components = {
 				number: function (char) {
 					// console.log('{} searchlist behaviours number'.format(base.id));
 					var index = parseInt(char);
-					if (index < base.data.display.virtual.rendered.length) {
-						return base.setActive({index: index}).then(function () {
+					if (index < base.data.storage.virtual.rendered.length) {
+						return base.control.setActive({index: index}).then(function () {
 							// don't know what behaviour to have here
 							return search.behaviours.right();
 

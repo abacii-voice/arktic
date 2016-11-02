@@ -315,7 +315,7 @@ var AccountInterfaces = {
 					},
 				},
 			]
-			autocomplete.baseUnitStyle = function () {
+			autocomplete.unitStyle.base = function () {
 				return new Promise(function(resolve, reject) {
 					// base class
 					jss.set('#{id} .base'.format({id: base.id}), {
@@ -528,17 +528,17 @@ var AccountInterfaces = {
 					},
 				}),
 				autocomplete.setSearch({mode: 'on', limit: 10, autocomplete: true}),
-				autocomplete.setStyle(),
+				autocomplete.unitStyle.apply(),
 				autocomplete.setState({
 					states: {
 						'transcription-state': {
 							preFn: function (_this) {
-								return _this.setup();
+								return _this.control.setup.main();
 							},
 						},
 						'control-state': {
 							fn: function (_this) {
-								return _this.stop();
+								return _this.control.reset();
 							}
 						}
 					},
@@ -1010,7 +1010,7 @@ var AccountInterfaces = {
 			return Promise.all([
 
 				// CLIENT SIDEBAR
-				clientList.setStyle(),
+				clientList.unitStyle.apply(),
 				clientList.search.setAppearance({
 					style: {
 						'left': '0px',
@@ -1030,7 +1030,7 @@ var AccountInterfaces = {
 					states: {
 						'client-state': {
 							preFn: function (_this) {
-								return _this.setup();
+								return _this.control.setup.main();
 							},
 							fn: function () {
 								return clientList.search.clear();
@@ -1038,7 +1038,7 @@ var AccountInterfaces = {
 						},
 						'role-state': {
 							preFn: function (_this) {
-								return _this.stop();
+								return _this.control.reset();
 							}
 						}
 					},
@@ -1047,7 +1047,7 @@ var AccountInterfaces = {
 				clientList.setSearch({mode: 'off', placeholder: 'Search clients...'}),
 
 				// ROLE SIDEBAR
-				roleList.setStyle(),
+				roleList.unitStyle.apply(),
 				roleList.search.setAppearance({
 					style: {
 						'left': '0px',
@@ -1067,17 +1067,17 @@ var AccountInterfaces = {
 					states: {
 						'client-state': {
 							preFn: function (_this) {
-								return _this.stop();
+								return _this.control.reset();
 							}
 						},
 						'role-state': {
 							preFn: function (_this) {
-								return _this.setup();
+								return _this.control.setup.main();
 							},
 						},
 						'control-state': {
 							preFn: function (_this) {
-								return _this.stop();
+								return _this.control.reset();
 							}
 						},
 					}
