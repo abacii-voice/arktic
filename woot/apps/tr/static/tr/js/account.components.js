@@ -1000,17 +1000,74 @@ var AccountComponents = {
 			] = components;
 
 			// base.link should be the autocomplete
+			base.unit = function () {
+				var id = '{base}-{id}'.format({base: base.id, id: Util.makeid()});
+				return Promise.all([
 
+					// base
+					UI.createComponent(id, {
+						template: UI.template('span', 'ie'),
+						appearance: {
+
+						},
+					}),
+
+				]).then(function (unitComponents) {
+
+					var [
+						unitBase,
+					] = unitComponents;
+
+					unitBase.activate = function () {
+						return Util.ep();
+					}
+					unitBase.focus = function () {
+						unitBase.model().focus();
+						return Util.ep();
+					}
+
+					return Promise.all([
+						// promises
+					]).then(function () {
+						// children
+					}).then(function () {
+						return unitBase;
+					});
+				});
+			}
+			base.token = function (options) {
+				if (base.active !== undefined) {
+					return (options.end ? base.setActive : Util.ep)({index: 'last'}).then(function () {
+						return base.active.focus();
+					}).then(function () {
+						return base.active;
+					});
+				} else {
+					base.currentIndex = base.currentIndex !== undefined ? base.currentIndex + 1 : 0;
+					return base.unit().then(function (unit) {
+						// methods
+
+						// set after HERE
+						if (base.active) {
+							unit.after = options.before ? '' : base.active.id;
+						}
+						return content.setChildren([unit]).then(function () {
+							base.active = unit;
+							return base.active.activate();
+						}).then(function () {
+							return base.active.focus();
+						}).then(function () {
+							return base.active;
+						});
+					});
+				}
+			}
 
 			// promises
 			return Promise.all([
-				content.setBindings({
-					'input': function (_this) {
-						var selection = window.getSelection();
-						console.log(_this.model().contents().map(function () {
-							return this.nodeType;
-						}));
-						console.log(_this.element().textContent, selection.focusNode, selection.focusNode.nodeType);
+				base.setBindings({
+					'click': function (_this) {
+						return _this.token();
 					},
 				}),
 
