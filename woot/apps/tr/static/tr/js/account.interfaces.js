@@ -160,7 +160,7 @@ var AccountInterfaces = {
 				event.preventDefault();
 				Promise.all([
 					autocomplete.behaviours.up(),
-					caption.behaviours.up(),
+					
 				]);
 			});
 
@@ -168,21 +168,21 @@ var AccountInterfaces = {
 				event.preventDefault();
 				Promise.all([
 					autocomplete.behaviours.down(),
-					caption.behaviours.down(),
+
 				]);
 			});
 
 			Mousetrap.bind('left', function (event) {
 				Promise.all([
 					autocomplete.behaviours.left(),
-					caption.behaviours.left(),
+
 				]);
 			});
 
 			Mousetrap.bind('right', function (event) {
 				Promise.all([
 					autocomplete.behaviours.right(),
-					caption.behaviours.right(),
+
 				]);
 			});
 
@@ -191,7 +191,7 @@ var AccountInterfaces = {
 				var char = String.fromCharCode(event.which);
 				Promise.all([
 					autocomplete.behaviours.number(char),
-					caption.behaviours.number(char),
+
 				]);
 			});
 
@@ -199,36 +199,36 @@ var AccountInterfaces = {
 				event.preventDefault();
 				Promise.all([
 					autocomplete.behaviours.enter(),
-					caption.behaviours.enter(),
+
 				]);
 			});
 
 			Mousetrap.bind('backspace', function (event) {
 				Promise.all([
 					autocomplete.behaviours.backspace(),
-					caption.behaviours.backspace(),
+
 				]);
 			});
 
 			Mousetrap.bind('alt+backspace', function (event) {
 				Promise.all([
-					caption.behaviours.altbackspace(),
+
 				]);
 			});
 
 			Mousetrap.bind('space', function (event) {
 				// event.preventDefault();
 				Promise.all([
-					caption.behaviours.space(),
+
 				]);
 			});
 
 			Mousetrap.bind('alt+right', function (event) {
-				caption.behaviours.altright();
+
 			});
 
 			Mousetrap.bind('alt+left', function (event) {
-				caption.behaviours.altleft();
+
 			});
 
 			// LIST
@@ -467,7 +467,19 @@ var AccountInterfaces = {
 			}
 
 			// CAPTION
-			caption.link = autocomplete;
+			caption.external = {
+				onFocus: function () {
+					autocomplete.isFocussed = true;
+					return Util.ep();
+				},
+				onBlur: function () {
+					autocomplete.isFocussed = false;
+					return Util.ep();
+				},
+				onInput: function () {
+					return autocomplete.control.setContent({content: caption.content.model().text(), trigger: true});
+				},
+			}
 
 			// connect
 			return Promise.all([
