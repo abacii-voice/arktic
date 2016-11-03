@@ -974,7 +974,7 @@ var AccountComponents = {
 
 			// contenteditable child
 			UI.createComponent('{id}-content'.format({id: id}), {
-				template: UI.template('div', 'ie'),
+				template: UI.template('div', 'ie mousetrap'),
 				appearance: {
 					style: {
 						'top': '5%',
@@ -1006,7 +1006,7 @@ var AccountComponents = {
 
 					// base
 					UI.createComponent(id, {
-						template: UI.template('span', 'ie'),
+						template: UI.template('span', 'ie '),
 						appearance: {
 
 						},
@@ -1021,10 +1021,6 @@ var AccountComponents = {
 					unitBase.activate = function () {
 						return Util.ep();
 					}
-					unitBase.focus = function () {
-						unitBase.model().focus();
-						return Util.ep();
-					}
 
 					return Promise.all([
 						// promises
@@ -1036,10 +1032,9 @@ var AccountComponents = {
 				});
 			}
 			base.token = function (options) {
+				options = (options || {});
 				if (base.active !== undefined) {
 					return (options.end ? base.setActive : Util.ep)({index: 'last'}).then(function () {
-						return base.active.focus();
-					}).then(function () {
 						return base.active;
 					});
 				} else {
@@ -1049,25 +1044,44 @@ var AccountComponents = {
 
 						// set after HERE
 						if (base.active) {
-							unit.after = options.before ? '' : base.active.id;
+							unit.after = options.after ? '' : base.active.id;
 						}
 						return content.setChildren([unit]).then(function () {
 							base.active = unit;
 							return base.active.activate();
-						}).then(function () {
-							return base.active.focus();
 						}).then(function () {
 							return base.active;
 						});
 					});
 				}
 			}
+			base.onFocus = function () {
+				return base.external.onFocus().then(function () {
+					return Util.ep();
+				});
+			}
+			base.onBlur = function () {
+				return base.external.onBlur().then(function () {
+					return Util.ep();
+				});
+			}
+			base.onInput = function () {
+				return base.external.onInput().then(function () {
+					return Util.ep();
+				});
+			}
 
 			// promises
 			return Promise.all([
-				base.setBindings({
-					'click': function (_this) {
-						return _this.token();
+				content.setBindings({
+					'focus': function (_this) {
+						return base.onFocus();
+					},
+					'blur': function (_this) {
+						return base.onBlur();
+					},
+					'input': function (_this) {
+						return base.onInput();
 					},
 				}),
 

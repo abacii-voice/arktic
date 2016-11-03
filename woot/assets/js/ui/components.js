@@ -174,18 +174,17 @@ var Components = {
 				// boundary conditions
 				position = position > maxLength ? maxLength : (position < 0 ? 0 : position);
 
-				return new Promise(function(resolve, reject) {
-					// set the caret position to the end or the beginning
-					if (position !== undefined) {
-						var range = document.createRange(); // Create a range (a range is a like the selection but invisible)
-						var lm = head.element();
-						range.setStart(lm.childNodes.length ? lm.firstChild : lm, position);
-						var selection = window.getSelection(); // get the selection object (allows you to change selection)
-						selection.removeAllRanges(); // remove any selections already made
-						selection.addRange(range); // make the range you have just created the visible selection
-					}
-					resolve();
-				});
+				// set the caret position to the end or the beginning
+				if (position !== undefined) {
+					var range = document.createRange(); // Create a range (a range is a like the selection but invisible)
+					var lm = head.element();
+					range.setStart(lm.childNodes.length ? lm.firstChild : lm, position);
+					var selection = window.getSelection(); // get the selection object (allows you to change selection)
+					selection.removeAllRanges(); // remove any selections already made
+					selection.addRange(range); // make the range you have just created the visible selection
+				}
+
+				return Util.ep();
 			}
 			base.complete = function () {
 				// console.log('{} search complete'.format(base.id));
@@ -789,6 +788,11 @@ var Components = {
 				},
 
 				// element control
+				setContent: function (options) {
+					return search.setContent(options).then(function () {
+						return base.control.update({query: options.content});
+					})
+				},
 				setFilter: function (rule) {
 					// 0. update data filter
 					base.data.filter = rule;
