@@ -770,7 +770,7 @@ var Components = {
 					},
 				},
 				reset: function () {
-					base.reset = true;
+					base.data.reset = true;
 					return base.control.update({query: '', filter: ''}).then(function () {
 						return base.search.clear();
 					}).then(function () {
