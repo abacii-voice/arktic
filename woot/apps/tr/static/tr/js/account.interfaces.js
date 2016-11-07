@@ -467,17 +467,13 @@ var AccountInterfaces = {
 			}
 
 			// CAPTION
-			caption.external = {
-				onFocus: function () {
-					autocomplete.isFocussed = true;
-					return Util.ep();
+			caption.styles = {};
+			caption.target = {
+				path: function () {
+
 				},
-				onBlur: function () {
-					autocomplete.isFocussed = false;
-					return Util.ep();
-				},
-				onInput: function () {
-					return autocomplete.control.setContent({content: caption.content.model().text(), trigger: true});
+				process: function () {
+
 				},
 			}
 
