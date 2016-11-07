@@ -965,134 +965,157 @@ var AccountComponents = {
 
 	testCaptionField: function (id, args) {
 		return Promise.all([
+			// base
+			UI.createComponent(id, {
 
-			// wrapper
-			UI.createComponent('{id}'.format({id: id}), {
-				template: UI.template('div', 'ie'),
-				appearance: args.appearance,
 			}),
 
-			// contenteditable child
+			// content
 			UI.createComponent('{id}-content'.format({id: id}), {
-				template: UI.template('div', 'ie mousetrap'),
-				appearance: {
-					style: {
-						'top': '5%',
-						'left': '5%',
-						'height': '90%',
-						'width': '90%',
-						'box-sizing': 'border-box',
-						'outline': 'none',
-						'font-size': '15px',
-					},
-					properties: {
-						'contenteditable': 'true',
-					},
-				},
+
 			}),
-
 		]).then(function (components) {
-
-			// unpack
 			var [
 				base,
 				content,
 			] = components;
 
-			// base.link should be the autocomplete
-			base.unit = function () {
+			// unit
+			base.unit = function (text, type) {
 				var id = '{base}-{id}'.format({base: base.id, id: Util.makeid()});
 				return Promise.all([
-
 					// base
-					UI.createComponent(id, {
-						template: UI.template('span', 'ie '),
-						appearance: {
-
-						},
+					Components.search(id, {
+						// need custom appearance
 					}),
-
-				]).then(function (unitComponents) {
-
+				]).then(function (components) {
 					var [
-						unitBase,
-					] = unitComponents;
+						base,
+					] = components;
 
-					unitBase.activate = function () {
-						return Util.ep();
+					base.activate = function () {
+
+					}
+					base.deactivate = function () {
+
+					}
+					base.select = function () {
+
 					}
 
 					return Promise.all([
-						// promises
+
 					]).then(function () {
-						// children
+
 					}).then(function () {
-						return unitBase;
+						return base;
 					});
 				});
 			}
+			base.defaultUnitStyle = function () {
+
+			}
+
+			// data
+			base.data = {
+
+				// variables
+				caption: '',
+				active: undefined,
+				currentIndex: 0,
+
+				// methods
+				token: function (text, type) {
+					options = (options || {});
+					if (base.active) {
+						// focus active
+					} else {
+						// create new unit
+
+					}
+				},
+
+			}
+
+			// control
+			base.control = {
+				setActive: function (options) {
+
+				},
+				next: function () {
+
+				},
+				previous: function () {
+
+				},
+				delete: function (options) {
+
+				},
+			}
+
 			base.token = function (options) {
-				options = (options || {});
+
+
 				if (base.active !== undefined) {
 					return (options.end ? base.setActive : Util.ep)({index: 'last'}).then(function () {
-						return base.active;
+						return _this.active.focus('end');
+					}).then(function () {
+						return _this.active;
 					});
 				} else {
-					base.currentIndex = base.currentIndex !== undefined ? base.currentIndex + 1 : 0;
-					return base.unit().then(function (unit) {
+					_this.currentIndex = _this.currentIndex !== undefined ? _this.currentIndex + 1 : 0;
+					return base.unit(options.text, options.type).then(function (unit) {
 						// methods
 
 						// set after HERE
-						if (base.active) {
-							unit.after = options.after ? '' : base.active.id;
+						if (_this.active) {
+							unit.after = options.before ? '' : _this.active.id;
 						}
-						return content.setChildren([unit]).then(function () {
-							base.active = unit;
-							return base.active.activate();
+						return _this.setChildren([unit]).then(function () {
+							_this.active = unit;
+							return _this.active.activate();
 						}).then(function () {
-							return base.active;
+							return _this.active.focus('end');
+						}).then(function () {
+							return _this.active;
 						});
 					});
 				}
 			}
-			base.onFocus = function () {
-				return base.external.onFocus().then(function () {
-					return Util.ep();
-				});
-			}
-			base.onBlur = function () {
-				return base.external.onBlur().then(function () {
-					return Util.ep();
-				});
-			}
-			base.onInput = function () {
-				return base.external.onInput().then(function () {
-					return Util.ep();
-				});
+
+			// behaviours
+			base.behaviours = {
+				right: function () {
+
+				},
+				left: function () {
+
+				},
+				up: function () {
+
+				},
+				down: function () {
+
+				},
+				shiftright: function () {
+
+				},
+				shiftleft: function () {
+
+				},
+				altright: function () {
+
+				},
+				altleft: function () {
+
+				},
 			}
 
-			// promises
 			return Promise.all([
-				content.setBindings({
-					'focus': function (_this) {
-						return base.onFocus();
-					},
-					'blur': function (_this) {
-						return base.onBlur();
-					},
-					'input': function (_this) {
-						return base.onInput();
-					},
-				}),
 
 			]).then(function () {
-				// set base children and components
-				base.content = content;
-				return base.setChildren([
-					content,
-				]);
+
 			}).then(function () {
-				// return base
 				return base;
 			});
 		});
