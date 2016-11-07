@@ -160,7 +160,7 @@ var AccountInterfaces = {
 				event.preventDefault();
 				Promise.all([
 					autocomplete.behaviours.up(),
-					
+
 				]);
 			});
 
