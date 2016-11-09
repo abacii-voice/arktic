@@ -988,6 +988,12 @@ var AccountComponents = {
 					// base
 					Components.search(id, {
 						// need custom appearance
+						appearance: {
+							style: {
+								'border': '0px',
+								'display': 'inline-block',
+							},
+						},
 					}),
 				]).then(function (components) {
 					var [
