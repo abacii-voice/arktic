@@ -1021,13 +1021,13 @@ var AccountComponents = {
 						unitBase.components.head.setBindings({
 							'focus': function (_this) {
 								return base.searchExternal.onFocus().then(function () {
-									return _this.focus();
-								})
+									return unitBase.focus();
+								});
 							},
 							'blur': function (_this) {
 								return base.searchExternal.onBlur().then(function () {
-									return _this.blur();
-								})
+									return unitBase.blur();
+								});
 							},
 						}),
 					]).then(function () {

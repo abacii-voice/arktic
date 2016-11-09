@@ -479,17 +479,16 @@ var AccountInterfaces = {
 			caption.searchExternal = {
 				start: function (query) {
 					return autocomplete.search.setContent({content: query, trigger: true});
-					// return autocomplete.control.update({query: query}).then(function () {
-					// 	return autocomplete.control.start();
-					// });
 				},
 				onFocus: function () {
 					autocomplete.isFocussed = true;
-					return Util.ep();
+					return caption.active.getContent().then(function (content) {
+						return autocomplete.search.setContent({content: content, trigger: true});
+					});
 				},
 				onBlur: function () {
 					autocomplete.isFocussed = false;
-					return Util.ep();
+					return autocomplete.search.setContent({content: '', trigger: true});
 				},
 			}
 
