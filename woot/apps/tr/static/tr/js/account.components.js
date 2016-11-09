@@ -967,7 +967,8 @@ var AccountComponents = {
 		return Promise.all([
 			// base
 			UI.createComponent(id, {
-
+				template: UI.template('div', 'ie'),
+				appearance: args.appearance,
 			}),
 
 			// content
@@ -981,7 +982,7 @@ var AccountComponents = {
 			] = components;
 
 			// unit
-			base.unit = function (text, type) {
+			base.unit = function (options) {
 				var id = '{base}-{id}'.format({base: base.id, id: Util.makeid()});
 				return Promise.all([
 					// base
@@ -1021,17 +1022,33 @@ var AccountComponents = {
 
 				// variables
 				caption: '',
-				active: undefined,
 				currentIndex: 0,
 
 				// methods
-				token: function (text, type) {
+				token: function (options) {
 					options = (options || {});
-					if (base.active) {
+					if (base.active && !options.new) {
 						// focus active
+						return base.active.focus('end').then(function () {
+							return base.active;
+						});
 					} else {
 						// create new unit
-
+						base.data.currentIndex = base.data.currentIndex !== undefined ? base.data.currentIndex + 1 : 0;
+						return base.unit(options.data).then(function (unit) {
+							// set after HERE
+							if (base.active) {
+								unit.after = options.before ? '' : base.active.id;
+							}
+							return base.setChildren([unit]).then(function () {
+								base.active = unit;
+								return base.active.activate();
+							}).then(function () {
+								return base.active.focus('end');
+							}).then(function () {
+								return base.active;
+							});
+						});
 					}
 				},
 
@@ -1051,36 +1068,6 @@ var AccountComponents = {
 				delete: function (options) {
 
 				},
-			}
-
-			base.token = function (options) {
-
-
-				if (base.active !== undefined) {
-					return (options.end ? base.setActive : Util.ep)({index: 'last'}).then(function () {
-						return _this.active.focus('end');
-					}).then(function () {
-						return _this.active;
-					});
-				} else {
-					_this.currentIndex = _this.currentIndex !== undefined ? _this.currentIndex + 1 : 0;
-					return base.unit(options.text, options.type).then(function (unit) {
-						// methods
-
-						// set after HERE
-						if (_this.active) {
-							unit.after = options.before ? '' : _this.active.id;
-						}
-						return _this.setChildren([unit]).then(function () {
-							_this.active = unit;
-							return _this.active.activate();
-						}).then(function () {
-							return _this.active.focus('end');
-						}).then(function () {
-							return _this.active;
-						});
-					});
-				}
 			}
 
 			// behaviours
@@ -1112,7 +1099,11 @@ var AccountComponents = {
 			}
 
 			return Promise.all([
-
+				base.setBindings({
+					'click': function (_this) {
+						return _this.data.token();
+					},
+				}),
 			]).then(function () {
 
 			}).then(function () {
