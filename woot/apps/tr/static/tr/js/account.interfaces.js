@@ -465,6 +465,17 @@ var AccountInterfaces = {
 					});
 				});
 			}
+			autocomplete.external = {
+
+				// This allows the end of the search process to call the active unit of the caption to modify it.
+				setMetadata: function (options) {
+					if (caption.active) {
+						return caption.active.setMetadata(options);
+					} else {
+						return Util.ep();
+					}
+				}
+			}
 
 			// CAPTION
 			caption.styles = {};
@@ -477,18 +488,21 @@ var AccountInterfaces = {
 				},
 			}
 			caption.searchExternal = {
+
+				// this code allows each unit of the caption to respond in the same way on events.
 				start: function (query) {
-					return autocomplete.search.setContent({content: query, trigger: true});
+					query = (query || '');
+					return autocomplete.search.setContent({content: query, trigger: true})
 				},
 				onFocus: function () {
 					autocomplete.isFocussed = true;
 					return caption.active.getContent().then(function (content) {
-						return autocomplete.search.setContent({content: content, trigger: true});
+						return caption.searchExternal.start(content);
 					});
 				},
 				onBlur: function () {
 					autocomplete.isFocussed = false;
-					return autocomplete.search.setContent({content: '', trigger: true});
+					return caption.searchExternal.start();
 				},
 			}
 
