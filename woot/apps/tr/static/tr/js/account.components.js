@@ -997,25 +997,43 @@ var AccountComponents = {
 					}),
 				]).then(function (components) {
 					var [
-						base,
+						unitBase,
 					] = components;
 
-					base.activate = function () {
+					unitBase.activate = function () {
 
 					}
-					base.deactivate = function () {
+					unitBase.deactivate = function () {
 
 					}
-					base.select = function () {
+					unitBase.select = function () {
 
+					}
+					unitBase.onInput = function () {
+						return unitBase.getContent().then(function (content) {
+							return base.searchExternal.start(content).then(function () {
+								return unitBase.setMetadata({query: content});
+							});
+						});
 					}
 
 					return Promise.all([
-
+						unitBase.components.head.setBindings({
+							'focus': function (_this) {
+								return base.searchExternal.onFocus().then(function () {
+									return _this.focus();
+								})
+							},
+							'blur': function (_this) {
+								return base.searchExternal.onBlur().then(function () {
+									return _this.blur();
+								})
+							},
+						}),
 					]).then(function () {
 
 					}).then(function () {
-						return base;
+						return unitBase;
 					});
 				});
 			}
