@@ -222,13 +222,18 @@ var Components = {
 				});
 			}
 			base.getContent = function () {
-				return head.model().text();
+				return Util.ep(head.model().text());
 			}
 			base.setContent = function (options) {
 				return head.setAppearance({html: options.content}).then(function () {
 					if (options.trigger) {
 						head.model().trigger('input');
 					}
+				});
+			}
+			base.onInput = function () {
+				return base.getContent().then(function (content) {
+					return base.setMetadata({query: content});
 				});
 			}
 
@@ -238,7 +243,7 @@ var Components = {
 					return base.isCaretInPosition('end').then(function (inPosition) {
 						if (inPosition) {
 							return base.complete().then(function () {
-								return base.onInput(base.metadata.complete);
+								return base.onInput();
 							});
 						} else {
 							return Util.ep();
@@ -270,7 +275,7 @@ var Components = {
 				head.setBindings({
 					'input': function (_this) {
 						// console.log('{} search bindings head input'.format(base.id));
-						(base.onInput || Util.ep)(_this.model().text());
+						return base.onInput();
 					},
 					'focus': function (_this) {
 						// console.log('{} search bindings head focus'.format(base.id));
@@ -1021,8 +1026,10 @@ var Components = {
 				base.isFocussed = false;
 				return base.control.setFilter();
 			}
-			search.onInput = function (value) {
-				return base.control.update({query: search.components.head.model().text()}).then(function () {
+			search.onInput = function () {
+				return search.getContent().then(function (content) {
+					return base.control.update({query: content});
+				}).then(function () {
 					return base.control.start();
 				});
 			}
