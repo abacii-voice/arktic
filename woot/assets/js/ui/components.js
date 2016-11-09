@@ -195,10 +195,6 @@ var Components = {
 					return base.setCaretPosition('end');
 				});
 			}
-			base.isComplete = function () {
-				// console.log('{} search isComplete'.format(base.id));
-				return (head.model().text() === base.completeQuery) || !base.metadata.complete;
-			}
 			base.focus = function (position) {
 				if (!base.isFocussed) {
 					base.isFocussed = true;
@@ -269,7 +265,7 @@ var Components = {
 				base.setBindings({
 					'click': function (_this) {
 						event.stopPropagation();
-						base.focus('end');
+						return base.focus('end');
 					}
 				}),
 				head.setBindings({
@@ -279,15 +275,15 @@ var Components = {
 					},
 					'focus': function (_this) {
 						// console.log('{} search bindings head focus'.format(base.id));
-						base.focus();
+						return base.focus();
 					},
 					'blur': function (_this) {
 						// console.log('{} search bindings head blur'.format(base.id));
-						base.blur();
+						return base.blur();
 					},
 					'click': function (_this, event) {
 						event.stopPropagation();
-						base.focus();
+						return base.focus();
 					},
 				}),
 			]).then(function (results) {
@@ -560,9 +556,7 @@ var Components = {
 						// 1. filter the current dataset
 						return base.data.display.filter.main().then(function () {
 							// 2. render the current dataset
-							return base.data.display.render.main().catch(function (error) {
-								console.log(error);
-							});
+							return base.data.display.render.main();
 						});
 					},
 					filter: {
@@ -616,7 +610,7 @@ var Components = {
 							}).then(function () {
 								// for each item in the list, generate a new list item and add to it using the setMetadata function.
 								// Never remove a list item, simply make it display:none if the end of the list is reached.
-								var virtualList = base.limit ? base.data.storage.virtual.list.slice(0, base.limit) : base.data.storage.virtual.list;
+								var virtualList = base.data.limit ? base.data.storage.virtual.list.slice(0, base.data.limit) : base.data.storage.virtual.list;
 								return Promise.ordered(virtualList.map(function (datum, index) {
 									return function () {
 										if (index < base.data.storage.virtual.rendered.length) {
@@ -707,7 +701,7 @@ var Components = {
 					},
 					renderUntilDefaultLimit: function () {
 						if (base.data.storage.virtual.rendered.length === 0) {
-							return Promise.ordered(Array.range(base.limit).map(function (index) {
+							return Promise.ordered(Array.range(base.data.limit).map(function (index) {
 								return function () {
 									return base.unit({main: ''}, '', index).then(function (newListItem) {
 										base.data.storage.virtual.rendered.push(newListItem.id);
@@ -802,9 +796,9 @@ var Components = {
 					// 0. update data filter
 					base.data.filter = rule;
 					if (rule in base.data.storage.filters) {
-						base.limit = base.data.storage.filters[rule].limit !== 0 ? (base.data.storage.filters[rule].limit !== undefined ? base.data.storage.filters[rule].limit : base.data.limit) : undefined;
+						base.data.limit = base.data.storage.filters[rule].limit !== 0 ? (base.data.storage.filters[rule].limit !== undefined ? base.data.storage.filters[rule].limit : base.data.limit) : undefined;
 					} else {
-						base.limit = base.defaultLimit;
+						base.data.limit = base.defaultLimit;
 					}
 
 					// 1. update search
@@ -833,7 +827,8 @@ var Components = {
 						base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (base.currentIndex !== undefined ? (options.increment || 0) : 0)));
 
 						// boundary conditions
-						base.currentIndex = base.currentIndex > base.data.storage.virtual.list.length - 1 ? base.data.storage.virtual.list.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
+						var max = (base.data.limit !== undefined ? base.data.limit : base.data.storage.virtual.list.length) - 1;
+						base.currentIndex = base.currentIndex > max ? max : (base.currentIndex < 0 ? 0 : base.currentIndex);
 
 						if (base.currentIndex !== previousIndex) {
 							return base.control.deactivate().then(function () {
@@ -1036,8 +1031,8 @@ var Components = {
 			base.setSearch = function (options) {
 				options.mode = (options.mode || 'on');
 				options.placeholder = (options.placeholder || 'search...');
-				base.limit = options.limit;
-				base.defaultLimit = base.limit;
+				base.data.limit = options.limit;
+				base.defaultLimit = base.data.limit;
 				base.autocomplete = (options.autocomplete || false);
 
 				search.placeholder = options.placeholder;
