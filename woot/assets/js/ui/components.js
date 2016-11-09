@@ -1021,10 +1021,14 @@ var Components = {
 			// search methods
 			search.onFocus = function () {
 				base.isFocussed = true;
-				return Promise.all([
-					(base.searchExternal ? base.searchExternal.onFocus : Util.ep)(),
-					base.control.update({query: search.components.head.model().text()}),
-				]);
+				return search.getContent().then(function (content) {
+					return Promise.all([
+						(base.searchExternal ? base.searchExternal.onFocus : Util.ep)(),
+						base.control.update({query: content}),
+					]).then(function () {
+						return base.control.start();
+					});
+				});
 			}
 			search.onBlur = function () {
 				base.isFocussed = false;
