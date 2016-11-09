@@ -1001,10 +1001,10 @@ var AccountComponents = {
 					] = components;
 
 					unitBase.activate = function () {
-
+						return Util.ep();
 					}
 					unitBase.deactivate = function () {
-
+						return Util.ep();
 					}
 					unitBase.select = function () {
 
@@ -1012,7 +1012,7 @@ var AccountComponents = {
 					unitBase.onInput = function () {
 						return unitBase.getContent().then(function (content) {
 							return base.searchExternal.start(content).then(function () {
-								return unitBase.setMetadata({query: content});
+								// return unitBase.setMetadata({query: content});
 							});
 						});
 					}
@@ -1020,13 +1020,17 @@ var AccountComponents = {
 					return Promise.all([
 						unitBase.components.head.setBindings({
 							'focus': function (_this) {
-								return base.searchExternal.onFocus().then(function () {
-									return unitBase.focus();
+								return base.control.setActive({index: unitBase.index}).then(function () {
+									return base.searchExternal.onFocus().then(function () {
+										return unitBase.focus();
+									});
 								});
 							},
 							'blur': function (_this) {
-								return base.searchExternal.onBlur().then(function () {
-									return unitBase.blur();
+								return base.control.setActive({deactivate: true}).then(function () {
+									return base.searchExternal.onBlur().then(function () {
+										return unitBase.blur();
+									});
 								});
 							},
 						}),
@@ -1081,7 +1085,7 @@ var AccountComponents = {
 			// control
 			base.control = {
 				setActive: function (options) {
-
+					return Util.ep();
 				},
 				next: function () {
 
