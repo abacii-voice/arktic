@@ -667,11 +667,17 @@ var Components = {
 						setMetadata: function () {
 							if (!base.data.query) {
 								base.currentIndex = undefined;
-								return base.search.setMetadata({query: '', complete: ''});
+								return Promise.all([
+									base.search.setMetadata({query: '', complete: ''}),
+									base.external.setMetadata({query: '', complete: ''}),
+								]);
 							} else {
 								var datum = base.data.storage.virtual.list[base.currentIndex];
 								var complete = (datum || {}).main;
-								return base.search.setMetadata({query: base.data.query.toLowerCase(), complete: complete});
+								return Promise.all([
+									base.search.setMetadata({query: base.data.query.toLowerCase(), complete: complete}),
+									base.external.setMetadata({query: base.data.query.toLowerCase(), complete: complete}),
+								]);
 							}
 						},
 					},
@@ -827,7 +833,7 @@ var Components = {
 						base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (base.currentIndex !== undefined ? (options.increment || 0) : 0)));
 
 						// boundary conditions
-						var max = (base.data.limit !== undefined ? base.data.limit : base.data.storage.virtual.list.length) - 1;
+						var max = (base.data.limit !== undefined ? (base.data.limit > base.data.storage.virtual.list.length ? base.data.storage.virtual.list.length : base.data.limit) : base.data.storage.virtual.list.length) - 1;
 						base.currentIndex = base.currentIndex > max ? max : (base.currentIndex < 0 ? 0 : base.currentIndex);
 
 						if (base.currentIndex !== previousIndex) {
@@ -837,7 +843,10 @@ var Components = {
 									return base.active.activate().then(function () {
 										var datum = base.data.storage.virtual.list[base.currentIndex];
 										var complete = (datum || {}).main;
-										return base.search.setMetadata({complete: complete});
+										return Promise.all([
+											base.search.setMetadata({complete: complete}),
+											base.external.setMetadata({complete: complete}),
+										]);
 									});
 								})
 							});
