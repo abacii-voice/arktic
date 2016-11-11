@@ -522,10 +522,10 @@ var AccountInterfaces = {
 			}
 			caption.behaviours.right = function () {
 				if (caption.isFocussed) {
-					autocomplete.search.completionOverride = true;
+					autocomplete.search.completionOverride = true; // introduce a little chaos.
 					return Promise.all([
 						autocomplete.behaviours.right(),
-						caption.active.complete(),
+						caption.active.complete(), // just complete the active, the metadata is already there.
 					]);
 				} else {
 					return autocomplete.behaviours.right();
