@@ -469,12 +469,13 @@ var AccountInterfaces = {
 
 				// This allows the end of the search process to call the active unit of the caption to modify it.
 				setMetadata: function (options) {
+					console.log(options);
 					if (caption.active) {
 						return caption.active.setMetadata(options);
 					} else {
 						return Util.ep();
 					}
-				}
+				},
 			}
 
 			// CAPTION

@@ -779,6 +779,10 @@ var Components = {
 					return base.control.update({query: '', filter: ''}).then(function () {
 						return base.search.clear();
 					}).then(function () {
+						// return Promise.all([
+						// 	base.search.setMetadata({query: '', complete: ''}),
+						// 	base.external.setMetadata({query: '', complete: ''}),
+						// ]);
 						return base.search.setMetadata({query: '', complete: ''});
 					});
 				},
