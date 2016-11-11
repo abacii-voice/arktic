@@ -181,8 +181,7 @@ var AccountInterfaces = {
 
 			Mousetrap.bind('right', function (event) {
 				Promise.all([
-					autocomplete.behaviours.right(),
-
+					caption.behaviours.right(),
 				]);
 			});
 
@@ -466,13 +465,16 @@ var AccountInterfaces = {
 				});
 			}
 			autocomplete.external = {
-
 				// This allows the end of the search process to call the active unit of the caption to modify it.
 				setMetadata: function (options) {
-					console.log(options);
-					if (caption.active) {
+					// It shouldn't be necessary to set these two conditions, but for now I will.
+					// I'm thinking of making active only exist when focussed, which would remove the need for caption.isFocussed.
+					if (caption.active && caption.isFocussed) {
+						// I put this here because the internal autocomplete code does not know whether the field is being blurred or not.
+						// It just knows that the query is an empty string. This function exists to pass the data into the outside world to respond to global conditions.
 						if (caption.isBlurring) {
 							caption.isBlurring = false;
+							// Change the query and complete to equal the current content. God I'm a genius.
 							return caption.active.getContent().then(function (content) {
 								return caption.active.setMetadata({query: content, complete: content});
 							});
@@ -496,14 +498,16 @@ var AccountInterfaces = {
 				},
 			}
 			caption.searchExternal = {
-
 				// this code allows each unit of the caption to respond in the same way on events.
+				// Each active component will repond using these functions.
+				// They allow interaction with outside world components, such as their parent.
 				start: function (query) {
 					query = (query || '');
 					return autocomplete.search.setContent({content: query, trigger: true})
 				},
 				onFocus: function () {
 					caption.isBlurring = false;
+					caption.isFocussed = true;
 					autocomplete.isFocussed = true;
 					return caption.active.getContent().then(function (content) {
 						return caption.searchExternal.start(content);
@@ -511,9 +515,21 @@ var AccountInterfaces = {
 				},
 				onBlur: function () {
 					caption.isBlurring = true;
+					caption.isFocussed = false;
 					autocomplete.isFocussed = false;
 					return caption.searchExternal.start();
 				},
+			}
+			caption.behaviours.right = function () {
+				if (caption.isFocussed) {
+					autocomplete.search.completionOverride = true;
+					return Promise.all([
+						autocomplete.behaviours.right(),
+						caption.active.complete(),
+					]);
+				} else {
+					return autocomplete.behaviours.right();
+				}
 			}
 
 			// connect
