@@ -471,7 +471,14 @@ var AccountInterfaces = {
 				setMetadata: function (options) {
 					console.log(options);
 					if (caption.active) {
-						return caption.active.setMetadata(options);
+						if (caption.isBlurring) {
+							caption.isBlurring = false;
+							return caption.active.getContent().then(function (content) {
+								return caption.active.setMetadata({query: content, complete: content});
+							});
+						} else {
+							return caption.active.setMetadata(options);
+						}
 					} else {
 						return Util.ep();
 					}
@@ -496,12 +503,14 @@ var AccountInterfaces = {
 					return autocomplete.search.setContent({content: query, trigger: true})
 				},
 				onFocus: function () {
+					caption.isBlurring = false;
 					autocomplete.isFocussed = true;
 					return caption.active.getContent().then(function (content) {
 						return caption.searchExternal.start(content);
 					});
 				},
 				onBlur: function () {
+					caption.isBlurring = true;
 					autocomplete.isFocussed = false;
 					return caption.searchExternal.start();
 				},
