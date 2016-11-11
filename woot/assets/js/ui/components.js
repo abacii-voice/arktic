@@ -192,7 +192,11 @@ var Components = {
 				return tail.setAppearance({html: base.metadata.complete}).then(function () {
 					return head.setAppearance({html: base.metadata.complete});
 				}).then(function () {
-					return base.setCaretPosition('end');
+					if (!base.completionOverride) {
+						return base.setCaretPosition('end');
+					} else {
+						return Util.ep(); // This prevents the cursor from jumping to the autocomplete
+					}
 				});
 			}
 			base.focus = function (position) {
@@ -237,8 +241,9 @@ var Components = {
 			base.behaviours = {
 				right: function () {
 					return base.isCaretInPosition('end').then(function (inPosition) {
-						if (inPosition) {
+						if (inPosition || base.completionOverride) {
 							return base.complete().then(function () {
+								base.completionOverride = false;
 								return base.onInput();
 							});
 						} else {
