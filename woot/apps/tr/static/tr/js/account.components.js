@@ -1055,9 +1055,11 @@ var AccountComponents = {
 				// methods
 				token: function (options) {
 					options = (options || {});
-					if (base.active && !options.new) {
+					if (base.children.length) {
 						// focus active
-						return base.active.focus('end').then(function () {
+						return base.setActive({position: 'end'}).then(function () {
+							return base.active.focus('end');
+						}).then(function () {
 							return base.active;
 						});
 					} else {
@@ -1085,7 +1087,42 @@ var AccountComponents = {
 			// control
 			base.control = {
 				setActive: function (options) {
-					return Util.ep();
+					options = (options || {});
+
+					// position: explicit non-index position; "start", "end".
+					// index: numerical position of unit to activate
+					// increment: add a value to the current index
+					// deactivate: deactivate active token
+
+					if (options.deactivate) {
+						return base.active.deactivate().then(function () {
+							base.active = undefined;
+							return Util.ep();
+						});
+					} else {
+						options.index = options.index || ({start: 0, end: base.children.length - 1}[options.position]);
+						base.currentIndex = options.index ||
+
+						// NOT SURE YET
+						// changes
+						var previousIndex = base.currentIndex;
+						base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (base.currentIndex !== undefined ? (options.increment || 0) : 0)));
+
+						// boundary conditions
+						var max = (base.data.limit !== undefined ? (base.data.limit > base.data.storage.virtual.list.length ? base.data.storage.virtual.list.length : base.data.limit) : base.data.storage.virtual.list.length) - 1;
+						base.currentIndex = base.currentIndex > max ? max : (base.currentIndex < 0 ? 0 : base.currentIndex);
+
+
+
+						if (options.index) {
+							var newActive = base.children[options.index];
+							if (base.active) {
+
+							}
+						} else {
+							return Util.ep();
+						}
+					}
 				},
 				next: function () {
 
