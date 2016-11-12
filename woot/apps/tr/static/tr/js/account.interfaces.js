@@ -198,7 +198,7 @@ var AccountInterfaces = {
 				event.preventDefault();
 				Promise.all([
 					autocomplete.behaviours.enter(),
-
+					caption.behaviours.enter(),
 				]);
 			});
 

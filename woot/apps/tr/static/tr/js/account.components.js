@@ -990,6 +990,7 @@ var AccountComponents = {
 						// need custom appearance
 						appearance: {
 							style: {
+								'padding-left': '0px',
 								'border': '0px',
 								'display': 'inline-block',
 							},
@@ -1055,9 +1056,9 @@ var AccountComponents = {
 				// methods
 				token: function (options) {
 					options = (options || {});
-					if (base.children.length) {
+					if (base.children.length && !options.new) {
 						// focus active
-						return base.setActive({position: 'end'}).then(function () {
+						return base.control.setActive('last').then(function () {
 							return base.active.focus('end');
 						}).then(function () {
 							return base.active;
@@ -1094,30 +1095,32 @@ var AccountComponents = {
 					// increment: add a value to the current index
 					// deactivate: deactivate active token
 
-					if (options.deactivate) {
+					if (options === 'deactivate') {
 						return base.active.deactivate().then(function () {
 							base.active = undefined;
 							return Util.ep();
 						});
 					} else {
-						options.index = options.index || ({start: 0, end: base.children.length - 1}[options.position]);
-						base.currentIndex = options.index ||
+						options.index = options === 'last' ? base.children.length - 1 : options.index;
 
-						// NOT SURE YET
 						// changes
 						var previousIndex = base.currentIndex;
-						base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (base.currentIndex !== undefined ? (options.increment || 0) : 0)));
+						base.data.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.data.currentIndex || 0) + (base.data.currentIndex !== undefined ? (options.increment || 0) : 0)));
 
 						// boundary conditions
-						var max = (base.data.limit !== undefined ? (base.data.limit > base.data.storage.virtual.list.length ? base.data.storage.virtual.list.length : base.data.limit) : base.data.storage.virtual.list.length) - 1;
-						base.currentIndex = base.currentIndex > max ? max : (base.currentIndex < 0 ? 0 : base.currentIndex);
+						base.data.currentIndex = base.data.currentIndex > base.children.length - 1 ? base.children.length - 1 : (base.data.currentIndex < 0 ? 0 : base.data.currentIndex);
 
-
-
-						if (options.index) {
-							var newActive = base.children[options.index];
+						if (base.currentIndex !== previousIndex) {
+							var newActive = base.children[base.data.currentIndex];
 							if (base.active) {
-
+								return base.active.deactivate().then(function () {
+									base.active = newActive;
+									return base.active.activate();
+								}).then(function () {
+									return base.active.focus('end');
+								});
+							} else {
+								return Util.ep();
 							}
 						} else {
 							return Util.ep();
@@ -1125,10 +1128,10 @@ var AccountComponents = {
 					}
 				},
 				next: function () {
-
+					return base.control.setActive({increment: 1});
 				},
 				previous: function () {
-
+					return base.control.setActive({increment: -1});
 				},
 				delete: function (options) {
 
@@ -1161,6 +1164,11 @@ var AccountComponents = {
 				altleft: function () {
 
 				},
+				enter: function () {
+					return base.active.complete().then(function () {
+						return base.data.token({new: true});
+					});
+				}
 			}
 
 			return Promise.all([
