@@ -188,14 +188,14 @@ var Components = {
 			}
 			base.complete = function () {
 				// console.log('{} search complete'.format(base.id));
-				base.completeQuery = base.metadata.complete;
-				return tail.setAppearance({html: base.metadata.complete}).then(function () {
-					return head.setAppearance({html: base.metadata.complete});
+				base.completeQuery = ((base.metadata || {}).complete || '');
+				return tail.setAppearance({html: base.completeQuery}).then(function () {
+					return head.setAppearance({html: base.completeQuery});
 				}).then(function () {
 					if (!base.completionOverride) {
 						return base.setCaretPosition('end');
 					} else {
-						return Util.ep(); // This prevents the cursor from jumping to the autocomplete
+						return Util.ep(); // This prevents the cursor from jumping to the autocomplete if the trigger is external (such as a caption)
 					}
 				});
 			}
