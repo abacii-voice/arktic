@@ -189,15 +189,13 @@ var AccountInterfaces = {
 				event.preventDefault();
 				var char = String.fromCharCode(event.which);
 				Promise.all([
-					autocomplete.behaviours.number(char),
-
+					caption.behaviours.number(char),
 				]);
 			});
 
 			Mousetrap.bind('enter', function (event) {
 				event.preventDefault();
 				Promise.all([
-					// autocomplete.behaviours.enter(),
 					caption.behaviours.enter(),
 				]);
 			});
@@ -485,6 +483,9 @@ var AccountInterfaces = {
 						return Util.ep();
 					}
 				},
+				number: function () {
+					return caption.active.complete();
+				},
 			}
 
 			// CAPTION
@@ -521,15 +522,24 @@ var AccountInterfaces = {
 				},
 			}
 			caption.behaviours.right = function () {
+				// Slight modification of original function
+				return caption.active.isCaretInPosition('end').then(function (inPosition) {
+					if (inPosition) {
+						autocomplete.search.completionOverride = true; // introduce a little chaos.
+						return Promise.all([
+							autocomplete.behaviours.right(),
+							caption.active.complete(),
+						]);
+					} else {
+						return autocomplete.behaviours.right();
+					}
+				});
+			}
+			caption.behaviours.number = function (number) {
 				if (caption.isFocussed) {
-					autocomplete.search.completionOverride = true; // introduce a little chaos.
-					return Promise.all([
-						autocomplete.behaviours.right(),
-						caption.active.complete(), // just complete the active, the metadata is already there.
-					]);
-				} else {
-					return autocomplete.behaviours.right();
+					autocomplete.search.completionOverride = true;
 				}
+				return autocomplete.behaviours.number(number);
 			}
 
 			// connect
