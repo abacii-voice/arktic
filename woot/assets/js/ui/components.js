@@ -139,6 +139,7 @@ var Components = {
 			// logic, bindings, etc.
 			base.setMetadata = function (metadata) {
 				metadata = (metadata || {});
+				base.isComplete = false;
 				base.metadata = (base.metadata || {});
 				base.metadata.query = metadata.query !== undefined ? metadata.query : (base.metadata.query || '');
 				base.metadata.complete = metadata.complete !== undefined ? metadata.complete : base.metadata.query;
@@ -189,6 +190,7 @@ var Components = {
 			base.complete = function () {
 				// console.log('{} search complete'.format(base.id));
 				base.completeQuery = ((base.metadata || {}).complete || '');
+				base.isComplete = true;
 				return tail.setAppearance({html: base.completeQuery}).then(function () {
 					return head.setAppearance({html: base.completeQuery});
 				}).then(function () {
@@ -241,7 +243,7 @@ var Components = {
 			base.behaviours = {
 				right: function () {
 					return base.isCaretInPosition('end').then(function (inPosition) {
-						if (inPosition || base.completionOverride) {
+						if ((inPosition || base.completionOverride) && !base.isComplete) {
 							return base.complete().then(function () {
 								base.completionOverride = false;
 								return base.onInput();
@@ -1114,7 +1116,10 @@ var Components = {
 					if (index < base.data.storage.virtual.rendered.length) {
 						return base.control.setActive({index: index}).then(function () {
 							// don't know what behaviour to have here
-							return search.behaviours.right();
+							return Promise.all([
+								search.behaviours.right(),
+								(base.external.number || Util.ep)(),
+							]);
 
 							// Maybe do this
 							// return search.behaviours.enter();

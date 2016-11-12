@@ -991,9 +991,10 @@ var AccountComponents = {
 						appearance: {
 							style: {
 								'padding-left': '0px',
-								'padding-bottom': '3px',
+								'padding-bottom': '8px',
+								'padding-top': '0px',
 								'height': 'auto',
-								// 'border': '0px',
+								'border': '0px',
 								'display': 'inline-block',
 							},
 						},
@@ -1164,7 +1165,11 @@ var AccountComponents = {
 				},
 				enter: function () {
 					return base.active.complete().then(function () {
-						return base.data.token({new: true});
+						return base.active.getContent().then(function (content) {
+							if (content) {
+								return base.data.token({new: true});
+							}
+						});
 					});
 				}
 			}
