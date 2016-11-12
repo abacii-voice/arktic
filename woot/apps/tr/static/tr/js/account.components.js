@@ -991,7 +991,9 @@ var AccountComponents = {
 						appearance: {
 							style: {
 								'padding-left': '0px',
-								'border': '0px',
+								'padding-bottom': '3px',
+								'height': 'auto',
+								// 'border': '0px',
 								'display': 'inline-block',
 							},
 						},
