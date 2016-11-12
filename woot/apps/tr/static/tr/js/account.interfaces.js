@@ -61,7 +61,7 @@ var AccountInterfaces = {
 				},
 				state: {
 					states: {
-						'transcription-state': {
+						'asdasd-state': {
 							preFn: function (_this) {
 								_this.canvas.start();
 								return _this.update();
@@ -197,7 +197,7 @@ var AccountInterfaces = {
 			Mousetrap.bind('enter', function (event) {
 				event.preventDefault();
 				Promise.all([
-					autocomplete.behaviours.enter(),
+					// autocomplete.behaviours.enter(),
 					caption.behaviours.enter(),
 				]);
 			});
