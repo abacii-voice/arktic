@@ -1012,9 +1012,7 @@ var AccountComponents = {
 					}
 					unitBase.onInput = function () {
 						return unitBase.getContent().then(function (content) {
-							return base.searchExternal.start(content).then(function () {
-								// return unitBase.setMetadata({query: content});
-							});
+							return base.searchExternal.start(content);
 						});
 					}
 
@@ -1072,8 +1070,7 @@ var AccountComponents = {
 								unit.after = options.before ? '' : base.active.id;
 							}
 							return base.setChildren([unit]).then(function () {
-								base.active = unit;
-								return base.active.activate();
+								return base.control.setActive({index: unit.index});
 							}).then(function () {
 								return base.active.focus('end');
 							}).then(function () {
@@ -1110,17 +1107,16 @@ var AccountComponents = {
 						// boundary conditions
 						base.data.currentIndex = base.data.currentIndex > base.children.length - 1 ? base.children.length - 1 : (base.data.currentIndex < 0 ? 0 : base.data.currentIndex);
 
-						if (base.currentIndex !== previousIndex) {
+						if (base.data.currentIndex !== previousIndex) {
 							var newActive = base.children[base.data.currentIndex];
 							if (base.active) {
 								return base.active.deactivate().then(function () {
 									base.active = newActive;
 									return base.active.activate();
-								}).then(function () {
-									return base.active.focus('end');
 								});
 							} else {
-								return Util.ep();
+								base.active = newActive;
+								return base.active.activate();
 							}
 						} else {
 							return Util.ep();
