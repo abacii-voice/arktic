@@ -982,66 +982,89 @@ var AccountComponents = {
 			] = components;
 
 			// unit
-			base.unit = function (options) {
-				var id = '{base}-{id}'.format({base: base.id, id: Util.makeid()});
-				return Promise.all([
-					// base
-					Components.search(id, {
-						// need custom appearance
-						appearance: {
-							style: {
-								'padding-left': '0px',
-								'padding-bottom': '8px',
-								'padding-top': '0px',
-								'height': 'auto',
-								'border': '0px',
-								'display': 'inline-block',
-							},
+			base.unit = {
+				control: {
+					activate: function () {
+						return Util.ep();
+					},
+					deactivate: function () {
+						return Util.ep();
+					},
+					select: function () {
+
+					},
+				},
+				prototype: {
+					// It's a bit hacky, but I think it can work. This will have to be adapted into a more solid system later. I think it has promise.
+					// This is an example of how to use prototype methods.
+					// Like all these changes, it allows these properties to be modified externally before begin added to a new unit object.
+					input: function (_this) {
+						return function () {
+							return _this.getContent().then(function (content) {
+								return base.setMetadata({query: content});
+							});
+						};
+					},
+				},
+				promises: function (_this) {
+
+					// NOT SURE IF THIS WILL JUST WORK
+					unitBase.components.head.setBindings({
+						'focus': function (_this) {
+							return base.control.setActive({index: unitBase.index}).then(function () {
+								return base.searchExternal.onFocus().then(function () {
+									return unitBase.focus();
+								});
+							});
+						},
+						'blur': function (_this) {
+							return base.control.setActive({deactivate: true}).then(function () {
+								return base.searchExternal.onBlur().then(function () {
+									return unitBase.blur();
+								});
+							});
 						},
 					}),
-				]).then(function (components) {
-					var [
-						unitBase,
-					] = components;
-
-					unitBase.activate = function () {
-						return Util.ep();
-					}
-					unitBase.deactivate = function () {
-						return Util.ep();
-					}
-					unitBase.select = function () {
-
-					}
-					unitBase.onInput = function () {
-						return unitBase.getContent().then(function (content) {
-							return base.searchExternal.start(content);
-						});
-					}
-
+				},
+				main: function (options) {
+					var id = '{base}-{id}'.format({base: base.id, id: Util.makeid()});
 					return Promise.all([
-						unitBase.components.head.setBindings({
-							'focus': function (_this) {
-								return base.control.setActive({index: unitBase.index}).then(function () {
-									return base.searchExternal.onFocus().then(function () {
-										return unitBase.focus();
-									});
-								});
-							},
-							'blur': function (_this) {
-								return base.control.setActive({deactivate: true}).then(function () {
-									return base.searchExternal.onBlur().then(function () {
-										return unitBase.blur();
-									});
-								});
+						// base
+						Components.search(id, {
+							// need custom appearance
+							appearance: {
+								style: {
+									'padding-left': '0px',
+									'padding-bottom': '8px',
+									'padding-top': '0px',
+									'height': 'auto',
+									'border': '0px',
+									'display': 'inline-block',
+								},
 							},
 						}),
-					]).then(function () {
+					]).then(function (components) {
+						var [
+							unitBase,
+						] = components;
 
-					}).then(function () {
-						return unitBase;
+						// handle control methods
+						unitBase.control = base.unit.control;
+
+						// handle prototype methods
+						Object.keys(base.unit.prototype).forEach(function (methodName) {
+							unitBase[methodName] = base.unit.prototype[methodName](unitBase); // called on the unitBase object
+						});
+
+						return Promise.all([
+
+						]).then(function () {
+
+						}).then(function () {
+							return unitBase;
+						});
 					});
-				});
+				},
 			}
 			base.defaultUnitStyle = function () {
 
@@ -1067,7 +1090,7 @@ var AccountComponents = {
 					} else {
 						// create new unit
 						base.data.currentIndex = base.data.currentIndex !== undefined ? base.data.currentIndex + 1 : 0;
-						return base.unit(options.data).then(function (unit) {
+						return base.unit.main(options.data).then(function (unit) {
 							// set after HERE
 							if (base.active) {
 								unit.after = options.before ? '' : base.active.id;
@@ -1096,7 +1119,7 @@ var AccountComponents = {
 					// deactivate: deactivate active token
 
 					if (options === 'deactivate') {
-						return base.active.deactivate().then(function () {
+						return base.active.control.deactivate().then(function () {
 							base.active = undefined;
 							return Util.ep();
 						});
@@ -1113,13 +1136,13 @@ var AccountComponents = {
 						if (base.data.currentIndex !== previousIndex) {
 							var newActive = base.children[base.data.currentIndex];
 							if (base.active) {
-								return base.active.deactivate().then(function () {
+								return base.active.control.deactivate().then(function () {
 									base.active = newActive;
-									return base.active.activate();
+									return base.active.control.activate();
 								});
 							} else {
 								base.active = newActive;
-								return base.active.activate();
+								return base.active.control.activate();
 							}
 						} else {
 							return Util.ep();
