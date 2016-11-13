@@ -194,31 +194,24 @@ var Components = {
 				return tail.setAppearance({html: base.completeQuery}).then(function () {
 					return head.setAppearance({html: base.completeQuery});
 				}).then(function () {
-					if (!base.completionOverride) {
-						return base.setCaretPosition('end');
-					} else {
-						return Util.ep(); // This prevents the cursor from jumping to the autocomplete if the trigger is external (such as a caption)
-					}
+					return base.setCaretPosition('end');
 				});
 			}
 			base.focus = function (position) {
 				if (!base.isFocussed) {
 					base.isFocussed = true;
-					return (base.onFocus || Util.ep)().then(function () {
-						return base.setCaretPosition(position);
-					});
+					return base.setCaretPosition(position);
 				} else {
 					return Util.ep();
 				}
 			}
 			base.blur = function () {
 				base.isFocussed = false;
-				return (base.onBlur || Util.ep)().then(function () {
-					return tail.setAppearance({html: (head.model().text() || base.placeholder)});
+				return base.getContent().then(function (content) {
+					return tail.setAppearance({html: (content || base.placeholder)});
 				});
 			}
 			base.clear = function () {
-				// console.log('{} search clear'.format(base.id));
 				return head.setAppearance({html: ''}).then(function () {
 					return tail.setAppearance({html: base.placeholder});
 				});
@@ -229,11 +222,11 @@ var Components = {
 			base.setContent = function (options) {
 				return head.setAppearance({html: options.content}).then(function () {
 					if (options.trigger) {
-						head.model().trigger('input');
+						return base.input();
 					}
 				});
 			}
-			base.onInput = function () {
+			base.input = function () {
 				return base.getContent().then(function (content) {
 					return base.setMetadata({query: content});
 				});
@@ -243,10 +236,9 @@ var Components = {
 			base.behaviours = {
 				right: function () {
 					return base.isCaretInPosition('end').then(function (inPosition) {
-						if ((inPosition || base.completionOverride) && !base.isComplete) {
+						if (inPosition && !base.isComplete) {
 							return base.complete().then(function () {
-								base.completionOverride = false;
-								return base.onInput();
+								return base.input();
 							});
 						} else {
 							return Util.ep();
@@ -278,7 +270,7 @@ var Components = {
 				head.setBindings({
 					'input': function (_this) {
 						// console.log('{} search bindings head input'.format(base.id));
-						return base.onInput();
+						return base.input();
 					},
 					'focus': function (_this) {
 						// console.log('{} search bindings head focus'.format(base.id));
@@ -628,7 +620,7 @@ var Components = {
 												return existingListItem.updateMetadata(datum, base.data.query.toLowerCase());
 											}).then(function () {
 												if (base.currentIndex === undefined) {
-													return base.control.setActive({index: 0});
+													return base.control.setActive.main({index: 0});
 												} else {
 													return Util.ep();
 												}
@@ -672,20 +664,15 @@ var Components = {
 							return Util.ep();
 						},
 						setMetadata: function () {
+							var query = '';
+							var complete = '';
 							if (!base.data.query) {
 								base.currentIndex = undefined;
-								return Promise.all([
-									base.search.setMetadata({query: '', complete: ''}),
-									base.external.setMetadata({query: '', complete: ''}),
-								]);
 							} else {
-								var datum = base.data.storage.virtual.list[base.currentIndex];
-								var complete = (datum || {}).main;
-								return Promise.all([
-									base.search.setMetadata({query: base.data.query.toLowerCase(), complete: complete}),
-									base.external.setMetadata({query: base.data.query.toLowerCase(), complete: complete}),
-								]);
+								query = base.data.query.toLowerCase();
+								complete = (base.data.storage.virtual.list[base.currentIndex] || {}).main;
 							}
+							return base.search.setMetadata({query: query, complete: complete});
 						},
 					},
 				},
@@ -786,10 +773,6 @@ var Components = {
 					return base.control.update({query: '', filter: ''}).then(function () {
 						return base.search.clear();
 					}).then(function () {
-						// return Promise.all([
-						// 	base.search.setMetadata({query: '', complete: ''}),
-						// 	base.external.setMetadata({query: '', complete: ''}),
-						// ]);
 						return base.search.setMetadata({query: '', complete: ''});
 					});
 				},
@@ -833,40 +816,45 @@ var Components = {
 						return base.control.start();
 					});
 				},
-				setActive: function (options) {
-					options = (options || {});
+				setActive: {
+					main: function (options) {
+						options = (options || {});
 
-					// if there are any results
-					if (base.data.storage.virtual.rendered.length && base.isFocussed) {
+						// if there are any results
+						if (base.data.storage.virtual.rendered.length && base.isFocussed) {
 
-						// changes
-						var previousIndex = base.currentIndex;
-						base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (base.currentIndex !== undefined ? (options.increment || 0) : 0)));
+							// changes
+							var previousIndex = base.currentIndex;
+							base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (base.currentIndex !== undefined ? (options.increment || 0) : 0)));
 
-						// boundary conditions
-						var max = (base.data.limit !== undefined ? (base.data.limit > base.data.storage.virtual.list.length ? base.data.storage.virtual.list.length : base.data.limit) : base.data.storage.virtual.list.length) - 1;
-						base.currentIndex = base.currentIndex > max ? max : (base.currentIndex < 0 ? 0 : base.currentIndex);
+							// boundary conditions
+							var max = (base.data.limit !== undefined ? (base.data.limit > base.data.storage.virtual.list.length ? base.data.storage.virtual.list.length : base.data.limit) : base.data.storage.virtual.list.length) - 1;
+							base.currentIndex = base.currentIndex > max ? max : (base.currentIndex < 0 ? 0 : base.currentIndex);
 
-						if (base.currentIndex !== previousIndex) {
-							return base.control.deactivate().then(function () {
-								return UI.getComponent(base.data.storage.virtual.rendered[base.currentIndex]).then(function (activeListItem) {
-									base.active = activeListItem;
-									return base.active.activate().then(function () {
-										var datum = base.data.storage.virtual.list[base.currentIndex];
-										var complete = (datum || {}).main;
-										return Promise.all([
-											base.search.setMetadata({complete: complete}),
-											base.external.setMetadata({complete: complete}),
-										]);
-									});
-								})
-							});
+							if (base.currentIndex !== previousIndex) {
+								return base.control.setActive.set();
+							} else {
+								return Util.ep();
+							}
 						} else {
 							return Util.ep();
 						}
-					} else {
-						return Util.ep();
-					}
+					},
+					set: function () {
+						return base.control.deactivate().then(function () {
+							return UI.getComponent(base.data.storage.virtual.rendered[base.currentIndex]).then(function (activeListItem) {
+								base.active = activeListItem;
+								return base.active.activate().then(function () {
+									var datum = base.data.storage.virtual.list[base.currentIndex];
+									var complete = (datum || {}).main;
+									return base.control.setActive.final(datum, complete);
+								});
+							})
+						});
+					},
+					final: function (datum, complete) {
+						return base.search.setMetadata({complete: complete});
+					},
 				},
 				deactivate: function () {
 					return ((base.active || {}).deactivate || Util.ep)().then(function () {
@@ -1023,33 +1011,38 @@ var Components = {
 
 			// list methods
 			base.next = function () {
-				return base.control.setActive({increment: 1});
+				return base.control.setActive.main({increment: 1});
 			}
 			base.previous = function () {
-				return base.control.setActive({increment: -1});
+				return base.control.setActive.main({increment: -1});
 			}
 
 			// search methods
-			search.onFocus = function () {
+			search.focus = function (position) {
+				if (!search.isFocussed) {
+					search.isFocussed = true;
+					base.isFocussed = true;
+					return Promise.all([
+						search.setCaretPosition(position),
+						search.input(),
+					]);
+					return ;
+				} else {
+					return Util.ep();
+				}
+			}
+			search.blur = function () {
+				search.isFocussed = false;
 				base.isFocussed = true;
 				return search.getContent().then(function (content) {
-					return Promise.all([
-						(base.searchExternal ? base.searchExternal.onFocus : Util.ep)(),
-						base.control.update({query: content}),
-					]).then(function () {
-						return base.control.start();
-					});
+					return tail.setAppearance({html: (content || search.placeholder)});
 				});
 			}
-			search.onBlur = function () {
-				base.isFocussed = false;
-				return base.control.setFilter();
-			}
-			search.onInput = function () {
+			search.input = function () {
 				return search.getContent().then(function (content) {
-					return base.control.update({query: content});
-				}).then(function () {
-					return base.control.start();
+					return base.control.update({query: content}).then(function () {
+						return base.control.start();
+					});
 				});
 			}
 			base.setSearch = function (options) {
@@ -1114,11 +1107,9 @@ var Components = {
 					// console.log('{} searchlist behaviours number'.format(base.id));
 					var index = parseInt(char);
 					if (index < base.data.storage.virtual.rendered.length) {
-						return base.control.setActive({index: index}).then(function () {
+						return base.control.setActive.main({index: index}).then(function () {
 							// don't know what behaviour to have here
-							return search.behaviours.right().then(function () {
-								return base.external.number();
-							});
+							return search.behaviours.right();
 
 							// Maybe do this
 							// return search.behaviours.enter();
