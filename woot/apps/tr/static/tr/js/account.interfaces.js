@@ -484,7 +484,12 @@ var AccountInterfaces = {
 					}
 				},
 				number: function () {
-					return caption.active.complete();
+					// This is to allow the autocomplete to be used independently of the caption
+					if (caption.isFocussed) {
+						return caption.active.complete();
+					} else {
+						return Util.ep();
+					}
 				},
 			}
 

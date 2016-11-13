@@ -1116,10 +1116,9 @@ var Components = {
 					if (index < base.data.storage.virtual.rendered.length) {
 						return base.control.setActive({index: index}).then(function () {
 							// don't know what behaviour to have here
-							return Promise.all([
-								search.behaviours.right(),
-								(base.external.number || Util.ep)(),
-							]);
+							return search.behaviours.right().then(function () {
+								return base.external.number();
+							});
 
 							// Maybe do this
 							// return search.behaviours.enter();
