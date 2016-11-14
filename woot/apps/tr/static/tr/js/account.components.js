@@ -981,82 +981,6 @@ var AccountComponents = {
 				content,
 			] = components;
 
-			// unit
-			base.unit = {
-				control: {
-					activate: function () {
-						return Util.ep();
-					},
-					deactivate: function () {
-						return Util.ep();
-					},
-					select: function () {
-
-					},
-				},
-				prototype: {
-					// It's a bit hacky, but I think it can work. This will have to be adapted into a more solid system later. I think it has promise.
-					// This is an example of how to use prototype methods.
-					// Like all these changes, it allows these properties to be modified externally before begin added to a new unit object.
-					input: function (_this) {
-
-						// It must have a function within function to pass the _this variable
-						return function () {
-							return _this.getContent().then(function (content) {
-								return _this.setMetadata({query: content});
-							});
-						};
-					},
-				},
-				promises: function (_this) {
-
-					// Again pass _this to bind it to the unitBase.
-					return Promise.all([
-						_this.components.head.setBindings({
-							'focus': function (_self) {
-								return _this.focus();
-							},
-						}),
-					]);
-				},
-				main: function (options) {
-					var id = '{base}-{id}'.format({base: base.id, id: Util.makeid()});
-					return Promise.all([
-						// base
-						Components.search(id, {
-							// need custom appearance
-							appearance: {
-								style: {
-									'padding-left': '0px',
-									'padding-bottom': '8px',
-									'padding-top': '0px',
-									'height': 'auto',
-									'border': '0px',
-									'display': 'inline-block',
-								},
-							},
-						}),
-					]).then(function (components) {
-						var [
-							unitBase,
-						] = components;
-
-						// handle control methods
-						unitBase.control = base.unit.control;
-
-						// handle prototype methods
-						Object.keys(base.unit.prototype).forEach(function (methodName) {
-							unitBase[methodName] = base.unit.prototype[methodName](unitBase); // called on the unitBase object
-						});
-
-						return base.unit.promises(unitBase).then(function () {
-
-						}).then(function () {
-							return unitBase;
-						});
-					});
-				},
-			}
 			base.defaultUnitStyle = function () {
 
 			}
@@ -1081,7 +1005,7 @@ var AccountComponents = {
 					} else {
 						// create new unit
 						base.data.currentIndex = base.data.currentIndex !== undefined ? base.data.currentIndex + 1 : 0;
-						return base.unit.main(options.data).then(function (unit) {
+						return base.unit(options.data).then(function (unit) {
 							// set after HERE
 							if (base.active) {
 								unit.after = options.before ? '' : base.active.id;
@@ -1110,7 +1034,7 @@ var AccountComponents = {
 					// deactivate: deactivate active token
 
 					if (options === 'deactivate') {
-						return base.active.control.deactivate().then(function () {
+						return base.active.deactivate().then(function () {
 							base.active = undefined;
 							return Util.ep();
 						});
@@ -1127,13 +1051,13 @@ var AccountComponents = {
 						if (base.data.currentIndex !== previousIndex) {
 							var newActive = base.children[base.data.currentIndex];
 							if (base.active) {
-								return base.active.control.deactivate().then(function () {
+								return base.active.deactivate().then(function () {
 									base.active = newActive;
-									return base.active.control.activate();
+									return base.active.activate();
 								});
 							} else {
 								base.active = newActive;
-								return base.active.control.activate();
+								return base.active.activate();
 							}
 						} else {
 							return Util.ep();

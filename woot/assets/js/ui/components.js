@@ -787,11 +787,6 @@ var Components = {
 				},
 
 				// element control
-				setContent: function (options) {
-					return search.setContent(options).then(function () {
-						return base.control.update({query: options.content});
-					})
-				},
 				setFilter: function (rule) {
 					// 0. update data filter
 					base.data.filter = rule;
