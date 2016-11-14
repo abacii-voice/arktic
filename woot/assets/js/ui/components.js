@@ -139,12 +139,14 @@ var Components = {
 			// logic, bindings, etc.
 			base.setMetadata = function (metadata) {
 				metadata = (metadata || {});
-				base.isComplete = false;
 				base.metadata = (base.metadata || {});
 				base.metadata.query = metadata.query !== undefined ? metadata.query : (base.metadata.query || '');
 				base.metadata.complete = metadata.complete !== undefined ? metadata.complete : base.metadata.query;
 				base.metadata.combined = base.metadata.query + base.metadata.complete.substring(base.metadata.query.length);
-				return tail.setAppearance({html: (base.metadata.combined || base.metadata.query || base.filterString || base.placeholder || '')});
+				return tail.setAppearance({html: ((base.isComplete ? base.metadata.complete : '') || base.metadata.combined || base.metadata.query || base.filterString || base.placeholder || '')}).then(function () {
+					base.isComplete = false;
+					return Util.ep();
+				});
 			}
 			base.isCaretInPosition = function (mode) {
 				// console.log('{} search isCaretInPosition'.format(base.id));
