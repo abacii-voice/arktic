@@ -188,7 +188,6 @@ var Components = {
 				return Util.ep();
 			}
 			base.complete = function () {
-				// console.log('{} search complete'.format(base.id));
 				base.completeQuery = ((base.metadata || {}).complete || '');
 				base.isComplete = true;
 				return tail.setAppearance({html: base.completeQuery}).then(function () {
