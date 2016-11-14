@@ -459,12 +459,17 @@ var AccountInterfaces = {
 			autocomplete.search.setMetadata = function (metadata) {
 				var _this = autocomplete.search;
 				metadata = (metadata || {});
-				_this.isComplete = false;
 				_this.metadata = (_this.metadata || {});
 				_this.metadata.query = metadata.query !== undefined ? metadata.query : (_this.metadata.query || '');
 				_this.metadata.complete = metadata.complete !== undefined ? metadata.complete : _this.metadata.query;
 				_this.metadata.combined = _this.metadata.query + _this.metadata.complete.substring(_this.metadata.query.length);
-				return _this.components.tail.setAppearance({html: (_this.metadata.combined || _this.metadata.query || _this.filterString || _this.placeholder || '')}).then(function () {
+				return _this.components.tail.setAppearance({html: ((_this.isComplete ? _this.metadata.complete : '') || _this.metadata.combined || _this.metadata.query || _this.filterString || _this.placeholder || '')}).then(function () {
+					// reset complete
+					if (_this.isComplete && _this.metadata.query !== _this.metadata.complete.toLowerCase()) {
+						_this.isComplete = false;
+					}
+
+					// return caption action
 					if (caption.isFocussed) {
 						return caption.active.setMetadata(metadata);
 					} else {
@@ -473,13 +478,14 @@ var AccountInterfaces = {
 				});
 			}
 			autocomplete.search.complete = function () {
-				autocomplete.search.completeQuery = ((autocomplete.search.metadata || {}).complete || '');
-				autocomplete.search.isComplete = true;
-				return autocomplete.search.components.tail.setAppearance({html: autocomplete.search.completeQuery}).then(function () {
-					return autocomplete.search.components.head.setAppearance({html: autocomplete.search.completeQuery});
+				var _this = autocomplete.search;
+				_this.completeQuery = ((_this.metadata || {}).complete || '');
+				_this.isComplete = true;
+				return _this.components.tail.setAppearance({html: _this.completeQuery}).then(function () {
+					return _this.components.head.setAppearance({html: _this.completeQuery});
 				}).then(function () {
 					if (!caption.isFocussed) {
-						return autocomplete.search.setCaretPosition('end');
+						return _this.setCaretPosition('end');
 					} else {
 						return Util.ep();
 					}
@@ -488,6 +494,7 @@ var AccountInterfaces = {
 			autocomplete.search.behaviours.right = function () {
 				return autocomplete.search.isCaretInPosition('end').then(function (inPosition) {
 					if ((inPosition && !autocomplete.search.isComplete) || caption.completionOverride) {
+						autocomplete.currentIndex = 0;
 						caption.completionOverride = false;
 						return autocomplete.search.complete().then(function () {
 							return autocomplete.search.input();
@@ -593,17 +600,21 @@ var AccountInterfaces = {
 			}
 			caption.behaviours.right = function () {
 				// Slight modification of original function
-				return caption.active.isCaretInPosition('end').then(function (inPosition) {
-					if (inPosition) {
-						caption.completionOverride = true; // introduce a little chaos.
-						return Promise.all([
-							autocomplete.behaviours.right(),
-							caption.active.complete(),
-						]);
-					} else {
-						return autocomplete.behaviours.right();
-					}
-				});
+				if (caption.isFocussed) {
+					return caption.active.isCaretInPosition('end').then(function (inPosition) {
+						if (inPosition) {
+							caption.completionOverride = true; // introduce a little chaos.
+							return Promise.all([
+								autocomplete.behaviours.right(),
+								caption.active.complete(),
+							]);
+						} else {
+							return autocomplete.behaviours.right();
+						}
+					});
+				} else {
+					return autocomplete.behaviours.right();
+				}
 			}
 
 			// connect
