@@ -189,7 +189,7 @@ var AccountInterfaces = {
 				event.preventDefault();
 				var char = String.fromCharCode(event.which);
 				Promise.all([
-					caption.behaviours.number(char),
+					autocomplete.behaviours.number(char),
 				]);
 			});
 
@@ -472,6 +472,46 @@ var AccountInterfaces = {
 					}
 				});
 			}
+			autocomplete.search.complete = function () {
+				autocomplete.search.completeQuery = ((autocomplete.search.metadata || {}).complete || '');
+				autocomplete.search.isComplete = true;
+				return autocomplete.search.components.tail.setAppearance({html: autocomplete.search.completeQuery}).then(function () {
+					return autocomplete.search.components.head.setAppearance({html: autocomplete.search.completeQuery});
+				}).then(function () {
+					if (!caption.isFocussed) {
+						return autocomplete.search.setCaretPosition('end');
+					} else {
+						return Util.ep();
+					}
+				});
+			}
+			autocomplete.search.behaviours.right = function () {
+				return autocomplete.search.isCaretInPosition('end').then(function (inPosition) {
+					if ((inPosition && !autocomplete.search.isComplete) || caption.completionOverride) {
+						caption.completionOverride = false;
+						return autocomplete.search.complete().then(function () {
+							return autocomplete.search.input();
+						});
+					} else {
+						return Util.ep();
+					}
+				});
+			}
+			autocomplete.behaviours.number = function (char) {
+				var index = parseInt(char);
+				if (index < autocomplete.data.storage.virtual.rendered.length) {
+					return autocomplete.control.setActive.main({index: index}).then(function () {
+						// don't know what behaviour to have here
+						return Promise.all([
+							autocomplete.search.behaviours.right(),
+							caption.behaviours.right(),
+						]);
+
+						// Maybe do this
+						// return search.behaviours.enter();
+					});
+				}
+			}
 
 			// CAPTION
 			caption.styles = {};
@@ -481,29 +521,6 @@ var AccountInterfaces = {
 				},
 				process: function () {
 
-				},
-			}
-			caption.searchExternal = {
-				// this code allows each unit of the caption to respond in the same way on events.
-				// Each active component will repond using these functions.
-				// They allow interaction with outside world components, such as their parent.
-				start: function (query) {
-					query = (query || '');
-					return autocomplete.search.setContent({content: query, trigger: true})
-				},
-				onFocus: function () {
-					caption.isBlurring = false;
-					caption.isFocussed = true;
-					autocomplete.isFocussed = true;
-					return caption.active.getContent().then(function (content) {
-						return caption.searchExternal.start(content);
-					});
-				},
-				onBlur: function () {
-					caption.isBlurring = true;
-					caption.isFocussed = false;
-					autocomplete.isFocussed = false;
-					return caption.searchExternal.start();
 				},
 			}
 			caption.unit = function (options) {
@@ -578,7 +595,7 @@ var AccountInterfaces = {
 				// Slight modification of original function
 				return caption.active.isCaretInPosition('end').then(function (inPosition) {
 					if (inPosition) {
-						autocomplete.search.completionOverride = true; // introduce a little chaos.
+						caption.completionOverride = true; // introduce a little chaos.
 						return Promise.all([
 							autocomplete.behaviours.right(),
 							caption.active.complete(),
