@@ -999,31 +999,25 @@ var AccountComponents = {
 					// This is an example of how to use prototype methods.
 					// Like all these changes, it allows these properties to be modified externally before begin added to a new unit object.
 					input: function (_this) {
+
+						// It must have a function within function to pass the _this variable
 						return function () {
 							return _this.getContent().then(function (content) {
-								return base.setMetadata({query: content});
+								return _this.setMetadata({query: content});
 							});
 						};
 					},
 				},
 				promises: function (_this) {
-					// NOT SURE IF THIS WILL JUST WORK
-					unitBase.components.head.setBindings({
-						'focus': function (_this) {
-							return base.control.setActive({index: unitBase.index}).then(function () {
-								return base.searchExternal.onFocus().then(function () {
-									return unitBase.focus();
-								});
-							});
-						},
-						'blur': function (_this) {
-							return base.control.setActive({deactivate: true}).then(function () {
-								return base.searchExternal.onBlur().then(function () {
-									return unitBase.blur();
-								});
-							});
-						},
-					}),
+
+					// Again pass _this to bind it to the unitBase.
+					return Promise.all([
+						_this.components.head.setBindings({
+							'focus': function (_self) {
+								return _this.focus();
+							},
+						}),
+					]);
 				},
 				main: function (options) {
 					var id = '{base}-{id}'.format({base: base.id, id: Util.makeid()});
@@ -1055,9 +1049,7 @@ var AccountComponents = {
 							unitBase[methodName] = base.unit.prototype[methodName](unitBase); // called on the unitBase object
 						});
 
-						return Promise.all([
-
-						]).then(function () {
+						return base.unit.promises(unitBase).then(function () {
 
 						}).then(function () {
 							return unitBase;

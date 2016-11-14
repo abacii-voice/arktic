@@ -1026,7 +1026,6 @@ var Components = {
 						search.setCaretPosition(position),
 						search.input(),
 					]);
-					return ;
 				} else {
 					return Util.ep();
 				}
