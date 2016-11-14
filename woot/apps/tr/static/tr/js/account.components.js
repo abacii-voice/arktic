@@ -1007,7 +1007,6 @@ var AccountComponents = {
 					},
 				},
 				promises: function (_this) {
-
 					// NOT SURE IF THIS WILL JUST WORK
 					unitBase.components.head.setBindings({
 						'focus': function (_this) {
