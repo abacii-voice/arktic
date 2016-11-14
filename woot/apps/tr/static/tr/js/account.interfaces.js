@@ -229,12 +229,6 @@ var AccountInterfaces = {
 			});
 
 			// LIST
-			autocomplete.onInput = function () {
-
-			}
-			autocomplete.components.search.onComplete = function () {
-
-			}
 			autocomplete.targets = [
 				{
 					name: 'tokens',
@@ -492,6 +486,7 @@ var AccountInterfaces = {
 					}
 				},
 			}
+			
 
 			// CAPTION
 			caption.styles = {};
@@ -539,12 +534,6 @@ var AccountInterfaces = {
 						return autocomplete.behaviours.right();
 					}
 				});
-			}
-			caption.behaviours.number = function (number) {
-				if (caption.isFocussed) {
-					autocomplete.search.completionOverride = true;
-				}
-				return autocomplete.behaviours.number(number);
 			}
 
 			// connect
