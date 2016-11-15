@@ -571,18 +571,22 @@ var AccountInterfaces = {
 							caption.isFocussed = true;
 							unitBase.isFocussed = true;
 							autocomplete.isFocussed = true;
-							return unitBase.setCaretPosition(position).then(function () {
-								return unitBase.input();
+							return caption.control.setActive({index: unitBase.index}).then(function () {
+								return unitBase.setCaretPosition(position).then(function () {
+									return unitBase.input();
+								});
 							});
 						} else {
 							return Util.ep();
 						}
 					}
 					unitBase.blur = function () {
-						unitBase.isFocussed = false;
-						if (caption.active.id === unitBase.id) {
-							caption.isFocussed = false;
-							autocomplete.isFocussed = false;
+						if (unitBase.isFocussed) {
+							unitBase.isFocussed = false;
+							if (caption.active.id === unitBase.id) {
+								caption.isFocussed = false;
+								autocomplete.isFocussed = false;
+							}
 							return unitBase.getContent().then(function (content) {
 								return unitBase.components.tail.setAppearance({html: (content || unitBase.placeholder)});
 							});
