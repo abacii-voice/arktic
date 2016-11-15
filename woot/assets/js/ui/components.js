@@ -670,7 +670,7 @@ var Components = {
 							if (!base.data.query) {
 								base.currentIndex = undefined;
 							} else {
-								query = base.data.query.toLowerCase();
+								query = base.data.query;
 								complete = (base.data.storage.virtual.list[base.currentIndex] || {}).main;
 							}
 							return base.search.setMetadata({query: query, complete: complete});
