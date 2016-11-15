@@ -1049,16 +1049,8 @@ var AccountComponents = {
 						base.data.currentIndex = base.data.currentIndex > base.children.length - 1 ? base.children.length - 1 : (base.data.currentIndex < 0 ? 0 : base.data.currentIndex);
 
 						if (base.data.currentIndex !== previousIndex) {
-							var newActive = base.children[base.data.currentIndex];
-							if (base.active) {
-								return base.active.deactivate().then(function () {
-									base.active = newActive;
-									return base.active.activate();
-								});
-							} else {
-								base.active = newActive;
-								return base.active.activate();
-							}
+							base.active = base.children[base.data.currentIndex];
+							return base.active.activate();
 						} else {
 							return Util.ep();
 						}
