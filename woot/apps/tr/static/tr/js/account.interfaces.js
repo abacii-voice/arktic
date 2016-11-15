@@ -214,9 +214,9 @@ var AccountInterfaces = {
 			});
 
 			Mousetrap.bind('space', function (event) {
-				// event.preventDefault();
+				event.preventDefault();
 				Promise.all([
-
+					caption.behaviours.space(),
 				]);
 			});
 
@@ -561,6 +561,21 @@ var AccountInterfaces = {
 					unitBase.select = function () {
 
 					}
+					unitBase.setMetadata = function (metadata) {
+						metadata = (metadata || {});
+						unitBase.metadata = (unitBase.metadata || {});
+						unitBase.metadata.query = metadata.query !== undefined ? metadata.query : (unitBase.metadata.query || '');
+						unitBase.metadata.complete = metadata.complete !== undefined ? metadata.complete : unitBase.metadata.query;
+						unitBase.metadata.combined = unitBase.metadata.query + unitBase.metadata.complete.substring(unitBase.metadata.query.length);
+						return unitBase.components.tail.setAppearance({html: ((unitBase.isComplete ? unitBase.metadata.complete : '') || unitBase.metadata.combined || unitBase.metadata.query || unitBase.filterString || unitBase.placeholder || '')}).then(function () {
+							unitBase.isComplete = false;
+							return Util.ep();
+						}).then(function () {
+							// decide to split based on number of items and space character.
+							var noData = autocomplete.data.storage.virtual.list.length === 0;
+							var spaceEnd = unitBase.metadata.query.slice(-1) === ' ';
+						});
+					}
 					unitBase.input = function () {
 						return unitBase.getContent().then(function (content) {
 							return autocomplete.search.setContent({content: content, trigger: true});
@@ -594,6 +609,12 @@ var AccountInterfaces = {
 							return Util.ep();
 						}
 					}
+					unitBase.ghost = function () {
+
+					}
+					unitBase.unGhost = function () {
+
+					}
 
 					return Promise.all([
 						unitBase.components.head.setBindings({
@@ -625,6 +646,9 @@ var AccountInterfaces = {
 				} else {
 					return autocomplete.behaviours.right();
 				}
+			}
+			caption.behaviours.space = function () {
+
 			}
 
 			// connect

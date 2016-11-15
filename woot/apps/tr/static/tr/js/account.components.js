@@ -1065,6 +1065,12 @@ var AccountComponents = {
 				delete: function (options) {
 
 				},
+				getGhostQuery: function () {
+
+				},
+				unGhostAll: function () {
+
+				},
 			}
 
 			// behaviours
