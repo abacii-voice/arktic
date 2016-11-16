@@ -13,14 +13,14 @@ class Token(models.Model):
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
-	is_tag = models.BooleanField(default=False)
+	type = models.CharField(max_length=255)
 	content = models.CharField(max_length=255)
 
 	### Methods
 	# data
 	def data(self, path, permission):
 		data = {
-			'is_tag': self.is_tag,
+			'type': self.type,
 			'content': self.content,
 		}
 
@@ -31,6 +31,7 @@ class TokenInstance(models.Model):
 	### Connections
 	parent = models.ForeignKey('tr.Token', related_name='instances')
 	caption = models.ForeignKey('tr.CaptionInstance', related_name='tokens')
+	phrase = models.ForeignKey('tr.PhraseInstance', related_name='tokens', null=True)
 
 	### Properties
 	index = models.IntegerField(default=0)
