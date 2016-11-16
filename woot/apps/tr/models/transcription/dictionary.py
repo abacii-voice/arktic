@@ -8,7 +8,7 @@ from apps.tr.idgen import idgen
 class Dictionary(models.Model):
 
 	### Connections
-	project = models.ForeignKey('tr.Project', related_name='dictionaries')
+	project = models.OneToOneField('tr.Project', related_name='dictionary')
 	grammar = models.ForeignKey('tr.Grammar', related_name='dictionaries')
 
 	### Properties
@@ -26,28 +26,5 @@ class Dictionary(models.Model):
 			data.update({
 				'tokens': {token.id: token.data(path, permission) for token in self.tokens.filter(**path.get_filter('tokens'))},
 			})
-
-		return data
-
-	def user_tokens(self, role):
-		user_dictionary = self.children.filter(role=role)
-
-
-class UserDictionary(models.Model):
-
-	### Connections
-	parent = models.ForeignKey('tr.Dictionary', related_name='children')
-	role = models.ForeignKey('tr.Role', related_name='dictionaries')
-
-	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
-
-	### Methods
-	# data
-	def data(self, path, permission):
-		data = self.parent.data(path, permission)
-		data.update({
-			'role': self.role.id,
-		})
 
 		return data
