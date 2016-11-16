@@ -114,12 +114,14 @@ class Batch(models.Model):
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	name = models.CharField(max_length=255)
 	description = models.TextField(default='')
-	priority_index = models.PositiveIntegerField(default=0)
 
 	# Statistics
-	deadline = models.DateTimeField(auto_now_add=True)
 	completion_percentage = models.FloatField(default=0.0)
 	redundancy_percentage = models.FloatField(default=0.0)
+
+	# Variables
+	deadline = models.DateTimeField(auto_now_add=True)
+	priority_index = models.PositiveIntegerField(default=0)
 
 	### Methods
 	# data
