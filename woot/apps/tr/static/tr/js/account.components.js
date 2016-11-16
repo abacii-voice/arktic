@@ -981,68 +981,6 @@ var AccountComponents = {
 				content,
 			] = components;
 
-			// unit
-			base.unit = function (options) {
-				var id = '{base}-{id}'.format({base: base.id, id: Util.makeid()});
-				return Promise.all([
-					// base
-					Components.search(id, {
-						// need custom appearance
-						appearance: {
-							style: {
-								'padding-left': '0px',
-								'padding-bottom': '8px',
-								'padding-top': '0px',
-								'height': 'auto',
-								'border': '0px',
-								'display': 'inline-block',
-							},
-						},
-					}),
-				]).then(function (components) {
-					var [
-						unitBase,
-					] = components;
-
-					unitBase.activate = function () {
-						return Util.ep();
-					}
-					unitBase.deactivate = function () {
-						return Util.ep();
-					}
-					unitBase.select = function () {
-
-					}
-					unitBase.onInput = function () {
-						return unitBase.getContent().then(function (content) {
-							return base.searchExternal.start(content);
-						});
-					}
-
-					return Promise.all([
-						unitBase.components.head.setBindings({
-							'focus': function (_this) {
-								return base.control.setActive({index: unitBase.index}).then(function () {
-									return base.searchExternal.onFocus().then(function () {
-										return unitBase.focus();
-									});
-								});
-							},
-							'blur': function (_this) {
-								return base.control.setActive({deactivate: true}).then(function () {
-									return base.searchExternal.onBlur().then(function () {
-										return unitBase.blur();
-									});
-								});
-							},
-						}),
-					]).then(function () {
-
-					}).then(function () {
-						return unitBase;
-					});
-				});
-			}
 			base.defaultUnitStyle = function () {
 
 			}
@@ -1111,16 +1049,8 @@ var AccountComponents = {
 						base.data.currentIndex = base.data.currentIndex > base.children.length - 1 ? base.children.length - 1 : (base.data.currentIndex < 0 ? 0 : base.data.currentIndex);
 
 						if (base.data.currentIndex !== previousIndex) {
-							var newActive = base.children[base.data.currentIndex];
-							if (base.active) {
-								return base.active.deactivate().then(function () {
-									base.active = newActive;
-									return base.active.activate();
-								});
-							} else {
-								base.active = newActive;
-								return base.active.activate();
-							}
+							base.active = base.children[base.data.currentIndex];
+							return base.active.activate();
 						} else {
 							return Util.ep();
 						}
@@ -1133,6 +1063,12 @@ var AccountComponents = {
 					return base.control.setActive({increment: -1});
 				},
 				delete: function (options) {
+
+				},
+				getGhostQuery: function () {
+
+				},
+				unGhostAll: function () {
 
 				},
 			}
