@@ -189,7 +189,7 @@ var AccountInterfaces = {
 				event.preventDefault();
 				var char = String.fromCharCode(event.which);
 				Promise.all([
-					caption.behaviours.number(char),
+					autocomplete.behaviours.number(char),
 				]);
 			});
 
@@ -214,9 +214,9 @@ var AccountInterfaces = {
 			});
 
 			Mousetrap.bind('space', function (event) {
-				// event.preventDefault();
+				event.preventDefault();
 				Promise.all([
-
+					caption.behaviours.space(),
 				]);
 			});
 
@@ -229,12 +229,6 @@ var AccountInterfaces = {
 			});
 
 			// LIST
-			autocomplete.onInput = function () {
-
-			}
-			autocomplete.components.search.onComplete = function () {
-
-			}
 			autocomplete.targets = [
 				{
 					name: 'tokens',
@@ -462,35 +456,68 @@ var AccountInterfaces = {
 					});
 				});
 			}
-			autocomplete.external = {
-				// This allows the end of the search process to call the active unit of the caption to modify it.
-				setMetadata: function (options) {
-					// It shouldn't be necessary to set these two conditions, but for now I will.
-					// I'm thinking of making active only exist when focussed, which would remove the need for caption.isFocussed.
-					if (caption.active && caption.isFocussed) {
-						// I put this here because the internal autocomplete code does not know whether the field is being blurred or not.
-						// It just knows that the query is an empty string. This function exists to pass the data into the outside world to respond to global conditions.
-						if (caption.isBlurring) {
-							caption.isBlurring = false;
-							// Change the query and complete to equal the current content. God I'm a genius.
-							return caption.active.getContent().then(function (content) {
-								return caption.active.setMetadata({query: content, complete: content});
-							});
-						} else {
-							return caption.active.setMetadata(options);
-						}
-					} else {
-						return Util.ep();
+			autocomplete.search.setMetadata = function (metadata) {
+				var _this = autocomplete.search;
+				metadata = (metadata || {});
+				_this.metadata = (_this.metadata || {});
+				_this.metadata.query = metadata.query !== undefined ? metadata.query : (_this.metadata.query || '');
+				_this.metadata.complete = metadata.complete !== undefined ? metadata.complete : _this.metadata.query;
+				_this.metadata.combined = _this.metadata.query + _this.metadata.complete.substring(_this.metadata.query.length);
+				return _this.components.tail.setAppearance({html: ((_this.isComplete ? _this.metadata.complete : '') || _this.metadata.combined || _this.metadata.query || _this.filterString || _this.placeholder || '')}).then(function () {
+					// reset complete
+					if (_this.isComplete && _this.metadata.query !== _this.metadata.complete) {
+						_this.isComplete = false;
 					}
-				},
-				number: function () {
-					// This is to allow the autocomplete to be used independently of the caption
+
+					// return caption action
 					if (caption.isFocussed) {
-						return caption.active.complete();
+						return caption.active.setMetadata(metadata);
 					} else {
 						return Util.ep();
 					}
-				},
+				});
+			}
+			autocomplete.search.complete = function () {
+				var _this = autocomplete.search;
+				_this.completeQuery = ((_this.metadata || {}).complete || '');
+				_this.isComplete = true;
+				return _this.components.tail.setAppearance({html: _this.completeQuery}).then(function () {
+					return _this.components.head.setAppearance({html: _this.completeQuery});
+				}).then(function () {
+					if (!caption.isFocussed) {
+						return _this.setCaretPosition('end');
+					} else {
+						return Util.ep();
+					}
+				});
+			}
+			autocomplete.search.behaviours.right = function () {
+				return autocomplete.search.isCaretInPosition('end').then(function (inPosition) {
+					if ((inPosition && !autocomplete.search.isComplete) || caption.completionOverride) {
+						autocomplete.currentIndex = 0;
+						caption.completionOverride = false;
+						return autocomplete.search.complete().then(function () {
+							return autocomplete.search.input();
+						});
+					} else {
+						return Util.ep();
+					}
+				});
+			}
+			autocomplete.behaviours.number = function (char) {
+				var index = parseInt(char);
+				if (index < autocomplete.data.storage.virtual.rendered.length) {
+					return autocomplete.control.setActive.main({index: index}).then(function () {
+						// don't know what behaviour to have here
+						return Promise.all([
+							autocomplete.search.behaviours.right(),
+							caption.behaviours.right(),
+						]);
+
+						// Maybe do this
+						// return search.behaviours.enter();
+					});
+				}
 			}
 
 			// CAPTION
@@ -503,48 +530,125 @@ var AccountInterfaces = {
 
 				},
 			}
-			caption.searchExternal = {
-				// this code allows each unit of the caption to respond in the same way on events.
-				// Each active component will repond using these functions.
-				// They allow interaction with outside world components, such as their parent.
-				start: function (query) {
-					query = (query || '');
-					return autocomplete.search.setContent({content: query, trigger: true})
-				},
-				onFocus: function () {
-					caption.isBlurring = false;
-					caption.isFocussed = true;
-					autocomplete.isFocussed = true;
-					return caption.active.getContent().then(function (content) {
-						return caption.searchExternal.start(content);
+			caption.unit = function (options) {
+				var id = '{base}-{id}'.format({base: base.id, id: Util.makeid()});
+				return Promise.all([
+					// base
+					Components.search(id, {
+						// need custom appearance
+						appearance: {
+							style: {
+								'padding-left': '0px',
+								'padding-bottom': '8px',
+								'padding-top': '0px',
+								'height': 'auto',
+								'border': '0px',
+								'display': 'inline-block',
+							},
+						},
+					}),
+				]).then(function (components) {
+					var [
+						unitBase,
+					] = components;
+
+					unitBase.activate = function () {
+						return Util.ep();
+					}
+					unitBase.deactivate = function () {
+						return Util.ep();
+					}
+					unitBase.select = function () {
+
+					}
+					unitBase.setMetadata = function (metadata) {
+						metadata = (metadata || {});
+						unitBase.metadata = (unitBase.metadata || {});
+						unitBase.metadata.query = metadata.query !== undefined ? metadata.query : (unitBase.metadata.query || '');
+						unitBase.metadata.complete = metadata.complete !== undefined ? metadata.complete : unitBase.metadata.query;
+						unitBase.metadata.combined = unitBase.metadata.query + unitBase.metadata.complete.substring(unitBase.metadata.query.length);
+						return unitBase.components.tail.setAppearance({html: ((unitBase.isComplete ? unitBase.metadata.complete : '') || unitBase.metadata.combined || unitBase.metadata.query || unitBase.filterString || unitBase.placeholder || '')}).then(function () {
+							unitBase.isComplete = false;
+							return Util.ep();
+						}).then(function () {
+							// decide to split based on number of items and space character.
+							var noData = autocomplete.data.storage.virtual.list.length === 0;
+							var spaceEnd = unitBase.metadata.query.slice(-1) === ' ';
+						});
+					}
+					unitBase.input = function () {
+						return unitBase.getContent().then(function (content) {
+							return autocomplete.search.setContent({content: content, trigger: true});
+						});
+					}
+					unitBase.focus = function (position) {
+						if (!unitBase.isFocussed) {
+							caption.isFocussed = true;
+							unitBase.isFocussed = true;
+							autocomplete.isFocussed = true;
+							return caption.control.setActive({index: unitBase.index}).then(function () {
+								return unitBase.setCaretPosition(position).then(function () {
+									return unitBase.input();
+								});
+							});
+						} else {
+							return Util.ep();
+						}
+					}
+					unitBase.blur = function () {
+						if (unitBase.isFocussed) {
+							unitBase.isFocussed = false;
+							if (caption.active.id === unitBase.id) {
+								caption.isFocussed = false;
+								autocomplete.isFocussed = false;
+							}
+							return unitBase.getContent().then(function (content) {
+								return unitBase.components.tail.setAppearance({html: (content || unitBase.placeholder)});
+							});
+						} else {
+							return Util.ep();
+						}
+					}
+					unitBase.ghost = function () {
+
+					}
+					unitBase.unGhost = function () {
+
+					}
+
+					return Promise.all([
+						unitBase.components.head.setBindings({
+							'focus': function (_this) {
+								return unitBase.focus();
+							},
+						}),
+					]).then(function () {
+
+					}).then(function () {
+						return unitBase;
 					});
-				},
-				onBlur: function () {
-					caption.isBlurring = true;
-					caption.isFocussed = false;
-					autocomplete.isFocussed = false;
-					return caption.searchExternal.start();
-				},
+				});
 			}
 			caption.behaviours.right = function () {
 				// Slight modification of original function
-				return caption.active.isCaretInPosition('end').then(function (inPosition) {
-					if (inPosition) {
-						autocomplete.search.completionOverride = true; // introduce a little chaos.
-						return Promise.all([
-							autocomplete.behaviours.right(),
-							caption.active.complete(),
-						]);
-					} else {
-						return autocomplete.behaviours.right();
-					}
-				});
-			}
-			caption.behaviours.number = function (number) {
 				if (caption.isFocussed) {
-					autocomplete.search.completionOverride = true;
+					return caption.active.isCaretInPosition('end').then(function (inPosition) {
+						if (inPosition) {
+							caption.completionOverride = true; // introduce a little chaos.
+							return Promise.all([
+								autocomplete.behaviours.right(),
+								caption.active.complete(),
+							]);
+						} else {
+							return autocomplete.behaviours.right();
+						}
+					});
+				} else {
+					return autocomplete.behaviours.right();
 				}
-				return autocomplete.behaviours.number(number);
+			}
+			caption.behaviours.space = function () {
+
 			}
 
 			// connect
