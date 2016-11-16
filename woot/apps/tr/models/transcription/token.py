@@ -45,8 +45,22 @@ class TokenInstance(models.Model):
 
 		return data
 
-class TokenBlock(models.Model):
+class TokenShortcut(models.Model):
 	'''
 	Prevents a token from being displayed
 
 	'''
+
+	### Connections
+	parent = models.ForeignKey('tr.Token', related_name='shortcuts')
+	role = models.ForeignKey('tr.Role', related_name='token_shortcuts')
+
+	### Properties
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	date_created = models.DateTimeField(auto_now_add=True)
+	is_active = models.BooleanField(default=True)
+	combo = models.CharField(max_length=255)
+
+	# methods
+	def data(self, path, permission):
+		
