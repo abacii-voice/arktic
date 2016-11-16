@@ -465,7 +465,7 @@ var AccountInterfaces = {
 				_this.metadata.combined = _this.metadata.query + _this.metadata.complete.substring(_this.metadata.query.length);
 				return _this.components.tail.setAppearance({html: ((_this.isComplete ? _this.metadata.complete : '') || _this.metadata.combined || _this.metadata.query || _this.filterString || _this.placeholder || '')}).then(function () {
 					// reset complete
-					if (_this.isComplete && _this.metadata.query !== _this.metadata.complete.toLowerCase()) {
+					if (_this.isComplete && _this.metadata.query !== _this.metadata.complete) {
 						_this.isComplete = false;
 					}
 
