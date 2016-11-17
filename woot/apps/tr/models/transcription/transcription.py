@@ -43,7 +43,6 @@ class TranscriptionToken(models.Model):
 		data = {}
 		if permission.check_user(self.role.user):
 			data.update({
-				'id': self.id,
 				'date_created': str(self.date_created),
 			})
 
@@ -60,8 +59,6 @@ class Transcription(models.Model):
 	project = models.ForeignKey('tr.Project', related_name='transcriptions')
 	grammar = models.ForeignKey('tr.Grammar', related_name='transcriptions')
 	batch = models.ForeignKey('tr.Batch', related_name='transcriptions')
-	token = models.ForeignKey('tr.TranscriptionToken', related_name='transcriptions', null=True)
-	phrase = models.ForeignKey('tr.Phrase', related_name='transcriptions', null=True)
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
@@ -101,5 +98,44 @@ class Transcription(models.Model):
 			data.update({
 				'captions': {caption.id: caption.data(path.down('captions'), permission) for caption in self.captions.filter(id__startswith=path.get_id())},
 			})
+
+		return data
+
+
+class TranscriptionFragment(models.Model):
+
+	### Connections
+	parent = models.ForeignKey('tr.Transcription', related_name='fragments')
+	token = models.ForeignKey('tr.TranscriptionToken', related_name='fragments')
+
+	### Properties
+	date_created = models.DateTimeField(auto_now_add=True)
+	is_reconciled = models.BooleanField(default=False)
+
+	# methods
+	def data(self, path, permission):
+		data = {
+			'date_created': str(self.date_created),
+			'is_reconciled': str(self.is_reconciled),
+		}
+
+		return data
+
+class TranscriptionInstance(models.Model):
+
+	### Connections
+	parent = models.ForeignKey('tr.Transcription', related_name='instances')
+	fragment = models.OneToOneField('tr.TranscriptionFragment', related_name='transcription')
+	token = models.ForeignKey('tr.TranscriptionToken', related_name='transcriptions')
+	phrase = models.OneToOneField('tr.PhraseInstance', related_name='transcription')
+
+	### Properties
+	date_created = models.DateTimeField(auto_now_add=True)
+
+	# methods
+	def data(self, path, permission):
+		data = {
+			'date_created': str(self.date_created),
+		}
 
 		return data
