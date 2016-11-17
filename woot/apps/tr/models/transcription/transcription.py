@@ -26,16 +26,14 @@ class TranscriptionToken(models.Model):
 
 	### Methods
 	def get_transcriptions(self):
-		if self.transcriptions.count() != self.transcription_limit and self.is_active:
+		if self.fragments.count() != self.transcription_limit and self.is_active:
 			for i in range(self.transcription_limit):
 				transcription = self.project.get_transcription()
 				if transcription is not None:
-					transcription.is_available = False
-					self.transcriptions.add(transcription)
-					self.save()
+					self.fragments.create(parent=transcription)
 
 	def update(self):
-		if self.transcriptions.filter(is_active=False) == self.transcription_limit:
+		if self.fragments.filter(is_reconciled=True) == self.transcription_limit:
 			self.is_active = False
 			self.save()
 
@@ -101,13 +99,15 @@ class Transcription(models.Model):
 				'fragments': {fragment.id: fragment.data(path.down('fragments'), permission) for fragment in self.fragments.filter(**path.get_filter('fragments'))},
 			})
 
-		if path.check('fragments') and (permission.is_moderator or permission.is_productionadmin):
+		if path.check('instances') and (permission.is_moderator or permission.is_productionadmin):
 			data.update({
 				'instances': {instance.id: instance.data(path.down('instances'), permission) for instance in self.instances.filter(**path.get_filter('instances'))},
 			})
 
 		return data
 
+	def update_availability(self):
+		self.is_available = False
 
 class TranscriptionFragment(models.Model):
 
@@ -144,7 +144,11 @@ class TranscriptionInstance(models.Model):
 		data = {
 			'date_created': str(self.date_created),
 			'fragment': self.fragment.id,
-			'phrase': self.phrase.data(path, permission),
 		}
+
+		if True:
+			data.update({
+				'phrase': self.phrase.data(path, permission),
+			})
 
 		return data

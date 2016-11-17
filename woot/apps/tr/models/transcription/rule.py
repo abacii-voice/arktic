@@ -24,7 +24,6 @@ class Rule(models.Model):
 	# data
 	def data(self, path, permission):
 		data = {
-			'project': self.project.id,
 			'number': str(self.number),
 			'name': self.name,
 			'description': self.description,
@@ -39,12 +38,14 @@ class RuleInstance(models.Model):
 
 	### Connections
 	parent = models.ForeignKey('tr.Rule', related_name='instances')
-	caption = models.ForeignKey('tr.CaptionInstance', related_name='rules_cited')
+	transcription = models.ForeignKey('tr.TranscriptionInstance', related_name='rules_cited')
 	role = models.ForeignKey('tr.Role', related_name='rules_cited')
 
 	### Methods
 	# data
 	def data(self, path, permission):
-		data = self.parent.data(path, permission)
+		data = {
+			'name': self.parent.name,
+		}
 
 		return data
