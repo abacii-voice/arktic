@@ -60,8 +60,8 @@ class Transcription(models.Model):
 	project = models.ForeignKey('tr.Project', related_name='transcriptions')
 	grammar = models.ForeignKey('tr.Grammar', related_name='transcriptions')
 	batch = models.ForeignKey('tr.Batch', related_name='transcriptions')
-	caption = models.ForeignKey('tr.Caption', related_name='transcriptions', null=True)
 	token = models.ForeignKey('tr.TranscriptionToken', related_name='transcriptions', null=True)
+	phrase = models.ForeignKey('tr.Phrase', related_name='transcriptions', null=True)
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
