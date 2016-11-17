@@ -1,4 +1,3 @@
-from apps.tr.models.transcription.caption import Caption, CaptionInstance
 from apps.tr.models.transcription.phrase import Phrase, PhraseInstance, PhraseSubscription
 from apps.tr.models.transcription.dictionary import Dictionary
 from apps.tr.models.transcription.flag import Flag, FlagInstance

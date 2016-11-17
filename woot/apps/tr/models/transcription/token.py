@@ -35,8 +35,7 @@ class TokenInstance(models.Model):
 
 	### Connections
 	parent = models.ForeignKey('tr.Token', related_name='instances')
-	caption = models.ForeignKey('tr.CaptionInstance', related_name='tokens', null=True)
-	phrase = models.ForeignKey('tr.PhraseInstance', related_name='tokens', null=True)
+	phrase = models.ForeignKey('tr.PhraseInstance', related_name='tokens')
 
 	### Properties
 	index = models.IntegerField(default=0)
