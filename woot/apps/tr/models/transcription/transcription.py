@@ -66,6 +66,7 @@ class Transcription(models.Model):
 
 	# unique identifier
 	filename = models.CharField(max_length=255)
+	content = models.TextField(default='')
 
 	# requests and flags
 	is_active = models.BooleanField(default=True)
@@ -92,11 +93,17 @@ class Transcription(models.Model):
 			data.update({
 				'utterance': self.utterance.data(),
 				'filename': self.filename,
+				'content': self.content,
 			})
 
-		if path.check('captions') and (permission.is_moderator or permission.is_productionadmin):
+		if path.check('fragments') and (permission.is_moderator or permission.is_productionadmin):
 			data.update({
-				'captions': {caption.id: caption.data(path.down('captions'), permission) for caption in self.captions.filter(id__startswith=path.get_id())},
+				'fragments': {fragment.id: fragment.data(path.down('fragments'), permission) for fragment in self.fragments.filter(**path.get_filter('fragments'))},
+			})
+
+		if path.check('fragments') and (permission.is_moderator or permission.is_productionadmin):
+			data.update({
+				'instances': {instance.id: instance.data(path.down('instances'), permission) for instance in self.instances.filter(**path.get_filter('instances'))},
 			})
 
 		return data
@@ -136,6 +143,8 @@ class TranscriptionInstance(models.Model):
 	def data(self, path, permission):
 		data = {
 			'date_created': str(self.date_created),
+			'fragment': self.fragment.id,
+			'phrase': self.phrase.data(path, permission),
 		}
 
 		return data

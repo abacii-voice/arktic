@@ -89,7 +89,7 @@ class Project(models.Model):
 	def get_moderation(self):
 
 		'''
-		Select a single transcription based on several criteria.
+		Select a single moderation based on several criteria.
 
 		'''
 
