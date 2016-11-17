@@ -6,6 +6,7 @@ from django.core.files import File
 from apps.tr.models.client.client import Client
 from apps.users.models import User
 from apps.tr.models.transcription.utterance import Utterance
+from apps.tr.models.transcription.dictionary import Dictionary
 
 # util
 import os
@@ -72,9 +73,16 @@ class Command(BaseCommand):
 		worker_role2.save()
 
 		# dictionary data
-		dictionary = project.dictionaries.create(grammar=grammar)
-		user_dictionary = worker_role.dictionaries.create(parent=dictionary)
-		user_dictionary2 = worker_role2.dictionaries.create(parent=dictionary)
+		dictionary = Dictionary.objects.create(project=project, grammar=grammar)
+
+		# create tags
+		dictionary.tokens.create(type='tag', content='unintelligible')
+		dictionary.tokens.create(type='tag', content='dtmf')
+		dictionary.tokens.create(type='tag', content='noise')
+		dictionary.tokens.create(type='tag', content='breath noise')
+
+		# create phrases
+		dictionary.create_phrase()
 
 		# fragment list
 		base = '/Users/nicholaspiano/code/abacii-voice/arktic/test/'
@@ -91,11 +99,13 @@ class Command(BaseCommand):
 			caption = None
 			caption_content = relfile_data[file_name]
 			if caption_content:
-				caption, caption_created = dictionary.captions.get_or_create(content=caption_content, from_recogniser=True)
+				caption, caption_created = dictionary.get_or_create_caption(content=caption_content, from_recogniser=True)
+				caption.create_tokens()
 
 				# 3. create tokens
 				for token_primitive in caption_content.split(' '):
-					token, token_created = dictionary.tokens.get_or_create(content=token_primitive)
+					token, token_created = dictionary.tokens.get_or_create(type='word', content=token_primitive)
+					token_instance = token.instances.create(caption=caption)
 
 			# 2. create transcription
 			transcription = batch.transcriptions.create(project=project, grammar=grammar, filename=fragment.filename, caption=caption)

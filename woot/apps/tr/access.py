@@ -17,7 +17,7 @@ class Permission():
 			self.is_contractadmin,
 			self.is_productionadmin,
 			self.is_moderator,
-			self.is_worker
+			self.is_worker,
 		)
 
 	def __init__(self, user, role=None):
