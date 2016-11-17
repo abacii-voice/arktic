@@ -26,12 +26,11 @@ class ModerationToken(models.Model):
 
 	### Methods
 	def get_moderations(self):
-		if self.moderations.count() != self.moderation_limit and self.is_active:
+		if self.fragments.count() != self.moderation_limit and self.is_active:
 			for i in range(self.moderation_limit):
 				moderation = self.project.get_moderation()
 				if moderation is not None:
-					self.moderations.add(moderation)
-					self.save()
+					self.fragments.create(parent=moderation)
 
 	def update(self):
 		if self.moderations.filter(is_active=False) == self.moderation_limit:
@@ -51,7 +50,6 @@ class Moderation(models.Model):
 
 	### Connections
 	project = models.ForeignKey('tr.Project', related_name='moderations')
-	moderator = models.ForeignKey('tr.Role', related_name='moderations')
 	transcription = models.ForeignKey('tr.TranscriptionInstance', related_name='moderations')
 
 	### Properties
@@ -96,6 +94,7 @@ class ModerationInstance(models.Model):
 
 	### Connections
 	parent = models.ForeignKey('tr.Moderation', related_name='instances')
+	moderator = models.ForeignKey('tr.Role', related_name='moderations')
 	fragment = models.OneToOneField('tr.ModerationFragment', related_name='moderation')
 	token = models.ForeignKey('tr.ModerationToken', related_name='moderations')
 	phrase = models.OneToOneField('tr.PhraseInstance', related_name='moderation')

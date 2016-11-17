@@ -49,7 +49,7 @@ class Project(models.Model):
 
 		if path.check('dictionary') and hasattr(self, 'dictionary') and permission.check_client(path.get_key('client')):
 			data.update({
-				'dictionary': self.dictionary.data(path.down('dictionaries'), permission),
+				'dictionary': self.dictionary.data(path.down('dictionary'), permission),
 			})
 
 		if path.check('batches') and permission.is_admin:
@@ -59,18 +59,16 @@ class Project(models.Model):
 
 		if path.check('transcriptions', blank=False):
 			data.update({
-				'transcriptions': {transcription.id: transcription.data(path.down('transcriptions'), permission) for transcription in self.transcriptions.filter(id__startswith=path.get_id()).filter(**path.get_filter('transcriptions')).order_by('caption__content')},
+				'transcriptions': {transcription.id: transcription.data(path.down('transcriptions'), permission) for transcription in self.transcriptions.filter(id__startswith=path.get_id()).filter(**path.get_filter('transcriptions')).order_by('content')},
 			})
 
 		return data
 
 	def get_transcription(self):
-
 		'''
 		Select a single transcription based on several criteria.
 
 		'''
-
 		transcriptions = self.transcriptions.filter(is_active=True, is_available=True).order_by('content', 'date_created')
 		if transcriptions.count() > 0:
 			transcription = transcriptions[0]
@@ -81,6 +79,20 @@ class Project(models.Model):
 		else:
 			return None
 
+	def get_moderation(self):
+		'''
+		Select a single moderation based on several criteria.
+
+		'''
+		moderations = self.moderations.filter(is_active=True, is_available=True).order_by('transcription__phrase__content', 'date_created')
+		if moderations.count() > 0:
+			moderation = moderations[0]
+			moderation.update_availability()
+			moderation.save()
+
+			return moderation
+		else:
+			return None
 
 class Batch(models.Model):
 

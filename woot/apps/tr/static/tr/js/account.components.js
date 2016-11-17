@@ -165,29 +165,10 @@ var AccountComponents = {
 			audioTrack.load = function (force) {
 				force = force !== undefined ? force.force : false;
 				var _this = audioTrack;
-				var total = Object.keys(_this.buffer).length;
 				// load more and process into buffer
-				return Promise.all([
-					base.path(),
-					base.token().then(function (tokenPath) {
-						return Context.get(tokenPath, {force: force});
-					}),
-				]).then(function (options) {
-					return Context.get(options[0], {force: force, options: {filter: {token: options[1].id}}});
-				}).then(function (result) {
-					// Result is a list of transcriptions filtered by active token
-					// // console.log(Object.keys(_this.buffer), Object.keys(result));
-					Object.keys(result).sort(function (a, b) {
-						return result[a].original_caption > result[b].original_caption ? 1 : -1;
-					}).forEach(function (key, index) {
-						_this.buffer[key] = {
-							original_caption: result[key].original_caption,
-							is_available: true,
-							is_active: true,
-							index: index + total,
-						}
-					});
-				}).then(function () {
+				return base.path().then(function (tokenPath) {
+					return Context.get(tokenPath, {force: force});
+				}).then(base.process).then(function () {
 					return new Promise(function(resolve, reject) {
 						resolve(_this.buffer);
 					});
@@ -211,7 +192,7 @@ var AccountComponents = {
 					})[0];
 					var storage = _this.buffer[transcriptionId];
 					if (storage.data === undefined) {
-						return Request.load_audio(transcriptionId).then(function (audioData) {
+						return Request.load_audio(storage.parent).then(function (audioData) {
 							return new Promise(function(resolve, reject) {
 
 								// decode the incoming audio data and store it with the metadata.
@@ -507,6 +488,9 @@ var AccountComponents = {
 			]);
 
 			// resolve list of components to be rendered.
+			base.components = {
+				track: audioTrack,
+			}
 			base.next = function () {
 				return audioTrack.next();
 			}

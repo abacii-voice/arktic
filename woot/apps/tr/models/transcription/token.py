@@ -38,6 +38,7 @@ class TokenInstance(models.Model):
 	phrase = models.ForeignKey('tr.Phrase', related_name='tokens')
 
 	### Properties
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	index = models.IntegerField(default=0)
 
 	### Methods
@@ -46,6 +47,7 @@ class TokenInstance(models.Model):
 		data = self.parent.data(path, permission)
 		data.update({
 			'index': str(self.index),
+			'content': self.parent.content,
 		})
 
 		return data

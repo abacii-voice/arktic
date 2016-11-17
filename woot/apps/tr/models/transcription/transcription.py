@@ -42,6 +42,8 @@ class TranscriptionToken(models.Model):
 		if permission.check_user(self.role.user):
 			data.update({
 				'date_created': str(self.date_created),
+				'fragments': {fragment.id: fragment.data(path, permission) for fragment in self.fragments.filter(**path.get_filter('fragments'))},
+				'transcriptions': {transcription.id: transcription.data(path, permission) for transcription in self.transcriptions.filter(**path.get_filter('transcriptions'))},
 			})
 
 		return data
@@ -64,7 +66,7 @@ class Transcription(models.Model):
 
 	# unique identifier
 	filename = models.CharField(max_length=255)
-	content = models.TextField(default='')
+	content = models.ForeignKey('tr.Phrase', related_name='transcriptions')
 
 	# requests and flags
 	is_active = models.BooleanField(default=True)
@@ -80,7 +82,6 @@ class Transcription(models.Model):
 		if path.is_blank:
 			data.update({
 				'batch': self.batch.id,
-				'caption': self.caption.content if self.caption else '',
 				'date_created': str(self.date_created),
 				'requests': str(self.requests),
 				'request_allowance': str(self.request_allowance),
@@ -91,7 +92,7 @@ class Transcription(models.Model):
 			data.update({
 				'utterance': self.utterance.data(),
 				'filename': self.filename,
-				'content': self.content,
+				'content': self.content.data(path, permission),
 			})
 
 		if path.check('fragments') and (permission.is_moderator or permission.is_productionadmin):
@@ -107,7 +108,7 @@ class Transcription(models.Model):
 		return data
 
 	def update_availability(self):
-		self.is_available = False
+		self.is_available = self.fragments.filter(is_reconciled=True).count() > 0
 
 class TranscriptionFragment(models.Model):
 
@@ -116,6 +117,7 @@ class TranscriptionFragment(models.Model):
 	token = models.ForeignKey('tr.TranscriptionToken', related_name='fragments')
 
 	### Properties
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	date_created = models.DateTimeField(auto_now_add=True)
 	is_reconciled = models.BooleanField(default=False)
 
@@ -124,6 +126,8 @@ class TranscriptionFragment(models.Model):
 		data = {
 			'date_created': str(self.date_created),
 			'is_reconciled': str(self.is_reconciled),
+			'phrase': self.parent.content.data(path, permission),
+			'parent': self.parent.id,
 		}
 
 		return data
@@ -137,6 +141,7 @@ class TranscriptionInstance(models.Model):
 	phrase = models.OneToOneField('tr.PhraseInstance', related_name='transcription')
 
 	### Properties
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	date_created = models.DateTimeField(auto_now_add=True)
 
 	# methods
