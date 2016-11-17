@@ -40,12 +40,15 @@ class Dictionary(models.Model):
 		phrase, phrase_created = self.phrases.get_or_create(content=content)
 
 		# create tokens
-		token_primitives = content.split(' ')
-		for index, token_primitive in enumerate(token_primitives):
-			type = 'word'
-			if token_primitive[0] in token_types:
-				type = token_types[token_primitive[0]]
-				token_primitive = token_primitive[1:]
+		if phrase_created:
+			token_primitives = content.rstrip().split(' ')
+			for index, token_primitive in enumerate(token_primitives):
+				type = 'word'
+				if token_primitive[0] in token_types:
+					type = token_types[token_primitive[0]]
+					token_primitive = token_primitive[1:]
 
-			token, token_created = self.tokens.get_or_create(type=type, content=token_primitive)
-			token_instance = token.instances.create(phrase=phrase, index=index)
+				token, token_created = self.tokens.get_or_create(type=type, content=token_primitive)
+				token_instance, token_instance_created = token.instances.get_or_create(phrase=phrase, index=index)
+
+		return phrase, phrase_created

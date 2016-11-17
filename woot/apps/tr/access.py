@@ -91,7 +91,7 @@ class Path():
 		if not self.is_blank:
 			last_key, last_id = list(self.locations.items())[-1]
 			if key == last_key:
-				return self.fltr
+				return self.fltr[key]
 
 		return {}
 

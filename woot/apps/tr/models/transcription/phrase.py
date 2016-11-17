@@ -19,9 +19,9 @@ class Phrase(models.Model):
 			'content': self.content,
 		}
 
-		if path.check('tokens', blank=False):
+		if path.check('tokens'):
 			data.update({
-				'tokens': {token.id: token.data(path, permission) for token in self.tokens.filter(**path.get_filter('tokens'))},
+				'token_instances': {token.id: token.data(path, permission) for token in self.tokens.filter(**path.get_filter('token_instances'))},
 			})
 
 		if permission.is_worker and permission.check_client(self.dictionary.project.production_client):

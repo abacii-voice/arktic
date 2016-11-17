@@ -86,10 +86,10 @@ class Command(BaseCommand):
 			# 2. create caption
 			content = relfile_data[file_name]
 			if content:
-				dictionary.create_phrase(content)
+				phrase, phrase_created = dictionary.create_phrase(content)
 
 			# 2. create transcription
-			transcription = batch.transcriptions.create(project=project, grammar=grammar, filename=fragment.filename, content=content)
+			transcription = batch.transcriptions.create(project=project, grammar=grammar, filename=fragment.filename, content=phrase)
 
 			# 3. create utterance
 			with open(os.path.join(base, 'selectedAudioFiles', file_name), 'rb') as destination:
