@@ -24,6 +24,7 @@ class Dictionary(models.Model):
 
 		if True:
 			data.update({
+				'phrases': {phrase.id: phrase.data(path, permission) for phrase in self.phrases.filter(**path.get_filter('phrases'))},
 				'tokens': {token.id: token.data(path, permission) for token in self.tokens.filter(**path.get_filter('tokens'))},
 			})
 

@@ -52,7 +52,7 @@ class Moderation(models.Model):
 
 	### Connections
 	project = models.ForeignKey('tr.Project', related_name='moderations')
-	caption = models.ForeignKey('tr.CaptionInstance', related_name='moderations')
+	phrase = models.ForeignKey('tr.CaptionInstance', related_name='moderations')
 	moderator = models.ForeignKey('tr.Role', related_name='moderations')
 	token = models.ForeignKey('tr.ModerationToken', related_name='moderations', null=True)
 

@@ -12,8 +12,8 @@ class Token(models.Model):
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
-	type = models.CharField(max_length=255)
-	content = models.CharField(max_length=255)
+	type = models.CharField(max_length=255, default='')
+	content = models.CharField(max_length=255, default='')
 
 	### Methods
 	# data
@@ -22,6 +22,12 @@ class Token(models.Model):
 			'type': self.type,
 			'content': self.content,
 		}
+
+		if permission.is_worker and permission.check_client(self.dictionary.project.production_client):
+			if self.shortcuts.filter(role=permission.role).count():
+				data.update({
+					'shortcut': self.shortcuts.get(role=permission.role).data(path, permission),
+				})
 
 		return data
 
@@ -63,4 +69,10 @@ class TokenShortcut(models.Model):
 
 	# methods
 	def data(self, path, permission):
-		
+		data = {
+			'date_created': str(self.date_created),
+			'is_active': str(self.is_active),
+			'combo': self.combo,
+		}
+
+		return data

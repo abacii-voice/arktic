@@ -12,7 +12,8 @@ class Caption(models.Model):
 	'''
 
 	### Connections
-	dictionary = models.ForeignKey('tr.Dictionary', related_name='captions')
+	project = models.ForeignKey('tr.Project', related_name='captions')
+	role = models.ForeignKey('tr.Role', related_name='captions')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
@@ -31,6 +32,9 @@ class Caption(models.Model):
 		}
 
 		return data
+
+	def create_tokens(self):
+
 
 class CaptionInstance(models.Model):
 
