@@ -11,7 +11,7 @@ class Rule(models.Model):
 	'''
 
 	### Connections
-	client = models.ForeignKey('tr.Client', related_name='rules', null=True)
+	client = models.ForeignKey('tr.Client', related_name='rules') # need to have default rules that are added to a client
 	project = models.ForeignKey('tr.Project', related_name='rules', null=True)
 
 	### Properties

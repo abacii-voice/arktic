@@ -34,7 +34,7 @@ class Permission():
 		self.is_basic = self.role is None
 
 	def check_client(self, client):
-		return self.role is not None and self.role.client == client
+		return self.role is not None and (self.role.client.id == client if isinstance(client, str) else self.role.client == client)
 
 	def check_user(self, user):
 		return self.user == user
@@ -56,6 +56,7 @@ class Path():
 		self.id = ''
 		self.index = 0
 		self.fltr = fltr
+		self.metadata = {}
 
 		# locations
 		if not self.is_blank:
@@ -107,6 +108,12 @@ class Path():
 				return Path('')
 
 		return self
+
+	def set_key(self, key, value):
+		self.metadata[key] = value
+
+	def get_key(self, key):
+		return self.metadata[key]
 
 ### Access
 def access(original_path, permission, fltr={}):

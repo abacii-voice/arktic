@@ -29,20 +29,9 @@ class Command(BaseCommand):
 
 		# create roles
 		production_admin_role = production_client.add_admin(user)
-		production_admin_role.status = 'enabled'
-		production_admin_role.save()
-
 		contract_admin_role = contract_client.add_admin(user)
-		contract_admin_role.status = 'enabled'
-		contract_admin_role.save()
-
 		moderator_role = production_client.add_moderator(user)
-		moderator_role.status = 'enabled'
-		moderator_role.save()
-
 		worker_role = production_client.add_worker(user, moderator_role)
-		worker_role.status = 'enabled'
-		worker_role.save()
 
 		# save
 		user.save()
@@ -53,8 +42,6 @@ class Command(BaseCommand):
 
 		# create roles
 		worker_role2 = production_client.add_worker(user2, moderator_role)
-		worker_role2.status = 'enabled'
-		worker_role2.save()
 
 		# save
 		user2.save()
@@ -75,14 +62,15 @@ class Command(BaseCommand):
 		# dictionary data
 		dictionary = Dictionary.objects.create(project=project, grammar=grammar)
 
-		# create tags
+		# create tokens
 		dictionary.tokens.create(type='tag', content='unintelligible')
 		dictionary.tokens.create(type='tag', content='dtmf')
 		dictionary.tokens.create(type='tag', content='noise')
-		dictionary.tokens.create(type='tag', content='breath noise')
+		dictionary.tokens.create(type='tag', content='breath-noise')
 
 		# create phrases
-		dictionary.create_phrase()
+		dictionary.create_phrase('luke i am you father :breath-noise')
+		dictionary.create_phrase('i want to speak to _')
 
 		# fragment list
 		base = '/Users/nicholaspiano/code/abacii-voice/arktic/test/'
@@ -96,19 +84,12 @@ class Command(BaseCommand):
 			fragment = upload.fragments.create(filename=os.path.join(base, file_name))
 
 			# 2. create caption
-			caption = None
-			caption_content = relfile_data[file_name]
-			if caption_content:
-				caption, caption_created = dictionary.get_or_create_caption(content=caption_content, from_recogniser=True)
-				caption.create_tokens()
-
-				# 3. create tokens
-				for token_primitive in caption_content.split(' '):
-					token, token_created = dictionary.tokens.get_or_create(type='word', content=token_primitive)
-					token_instance = token.instances.create(caption=caption)
+			content = relfile_data[file_name]
+			if content:
+				dictionary.create_phrase(content)
 
 			# 2. create transcription
-			transcription = batch.transcriptions.create(project=project, grammar=grammar, filename=fragment.filename, caption=caption)
+			transcription = batch.transcriptions.create(project=project, grammar=grammar, filename=fragment.filename, content=content)
 
 			# 3. create utterance
 			with open(os.path.join(base, 'selectedAudioFiles', file_name), 'rb') as destination:
