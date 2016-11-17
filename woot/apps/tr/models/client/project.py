@@ -47,9 +47,9 @@ class Project(models.Model):
 				'assigned_users': [user.id for user in self.assigned_users.all()],
 			})
 
-		if path.check('dictionaries'):
+		if path.check('dictionary') and hasattr(self, 'dictionary') and permission.check_client(path.get_key('client')):
 			data.update({
-				'dictionaries': {dictionary.id: dictionary.data(path.down('dictionaries'), permission) for dictionary in self.dictionaries.filter(id__startswith=path.get_id())},
+				'dictionary': self.dictionary.data(path.down('dictionaries'), permission),
 			})
 
 		if path.check('batches') and permission.is_admin:

@@ -15,11 +15,18 @@ class Phrase(models.Model):
 
 	# methods
 	def data(self, path, permission):
-		data = {}
+		data = {
+			'content': self.content,
+		}
+
+		if path.check('tokens', blank=False):
+			data.update({
+				'tokens': {token.id: token.data(path, permission) for token in self.tokens.filter(**path.get_filter('tokens'))},
+			})
 
 		if permission.is_worker and permission.check_client(self.dictionary.project.production_client):
 			data.update({
-				'subscriptions': {subscription.id: subscription.data(path, permission) for subscription in self.subscriptions.filter(**path.get_filter()).filter(role=permission.role)}
+				'subscriptions': {subscription.id: subscription.data(path, permission) for subscription in self.subscriptions.filter(**path.get_filter('subscriptions')).filter(role=permission.role)}
 			})
 
 		return data
