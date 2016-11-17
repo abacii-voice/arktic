@@ -519,7 +519,7 @@ var Components = {
 						// Load each target
 						return Promise.all(base.targets.map(function (target) {
 							return Promise.all([
-								Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query}}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
+								Context.get(target.resolvedPath, {options: {filter: target.filterRequest(base.data.query)}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
 
 								// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
 								// Also, only query if this query has never been queried before
@@ -532,7 +532,7 @@ var Components = {
 										}, 1000);
 									}).then(function (timeout) {
 										if (timeout) {
-											return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query}}, force: true}).then(target.process).then(base.data.load.append).then(base.data.display.main);
+											return Context.get(target.resolvedPath, {options: {filter: target.filterRequest(base.data.query)}, force: true}).then(target.process).then(base.data.load.append).then(base.data.display.main);
 										} else {
 											return Util.ep();
 										}

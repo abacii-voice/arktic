@@ -18,10 +18,10 @@ UI.app('hook', [
 	]);
 }).then(function () {
 	return Promise.all([
-		Active.set('client', 'ebb9e77a-0ed1-412f-9579-83242186d63d'),
-		Active.set('role', 'aecca9b9-09c5-4fee-ab40-bcc287142e3e'),
-		Active.set('project', 'ee9dc4ca-34ad-4491-89d8-6f86625f60d6'),
-		Permission.set('aecca9b9-09c5-4fee-ab40-bcc287142e3e'),
+		Active.set('client', 'ef10b3e8-d1b4-4f0b-bc42-2e7688088aee'),
+		Active.set('role', '465521bd-6760-4964-a5d8-13ff8976046d'),
+		Active.set('project', '6bd2a2b4-4799-4a39-b1b9-15114c4460eb'),
+		Permission.set('465521bd-6760-4964-a5d8-13ff8976046d'),
 	]).then(function () {
 		// return UI.changeState('client-state');
 		// return UI.changeState('role-state');

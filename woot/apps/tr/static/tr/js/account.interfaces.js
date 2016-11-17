@@ -61,7 +61,7 @@ var AccountInterfaces = {
 				},
 				state: {
 					states: {
-						'asdasd-state': {
+						'transcription-state': {
 							preFn: function (_this) {
 								_this.canvas.start();
 								return _this.update();
@@ -126,32 +126,32 @@ var AccountInterfaces = {
 			audio.path = function () {
 				return Promise.all([
 					Active.get('client'),
-					Promise.all([
-						Active.get('client'),
-						Permission.get(),
-					]).then(function (results) {
-						var [client_id, role_id] = results;
-						return Context.get('user.clients.{client_id}.roles.{role_id}.project'.format({client_id: client_id, role_id: role_id}));
-					}),
-				]).then(function (results) {
-					// unpack variables
-					var [client_id, project_id] = results;
-
-					// return path
-					return 'clients.{client_id}.projects.{project_id}.transcriptions'.format({client_id: client_id, project_id: project_id});
-				});
-			}
-			audio.token = function () {
-				return Promise.all([
-					Active.get('client'),
 					Permission.get(),
 				]).then(function (results) {
 					// unpack variable
 					var [client_id, role_id] = results;
 
 					// return path
-					return 'user.clients.{client_id}.roles.{role_id}.active_transcription_token'.format({client_id: client_id, role_id: role_id});
+					return 'user.clients.{client_id}.roles.{role_id}.active_transcription_token.fragments'.format({client_id: client_id, role_id: role_id});
 				});
+			}
+			audio.process = function (result) {
+				return Promise.all(Object.keys(result).map(function (key) {
+					audio.components.track.buffer[key] = {
+						content: result[key].phrase.content,
+						index: Object.keys(audio.components.track.buffer).length,
+						parent: result[key].parent,
+						tokens: Object.keys(result[key].phrase.token_instances).sort(function (a,b) {
+							return result[key].phrase.token_instances[a].index > result[key].phrase.token_instances[b].index ? 1 : -1;
+						}).map(function (tokenKey) {
+							return {
+								'content': result[key].phrase.token_instances[tokenKey].content,
+								'type': result[key].phrase.token_instances[tokenKey].type,
+							}
+						}),
+					}
+					return Util.ep();
+				}));
 			}
 
 			// Autocomplete
@@ -237,7 +237,7 @@ var AccountInterfaces = {
 							Active.get('client'),
 							Active.get('project'),
 						]).then(function (results) {
-							return 'clients.{client_id}.projects.{project_id}.dictionaries.5fcb33bc-39d2-4b96-b8eb-81deeec5a204.tokens'.format({client_id: results[0], project_id: results[1]});
+							return 'clients.{client_id}.projects.{project_id}.dictionary.tokens'.format({client_id: results[0], project_id: results[1]});
 						});
 					},
 					process: function (data) {
@@ -252,6 +252,11 @@ var AccountInterfaces = {
 							});
 							resolve(results);
 						});
+					},
+					filterRequest: function (query) {
+						var dict = {};
+						dict['tokens'] = {'content__startswith': query};
+						return dict;
 					},
 					filter: {
 						default: true,
@@ -294,6 +299,11 @@ var AccountInterfaces = {
 
 							resolve(results);
 						});
+					},
+					filterRequest: function (query) {
+						var dict = {};
+						dict['clients'] = {'name__startswith': query};
+						return dict;
 					},
 					filter: {
 						default: true,
