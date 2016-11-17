@@ -19,7 +19,7 @@ class Phrase(models.Model):
 
 		if permission.is_worker and permission.check_client(self.dictionary.project.production_client):
 			data.update({
-				'subscriptions': {subscription.id, subscription.data(path, permission) for subscription in self.subscriptions.filter(**path.get_filter()).filter(role=permission.role)}
+				'subscriptions': {subscription.id: subscription.data(path, permission) for subscription in self.subscriptions.filter(**path.get_filter()).filter(role=permission.role)}
 			})
 
 		return data
