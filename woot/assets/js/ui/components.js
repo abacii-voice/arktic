@@ -569,6 +569,9 @@ var Components = {
 							})
 						},
 						condition: function (datum) {
+
+							// Here, the lack of matching query and the global autocomplete mode can be overridden by base.data.autocompleteOverride.
+							// For the null query, the override only diplays everything if the query is still null, then is more specific when something is typed.
 							var conditions = [
 								(datum.rule === base.data.filter || base.data.filter === ''), // filter matches or no filter
 								(datum.main.toLowerCase().indexOf(base.data.query.toLowerCase()) === 0 || ((base.data.autocompleteOverride || false) && base.data.query === '')), // lower case query match at beginning
@@ -667,7 +670,7 @@ var Components = {
 						setMetadata: function () {
 							var query = '';
 							var complete = '';
-							if (!base.data.query) {
+							if (!base.data.storage.virtual.list.length) {
 								base.currentIndex = undefined;
 							} else {
 								query = base.data.query;
