@@ -668,12 +668,11 @@ var Components = {
 							return Util.ep();
 						},
 						setMetadata: function () {
-							var query = '';
+							var query = base.data.query;;
 							var complete = '';
-							if (!base.data.storage.virtual.list.length) {
+							if (!base.data.storage.virtual.list.length) { // base.data.storage.virtual.list.length
 								base.currentIndex = undefined;
 							} else {
-								query = base.data.query;
 								complete = (base.data.storage.virtual.list[base.currentIndex] || {}).main;
 							}
 							return base.search.setMetadata({query: query, complete: complete});
