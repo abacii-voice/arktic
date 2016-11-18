@@ -668,9 +668,12 @@ var Components = {
 							return Util.ep();
 						},
 						setMetadata: function () {
-							var query = base.data.query;;
+							var query = base.data.query; // query is set no matter the status of virtual
+
+							// MAYBE RESET THE FILTER ON ENTER FOR THE AUTOCOMPLETE
+
 							var complete = '';
-							if (!base.data.storage.virtual.list.length) { // base.data.storage.virtual.list.length
+							if (!base.data.storage.virtual.list.length) {
 								base.currentIndex = undefined;
 							} else {
 								complete = (base.data.storage.virtual.list[base.currentIndex] || {}).main;
