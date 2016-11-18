@@ -30,11 +30,15 @@ class Dictionary(models.Model):
 
 		if True:
 			data.update({
-				'phrases': {phrase.id: phrase.data(path, permission) for phrase in self.phrases.filter(**path.get_filter('phrases'))},
+				'phrases': self.top_phrases(path, permission, path.get_filter('phrases')),
 				'tokens': self.top_tokens(path, permission, path.get_filter('tokens')),
 			})
 
 		return data
+
+	def top_phrases(self, path, permission, fltr):
+		limit = 20
+		return {phrase.id: phrase.data(path, permission) for phrase in self.phrases.filter(**fltr)[0:limit]}
 
 	def top_tokens(self, path, permission, fltr):
 		limit = 100

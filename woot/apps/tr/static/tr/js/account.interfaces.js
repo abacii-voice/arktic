@@ -231,7 +231,7 @@ var AccountInterfaces = {
 			// LIST
 			autocomplete.targets = [
 				{
-					name: 'tokens',
+					name: 'words',
 					path: function () {
 						return Promise.all([
 							Active.get('client'),
@@ -242,7 +242,9 @@ var AccountInterfaces = {
 					},
 					process: function (data) {
 						return new Promise(function(resolve, reject) {
-							var results = Object.keys(data).map(function (key) {
+							var results = Object.keys(data).filter(function (key) {
+								return data[key].type === 'word';
+							}).map(function (key) {
 								var token = data[key];
 								return {
 									id: key,
@@ -255,7 +257,7 @@ var AccountInterfaces = {
 					},
 					filterRequest: function (query) {
 						var dict = {};
-						dict['tokens'] = {'content__startswith': query};
+						dict['tokens'] = {'content__startswith': query, 'type': 'word'};
 						return dict;
 					},
 					filter: {
@@ -269,50 +271,55 @@ var AccountInterfaces = {
 					},
 				},
 				{
-					name: 'clients',
+					name: 'tags',
 					path: function () {
-						return new Promise(function(resolve, reject) {
-							resolve('clients');
-						});
-					},
-					setStyle: function () {
-						return new Promise(function(resolve, reject) {
-							jss.set('#{id} .clients'.format({id: autocomplete.id}), {
-								'background-color': 'rgba(255,255,0,0.05)'
-							});
-							jss.set('#{id} .clients.active'.format({id: autocomplete.id}), {
-								'background-color': 'rgba(255,255,0,0.1)'
-							});
-							resolve();
+						return Promise.all([
+							Active.get('client'),
+							Active.get('project'),
+						]).then(function (results) {
+							return 'clients.{client_id}.projects.{project_id}.dictionary.tokens'.format({client_id: results[0], project_id: results[1]});
 						});
 					},
 					process: function (data) {
 						return new Promise(function(resolve, reject) {
-							var results = Object.keys(data).map(function (key) {
-								var client = data[key];
+							var results = Object.keys(data).filter(function (key) {
+								return data[key].type === 'tag';
+							}).map(function (key) {
+								var token = data[key];
 								return {
 									id: key,
-									main: client.name,
-									rule: 'clients',
+									main: token.content,
+									rule: 'tags',
 								}
 							});
-
 							resolve(results);
 						});
 					},
 					filterRequest: function (query) {
 						var dict = {};
-						dict['clients'] = {'name__startswith': query};
+						dict['tokens'] = {'content__startswith': query, 'type': 'tag'};
 						return dict;
+					},
+					setStyle: function () {
+						return new Promise(function(resolve, reject) {
+							jss.set('#{id} .tags'.format({id: autocomplete.id}), {
+								'background-color': 'rgba(255,255,0,0.05)'
+							});
+							jss.set('#{id} .tags.active'.format({id: autocomplete.id}), {
+								'background-color': 'rgba(255,255,0,0.1)'
+							});
+							resolve();
+						});
 					},
 					filter: {
 						default: true,
 						char: ':',
 						key: 'colon',
-						input: 'Clients',
-						display: 'Client',
-						rule: 'clients',
-						limit: 10,
+						input: 'Tags',
+						display: 'Tag',
+						rule: 'tags',
+						limit: 0,
+						autocompleteOverride: true,
 					},
 				},
 			]
