@@ -571,8 +571,8 @@ var Components = {
 						condition: function (datum) {
 							var conditions = [
 								(datum.rule === base.data.filter || base.data.filter === ''), // filter matches or no filter
-								datum.main.toLowerCase().indexOf(base.data.query.toLowerCase()) === 0, // lower case query match at beginning
-								(!base.autocomplete || (base.autocomplete && base.data.query !== '')), // autocomplete mode or no query
+								(datum.main.toLowerCase().indexOf(base.data.query.toLowerCase()) === 0 || ((base.data.autocompleteOverride || false) && base.data.query === '')), // lower case query match at beginning
+								(!base.autocomplete || (base.autocomplete && base.data.query !== '') || (base.data.autocompleteOverride || false)), // autocomplete mode or no query
 								datum.id in base.data.storage.dataset, // datum is currently in dataset (prevent bleed over from change of dataset)
 							]
 							return Util.ep(conditions.reduce(function (a,b) {
@@ -793,8 +793,10 @@ var Components = {
 					base.data.filter = rule;
 					if (rule in base.data.storage.filters) {
 						base.data.limit = base.data.storage.filters[rule].limit !== 0 ? (base.data.storage.filters[rule].limit !== undefined ? base.data.storage.filters[rule].limit : base.data.limit) : undefined;
+						base.data.autocompleteOverride = base.data.storage.filters[rule].autocompleteOverride;
 					} else {
 						base.data.limit = base.defaultLimit;
+						base.data.autocompleteOverride = undefined;
 					}
 
 					// 1. update search
