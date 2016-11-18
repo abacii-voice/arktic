@@ -38,7 +38,7 @@ class Dictionary(models.Model):
 
 	def top_phrases(self, path, permission, fltr):
 		limit = 20
-		return {phrase.id: phrase.data(path, permission) for phrase in self.phrases.filter(**fltr)[0:limit]}
+		return {phrase.id: phrase.data(path, permission) for phrase in self.phrases.annotate(token_count=models.Count('tokens')).filter(**fltr)[0:limit]}
 
 	def top_tokens(self, path, permission, fltr):
 		limit = 100
