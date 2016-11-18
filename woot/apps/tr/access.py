@@ -90,8 +90,10 @@ class Path():
 		# simulates going down so that the filter can be returned on the last object.
 		if not self.is_blank:
 			last_key, last_id = list(self.locations.items())[-1]
-			if key == last_key:
+			if key == last_key and key in self.fltr:
 				return self.fltr[key]
+			else:
+				return {}
 
 		return {}
 

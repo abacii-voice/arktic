@@ -927,6 +927,9 @@ var AccountInterfaces = {
 							resolve(results);
 						});
 					},
+					filterRequest: function () {
+						return {};
+					},
 				},
 			]
 			clientList.sort = Util.sort.alpha('main');
@@ -1069,6 +1072,9 @@ var AccountInterfaces = {
 
 							resolve(results);
 						});
+					},
+					filterRequest: function () {
+						return {};
 					},
 				},
 			]

@@ -1,5 +1,6 @@
 # django
 from django.db import models
+from django.db import transaction
 
 # local
 from apps.tr.idgen import idgen
@@ -30,10 +31,14 @@ class Dictionary(models.Model):
 		if True:
 			data.update({
 				'phrases': {phrase.id: phrase.data(path, permission) for phrase in self.phrases.filter(**path.get_filter('phrases'))},
-				'tokens': {token.id: token.data(path, permission) for token in self.tokens.filter(**path.get_filter('tokens'))},
+				'tokens': self.top_tokens(path, permission, path.get_filter('tokens')),
 			})
 
 		return data
+
+	def top_tokens(self, path, permission, fltr):
+		limit = 100
+		return {token.id: token.data(path, permission) for token in self.tokens.filter(**fltr)[0:limit]}
 
 	def create_phrase(self, content):
 		# create phrases
