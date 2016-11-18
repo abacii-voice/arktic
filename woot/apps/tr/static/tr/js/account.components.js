@@ -719,235 +719,6 @@ var AccountComponents = {
 	// A content panel with bindings for adding and removing tokens.
 	// contenteditable is set to 'true' with appropriate bindings.
 	captionField: function (id, args) {
-		args.appearance = (args.appearance || {
-			style: {
-				'width': '100%',
-				'height': '100%',
-			},
-		});
-
-		// components
-		return Promise.all([
-			// base
-			UI.createComponent('{id}-base'.format({id: id}), {
-				template: UI.template('div', 'ie'),
-				appearance: args.appearance,
-			}),
-
-			// content
-			Components.contentPanel('{id}-content'.format({id: id}), {
-				appearance: {
-					style: {
-						'width': '100%',
-						'height': '100%',
-					},
-				},
-			}),
-
-		]).then(function (components) {
-			// unpack components
-			var [
-				base,
-				content,
-			] = components;
-
-			// methods and properties
-			var wrapper = content.components.wrapper;
-			wrapper.load = function () {
-
-			}
-			wrapper.token = function (options) {
-				// console.log('{} caption token'.format(base.id));
-				options = (options || {});
-				var _this = wrapper;
-				if (_this.active !== undefined && !options.swap) {
-					return (options.end ? _this.setActive : Util.ep)({index: 'last'}).then(function () {
-						return _this.active.focus('end');
-					}).then(function () {
-						return _this.active;
-					});
-				} else {
-					_this.currentIndex = _this.currentIndex !== undefined ? _this.currentIndex + 1 : 0;
-					return base.unit(options.text, options.type).then(function (unit) {
-						// methods
-
-						// set after HERE
-						if (_this.active) {
-							unit.after = options.before ? '' : _this.active.id;
-						}
-						return _this.setChildren([unit]).then(function () {
-							_this.active = unit;
-							return _this.active.activate();
-						}).then(function () {
-							return _this.active.focus('end');
-						}).then(function () {
-							return _this.active;
-						});
-					});
-				}
-			}
-			wrapper.isCaretInPosition = function (mode) {
-				return wrapper.active.components.autocomplete.search.isCaretInPosition(mode);
-			}
-			wrapper.isComplete = function () {
-				return wrapper.active.components.autocomplete.search.isComplete();
-			}
-			wrapper.setActive = function (options) {
-				// console.log('{} caption setActive'.format(base.id));
-				var _this = wrapper;
-				// args
-				options.index = (options || {}).index !== undefined ? (options.index === 'last' ? _this.children.length - 1 : options.index) : undefined; // allow keyword "last"
-
-				// changes
-				var previousIndex = _this.currentIndex ? _this.currentIndex : 0;
-				_this.currentIndex = (options.index !== undefined ? options.index : undefined || ((_this.currentIndex || 0) + (options.increment || 0)));
-
-				// boundary conditions
-				_this.currentIndex = _this.currentIndex > _this.children.length - 1 ? _this.children.length - 1 : (_this.currentIndex < 0 ? 0 : _this.currentIndex);
-
-				var hasChanged = _this.currentIndex !== previousIndex || options.force;
-				if (hasChanged) {
-					_this.active = _this.children[_this.currentIndex];
-				}
-				return new Promise(function(resolve, reject) {
-					resolve(hasChanged); // returns whether anything has changed.
-				});
-			}
-			wrapper.next = function () {
-				// console.log('{} caption next'.format(base.id));
-				return wrapper.setActive({increment: 1}).then(function (indexChanged) {
-					return (indexChanged ? wrapper.active.focus : Util.ep)('start');
-				});
-			}
-			wrapper.previous = function () {
-				// console.log('{} caption previous'.format(base.id));
-				return wrapper.setActive({increment: -1}).then(function (indexChanged) {
-					return (indexChanged ? wrapper.active.focus : Util.ep)('end');
-				});
-			}
-			wrapper.delete = function () {
-				var content = wrapper.active.getContent();
-				var isAtStart = wrapper.active.isAtStart();
-				return wrapper.removeChild(wrapper.active.id).then(function () {
-					wrapper.active = undefined;
-					var forceNext = function () {
-						if (wrapper.children.length) {
-							return wrapper.setActive({force: true}).then(function () {
-								return wrapper.active.focus('start');
-							});
-						} else {
-							return wrapper.token();
-						}
-					}
-					return (wrapper.currentIndex ? wrapper.previous : forceNext)();
-				}).then(function () {
-					if (content && isAtStart) {
-						var activeContent = wrapper.active.getContent();
-						return wrapper.active.setContent({content: (activeContent + content), trigger: true}).then(function () {
-							// set caret position to active content length
-							return wrapper.active.components.autocomplete.search.setCaretPosition(activeContent.length);
-						});
-					}
-				});
-			}
-
-			// behaviours
-			base.behaviours = {
-				up: function () {
-					// console.log('{} caption behaviours up'.format(base.id));
-					return Promise.all([
-						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.up : Util.ep)(),
-					]);
-				},
-				down: function () {
-					// console.log('{} caption behaviours down'.format(base.id));
-					return Promise.all([
-						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.down : Util.ep)(),
-					]);
-				},
-				left: function () {
-					// console.log('{} caption behaviours left'.format(base.id));
-					// go to previous token if at end
-					return ((wrapper.active && wrapper.isCaretInPosition('start')) ? wrapper.previous : Util.ep)();
-				},
-				altleft: function () {
-					// console.log('{} caption behaviours altleft'.format(base.id));
-					// go to previous token
-					return (wrapper.active ? wrapper.previous : Util.ep)();
-				},
-				right: function () {
-					// console.log('{} caption behaviours right'.format(base.id));
-					// complete or go to next token if already complete
-					return Promise.all([
-						((wrapper.active && wrapper.isCaretInPosition('end') && wrapper.isComplete()) ? wrapper.next : Util.ep)(),
-						(wrapper.active && !wrapper.isComplete() ? wrapper.active.components.autocomplete.behaviours.right : Util.ep)(),
-					]);
-				},
-				altright: function () {
-					// console.log('{} caption behaviours altright'.format(base.id));
-					// go to next token
-					var shiftright = function () {
-						return wrapper.setActive({increment: 1}).then(function (indexChanged) {
-							return (indexChanged ? wrapper.active.focus : Util.ep)('end');
-						});
-					}
-					return Promise.all([
-						(wrapper.active ? shiftright : Util.ep)(),
-					]);
-				},
-				enter: function () {
-					// console.log('{} caption behaviours enter'.format(base.id));
-					// complete and new token
-					return Promise.all([
-						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : Util.ep)().then(function () {
-							return (wrapper.active ? wrapper.token : Util.ep)({swap: true});
-						}),
-					]);
-				},
-				backspace: function () {
-					// console.log('{} caption behaviours backspace'.format(base.id));
-					// delete token if at beginning
-					return ((wrapper.active && wrapper.active.isAtStart() && wrapper.children.length > 1) ? wrapper.delete : Util.ep)();
-				},
-				altbackspace: function () {
-					// console.log('{} caption behaviours altbackspace'.format(base.id));
-					// delete token
-					return ((wrapper.active && wrapper.children.length) ? wrapper.delete : Util.ep)();
-				},
-				space: function () {
-					// console.log('{} caption behaviours space'.format(base.id));
-					// new token
-					return Promise.all([
-						// ((wrapper.active && (!wrapper.active.components.autocomplete.virtual.length || wrapper.isComplete())) ? wrapper.token : Util.ep)({swap: true}),
-					]);
-				},
-				number: function (char) {
-					// console.log('{} caption behaviours number'.format(base.id));
-					return Promise.all([
-						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.number : Util.ep)(char),
-					]);
-				},
-			}
-
-			// complete promises
-			return Promise.all([
-				wrapper.setBindings({
-					'click': function (_this) {
-						wrapper.token({end: true});
-					},
-				}),
-			]).then(function () {
-				base.components['wrapper'] = wrapper;
-				return base.setChildren([
-					content,
-				]);
-			}).then(function () {
-				return base;
-			});
-		});;
-	},
-
-	testCaptionField: function (id, args) {
 		return Promise.all([
 			// base
 			UI.createComponent(id, {
@@ -976,39 +747,38 @@ var AccountComponents = {
 				caption: '',
 				currentIndex: 0,
 
+				// datasets
+				storage: {
+					dataset: {}, // stores token data
+					rendered: [], // stores units
+				}
+
 				// methods
-				token: function (options) {
-					options = (options || {});
-					if (base.children.length && !options.new) {
-						// focus active
-						return base.control.setActive('last').then(function () {
-							return base.active.focus('end');
-						}).then(function () {
-							return base.active;
-						});
-					} else {
-						// create new unit
-						base.data.currentIndex = base.data.currentIndex !== undefined ? base.data.currentIndex + 1 : 0;
-						return base.unit(options.data).then(function (unit) {
-							// set after HERE
-							if (base.active) {
-								unit.after = options.before ? '' : base.active.id;
-							}
-							return base.setChildren([unit]).then(function () {
-								return base.control.setActive({index: unit.index});
-							}).then(function () {
-								return base.active.focus('end');
-							}).then(function () {
-								return base.active;
-							});
-						});
-					}
+				idgen: function (id) {
+					return '{base}-{id}'.format({base: base.id, id: id});
+				},
+				load: function () {
+
+				},
+				display: {
+
 				},
 
 			}
 
 			// control
 			base.control = {
+				setup: {
+					main: function () {
+
+					},
+					resolvePaths: function () {
+
+					},
+					renderUntilDefaultLimit: function () {
+
+					},
+				},
 				setActive: function (options) {
 					options = (options || {});
 
@@ -1040,12 +810,6 @@ var AccountComponents = {
 						}
 					}
 				},
-				next: function () {
-					return base.control.setActive({increment: 1});
-				},
-				previous: function () {
-					return base.control.setActive({increment: -1});
-				},
 				delete: function (options) {
 
 				},
@@ -1055,6 +819,16 @@ var AccountComponents = {
 				unGhostAll: function () {
 
 				},
+				start: function () {
+
+				},
+			}
+
+			base.next = function () {
+				return base.control.setActive({increment: 1});
+			}
+			base.previous = function () {
+				return base.control.setActive({increment: -1});
 			}
 
 			// behaviours
