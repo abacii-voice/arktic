@@ -24,11 +24,12 @@ class Command(BaseCommand):
 		client = Client.objects.get(name__contains='Production')
 		project = client.production_projects.get()
 
-		# path = 'clients.{client}.projects.{project}.transcriptions'.format(client=client.id, project=project.id)
-		# fltr = {'token': role.active_transcription_token()}
-		path = 'clients.ef10b3e8-d1b4-4f0b-bc42-2e7688088aee.projects.6bd2a2b4-4799-4a39-b1b9-15114c4460eb.dictionary.tokens'
-		# path = 'user'
 		fltr = {}
+		# path = 'clients.{client}.projects.{project}.transcriptions'.format(client=client.id, project=project.id)
+		# fltr = {'tokens': {'content__startswith': 'p'}}
+		# path = 'clients.ef10b3e8-d1b4-4f0b-bc42-2e7688088aee.projects.6bd2a2b4-4799-4a39-b1b9-15114c4460eb.dictionary.tokens'
+		path = 'clients'
+
 
 		# request data using path
 		permission = Permission(user, role=role)
