@@ -71,7 +71,7 @@ var AccountInterfaces = {
 				},
 			}),
 
-			AccountComponents.testCaptionField('tb-cp-caption', {
+			AccountComponents.captionField('tb-cp-caption', {
 				appearance: {
 					style: {
 						'height': '400px',
