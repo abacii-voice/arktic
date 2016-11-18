@@ -230,8 +230,7 @@ var AccountInterfaces = {
 
 			// LIST
 			autocomplete.targets = [
-				{
-					name: 'words',
+				{name: 'words',
 					path: function () {
 						return Promise.all([
 							Active.get('client'),
@@ -267,11 +266,10 @@ var AccountInterfaces = {
 						input: 'Words',
 						display: 'Word',
 						rule: 'words',
-						limit: 0,
+						limit: 10,
 					},
 				},
-				{
-					name: 'tags',
+				{name: 'tags',
 					path: function () {
 						return Promise.all([
 							Active.get('client'),
@@ -318,8 +316,56 @@ var AccountInterfaces = {
 						input: 'Tags',
 						display: 'Tag',
 						rule: 'tags',
-						limit: 0,
+						limit: 10,
 						autocompleteOverride: true,
+					},
+				},
+				{name: 'phrases',
+					path: function () {
+						return Promise.all([
+							Active.get('client'),
+							Active.get('project'),
+						]).then(function (results) {
+							return 'clients.{client_id}.projects.{project_id}.dictionary.phrases'.format({client_id: results[0], project_id: results[1]});
+						});
+					},
+					process: function (data) {
+						return new Promise(function(resolve, reject) {
+							var results = Object.keys(data).map(function (key) {
+								var phrase = data[key];
+								return {
+									id: key,
+									main: phrase.content,
+									rule: 'phrases',
+								}
+							});
+							resolve(results);
+						});
+					},
+					filterRequest: function (query) {
+						var dict = {};
+						dict['phrases'] = {'content__startswith': query, 'token_count__gt': '1'};
+						return dict;
+					},
+					setStyle: function () {
+						return new Promise(function(resolve, reject) {
+							jss.set('#{id} .phrases'.format({id: autocomplete.id}), {
+								'background-color': 'rgba(255,100,255,0.05)'
+							});
+							jss.set('#{id} .phrases.active'.format({id: autocomplete.id}), {
+								'background-color': 'rgba(255,100,255,0.4)'
+							});
+							resolve();
+						});
+					},
+					filter: {
+						default: true,
+						char: '.',
+						key: 'dot',
+						input: 'Phrases',
+						display: 'Phrase',
+						rule: 'phrases',
+						limit: 10,
 					},
 				},
 			]
