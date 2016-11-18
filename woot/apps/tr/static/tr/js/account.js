@@ -23,9 +23,9 @@ UI.app('hook', [
 		Active.set('project', '6bd2a2b4-4799-4a39-b1b9-15114c4460eb'),
 		Permission.set('465521bd-6760-4964-a5d8-13ff8976046d'),
 	]).then(function () {
-		// return UI.changeState('client-state');
+		return UI.changeState('client-state');
 		// return UI.changeState('role-state');
-		return UI.changeState('transcription-state');
+		// return UI.changeState('transcription-state');
 	});
 }).catch(function (error) {
 	console.log(error);
