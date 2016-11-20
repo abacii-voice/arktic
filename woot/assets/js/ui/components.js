@@ -711,7 +711,7 @@ var Components = {
 								return function () {
 									return base.unit({main: ''}, '', index).then(function (newListItem) {
 										base.data.storage.virtual.rendered.push(newListItem.id);
-										return newListItem.setAppearance({classes: {add: 'hidden'}}).then(function () {
+										return newListItem.hide().then(function () {
 											return base.list.components.wrapper.setChildren([newListItem]);
 										});
 									});
@@ -1158,8 +1158,6 @@ var Components = {
 			});
 		});
 	},
-
-	// AUTOCOMPLETE
 
 	// A panel with a state structure and space for a content panel.
 	sidebar: function (id, args) {

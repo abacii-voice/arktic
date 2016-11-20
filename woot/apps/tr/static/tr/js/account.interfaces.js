@@ -86,7 +86,7 @@ var AccountInterfaces = {
 				template: UI.template('div', 'ie'),
 				appearance: {
 					style: {
-						'width': '300px',
+						'width': '400px',
 						'height': '100%',
 						'float': 'left',
 						'margin-right': '{}px'.format(args.interface.margin),
@@ -120,41 +120,6 @@ var AccountInterfaces = {
 				autocomplete,
 			] = components;
 
-			// bindings
-			// Audio
-			audio.threshold = 4;
-			audio.path = function () {
-				return Promise.all([
-					Active.get('client'),
-					Permission.get(),
-				]).then(function (results) {
-					// unpack variable
-					var [client_id, role_id] = results;
-
-					// return path
-					return 'user.clients.{client_id}.roles.{role_id}.active_transcription_token.fragments'.format({client_id: client_id, role_id: role_id});
-				});
-			}
-			audio.process = function (result) {
-				return Promise.all(Object.keys(result).map(function (key) {
-					audio.components.track.buffer[key] = {
-						content: result[key].phrase.content,
-						index: Object.keys(audio.components.track.buffer).length,
-						parent: result[key].parent,
-						tokens: Object.keys(result[key].phrase.token_instances).sort(function (a,b) {
-							return result[key].phrase.token_instances[a].index > result[key].phrase.token_instances[b].index ? 1 : -1;
-						}).map(function (tokenKey) {
-							return {
-								'content': result[key].phrase.token_instances[tokenKey].content,
-								'type': result[key].phrase.token_instances[tokenKey].type,
-							}
-						}),
-					}
-					return Util.ep();
-				}));
-			}
-
-			// Autocomplete
 			// KEYBINDINGS
 			Mousetrap.bind('up', function (event) {
 				event.preventDefault();
@@ -228,6 +193,40 @@ var AccountInterfaces = {
 
 			});
 
+			// Audio
+			audio.threshold = 4;
+			audio.path = function () {
+				return Promise.all([
+					Active.get('client'),
+					Permission.get(),
+				]).then(function (results) {
+					// unpack variable
+					var [client_id, role_id] = results;
+
+					// return path
+					return 'user.clients.{client_id}.roles.{role_id}.active_transcription_token.fragments'.format({client_id: client_id, role_id: role_id});
+				});
+			}
+			audio.process = function (result) {
+				return Promise.all(Object.keys(result).map(function (key) {
+					audio.components.track.buffer[key] = {
+						content: result[key].phrase.content,
+						index: Object.keys(audio.components.track.buffer).length,
+						parent: result[key].parent,
+						tokens: Object.keys(result[key].phrase.token_instances).sort(function (a,b) {
+							return result[key].phrase.token_instances[a].index > result[key].phrase.token_instances[b].index ? 1 : -1;
+						}).map(function (tokenKey) {
+							return {
+								'content': result[key].phrase.token_instances[tokenKey].content,
+								'type': result[key].phrase.token_instances[tokenKey].type,
+							}
+						}),
+					}
+					return Util.ep();
+				}));
+			}
+
+			// Autocomplete
 			// LIST
 			autocomplete.targets = [
 				{name: 'words',
@@ -473,13 +472,13 @@ var AccountInterfaces = {
 					unitBase.deactivate = function () {
 						return unitBase.setAppearance({classes: {remove: ['active']}});
 					}
-					unitBase.hide = function () {
-						unitBase.isHidden = true;
-						return unitBase.setAppearance({classes: {add: 'hidden'}});
-					}
 					unitBase.show = function () {
 						unitBase.isHidden = false;
 						return unitBase.setAppearance({classes: {remove: 'hidden'}});
+					}
+					unitBase.hide = function () {
+						unitBase.isHidden = true;
+						return unitBase.setAppearance({classes: {add: 'hidden'}});
 					}
 					unitBase.updateMetadata = function (ndatum, query) {
 						// if there are changes, do stuff.
@@ -585,16 +584,8 @@ var AccountInterfaces = {
 
 			// CAPTION
 			caption.styles = {};
-			caption.target = {
-				path: function () {
-
-				},
-				process: function () {
-
-				},
-			}
 			caption.unit = function (options) {
-				var id = '{base}-{id}'.format({base: base.id, id: Util.makeid()});
+				var id = caption.data.idgen();
 				return Promise.all([
 					// base
 					Components.search(id, {
@@ -615,6 +606,7 @@ var AccountInterfaces = {
 						unitBase,
 					] = components;
 
+					// as caption unit
 					unitBase.activate = function () {
 						return Util.ep();
 					}
@@ -624,6 +616,23 @@ var AccountInterfaces = {
 					unitBase.select = function () {
 
 					}
+					unitBase.unSelect = function () {
+
+					}
+					unitBase.show = function () {
+						unitBase.isHidden = false;
+						return unitBase.setAppearance({classes: {remove: 'hidden'}});
+					}
+					unitBase.hide = function () {
+						unitBase.isHidden = true;
+						return unitBase.setAppearance({classes: {add: 'hidden'}});
+					}
+					unitBase.updateUnitMetadata = function (unitDatum) {
+						// each datum should contain the type and content of a token
+					}
+
+
+					// as search bar
 					unitBase.setMetadata = function (metadata) {
 						metadata = (metadata || {});
 						unitBase.metadata = (unitBase.metadata || {});
@@ -671,12 +680,6 @@ var AccountInterfaces = {
 						} else {
 							return Util.ep();
 						}
-					}
-					unitBase.ghost = function () {
-
-					}
-					unitBase.unGhost = function () {
-
 					}
 
 					return Promise.all([
