@@ -106,22 +106,6 @@ var AccountComponents = {
 
 			// modify components and add methods etc.
 			// BUTTON GROUP
-			playButton.setBindings({
-				'mousedown': function (_this) {
-					// The play button will always return to the anchor and play from there.
-					audioTrack.play();
-				},
-
-				// display tooltip in track info field
-				'mouseover': function (_this) {
-
-				},
-
-				// remove tooltip
-				'mouseout': function (_this) {
-
-				},
-			});
 
 			// AUDIO GROUP
 			// determines which audio references to create as audio tags
@@ -173,6 +157,12 @@ var AccountComponents = {
 						resolve(_this.buffer);
 					});
 				});
+			}
+			audioTrack.pre = {
+				main: function () {
+
+				},
+				
 			}
 			audioTrack.pre = function () {
 				var _this = audioTrack;
@@ -328,9 +318,6 @@ var AccountComponents = {
 				});
 			}
 
-			audioTrack.setRegistry(args.registry);
-			audioTrack.setState(args.state);
-
 			//// CANVAS
 			audioTrackCanvas.is_running = false;
 			audioTrackCanvas.barWidth = 2;
@@ -433,76 +420,99 @@ var AccountComponents = {
 				audioTrack.cutStart = 0;
 				audioTrack.cutEnd = 0;
 			}
-			audioTrackCanvas.setBindings({
 
-				// like it says
-				'mousedown': function (_this, event) {
-					_this.mouseDown = true;
-					_this.drag = false;
-					_this.cutStart = _this.getMousePosition(event).x;
-				},
-
-				// continuous movement
-				'mousemove': function (_this, event) {
-					_this.mousePosition = _this.getMousePosition(event).x;
-					if (_this.mouseDown) {
-						_this.cut = true;
-						_this.drag = true;
-						_this.cutEnd = _this.mousePosition;
-					}
-				},
-
-				// let mouse up
-				'mouseup': function (_this, event) {
-					_this.mouseDown = false;
-					if (_this.cut) {
-						if (_this.drag && (_this.cutEnd - _this.cutStart > 1)) {
-							audioTrack.cut = true;
-							audioTrack.cutStart = _this.cutStart / _this.canvas.width * _this.duration;
-							audioTrack.cutEnd = _this.cutEnd / _this.canvas.width * _this.duration;
-							audioTrack.play(audioTrack.cutStart);
-						} else {
-							_this.cut = false;
-							audioTrack.cut = false;
-							audioTrack.cutStart = 0;
-							audioTrack.cutEnd = 0;
-							audioTrack.stop();
-						}
-					} else {
-						_this.time = _this.getMousePosition(event).x / _this.canvas.width * _this.duration;
-						audioTrack.play(_this.time);
-					}
-				},
-
-				'mouseout': function (_this) {
-					_this.mousePosition = 0;
-				},
-			});
-			audioTrackWrapper.setChildren([
-				audioTrack,
-				audioTrackCanvas,
-				audioTrackInfo,
-			]);
-			audioWrapper.setChildren([
-				audioTrackWrapper,
-			]);
-
-			// resolve list of components to be rendered.
-			base.components = {
-				track: audioTrack,
-			}
+			// base methods
 			base.next = function () {
 				return audioTrack.next();
 			}
 			base.previous = function () {
 				return audioTrack.previous();
 			}
-			base.setChildren([
-				audioWrapper,
-				playButton,
-			]);
 
-			return base;
+			// complete promises
+			return Promise.all([
+				playButton.setBindings({
+					'mousedown': function (_this) {
+						// The play button will always return to the anchor and play from there.
+						audioTrack.play();
+					},
+
+					// display tooltip in track info field
+					'mouseover': function (_this) {
+
+					},
+
+					// remove tooltip
+					'mouseout': function (_this) {
+
+					},
+				}),
+				audioTrack.setRegistry(args.registry),
+				audioTrack.setState(args.state),
+				audioTrackCanvas.setBindings({
+
+					// like it says
+					'mousedown': function (_this, event) {
+						_this.mouseDown = true;
+						_this.drag = false;
+						_this.cutStart = _this.getMousePosition(event).x;
+					},
+
+					// continuous movement
+					'mousemove': function (_this, event) {
+						_this.mousePosition = _this.getMousePosition(event).x;
+						if (_this.mouseDown) {
+							_this.cut = true;
+							_this.drag = true;
+							_this.cutEnd = _this.mousePosition;
+						}
+					},
+
+					// let mouse up
+					'mouseup': function (_this, event) {
+						_this.mouseDown = false;
+						if (_this.cut) {
+							if (_this.drag && (_this.cutEnd - _this.cutStart > 1)) {
+								audioTrack.cut = true;
+								audioTrack.cutStart = _this.cutStart / _this.canvas.width * _this.duration;
+								audioTrack.cutEnd = _this.cutEnd / _this.canvas.width * _this.duration;
+								audioTrack.play(audioTrack.cutStart);
+							} else {
+								_this.cut = false;
+								audioTrack.cut = false;
+								audioTrack.cutStart = 0;
+								audioTrack.cutEnd = 0;
+								audioTrack.stop();
+							}
+						} else {
+							_this.time = _this.getMousePosition(event).x / _this.canvas.width * _this.duration;
+							audioTrack.play(_this.time);
+						}
+					},
+
+					'mouseout': function (_this) {
+						_this.mousePosition = 0;
+					},
+				}),
+				audioTrackWrapper.setChildren([
+					audioTrack,
+					audioTrackCanvas,
+					audioTrackInfo,
+				]),
+				audioWrapper.setChildren([
+					audioTrackWrapper,
+				]),
+			]).then(function () {
+				base.components = {
+					track: audioTrack,
+				}
+				return base.setChildren([
+					audioWrapper,
+					playButton,
+				]);
+			}).then(function () {
+				return base;
+			});
 		});
 	},
 
@@ -744,18 +754,22 @@ var AccountComponents = {
 			base.data = {
 
 				// variables
-				caption: '',
-				currentIndex: 0,
+				defaultLimit: 10,
+				currentIndex: 0, // current position within rendered data, not virtual
 
 				// datasets
 				storage: {
-					dataset: {}, // stores token data
+					index: undefined, // index within the virtual list
+					subindex: undefined, // index within the token list of the virtual item
+					buffer: {}, // stores all sets that have been entered this session
+					virtual: [], // stores data in order
+					tokens: [], // stores tokens in order
 					rendered: [], // stores units
-				}
+				},
 
 				// methods
-				idgen: function (id) {
-					return '{base}-{id}'.format({base: base.id, id: id});
+				idgen: function () {
+					return '{base}-{id}'.format({base: base.id, id: Util.makeid()});
 				},
 				load: function () {
 
@@ -768,16 +782,61 @@ var AccountComponents = {
 
 			// control
 			base.control = {
-				setup: {
-					main: function () {
+				update: function (options) {
+					// {delete: 1}
+					// {
+					// 	index: 4,
+					// 	tokens: [
+					// 		{content: 'hello', type: 'word'},
+					// 		{content: 'world', type: 'word'},
+					// 		{content: 'breath-noise', type: 'tag'},
+					// 	],
+					// }
+					// {
+					// 	index: 4,
+					// 	tokens: {content: 'hello', type: 'word'},
+					// }
+					// {focus: 1}
+					// {blur: 1}
 
-					},
-					resolvePaths: function () {
+					// ways to update?
+					// 1. audio loads or changes
+					// 2. type in the box
+					// 3. blur or focus the box
 
-					},
-					renderUntilDefaultLimit: function () {
+					// virtual = [
+					// 	{
+					// 		tokens: [
+					// 			{content: 'hello', type: 'word', focus: true},
+					// 			{content: 'world', type: 'word'},
+					// 			{content: 'breath-noise', type: 'tag'},
+					// 		],
+					// 	},
+					//
+					// ]
 
-					},
+					return base.control.setup().then(function () {
+						// 1. add the datum to the virtual
+						// 2. convert virtual into new tokens
+						// 3. for each token, change metadata of rendered
+					});
+				},
+				setup: function () {
+					// render 10 units
+					if (base.data.storage.rendered.length === 0) {
+						return Promise.ordered(Array.range(base.data.defaultLimit).map(function (index) {
+							return function () {
+								return base.unit().then(function (unit) {
+									base.data.storage.rendered.push(unit.id);
+									return unit.hide().then(function () {
+										return content.setChildren([unit]);
+									});
+								});
+							}
+						}));
+					} else {
+						return Util.ep();
+					}
 				},
 				setActive: function (options) {
 					options = (options || {});
@@ -819,9 +878,6 @@ var AccountComponents = {
 				unGhostAll: function () {
 
 				},
-				start: function () {
-
-				},
 			}
 
 			base.next = function () {
@@ -858,24 +914,18 @@ var AccountComponents = {
 
 				},
 				enter: function () {
-					return base.active.complete().then(function () {
-						return base.active.getContent().then(function (content) {
-							if (content) {
-								return base.data.token({new: true});
-							}
-						});
-					});
+
 				}
 			}
 
 			return Promise.all([
 				base.setBindings({
 					'click': function (_this) {
-						return _this.data.token();
+						return _this.control.update();
 					},
 				}),
 			]).then(function () {
-
+				return base.setChildren([content]);
 			}).then(function () {
 				return base;
 			});
