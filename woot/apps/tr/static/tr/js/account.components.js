@@ -293,6 +293,9 @@ var AccountComponents = {
 					return _this.current();
 				}).then(function (current) {
 					return new Promise(function(resolve, reject) {
+
+						// RECONCILE CURRENT WITH AUDIOTRACK.BUFFER and check is_available
+
 						current.is_available = false;
 						resolve();
 					});
@@ -439,7 +442,9 @@ var AccountComponents = {
 				playButton.setBindings({
 					'mousedown': function (_this) {
 						// The play button will always return to the anchor and play from there.
-						audioTrack.play();
+						return audioTrack.next().catch(function (error) {
+							console.log(error);
+						});
 					},
 
 					// display tooltip in track info field
