@@ -135,15 +135,15 @@ var AccountComponents = {
 				}).length;
 				if (remaining === 0) {
 					return _this.load().then(function () {
-						return _this.pre();
+						return _this.pre.main();
 					});
 				} else if (remaining < (base.threshold || 4)) {
 					return Promise.all([
 						_this.load({force: true}),
-						_this.pre(),
+						_this.pre.main(),
 					]);
 				} else {
-					return _this.pre();
+					return _this.pre.main();
 				}
 			}
 			audioTrack.load = function (force) {
@@ -160,56 +160,61 @@ var AccountComponents = {
 			}
 			audioTrack.pre = {
 				main: function () {
-
+					var _this = audioTrack.pre;
+					return _this.load_audio().then(function () {
+						return _this.current();
+					}).then(function () {
+						return _this.remove();
+					});
 				},
-				
-			}
-			audioTrack.pre = function () {
-				var _this = audioTrack;
-				// determine which audio elements to load
-				// load n either side of active index.
-				var lower = _this.active > 1 ? _this.active - (base.threshold || 4) + 2 : 0;
-				var upper = _this.active > 1 ? _this.active + (base.threshold || 4) - 1 : (base.threshold || 4) + 1;
-				var indices = [];
-				for (i=lower; i<upper; i++) {
-					indices.push(i);
-				}
+				load_audio: function () {
+					var _this = audioTrack;
+					// determine which audio elements to load
+					// load n either side of active index.
+					var lower = _this.active > 1 ? _this.active - (base.threshold || 4) + 2 : 0;
+					var upper = _this.active > 1 ? _this.active + (base.threshold || 4) - 1 : (base.threshold || 4) + 1;
+					_this.indices = [];
+					for (i=lower; i<upper; i++) {
+						_this.indices.push(i);
+					}
 
-				// once the indices have been chosen, load the audio file for each one.
-				return Promise.all(indices.map(function (index) {
-					var transcriptionId = Object.keys(_this.buffer).filter(function (key) {
-						return _this.buffer[key].index === index;
-					})[0];
-					var storage = _this.buffer[transcriptionId];
-					if (storage.data === undefined) {
-						return Request.load_audio(storage.parent).then(function (audioData) {
-							return new Promise(function(resolve, reject) {
+					// once the indices have been chosen, load the audio file for each one.
+					return Promise.all(_this.indices.map(function (index) {
+						var transcriptionId = Object.keys(_this.buffer).filter(function (key) {
+							return _this.buffer[key].index === index;
+						})[0];
+						var storage = _this.buffer[transcriptionId];
+						if (storage.data === undefined) {
+							return Request.load_audio(storage.parent).then(function (audioData) {
+								return new Promise(function(resolve, reject) {
 
-								// decode the incoming audio data and store it with the metadata.
-								_this.controller.context.decodeAudioData(audioData, function (decoded) {
-									storage.data = decoded;
-									storage.has_waveform = true;
-									resolve();
+									// decode the incoming audio data and store it with the metadata.
+									_this.controller.context.decodeAudioData(audioData, function (decoded) {
+										storage.data = decoded;
+										storage.has_waveform = true;
+										resolve();
+									});
 								});
 							});
-						});
-					}
-				})).then(function () {
+						}
+					}));
+				},
+				current: function () {
+					var _this = audioTrack;
 					// get current operation
 					return _this.current().then(function (current) {
 						return new Promise(function(resolve, reject) {
 							audioTrackCanvas.data = current.data;
 							audioTrackCanvas.duration = current.data.duration;
-							if (base.current !== undefined) {
-								base.current(current);
-							}
 							resolve();
 						});
 					});
-				}).then(function () {
+				},
+				remove: function () {
+					var _this = audioTrack;
 					// remove data from all indices not in the chosen array.
 					return Promise.all(Object.keys(_this.buffer).filter(function (key) {
-						return indices.indexOf(_this.buffer[key].index) === -1;
+						return _this.indices.indexOf(_this.buffer[key].index) === -1;
 					}).map(function (key) {
 						var removeBuffer = _this.buffer[key];
 						if (removeBuffer.source !== undefined) {
@@ -219,7 +224,7 @@ var AccountComponents = {
 							delete removeBuffer.waveform;
 						}
 					}));
-				});
+				},
 			}
 			audioTrack.play = function (position, duration) {
 				var _this = audioTrack;
@@ -505,6 +510,7 @@ var AccountComponents = {
 			]).then(function () {
 				base.components = {
 					track: audioTrack,
+					canvas: audioTrackCanvas,
 				}
 				return base.setChildren([
 					audioWrapper,
@@ -756,13 +762,12 @@ var AccountComponents = {
 				// variables
 				defaultLimit: 10,
 				currentIndex: 0, // current position within rendered data, not virtual
+				currentId: undefined, // the id of the current transcription
 
 				// datasets
 				storage: {
-					index: undefined, // index within the virtual list
-					subindex: undefined, // index within the token list of the virtual item
 					buffer: {}, // stores all sets that have been entered this session
-					virtual: [], // stores data in order
+					virtual: [{tokens: [{content: 'loading...', type: 'ghost'}]}], // stores data in order
 					tokens: [], // stores tokens in order
 					rendered: [], // stores units
 				},
@@ -771,55 +776,75 @@ var AccountComponents = {
 				idgen: function () {
 					return '{base}-{id}'.format({base: base.id, id: Util.makeid()});
 				},
-				load: function () {
-
+				virtual_index: function () {
+					var sum = 0;
+					var result;
+					var _this = base.data.storage.virtual;
+					for (var i=0; i<_this.length; i++) {
+						sum += _this[i].tokens.length;
+						if (sum > base.data.currentIndex) {
+							result = [i, base.data.currentIndex - sum + _this[i].tokens.length];
+							break;
+						}
+					}
+					return Util.ep(result);
 				},
-				display: {
-
-				},
-
 			}
 
 			// control
 			base.control = {
-				update: function (options) {
-					// {delete: 1}
-					// {
-					// 	index: 4,
-					// 	tokens: [
-					// 		{content: 'hello', type: 'word'},
-					// 		{content: 'world', type: 'word'},
-					// 		{content: 'breath-noise', type: 'tag'},
-					// 	],
-					// }
-					// {
-					// 	index: 4,
-					// 	tokens: {content: 'hello', type: 'word'},
-					// }
-					// {focus: 1}
-					// {blur: 1}
+				update: {
+					main: function (options) {
+						var _this = base.control.update;
+						return base.control.setup().then(function () {
+							return _this.updateVirtual(options);
+						}).then(function () {
+							return _this.updateTokensAndDisplay();
+						}).then(function () {
+							console.log(base.data.storage.tokens);
+						});
+					},
+					updateVirtual: function (options) {
+						options = (options || {});
+						return base.data.virtual_index().then(function (result) {
+							var [macro, micro] = (result || [0,0]);
 
-					// ways to update?
-					// 1. audio loads or changes
-					// 2. type in the box
-					// 3. blur or focus the box
+							// impose structural conditions on "options".
+							// add new set of tokens that overwrites virtual
+							if (options.tokens) {
+								base.data.storage.virtual = options.tokens.map(function (token) {
+									return {tokens: [token]};
+								});
+							}
 
-					// virtual = [
-					// 	{
-					// 		tokens: [
-					// 			{content: 'hello', type: 'word', focus: true},
-					// 			{content: 'world', type: 'word'},
-					// 			{content: 'breath-noise', type: 'tag'},
-					// 		],
-					// 	},
-					//
-					// ]
-
-					return base.control.setup().then(function () {
-						// 1. add the datum to the virtual
-						// 2. convert virtual into new tokens
-						// 3. for each token, change metadata of rendered
-					});
+							// add to buffer in current state.
+							base.data.storage.buffer[(options.id || base.data.currentId)] = base.data.storage.virtual;
+						});
+					},
+					updateTokensAndDisplay: function () {
+						var virtual = base.data.storage.virtual;
+						base.data.storage.tokens = [];
+						return Promise.ordered(virtual.map(function (virtualEntry, macro) {
+							return function () {
+								return Promise.ordered(virtualEntry.tokens.map(function (token, micro) {
+									return function () {
+										base.data.storage.tokens.push(token);
+										var index = macro + micro;
+										if (index >= base.data.storage.rendered.length) {
+											return base.unit(token).then(function () {
+												content.setChildren([unit]);
+											});
+										} else {
+											var unitId = base.data.storage.rendered[index];
+											return UI.getComponent(unitId).then(function (unit) {
+												return unit.updateUnitMetadata(token);
+											});
+										}
+									}
+								}));
+							}
+						}));
+					},
 				},
 				setup: function () {
 					// render 10 units
