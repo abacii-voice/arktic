@@ -209,6 +209,9 @@ var AccountInterfaces = {
 			}
 			audio.process = function (result) {
 				return Promise.all(Object.keys(result).map(function (key) {
+
+					// Result appears to be drawn from context. Why different format?
+					console.log(result[key]);
 					audio.components.track.buffer[key] = {
 						content: result[key].phrase.content,
 						is_available: true,
