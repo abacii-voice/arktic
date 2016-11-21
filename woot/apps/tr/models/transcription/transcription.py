@@ -42,9 +42,13 @@ class TranscriptionToken(models.Model):
 		if permission.check_user(self.role.user):
 			data.update({
 				'date_created': str(self.date_created),
-				'fragments': {fragment.id: fragment.data(path, permission) for fragment in self.fragments.filter(**path.get_filter('fragments'))},
 				'transcriptions': {transcription.id: transcription.data(path, permission) for transcription in self.transcriptions.filter(**path.get_filter('transcriptions'))},
 			})
+
+			if path.check('fragments'):
+				data.update({
+					'fragments': {fragment.id: fragment.data(path.down('fragments'), permission) for fragment in self.fragments.filter(**path.get_filter('fragments'))},
+				})
 
 		return data
 

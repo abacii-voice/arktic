@@ -772,6 +772,9 @@ var Context = {
 		})).then(function (calculatedPath) {
 			return new Promise(function (resolve, reject) {
 				context_path = calculatedPath.split('.');
+				if (calculatedPath.contains('fragments')) {
+					console.log(calculatedPath, value);
+				}
 				sub = Context.context;
 				if (context_path[0] !== '') {
 					for (i=0; i<context_path.length; i++) {
