@@ -835,6 +835,8 @@ var AccountComponents = {
 									return function () {
 										base.data.storage.tokens.push(token);
 										var index = macro + micro;
+
+										// Must be done in separate loop across rendered.length
 										if (index >= base.data.storage.rendered.length) {
 											return base.unit(token).then(function () {
 												content.setChildren([unit]);
