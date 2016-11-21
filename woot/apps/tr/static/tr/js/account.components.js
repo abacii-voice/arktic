@@ -151,6 +151,7 @@ var AccountComponents = {
 				var _this = audioTrack;
 				// load more and process into buffer
 				return base.path().then(function (tokenPath) {
+					console.log('path');
 					return Context.get(tokenPath, {force: force});
 				}).then(base.process).then(function () {
 					return new Promise(function(resolve, reject) {
@@ -838,7 +839,7 @@ var AccountComponents = {
 
 										// Must be done in separate loop across rendered.length
 										if (index >= base.data.storage.rendered.length) {
-											return base.unit(token).then(function () {
+											return base.unit(token).then(function (unit) {
 												content.setChildren([unit]);
 											});
 										} else {

@@ -204,25 +204,23 @@ var AccountInterfaces = {
 					var [client_id, role_id] = results;
 
 					// return path
-					return 'user.clients.{client_id}.roles.{role_id}.active_transcription_token.fragments'.format({client_id: client_id, role_id: role_id});
+					return 'user.clients.{client_id}.roles.{role_id}.active_transcription_token'.format({client_id: client_id, role_id: role_id});
 				});
 			}
 			audio.process = function (result) {
-				return Promise.all(Object.keys(result).map(function (key) {
-
+				return Promise.all(Object.keys(result.fragments).map(function (key) {
 					// Result appears to be drawn from context. Why different format?
-					console.log(result[key]);
 					audio.components.track.buffer[key] = {
-						content: result[key].phrase.content,
+						content: result.fragments[key].phrase.content,
 						is_available: true,
 						index: Object.keys(audio.components.track.buffer).length,
-						parent: result[key].parent,
-						tokens: Object.keys(result[key].phrase.token_instances).sort(function (a,b) {
-							return result[key].phrase.token_instances[a].index > result[key].phrase.token_instances[b].index ? 1 : -1;
+						parent: result.fragments[key].parent,
+						tokens: Object.keys(result.fragments[key].phrase.token_instances).sort(function (a,b) {
+							return result.fragments[key].phrase.token_instances[a].index > result.fragments[key].phrase.token_instances[b].index ? 1 : -1;
 						}).map(function (tokenKey) {
 							return {
-								'content': result[key].phrase.token_instances[tokenKey].content,
-								'type': result[key].phrase.token_instances[tokenKey].type,
+								'content': result.fragments[key].phrase.token_instances[tokenKey].content,
+								'type': result.fragments[key].phrase.token_instances[tokenKey].type,
 							}
 						}),
 					}
