@@ -55,12 +55,12 @@ class Role(models.Model):
 
 		if self.project is not None and self.type == 'worker' and permission.check_user(self.user):
 			data.update({
-				'active_transcription_token': self.active_transcription_token(force=path.check('active_transcription_token', blank=False)).data(path, permission),
+				'active_transcription_token': self.active_transcription_token(force=path.check('active_transcription_token', blank=False)).data(path.down('active_transcription_token'), permission),
 			})
 
 		if self.project is not None and self.type == 'moderator' and permission.check_user(self.user):
 			data.update({
-				'active_moderation_token': self.active_moderation_token(force=path.check('active_moderation_token', blank=False)).data(path, permission),
+				'active_moderation_token': self.active_moderation_token(force=path.check('active_moderation_token', blank=False)).data(path.down('active_moderation_token'), permission),
 			})
 
 		if self.type == 'moderator' or self.type == 'worker':

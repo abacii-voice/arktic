@@ -151,8 +151,7 @@ var AccountComponents = {
 				var _this = audioTrack;
 				// load more and process into buffer
 				return base.path().then(function (tokenPath) {
-					console.log('path');
-					return Context.get(tokenPath, {force: force});
+					return Context.get(tokenPath, {force: force, overwrite: true});
 				}).then(base.process).then(function () {
 					return new Promise(function(resolve, reject) {
 						resolve(_this.buffer);
@@ -233,6 +232,7 @@ var AccountComponents = {
 					return new Promise(function(resolve, reject) {
 
 						// create new source from current data
+						console.log(current);
 						current.is_playing = true;
 						if (current.source !== undefined) {
 							current.source.disconnect();
