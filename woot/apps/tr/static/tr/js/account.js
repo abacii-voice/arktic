@@ -18,10 +18,34 @@ UI.app('hook', [
 	]);
 }).then(function () {
 	return Promise.all([
-		Active.set('client', '799d79e4-5f55-41e5-b23f-a1566a4a8bff'),
-		Active.set('role', 'a5f402bf-25e9-4194-8916-d1cd5b3dec4f'),
-		Active.set('project', '3e7644eb-f187-4c02-995d-cf2c51fdb9b6'),
-		Permission.set('a5f402bf-25e9-4194-8916-d1cd5b3dec4f'),
+		// client
+		Context.get('clients').then(function (clients) {
+			var clientId = Object.keys(clients).filter(function (key) {
+				return clients[key].is_production;
+			})[0];
+			return Promise.all([
+				Active.set('client', clientId),
+
+				// role
+				Context.get('user.clients.{client}.roles'.format({client: clientId})).then(function (roles) {
+					var roleId = Object.keys(roles).filter(function (key) {
+						return roles[key].type === 'worker';
+					})[0];
+					return Promise.all([
+						// active
+						Active.set('role', roleId),
+
+						// permission
+						Permission.set(roleId),
+
+						// project
+						Context.get('user.clients.{client}.roles.{role}.project'.format({client: clientId, role: roleId})).then(function (project) {
+							return Active.set('project', project);
+						}),
+					]);
+				}),
+			]);
+		}),
 	]).then(function () {
 		// return UI.changeState('client-state');
 		// return UI.changeState('role-state');

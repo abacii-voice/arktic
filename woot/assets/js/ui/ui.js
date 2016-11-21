@@ -708,6 +708,7 @@ var Context = {
 		// force load from the server?
 		var force = (args || {}).force || false;
 		var options = ((args || {}).options || {});
+		var overwrite = ((args || {}).overwrite || false);
 
 		return (path.then !== undefined ? path : new Promise(function(resolve, reject) {
 			resolve(path);
@@ -733,7 +734,7 @@ var Context = {
 		}).then(function (data) {
 			if (data === undefined || force) {
 				return Context.load(path, options).then(function (data) {
-					return Context.set(path, data);
+					return Context.set(path, data, overwrite);
 				});
 			} else {
 				return data;
@@ -766,15 +767,13 @@ var Context = {
 
 	// SET
 	// Sets the value of a path in the store. If the value changes, a request is sent to change this piece of data.
-	set: function (path, value) {
+	set: function (path, value, overwrite) {
+		overwrite = (overwrite || false);
 		return (path.then !== undefined ? path : new Promise(function(resolve, reject) {
 			resolve(path);
 		})).then(function (calculatedPath) {
 			return new Promise(function (resolve, reject) {
 				context_path = calculatedPath.split('.');
-				if (calculatedPath.contains('fragments')) {
-					console.log(calculatedPath, value);
-				}
 				sub = Context.context;
 				if (context_path[0] !== '') {
 					for (i=0; i<context_path.length; i++) {
@@ -785,7 +784,7 @@ var Context = {
 							//
 							// } else {
 							// }
-							if (sub[context_path[i]] !== undefined) {
+							if (sub[context_path[i]] !== undefined && !overwrite) {
 								$.extend(sub[context_path[i]], value);
 							} else {
 								sub[context_path[i]] = value;
