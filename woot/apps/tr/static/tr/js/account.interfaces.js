@@ -211,6 +211,7 @@ var AccountInterfaces = {
 				return Promise.all(Object.keys(result).map(function (key) {
 					audio.components.track.buffer[key] = {
 						content: result[key].phrase.content,
+						is_available: true,
 						index: Object.keys(audio.components.track.buffer).length,
 						parent: result[key].parent,
 						tokens: Object.keys(result[key].phrase.token_instances).sort(function (a,b) {
@@ -546,11 +547,11 @@ var AccountInterfaces = {
 					}
 
 					// return caption action
-					if (caption.isFocussed) {
-						return caption.active.setMetadata(metadata);
-					} else {
-						return Util.ep();
-					}
+					// if (caption.isFocussed) {
+					// 	return caption.active.setMetadata(metadata);
+					// } else {
+					// 	return Util.ep();
+					// }
 				});
 			}
 			autocomplete.search.complete = function () {
