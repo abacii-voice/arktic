@@ -224,6 +224,8 @@ var Components = {
 				return head.setAppearance({html: options.content}).then(function () {
 					if (options.trigger) {
 						return base.input();
+					} else {
+						return base.setMetadata({query: options.content});
 					}
 				});
 			}

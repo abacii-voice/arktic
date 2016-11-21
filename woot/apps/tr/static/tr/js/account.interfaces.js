@@ -225,6 +225,20 @@ var AccountInterfaces = {
 					return Util.ep();
 				}));
 			}
+			audio.components.track.pre.current = function () {
+				var _this = audio.components.track;
+				// get current operation
+				return _this.current().then(function (current) {
+					return new Promise(function(resolve, reject) {
+						audio.components.canvas.data = current.data;
+						audio.components.canvas.duration = current.data.duration;
+						resolve();
+					}).then(function () {
+						// load caption into caption field
+						return caption.control.update.main({tokens: current.tokens, id: current.parent});
+					});
+				});
+			}
 
 			// Autocomplete
 			// LIST
@@ -583,8 +597,15 @@ var AccountInterfaces = {
 			}
 
 			// CAPTION
-			caption.styles = {};
-			caption.unit = function (options) {
+			caption.styles = {
+				word: {
+
+				},
+				tag: {
+
+				},
+			};
+			caption.unit = function (token) {
 				var id = caption.data.idgen();
 				return Promise.all([
 					// base
@@ -627,10 +648,20 @@ var AccountInterfaces = {
 						unitBase.isHidden = true;
 						return unitBase.setAppearance({classes: {add: 'hidden'}});
 					}
-					unitBase.updateUnitMetadata = function (unitDatum) {
+					unitBase.updateUnitMetadata = function (token) {
 						// each datum should contain the type and content of a token
+						if (token) {
+							return Promise.all([
+								unitBase.setAppearance({classes: {add: token.type, remove: (unitBase.unitType || '')}}),
+								unitBase.setContent({content: token.content}),
+							]).then(function () {
+								unitBase.unitType = token.type;
+								return unitBase.show();
+							});
+						} else {
+							return Util.ep();
+						}
 					}
-
 
 					// as search bar
 					unitBase.setMetadata = function (metadata) {
@@ -683,6 +714,7 @@ var AccountInterfaces = {
 					}
 
 					return Promise.all([
+						unitBase.updateUnitMetadata(token),
 						unitBase.components.head.setBindings({
 							'focus': function (_this) {
 								return unitBase.focus();
@@ -748,7 +780,6 @@ var AccountInterfaces = {
 				]),
 
 				// autocomplete
-
 				autocomplete.components.filterButton.setState({
 					stateMap: {
 						'transcription-state': 'transcription-state-filter',
@@ -787,6 +818,17 @@ var AccountInterfaces = {
 						'control-state': {
 							fn: function (_this) {
 								return _this.control.reset();
+							}
+						}
+					},
+				}),
+
+				// caption
+				caption.setState({
+					states: {
+						'transcription-state': {
+							fn: function (_this) {
+								return _this.control.update.main();
 							}
 						}
 					},
