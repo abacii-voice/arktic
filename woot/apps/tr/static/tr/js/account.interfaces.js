@@ -208,8 +208,9 @@ var AccountInterfaces = {
 				});
 			}
 			audio.process = function (result) {
-				return Promise.all(Object.keys(result).map(function (key) {
-					console.log(key);
+				return Promise.all(Object.keys(result).sort(function (a,b) {
+					return result[a].index > result[b].index ? 1 : -1;
+				}).map(function (key) {
 					audio.components.track.buffer[key] = {
 						content: result[key].phrase.content,
 						is_available: true,

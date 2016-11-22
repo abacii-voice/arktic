@@ -232,7 +232,6 @@ var AccountComponents = {
 					return new Promise(function(resolve, reject) {
 
 						// create new source from current data
-						console.log(current);
 						current.is_playing = true;
 						if (current.source !== undefined) {
 							current.source.disconnect();

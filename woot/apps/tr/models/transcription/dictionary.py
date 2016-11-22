@@ -53,7 +53,7 @@ class Dictionary(models.Model):
 			token_primitives = content.rstrip().split(' ')
 			for index, token_primitive in enumerate(token_primitives):
 				type = 'word'
-				if token_primitive[0] in token_types:
+				if token_primitive and token_primitive[0] in token_types:
 					type = token_types[token_primitive[0]]
 					token_primitive = token_primitive[1:]
 
