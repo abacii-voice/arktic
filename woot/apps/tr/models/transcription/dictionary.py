@@ -28,10 +28,14 @@ class Dictionary(models.Model):
 			'total_tokens': str(self.tokens.count()),
 		}
 
-		if True:
+		if path.check('phrases'):
 			data.update({
-				'phrases': self.top_phrases(path, permission, path.get_filter('phrases')),
-				'tokens': self.top_tokens(path, permission, path.get_filter('tokens')),
+				'phrases': self.top_phrases(path.down('phrases'), permission, path.get_filter('phrases')),
+			})
+
+		if path.check('tokens'):
+			data.update({
+				'tokens': self.top_tokens(path.down('tokens'), permission, path.get_filter('tokens')),
 			})
 
 		return data
