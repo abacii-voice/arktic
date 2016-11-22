@@ -69,7 +69,7 @@ class Project(models.Model):
 		Select a single transcription based on several criteria.
 
 		'''
-		transcriptions = self.transcriptions.filter(is_active=True, is_available=True).order_by('content', 'date_created')
+		transcriptions = self.transcriptions.filter(is_active=True, is_available=True).order_by('content__content', 'date_created')
 		if transcriptions.count() > 0:
 			transcription = transcriptions[0]
 			transcription.update_availability()
@@ -84,7 +84,7 @@ class Project(models.Model):
 		Select a single moderation based on several criteria.
 
 		'''
-		moderations = self.moderations.filter(is_active=True, is_available=True).order_by('transcription__phrase__content', 'date_created')
+		moderations = self.moderations.filter(is_active=True, is_available=True).order_by('transcription__content__content', 'date_created')
 		if moderations.count() > 0:
 			moderation = moderations[0]
 			moderation.update_availability()
