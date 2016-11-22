@@ -807,7 +807,7 @@ var AccountComponents = {
 						}).then(function () {
 							return _this.updateTokensAndDisplay();
 						}).then(function () {
-							console.log(base.data.storage.tokens);
+							return _this.hideRemaining();
 						});
 					},
 					updateVirtual: function (options) {
@@ -851,6 +851,14 @@ var AccountComponents = {
 									}
 								}));
 							}
+						}));
+					},
+					hideRemaining: function () {
+						// hide anything that does not contain something to display
+						return Promise.all(base.data.storage.rendered.slice(base.data.storage.virtual.length).map(function (listItemId) {
+							return UI.getComponent(listItemId).then(function (listItem) {
+								return listItem.hide();
+							});
 						}));
 					},
 				},
