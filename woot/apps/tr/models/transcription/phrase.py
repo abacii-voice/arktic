@@ -15,7 +15,6 @@ class Phrase(models.Model):
 
 	# methods
 	def data(self, path, permission):
-		print(path, permission, path.check('token_instances'))
 		data = {
 			'content': self.content,
 		}

@@ -520,7 +520,6 @@ var Components = {
 
 						// Load each target
 						return Promise.all(base.targets.map(function (target) {
-							console.log(target.resolvedPath);
 							return Promise.all([
 								Context.get(target.resolvedPath, {options: {filter: target.filterRequest(base.data.query)}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
 
