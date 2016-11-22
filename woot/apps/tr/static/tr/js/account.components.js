@@ -151,7 +151,6 @@ var AccountComponents = {
 				var _this = audioTrack;
 				// load more and process into buffer
 				return base.path().then(function (tokenPath) {
-					console.log(tokenPath);
 					return Context.get(tokenPath, {force: force, overwrite: true});
 				}).then(base.process).then(function () {
 					return new Promise(function(resolve, reject) {
