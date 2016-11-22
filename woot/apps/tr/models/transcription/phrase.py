@@ -15,14 +15,15 @@ class Phrase(models.Model):
 
 	# methods
 	def data(self, path, permission):
+		print(path, permission, path.check('token_instances'))
 		data = {
 			'content': self.content,
 		}
 
-		if path.check('tokens'):
-			data.update({
-				'token_instances': {token.id: token.data(path, permission) for token in self.tokens.filter(**path.get_filter('token_instances'))},
-			})
+		# if path.check('token_instances'):
+		data.update({
+			'token_instances': {token.id: token.data(path, permission) for token in self.tokens.filter(**path.get_filter('token_instances'))},
+		})
 
 		if permission.is_worker and permission.check_client(self.dictionary.project.production_client):
 			data.update({
