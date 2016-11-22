@@ -30,7 +30,7 @@ class TranscriptionToken(models.Model):
 			for i in range(self.transcription_limit):
 				transcription = self.project.get_transcription()
 				if transcription is not None:
-					self.fragments.create(parent=transcription)
+					self.fragments.create(parent=transcription, index=i)
 
 	def update(self):
 		if self.fragments.filter(is_reconciled=True) == self.transcription_limit:
@@ -122,6 +122,7 @@ class TranscriptionFragment(models.Model):
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	index = models.PositiveIntegerField(default=0)
 	date_created = models.DateTimeField(auto_now_add=True)
 	is_reconciled = models.BooleanField(default=False)
 
@@ -131,6 +132,7 @@ class TranscriptionFragment(models.Model):
 			'date_created': str(self.date_created),
 			'is_reconciled': str(self.is_reconciled),
 			'phrase': self.parent.content.data(path, permission),
+			'index': str(self.index),
 			'parent': self.parent.id,
 		}
 
