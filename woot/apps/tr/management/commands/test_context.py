@@ -27,8 +27,8 @@ class Command(BaseCommand):
 		fltr = {}
 		# path = 'clients.{client}.projects.{project}.transcriptions'.format(client=client.id, project=project.id)
 		# fltr = {'tokens': {'content__startswith': 'p'}}
-		# path = 'clients.ef10b3e8-d1b4-4f0b-bc42-2e7688088aee.projects.6bd2a2b4-4799-4a39-b1b9-15114c4460eb.dictionary.tokens'
-		path = 'user.clients'
+		# path = 'clients.ccdf3456-57ad-43be-8e18-7dd328b251ae.projects.a41ce6b6-d9fa-4ab7-892b-2b629b8e48ac.dictionary.phrases'
+		path = 'user.clients.ccdf3456-57ad-43be-8e18-7dd328b251ae.roles.7ecdc5d5-502d-4258-af5c-e5a6ef9e10fb.active_transcription_token.fragments'
 		# path = 'clients'
 
 		# request data using path
