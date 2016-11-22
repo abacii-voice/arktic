@@ -349,9 +349,18 @@ var AccountInterfaces = {
 						return new Promise(function(resolve, reject) {
 							var results = Object.keys(data).map(function (key) {
 								var phrase = data[key];
+
+								var main = Object.keys(phrase.token_instances).sort(function (a,b) {
+									return phrase.token_instances[a].index > phrase.token_instances[b].index ? 1 : -1;
+								}).map(function (key) {
+									return phrase.token_instances[key];
+								}).reduce(function (whole, part, index, array) {
+									return '{} {}'.format(whole, (part.type === 'tag' ? '' : part.content));
+								}, ''); // set initial value to be empty string
+
 								return {
 									id: key,
-									main: phrase.content,
+									main: $.trim(main),
 									rule: 'phrases',
 								}
 							});
