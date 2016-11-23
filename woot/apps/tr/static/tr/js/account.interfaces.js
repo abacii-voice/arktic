@@ -360,7 +360,7 @@ var AccountInterfaces = {
 
 								return {
 									id: key,
-									main: $.trim(main),
+									main: main.trim(),
 									rule: 'phrases',
 								}
 							});
