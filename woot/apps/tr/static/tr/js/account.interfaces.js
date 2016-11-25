@@ -168,7 +168,7 @@ var AccountInterfaces = {
 			Mousetrap.bind('backspace', function (event) {
 				Promise.all([
 					autocomplete.behaviours.backspace(),
-
+					// caption.behaviours.backspace(),
 				]);
 			});
 
@@ -397,7 +397,7 @@ var AccountInterfaces = {
 			autocomplete.unitStyle.base = function () {
 				return new Promise(function(resolve, reject) {
 					// base class
-					jss.set('#{id} .base'.format({id: base.id}), {
+					jss.set('#{id} .base'.format({id: autocomplete.id}), {
 						'height': '30px',
 						'width': '100%',
 						'padding': '0px',
@@ -405,7 +405,7 @@ var AccountInterfaces = {
 						'text-align': 'left',
 						'border-bottom': '1px solid #ccc',
 					});
-					jss.set('#{id} .base.active'.format({id: base.id}), {
+					jss.set('#{id} .base.active'.format({id: autocomplete.id}), {
 						'background-color': 'rgba(255,255,255,0.1)'
 					});
 					resolve();
@@ -557,12 +557,13 @@ var AccountInterfaces = {
 						_this.isComplete = false;
 					}
 
+					// Should trigger caption set metadata to check for phrase and other expansions.
 					// return caption action
-					// if (caption.isFocussed) {
-					// 	return caption.active.setMetadata(metadata);
-					// } else {
-					// 	return Util.ep();
-					// }
+					if (caption.isFocussed) {
+						return caption.control.input(metadata);
+					} else {
+						return Util.ep();
+					}
 				});
 			}
 			autocomplete.search.complete = function () {
@@ -609,14 +610,31 @@ var AccountInterfaces = {
 			}
 
 			// CAPTION
-			caption.styles = {
-				word: {
+			caption.styles = function () {
+				// word
+				jss.set('#{id} .words'.format({id: caption.id}), {
+					'color': '#ccc',
+				});
+				jss.set('#{id} .words.active'.format({id: caption.id}), {
+					'color': '#eee',
+				});
 
-				},
-				tag: {
+				// tag
+				jss.set('#{id} .tags'.format({id: caption.id}), {
+					'color': 'rgba(255,255,0,0.4)',
+				});
+				jss.set('#{id} .tags.active'.format({id: caption.id}), {
+					'color': '05DA01',
+				});
 
-				},
-			};
+				// ghost
+				jss.set('#{id} .ghost'.format({id: caption.id}), {
+					'opacity': '0.5',
+					'mouseevents': 'none', // It's not this, but find out what it is.
+				});
+
+				return Util.ep();
+			}
 			caption.unit = function (token) {
 				var id = caption.data.idgen();
 				return Promise.all([
@@ -641,10 +659,10 @@ var AccountInterfaces = {
 
 					// as caption unit
 					unitBase.activate = function () {
-						return Util.ep();
+						return unitBase.setAppearance({classes: {add: 'active'}});
 					}
 					unitBase.deactivate = function () {
-						return Util.ep();
+						return unitBase.setAppearance({classes: {remove: 'active'}});
 					}
 					unitBase.select = function () {
 
@@ -664,7 +682,7 @@ var AccountInterfaces = {
 						// each datum should contain the type and content of a token
 						if (token) {
 							return Promise.all([
-								unitBase.setAppearance({classes: {add: token.type, remove: (unitBase.unitType || '')}}),
+								unitBase.setType({type: token.type}),
 								unitBase.setContent({content: token.content}),
 							]).then(function () {
 								unitBase.unitType = token.type;
@@ -673,6 +691,13 @@ var AccountInterfaces = {
 						} else {
 							return Util.ep();
 						}
+					}
+					unitBase.setType = function (options) {
+						options.type = (options.type || unitBase.unitType);
+						return unitBase.setAppearance({classes: {add: options.type, remove: (unitBase.unitType || '')}}).then(function () {
+							unitBase.unitType = options.type;
+							return Util.ep();
+						});
 					}
 
 					// as search bar
@@ -689,6 +714,10 @@ var AccountInterfaces = {
 							// decide to split based on number of items and space character.
 							var noData = autocomplete.data.storage.virtual.list.length === 0;
 							var spaceEnd = unitBase.metadata.query.slice(-1) === ' ';
+							return Util.ep();
+						}).then(function () {
+							// set metadata
+							return unitBase.setType({type: metadata.type});
 						});
 					}
 					unitBase.input = function () {
@@ -719,6 +748,8 @@ var AccountInterfaces = {
 							}
 							return unitBase.getContent().then(function (content) {
 								return unitBase.components.tail.setAppearance({html: (content || unitBase.placeholder)});
+							}).then(function () {
+								return unitBase.deactivate();
 							});
 						} else {
 							return Util.ep();

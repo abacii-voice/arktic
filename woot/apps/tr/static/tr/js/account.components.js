@@ -800,6 +800,8 @@ var AccountComponents = {
 			base.control = {
 				update: {
 					main: function (options) {
+						options = (options || {});
+						base.data.currentId = (options.id || base.data.currentId);
 						var _this = base.control.update;
 						return base.control.setup().then(function () {
 							return _this.updateVirtual(options);
@@ -873,7 +875,10 @@ var AccountComponents = {
 									});
 								});
 							}
-						}));
+						})).then(function () {
+							// set styles
+							return base.styles();
+						});
 					} else {
 						return Util.ep();
 					}
@@ -892,17 +897,17 @@ var AccountComponents = {
 							return Util.ep();
 						});
 					} else {
-						options.index = options === 'last' ? base.children.length - 1 : options.index;
+						options.index = options === 'last' ? content.children.length - 1 : options.index;
 
 						// changes
 						var previousIndex = base.currentIndex;
 						base.data.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.data.currentIndex || 0) + (base.data.currentIndex !== undefined ? (options.increment || 0) : 0)));
 
 						// boundary conditions
-						base.data.currentIndex = base.data.currentIndex > base.children.length - 1 ? base.children.length - 1 : (base.data.currentIndex < 0 ? 0 : base.data.currentIndex);
+						base.data.currentIndex = base.data.currentIndex > content.children.length - 1 ? content.children.length - 1 : (base.data.currentIndex < 0 ? 0 : base.data.currentIndex);
 
 						if (base.data.currentIndex !== previousIndex) {
-							base.active = base.children[base.data.currentIndex];
+							base.active = content.children[base.data.currentIndex];
 							return base.active.activate();
 						} else {
 							return Util.ep();
@@ -912,10 +917,18 @@ var AccountComponents = {
 				delete: function (options) {
 
 				},
-				getGhostQuery: function () {
+				input: function (metadata) {
+					// receive a new set of metadata
+
+					// what do I need to know?
+					// 1. The type, content, and index of each incoming token
+					// 2. The id of the current transcription
+					// 3. The id of the incoming phrase
+					// 4.
 
 				},
-				unGhostAll: function () {
+				switch: function () {
+					// change to a new transcription
 
 				},
 			}
@@ -961,7 +974,7 @@ var AccountComponents = {
 			return Promise.all([
 				base.setBindings({
 					'click': function (_this) {
-						return _this.control.update();
+
 					},
 				}),
 			]).then(function () {

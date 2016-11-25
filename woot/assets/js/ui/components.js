@@ -675,12 +675,14 @@ var Components = {
 							// MAYBE RESET THE FILTER ON ENTER FOR THE AUTOCOMPLETE
 
 							var complete = '';
+							var type = '';
 							if (!base.data.storage.virtual.list.length) {
 								base.currentIndex = undefined;
 							} else {
 								complete = (base.data.storage.virtual.list[base.currentIndex] || {}).main;
+								type = (base.data.storage.virtual.list[base.currentIndex] || {}).rule;
 							}
-							return base.search.setMetadata({query: query, complete: complete});
+							return base.search.setMetadata({query: query, complete: complete, type: type});
 						},
 					},
 				},
@@ -858,7 +860,7 @@ var Components = {
 						});
 					},
 					final: function (datum, complete) {
-						return base.search.setMetadata({complete: complete});
+						return base.search.setMetadata({complete: complete, type: datum.rule});
 					},
 				},
 				deactivate: function () {

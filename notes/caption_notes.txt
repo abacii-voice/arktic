@@ -20,3 +20,9 @@ Token actions
 		Click
 
 Autocomplete not accepting spaces in completion
+
+____
+Any input should be the same
+
+Load -> input
+Type -> input
