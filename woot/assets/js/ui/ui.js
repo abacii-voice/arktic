@@ -219,9 +219,13 @@ var UI = {
 				var addClasses = appearance.classes ? (appearance.classes.add ? ($.isArray(appearance.classes.add) ? appearance.classes.add : [appearance.classes.add]) : (appearance.classes.remove ? [] : appearance.classes)) : [];
 				var removeClasses = appearance.classes ? (appearance.classes.remove ? ($.isArray(appearance.classes.remove) ? appearance.classes.remove : [appearance.classes.remove]) : []) : [];
 				var _this = this;
-				this.classes = this.classes.concat(addClasses.filter(function (cls) {
-					return _this.classes.indexOf(cls) === -1;
-				}));
+
+				if (addClasses) {
+					this.classes = this.classes.concat(addClasses.filter(function (cls) {
+						return _this.classes.indexOf(cls) === -1;
+					}));
+				}
+
 				this.classes = this.classes.filter(function (cls) {
 					return removeClasses.indexOf(cls) === -1;
 				});
