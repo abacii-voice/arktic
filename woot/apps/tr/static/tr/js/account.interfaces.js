@@ -260,10 +260,10 @@ var AccountInterfaces = {
 							var results = Object.keys(data).filter(function (key) {
 								return data[key].type === 'word';
 							}).map(function (key) {
-								var token = data[key];
+								var word = data[key];
 								return {
 									id: key,
-									main: token.content,
+									main: word.content,
 									rule: 'words',
 								}
 							});
@@ -271,9 +271,7 @@ var AccountInterfaces = {
 						});
 					},
 					filterRequest: function (query) {
-						var dict = {};
-						dict['tokens'] = {'content__startswith': query, 'type': 'word'};
-						return dict;
+						return {tokens: {'content__startswith': query, 'type': 'word'}};
 					},
 					filter: {
 						default: true,
@@ -299,10 +297,10 @@ var AccountInterfaces = {
 							var results = Object.keys(data).filter(function (key) {
 								return data[key].type === 'tag';
 							}).map(function (key) {
-								var token = data[key];
+								var tag = data[key];
 								return {
 									id: key,
-									main: token.content,
+									main: tag.content,
 									rule: 'tags',
 								}
 							});
@@ -350,18 +348,23 @@ var AccountInterfaces = {
 							var results = Object.keys(data).map(function (key) {
 								var phrase = data[key];
 
-								var main = Object.keys(phrase.token_instances).sort(function (a,b) {
+								var sortedTokens = Object.keys(phrase.token_instances).sort(function (a,b) {
 									return phrase.token_instances[a].index > phrase.token_instances[b].index ? 1 : -1;
 								}).map(function (key) {
 									return phrase.token_instances[key];
-								}).reduce(function (whole, part, index, array) {
-									return '{} {}'.format(whole, (part.type === 'tag' ? '' : part.content));
+								}).filter(function (token) {
+									return token.type !== 'tag'; // do not include tags
+								});
+
+								var main = sortedTokens.reduce(function (whole, part) {
+									return '{} {}'.format(whole, part.content);
 								}, ''); // set initial value to be empty string
 
 								return {
 									id: key,
 									main: main.trim(),
 									rule: 'phrases',
+									tokens: sortedTokens,
 								}
 							});
 							resolve(results);
@@ -544,6 +547,25 @@ var AccountInterfaces = {
 					});
 				});
 			}
+			autocomplete.data.display.render.setMetadata = function () {
+				var _this = autocomplete;
+				var query = _this.data.query; // query is set no matter the status of virtual
+
+				// MAYBE RESET THE FILTER ON ENTER FOR THE AUTOCOMPLETE
+
+				var complete = '';
+				var type = '';
+				var tokens = []; // account for phrases
+				if (!_this.data.storage.virtual.list.length) {
+					_this.currentIndex = undefined;
+				} else {
+					complete = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
+					type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
+					// console.log(_this.data.storage.virtual.list[_this.currentIndex]);
+					tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
+				}
+				return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
+			}
 			autocomplete.search.setMetadata = function (metadata) {
 				var _this = autocomplete.search;
 				metadata = (metadata || {});
@@ -551,6 +573,8 @@ var AccountInterfaces = {
 				_this.metadata.query = metadata.query !== undefined ? metadata.query : (_this.metadata.query || '');
 				_this.metadata.complete = metadata.complete !== undefined ? metadata.complete : _this.metadata.query;
 				_this.metadata.combined = _this.metadata.query + _this.metadata.complete.substring(_this.metadata.query.length);
+				_this.metadata.tokens = (metadata.tokens || []);
+				_this.metadata.type = (metadata.type || 'words');
 				return _this.components.tail.setAppearance({html: ((_this.isComplete ? _this.metadata.complete : '') || _this.metadata.combined || _this.metadata.query || _this.filterString || _this.placeholder || '')}).then(function () {
 					// reset complete
 					if (_this.isComplete && _this.metadata.query !== _this.metadata.complete) {
@@ -559,8 +583,8 @@ var AccountInterfaces = {
 
 					// Should trigger caption set metadata to check for phrase and other expansions.
 					// return caption action
-					if (caption.isFocussed) {
-						return caption.control.input(metadata);
+					if (caption.isFocussed || true) {
+						return caption.control.input(_this.metadata);
 					} else {
 						return Util.ep();
 					}
