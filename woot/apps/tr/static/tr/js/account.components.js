@@ -856,7 +856,7 @@ var AccountComponents = {
 					},
 					hideRemaining: function () {
 						// hide anything that does not contain something to display
-						return Promise.all(base.data.storage.rendered.slice(base.data.storage.virtual.length).map(function (listItemId) {
+						return Promise.all(base.data.storage.rendered.slice(base.data.storage.tokens.length).map(function (listItemId) {
 							return UI.getComponent(listItemId).then(function (listItem) {
 								return listItem.hide();
 							});
@@ -918,17 +918,38 @@ var AccountComponents = {
 
 				},
 				input: function (metadata) {
-					// receive a new set of metadata
+					// receive a new input
+					// 1. single token or tokens of phrase with type and content (put into phrase strcture if single)
+					var incoming = metadata;
+					if (!incoming.tokens.length) {
+						incoming.tokens = [{content: incoming.complete, type: incoming.type, index: 0}];
+					}
 
-					// what do I need to know?
-					// 1. The type, content, and index of each incoming token
-					// 2. The id of the current transcription
-					// 3. The id of the incoming phrase
-					// 4.
+					incoming.queryTokens = metadata.query.split(' ');
+					incoming.combinedTokens = metadata.complete.split(' ').map(function (fragment, index) {
+						if (index < incoming.queryTokens.length) {
+							return incoming.queryTokens[index] + fragment.substring(incoming.queryTokens[index].length);
+						} else {
+							return fragment;
+						}
+					});
+
+					console.log(incoming);
+
+					// 2. splice into place in the phrase list (index must be active token)
+					// [phrase, phrase, phrase]
+					// [{tokens: []}, {tokens: []}, {tokens: []}]
+					// -> [{content, type}, {content, type}, {content, type}]
+
+					// 3. generate token list from phrase list
+					//
+
 
 				},
-				switch: function () {
+				switch: function (metadata) {
 					// change to a new transcription
+					// 1. tokens of phrase with type and content
+					// 2. id of transcription
 
 				},
 			}

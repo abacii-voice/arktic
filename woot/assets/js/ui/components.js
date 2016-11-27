@@ -672,8 +672,6 @@ var Components = {
 						setMetadata: function () {
 							var query = base.data.query; // query is set no matter the status of virtual
 
-							// MAYBE RESET THE FILTER ON ENTER FOR THE AUTOCOMPLETE
-
 							var complete = '';
 							var type = '';
 							if (!base.data.storage.virtual.list.length) {
@@ -852,15 +850,10 @@ var Components = {
 							return UI.getComponent(base.data.storage.virtual.rendered[base.currentIndex]).then(function (activeListItem) {
 								base.active = activeListItem;
 								return base.active.activate().then(function () {
-									var datum = base.data.storage.virtual.list[base.currentIndex];
-									var complete = (datum || {}).main;
-									return base.control.setActive.final(datum, complete);
+									return base.data.display.render.setMetadata();
 								});
 							})
 						});
-					},
-					final: function (datum, complete) {
-						return base.search.setMetadata({complete: complete, type: datum.rule});
 					},
 				},
 				deactivate: function () {
