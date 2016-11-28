@@ -220,12 +220,12 @@ var Components = {
 			base.getContent = function () {
 				return Util.ep(head.model().text());
 			}
-			base.setContent = function (options) {
-				return head.setAppearance({html: options.content}).then(function () {
-					if (options.trigger) {
+			base.setContent = function (metadata) {
+				return head.setAppearance({html: metadata.query}).then(function () {
+					if (metadata.trigger) {
 						return base.input();
 					} else {
-						return base.setMetadata({query: options.content});
+						return base.setMetadata(metadata);
 					}
 				});
 			}
