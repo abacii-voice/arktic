@@ -743,7 +743,7 @@ var AccountInterfaces = {
 					}
 					unitBase.input = function () {
 						return unitBase.getContent().then(function (content) {
-							return autocomplete.search.setContent({content: content, trigger: true});
+							return autocomplete.search.setContent({query: content, trigger: true});
 						});
 					}
 					unitBase.focus = function (position) {

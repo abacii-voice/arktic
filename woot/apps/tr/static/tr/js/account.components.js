@@ -937,9 +937,8 @@ var AccountComponents = {
 						return base.data.virtualIndex().then(function (virtualIndex) {
 							var [macro, micro] = virtualIndex;
 
-							// replace virtual and tokens
+							// replace virtual
 							base.data.storage.virtual.splice(macro, 1, incoming);
-							base.data.storage.tokens.splice();
 
 							// convert to tokens
 							base.data.storage.tokens = [];
@@ -954,6 +953,8 @@ var AccountComponents = {
 									token.query = (virtualEntry.queryTokens[j] || '');
 									token.combined = (virtualEntry.combinedTokens[j] || '');
 									token.complete = (virtualEntry.completeTokens[j] || '');
+									token.macro = macro;
+									token.micro = micro;
 
 									// set focus
 									if ((j < virtualEntry.tokens.length - 1 && virtualEntry.queryTokens[j+1] === '') || j === virtualEntry.tokens.length - 1) {
@@ -971,15 +972,22 @@ var AccountComponents = {
 						return Promise.all(base.data.storage.tokens.slice(0, base.data.storage.rendered.length).map(function (token, index) {
 							var unitId = base.data.storage.rendered[index];
 							return UI.getComponent(unitId).then(function (unit) {
-								return unit.updateUnitMetadata(token);
+								return Promise.all([
+									unit.updateUnitMetadata(token),
+									unit.updateBindings(),
+								]);
 							});
 						})).then(function () {
 							// add more if needed
 							return Promise.ordered(base.data.storage.tokens.slice(base.data.storage.rendered.length, base.data.storage.tokens.length).map(function (token, index) {
 								return function () {
+									var virtual = base.data.storage.virtual[token.macro];
+									var focus = token.micro === 0;
 									return base.unit(token).then(function (unit) {
 										base.data.storage.rendered.push(unit.id);
-										return content.setChildren([unit]);
+										return unit.setBindings().then(function () {
+											return content.setChildren([unit]);
+										});
 									});
 								}
 							}));
