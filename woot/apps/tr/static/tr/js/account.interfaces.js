@@ -238,7 +238,7 @@ var AccountInterfaces = {
 						resolve();
 					}).then(function () {
 						// load caption into caption field
-						return caption.control.update.main({tokens: current.tokens, id: current.parent});
+						return caption.control.switch({tokens: current.tokens, id: current.parent});
 					});
 				});
 			}

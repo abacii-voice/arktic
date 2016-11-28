@@ -934,7 +934,7 @@ var AccountComponents = {
 						}
 					});
 
-					console.log(incoming);
+					// console.log(incoming);
 
 					// 2. splice into place in the phrase list (index must be active token)
 					// [phrase, phrase, phrase]
@@ -950,6 +950,10 @@ var AccountComponents = {
 					// change to a new transcription
 					// 1. tokens of phrase with type and content
 					// 2. id of transcription
+					console.log(metadata);
+
+					// delete current content
+					// then do input on the new data
 
 				},
 			}
