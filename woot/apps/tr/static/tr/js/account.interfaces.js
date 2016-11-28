@@ -238,7 +238,7 @@ var AccountInterfaces = {
 						resolve();
 					}).then(function () {
 						// load caption into caption field
-						return caption.control.switch({tokens: current.tokens, id: current.parent});
+						return caption.control.input.switch({tokens: current.tokens, id: current.parent});
 					});
 				});
 			}
@@ -583,7 +583,7 @@ var AccountInterfaces = {
 
 					// Should trigger caption set metadata to check for phrase and other expansions.
 					// return caption action
-					if (caption.isFocussed || true) {
+					if (caption.isFocussed) {
 						return caption.control.input(_this.metadata);
 					} else {
 						return Util.ep();
@@ -654,7 +654,7 @@ var AccountInterfaces = {
 				// ghost
 				jss.set('#{id} .ghost'.format({id: caption.id}), {
 					'opacity': '0.5',
-					'mouseevents': 'none', // It's not this, but find out what it is.
+					'pointer-events': 'none', // It's not this, but find out what it is.
 				});
 
 				return Util.ep();
@@ -707,11 +707,8 @@ var AccountInterfaces = {
 						if (token) {
 							return Promise.all([
 								unitBase.setType({type: token.type}),
-								unitBase.setContent({content: token.content}),
-							]).then(function () {
-								unitBase.unitType = token.type;
-								return unitBase.show();
-							});
+								unitBase.setContent(token),
+							]);
 						} else {
 							return Util.ep();
 						}
@@ -890,14 +887,14 @@ var AccountInterfaces = {
 					},
 				}),
 
-				// caption
+				// Caption initialisation
 				caption.setState({
 					states: {
 						'transcription-state': {
 							fn: function (_this) {
-								return _this.control.update.main();
-							}
-						}
+								return _this.control.input.switch();
+							},
+						},
 					},
 				}),
 
