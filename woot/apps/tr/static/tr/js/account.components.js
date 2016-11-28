@@ -983,8 +983,13 @@ var AccountComponents = {
 								return function () {
 									var virtual = base.data.storage.virtual[token.macro];
 									var focus = token.micro === 0;
+									var focusToken = 
 									return base.unit(token).then(function (unit) {
 										base.data.storage.rendered.push(unit.id);
+										var bindings;
+										if (!focus) {
+
+										}
 										return unit.setBindings().then(function () {
 											return content.setChildren([unit]);
 										});
