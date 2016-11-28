@@ -781,9 +781,9 @@ var AccountComponents = {
 				idgen: function () {
 					return '{base}-{id}'.format({base: base.id, id: Util.makeid()});
 				},
-				virtual_index: function () {
+				virtualIndex: function () {
 					var sum = 0;
-					var result;
+					var result = [0, 0];
 					var _this = base.data.storage.virtual;
 					for (var i=0; i<_this.length; i++) {
 						sum += _this[i].tokens.length;
@@ -799,35 +799,6 @@ var AccountComponents = {
 			// control
 			base.control = {
 				update: {
-					main: function (options) {
-						options = (options || {});
-						base.data.currentId = (options.id || base.data.currentId);
-						var _this = base.control.update;
-						return base.control.setup().then(function () {
-							return _this.updateVirtual(options);
-						}).then(function () {
-							return _this.updateTokensAndDisplay();
-						}).then(function () {
-							return _this.hideRemaining();
-						});
-					},
-					updateVirtual: function (options) {
-						options = (options || {});
-						return base.data.virtual_index().then(function (result) {
-							var [macro, micro] = (result || [0,0]);
-
-							// impose structural conditions on "options".
-							// add new set of tokens that overwrites virtual
-							if (options.tokens) {
-								base.data.storage.virtual = options.tokens.map(function (token) {
-									return {tokens: [token]};
-								});
-							}
-
-							// add to buffer in current state.
-							base.data.storage.buffer[(options.id || base.data.currentId)] = base.data.storage.virtual;
-						});
-					},
 					updateTokensAndDisplay: function () {
 						var virtual = base.data.storage.virtual;
 						base.data.storage.tokens = [];
@@ -835,6 +806,7 @@ var AccountComponents = {
 							return function () {
 								return Promise.ordered(virtualEntry.tokens.map(function (token, micro) {
 									return function () {
+										console.log(token);
 										base.data.storage.tokens.push(token);
 										var index = macro + micro;
 
@@ -914,47 +886,112 @@ var AccountComponents = {
 						}
 					}
 				},
-				delete: function (options) {
 
-				},
-				input: function (metadata) {
-					// receive a new input
-					// 1. single token or tokens of phrase with type and content (put into phrase strcture if single)
-					var incoming = metadata;
-					if (!incoming.tokens.length) {
-						incoming.tokens = [{content: incoming.complete, type: incoming.type, index: 0}];
-					}
+				input: {
+					switch: function (metadata) {
+						metadata = (metadata || base.data.storage.virtual[0]);
+						// change to a new transcription
+						// 1. tokens of phrase with type and content
+						// 2. id of transcription
+						base.data.currentId = metadata.id;
 
-					incoming.queryTokens = metadata.query.split(' ');
-					incoming.combinedTokens = metadata.complete.split(' ').map(function (fragment, index) {
-						if (index < incoming.queryTokens.length) {
-							return incoming.queryTokens[index] + fragment.substring(incoming.queryTokens[index].length);
-						} else {
-							return fragment;
+						// delete current content
+						base.data.currentIndex = 0;
+						base.data.storage.virtual = [];
+
+						// modify metadata
+						metadata.complete = metadata.tokens.reduce(function (whole, part) {
+							return '{whole} {part}'.format({whole: whole, part: part.content});
+						}, '');
+						metadata.query = metadata.complete;
+
+						// then do input on the new data
+						return base.control.input.main(metadata);
+					},
+					main: function (metadata) {
+						// 2. splice into place in the phrase list (index must be active token)
+						return base.control.setup().then(function () {
+							return base.control.input.metadata(metadata);
+						}).then(function () {
+							return base.control.input.display();
+						}).then(function () {
+							return base.control.input.showActiveAndHideRemaining();
+						});
+					},
+					metadata: function (metadata) {
+						var incoming = metadata;
+						if (!incoming.tokens.length) {
+							incoming.tokens = [{content: incoming.complete, type: incoming.type, index: 0}];
 						}
-					});
 
-					// console.log(incoming);
+						incoming.queryTokens = metadata.query.slice(0,10).trim().split(' ');
+						incoming.completeTokens = metadata.complete.trim().split(' ');
+						incoming.combinedTokens = incoming.completeTokens.map(function (fragment, index) {
+							if (index < incoming.queryTokens.length) {
+								return incoming.queryTokens[index] + fragment.substring(incoming.queryTokens[index].length);
+							} else {
+								return fragment;
+							}
+						});
 
-					// 2. splice into place in the phrase list (index must be active token)
-					// [phrase, phrase, phrase]
-					// [{tokens: []}, {tokens: []}, {tokens: []}]
-					// -> [{content, type}, {content, type}, {content, type}]
+						return base.data.virtualIndex().then(function (virtualIndex) {
+							var [macro, micro] = virtualIndex;
 
-					// 3. generate token list from phrase list
-					//
+							// replace virtual and tokens
+							base.data.storage.virtual.splice(macro, 1, incoming);
+							base.data.storage.tokens.splice();
 
+							// convert to tokens
+							base.data.storage.tokens = [];
 
-				},
-				switch: function (metadata) {
-					// change to a new transcription
-					// 1. tokens of phrase with type and content
-					// 2. id of transcription
-					console.log(metadata);
+							var i, j;
+							for (i=0; i<base.data.storage.virtual.length; i++) {
+								var virtualEntry = base.data.storage.virtual[i];
+								for (j=0; j<virtualEntry.tokens.length; j++) {
+									var token = virtualEntry.tokens[j];
 
-					// delete current content
-					// then do input on the new data
+									// metadata for individual token
+									token.query = (virtualEntry.queryTokens[j] || '');
+									token.combined = (virtualEntry.combinedTokens[j] || '');
+									token.complete = (virtualEntry.completeTokens[j] || '');
 
+									// set focus
+									if ((j < virtualEntry.tokens.length - 1 && virtualEntry.queryTokens[j+1] === '') || j === virtualEntry.tokens.length - 1) {
+										virtualEntry.focus = j;
+									}
+
+									base.data.storage.tokens.push(token);
+								}
+							}
+							return Util.ep();
+						});
+					},
+					display: function () {
+						// portion of rendered array smaller than tokens
+						return Promise.all(base.data.storage.tokens.slice(0, base.data.storage.rendered.length).map(function (token, index) {
+							var unitId = base.data.storage.rendered[index];
+							return UI.getComponent(unitId).then(function (unit) {
+								return unit.updateUnitMetadata(token);
+							});
+						})).then(function () {
+							// add more if needed
+							return Promise.ordered(base.data.storage.tokens.slice(base.data.storage.rendered.length, base.data.storage.tokens.length).map(function (token, index) {
+								return function () {
+									return base.unit(token).then(function (unit) {
+										base.data.storage.rendered.push(unit.id);
+										return content.setChildren([unit]);
+									});
+								}
+							}));
+						});
+					},
+					showActiveAndHideRemaining: function () {
+						return Promise.all(base.data.storage.rendered.map(function (listItemId, index) {
+							return UI.getComponent(listItemId).then(function (listItem) {
+								return (index >= base.data.storage.tokens.length ? listItem.hide : listItem.show)();
+							});
+						}));
+					},
 				},
 			}
 
