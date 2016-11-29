@@ -584,7 +584,7 @@ var AccountInterfaces = {
 					// Should trigger caption set metadata to check for phrase and other expansions.
 					// return caption action
 					if (caption.isFocussed) {
-						return caption.control.input(_this.metadata);
+						// return caption.control.input.main(_this.metadata);
 					} else {
 						return Util.ep();
 					}
@@ -720,6 +720,15 @@ var AccountInterfaces = {
 							return Util.ep();
 						});
 					}
+					unitBase.updateBindings = function (focusUnitId) {
+						return unitBase.setBindings({
+							'click': function (_this) {
+								return UI.getComponent(focusUnitId).then(function (focusUnit) {
+									return focusUnit.focus('end');
+								});
+							},
+						});
+					}
 
 					// as search bar
 					unitBase.setMetadata = function (metadata) {
@@ -732,16 +741,13 @@ var AccountInterfaces = {
 							unitBase.isComplete = false;
 							return Util.ep();
 						}).then(function () {
-							// decide to split based on number of items and space character.
-							var noData = autocomplete.data.storage.virtual.list.length === 0;
-							var spaceEnd = unitBase.metadata.query.slice(-1) === ' ';
-							return Util.ep();
-						}).then(function () {
 							// set metadata
 							return unitBase.setType({type: metadata.type});
 						});
 					}
 					unitBase.input = function () {
+
+						// NOT UNITBASE CONTENT: virtual content
 						return unitBase.getContent().then(function (content) {
 							return autocomplete.search.setContent({query: content, trigger: true});
 						});
