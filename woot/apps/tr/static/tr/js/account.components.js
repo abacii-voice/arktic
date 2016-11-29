@@ -882,6 +882,8 @@ var AccountComponents = {
 
 						// then do input on the new data
 						return base.control.input.main(metadata);
+
+						// WHEN READY, convert to individual phrase group for each word. Leave now for phrase testing.
 					},
 					main: function (metadata) {
 						// 2. splice into place in the phrase list (index must be active token)
@@ -899,9 +901,11 @@ var AccountComponents = {
 							incoming.tokens = [{content: incoming.complete, type: incoming.type, index: 0}];
 						}
 
-						incoming.queryTokens = metadata.query.slice(0,10).trim().split(' ');
+						incoming.complete = metadata.complete.trim()
+						incoming.query = metadata.query.trim();
+						incoming.queryTokens = incoming.query.split(' ');
 						incoming.focus = incoming.queryTokens.length - 1; // the index of the last token with a query
-						incoming.completeTokens = metadata.complete.trim().split(' ');
+						incoming.completeTokens = incoming.complete.split(' ');
 						incoming.combinedTokens = incoming.completeTokens.map(function (fragment, index) {
 							if (index < incoming.queryTokens.length) {
 								return incoming.queryTokens[index] + fragment.substring(incoming.queryTokens[index].length);
