@@ -746,10 +746,14 @@ var AccountInterfaces = {
 						});
 					}
 					unitBase.input = function () {
-
-						// NOT UNITBASE CONTENT: virtual content
-						return unitBase.getContent().then(function (content) {
-							return autocomplete.search.setContent({query: content, trigger: true});
+						return unitBase.getContent().then(function (unitContent) {
+							return caption.data.virtualIndex().then(function (virtualIndex) {
+								var [macro, micro] = virtualIndex;
+								var virtual = caption.data.storage.virtual[macro];
+								virtual.queryTokens[micro] = unitContent;
+								virtual.query = virtual.queryTokens.join(' ').trim();
+								return autocomplete.search.setContent({query: virtual.query, trigger: true});
+							});
 						});
 					}
 					unitBase.focus = function (position) {
