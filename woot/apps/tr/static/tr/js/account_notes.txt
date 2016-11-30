@@ -52,3 +52,9 @@ Thinking about input behaviours
 
 	b. list
 		up, down, click
+
+
+TODO:
+1. add virtual data to each unit as property for easy access
+2. apply same Promise.all to list items for speed (replicate method used for caption)
+3. 
