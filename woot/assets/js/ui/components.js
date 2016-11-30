@@ -191,12 +191,17 @@ var Components = {
 			}
 			base.complete = function () {
 				base.completeQuery = ((base.metadata || {}).complete || '');
-				base.isComplete = true;
-				return tail.setAppearance({html: base.completeQuery}).then(function () {
-					return head.setAppearance({html: base.completeQuery});
-				}).then(function () {
-					return base.setCaretPosition('end');
-				});
+				if (base.completeQuery !== base.metadata.query) {
+					base.isComplete = true;
+					base.metadata.query = base.completeQuery;
+					return tail.setAppearance({html: base.completeQuery}).then(function () {
+						return head.setAppearance({html: base.completeQuery});
+					}).then(function () {
+						return base.setCaretPosition('end');
+					});
+				} else {
+					return Util.ep();
+				}
 			}
 			base.focus = function (position) {
 				if (!base.isFocussed) {
