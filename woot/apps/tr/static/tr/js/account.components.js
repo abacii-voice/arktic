@@ -902,10 +902,10 @@ var AccountComponents = {
 						}
 
 						incoming.complete = metadata.complete.trim()
-						incoming.query = metadata.query.trim();
+						incoming.query = metadata.query.trim().slice(0,15);
 						incoming.queryTokens = incoming.query.split(' ');
 						incoming.focus = incoming.queryTokens.length - 1; // the index of the last token with a query
-						incoming.completeTokens = incoming.complete.split(' ');
+						incoming.completeTokens = metadata.complete.trim().split(' ');
 						incoming.combinedTokens = incoming.completeTokens.map(function (fragment, index) {
 							if (index < incoming.queryTokens.length) {
 								return incoming.queryTokens[index] + fragment.substring(incoming.queryTokens[index].length);
@@ -933,8 +933,8 @@ var AccountComponents = {
 									token.query = (virtualEntry.queryTokens[j] || '');
 									token.combined = (virtualEntry.combinedTokens[j] || '');
 									token.complete = (virtualEntry.completeTokens[j] || '');
-									token.macro = macro;
-									token.micro = micro;
+									token.macro = i;
+									token.micro = j;
 
 									base.data.storage.tokens.push(token);
 								}
@@ -948,6 +948,8 @@ var AccountComponents = {
 							var unitId = base.data.storage.rendered[index];
 							var virtual = base.data.storage.virtual[token.macro];
 							return UI.getComponent(unitId).then(function (unit) {
+								unit.virtual = virtual;
+								virtual.tokens[token.micro].rendered = unit.id;
 								return Promise.all([
 									unit.updateUnitMetadata(token),
 									base.data.tokenIndex(token.macro, virtual.focus).then(function (focusIndex) {
@@ -966,6 +968,8 @@ var AccountComponents = {
 								return function () {
 									var virtual = base.data.storage.virtual[token.macro];
 									return base.unit(token).then(function (unit) {
+										unit.virtual = virtual;
+										token.rendered = unit.id;
 										base.data.storage.rendered.push(unit.id);
 										return base.data.tokenIndex(token.macro, virtual.focus).then(function (focusIndex) {
 											if (index !== focusIndex) {

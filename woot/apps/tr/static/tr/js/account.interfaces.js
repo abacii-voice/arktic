@@ -705,6 +705,8 @@ var AccountInterfaces = {
 					unitBase.updateUnitMetadata = function (token) {
 						// each datum should contain the type and content of a token
 						if (token) {
+							unitBase.macro = token.macro;
+							unitBase.micro = token.micro;
 							return Promise.all([
 								unitBase.setType({type: token.type}),
 								unitBase.setContent(token),
@@ -729,8 +731,34 @@ var AccountInterfaces = {
 							},
 						});
 					}
+					unitBase.virtualComplete = function () {
+						// do complete for each token in virtual and focus the last.
+						return Promise.all(unitBase.virtual.tokens.map(function (token) {
+							return UI.getComponent(token.rendered).then(function (unit) {
+								return unit.complete({end: (token.micro === unitBase.virtual.tokens.length - 1)});
+							});
+						}));
+					}
 
 					// as search bar
+					unitBase.complete = function (options) {
+						unitBase.completeQuery = ((unitBase.metadata || {}).complete || '');
+						if (unitBase.completeQuery !== unitBase.metadata.query) {
+							unitBase.isComplete = true;
+							unitBase.metadata.query = unitBase.completeQuery;
+							return unitBase.components.tail.setAppearance({html: unitBase.completeQuery}).then(function () {
+								return unitBase.components.head.setAppearance({html: unitBase.completeQuery});
+							}).then(function () {
+								if (options.end) {
+									return unitBase.setCaretPosition('end');
+								} else {
+									return Util.ep();
+								}
+							});
+						} else {
+							return Util.ep();
+						}
+					}
 					unitBase.setMetadata = function (metadata) {
 						metadata = (metadata || {});
 						unitBase.metadata = (unitBase.metadata || {});
@@ -738,7 +766,7 @@ var AccountInterfaces = {
 						unitBase.metadata.complete = metadata.complete !== undefined ? metadata.complete : unitBase.metadata.query;
 						unitBase.metadata.combined = unitBase.metadata.query + unitBase.metadata.complete.substring(unitBase.metadata.query.length);
 						return unitBase.components.tail.setAppearance({html: ((unitBase.isComplete ? unitBase.metadata.complete : '') || unitBase.metadata.combined || unitBase.metadata.query || unitBase.filterString || unitBase.placeholder || '')}).then(function () {
-							unitBase.isComplete = false;
+							unitBase.isComplete = unitBase.metadata.query === unitBase.metadata.complete;
 							return Util.ep();
 						}).then(function () {
 							// set metadata
@@ -747,13 +775,9 @@ var AccountInterfaces = {
 					}
 					unitBase.input = function () {
 						return unitBase.getContent().then(function (unitContent) {
-							return caption.data.virtualIndex().then(function (virtualIndex) {
-								var [macro, micro] = virtualIndex;
-								var virtual = caption.data.storage.virtual[macro];
-								virtual.queryTokens[micro] = unitContent;
-								virtual.query = virtual.queryTokens.join(' ').trim();
-								return autocomplete.search.setContent({query: virtual.query, trigger: true});
-							});
+							unitBase.virtual.queryTokens[unitBase.virtual.focus] = unitContent;
+							unitBase.virtual.query = unitBase.virtual.queryTokens.join(' ').trim();
+							return autocomplete.search.setContent({query: unitBase.virtual.query, trigger: true});
 						});
 					}
 					unitBase.focus = function (position) {
@@ -802,14 +826,13 @@ var AccountInterfaces = {
 				});
 			}
 			caption.behaviours.right = function () {
-				// Slight modification of original function
 				if (caption.isFocussed) {
 					return caption.active.isCaretInPosition('end').then(function (inPosition) {
 						if (inPosition) {
 							caption.completionOverride = true; // introduce a little chaos.
 							return Promise.all([
 								autocomplete.behaviours.right(),
-								caption.active.complete(),
+								caption.active.virtualComplete(),
 							]);
 						} else {
 							return autocomplete.behaviours.right();
