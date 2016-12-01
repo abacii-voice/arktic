@@ -57,4 +57,46 @@ Thinking about input behaviours
 TODO:
 1. add virtual data to each unit as property for easy access
 2. apply same Promise.all to list items for speed (replicate method used for caption)
-3. 
+3.
+
+
+caption
+- active unit, query, complete, etc.
+- active virtual, active token
+
+1. blank
+2. add items to virtual
+
+{
+	id: 'new-transcription-id', // optional
+	index: 0, // where to place in current virtual, default = length
+	virtual: [ // implicit index
+		{
+			// given
+			query: '',
+			tokens: [ // implicit index
+				{
+					content: '',
+					type: '',
+				},
+			],
+
+			// calculated
+			focus: 0, // based on the length of the query relative to complete
+			complete: '', // can be provided by phrase
+			combined: '',
+			queryTokens: [],
+			completeTokens: [],
+			combinedTokens: [],
+		}
+	]
+}
+
+3. for each item in virtual, render to tokens (store bindings, queries, complete, combined)
+4.
+
+
+ways to cause tokens to re-render
+1. change complete by changing query
+2. select multiple tokens
+3. enter or space for new word
