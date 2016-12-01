@@ -765,46 +765,25 @@ var AccountComponents = {
 			base.data = {
 
 				// variables
-				defaultLimit: 10,
-				currentIndex: 0, // current position within rendered data, not virtual
+				defaultLimit: 10, // how many default tokens to render
+				virtualIndex: 0, // current position within virtual
+				tokenIndex: 0, // current position within rendered data
 				currentId: undefined, // the id of the current transcription
 
 				// datasets
 				storage: {
-					buffer: {}, // stores all sets that have been entered this session
-					virtual: [{tokens: [{content: 'loading...', type: 'ghost'}]}], // stores data in order
+					buffer: {}, // stores all sets that have been entered this session when confirmed. Key is transcription id.
+					virtual: [], // stores data in order
 					tokens: [], // stores tokens in order
-					rendered: [], // stores units
+					rendered: [], // stores units rendered
 				},
 
 				// methods
 				idgen: function () {
 					return '{base}-{id}'.format({base: base.id, id: Util.makeid()});
 				},
-				virtualIndex: function () {
-					var sum = 0;
-					var result = [0, 0];
-					var _this = base.data.storage.virtual;
-					for (var i=0; i<_this.length; i++) {
-						sum += _this[i].tokens.length;
-						if (sum > base.data.currentIndex) {
-							result = [i, base.data.currentIndex - sum + _this[i].tokens.length];
-							break;
-						}
-					}
-					return Util.ep(result);
-				},
-				tokenIndex: function (macro, micro) {
-					var sum = 0;
-					var _this = base.data.storage.virtual;
-					for (var i=0; i<macro+1; i++) {
-						if (i === macro) {
-							sum += micro;
-						} else {
-							sum += _this[i].tokens.length;
-						}
-					}
-					return Util.ep(sum);
+				setTokenIndex: function () {
+					// set the token index from the current virtual and virtual focus index
 				},
 			}
 
@@ -830,39 +809,42 @@ var AccountComponents = {
 						return Util.ep();
 					}
 				},
+
+				// walks token index, not virtual index
 				setActive: function (options) {
-					options = (options || {});
 
-					// position: explicit non-index position; "start", "end".
-					// index: numerical position of unit to activate
-					// increment: add a value to the current index
-					// deactivate: deactivate active token
-
-					if (options === 'deactivate') {
-						return base.active.deactivate().then(function () {
-							base.active = undefined;
-							return Util.ep();
-						});
-					} else {
-						options.index = options === 'last' ? content.children.length - 1 : options.index;
-
-						// changes
-						var previousIndex = base.currentIndex;
-						base.data.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.data.currentIndex || 0) + (base.data.currentIndex !== undefined ? (options.increment || 0) : 0)));
-
-						// boundary conditions
-						base.data.currentIndex = base.data.currentIndex > content.children.length - 1 ? content.children.length - 1 : (base.data.currentIndex < 0 ? 0 : base.data.currentIndex);
-
-						if (base.data.currentIndex !== previousIndex) {
-							base.active = content.children[base.data.currentIndex];
-							return base.active.activate();
-						} else {
-							return Util.ep();
-						}
-					}
 				},
 
 				input: {
+					// NOTE: Rendering of a virtual does not change on focus or blur. Another virtual can be selected and edited.
+					// The rendering will stay the same.
+
+					// only called on change of transcription
+					// virtual is cleared and replaced.
+					// always in the form:
+					// {
+					// 	// given
+					// 	id: '',
+					// 	tokens: [ // implicit index
+					// 		{
+					// 			content: '',
+					// 			type: '',
+					// 		},
+					// 	],
+					//
+					// 	// implicit
+					// 	index: 0,
+					// 	complete: calculated,
+					// 	query: ==complete,
+					// 	combined: ==complete,
+					// 	queryTokens: [],
+					// 	completeTokens: [],
+					// 	combinedTokens: [],
+					// }
+
+					// after id is set and virtual is cleared, metadata can be sent to the main method one token at a time,
+					// yielding one virtual slot per token, rather than entering it as a phrase.
+					// Hide all tokens until this is complete, rather than showing them upon individual completion.
 					switch: function (metadata) {
 						metadata = (metadata || base.data.storage.virtual[0]);
 						// change to a new transcription
@@ -885,6 +867,28 @@ var AccountComponents = {
 
 						// WHEN READY, convert to individual phrase group for each word. Leave now for phrase testing.
 					},
+
+					// called on change of complete
+					// always in the form:
+					// {
+					// 	// given
+					// 	index: 0, // where to place in virtual, default last
+					// 	query: '',
+					// 	tokens: [ // implicit index
+					// 		{
+					// 			content: '',
+					// 			type: '',
+					// 		},
+					// 	],
+					//
+					// 	// calculated
+					// 	focus: 0, // based on the length of the query relative to complete
+					// 	complete: '', // can be provided by phrase
+					// 	combined: '',
+					// 	queryTokens: [],
+					// 	completeTokens: [],
+					// 	combinedTokens: [],
+					// }
 					main: function (metadata) {
 						// 2. splice into place in the phrase list (index must be active token)
 						return base.control.setup().then(function () {
