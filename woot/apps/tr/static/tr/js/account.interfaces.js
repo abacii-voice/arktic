@@ -681,7 +681,7 @@ var AccountInterfaces = {
 						unitBase,
 					] = components;
 
-					// as caption unit
+					// caption unit display
 					unitBase.activate = function () {
 						return unitBase.setAppearance({classes: {add: 'active'}});
 					}
@@ -691,7 +691,7 @@ var AccountInterfaces = {
 					unitBase.select = function () {
 
 					}
-					unitBase.unSelect = function () {
+					unitBase.unselect = function () {
 
 					}
 					unitBase.show = function () {
@@ -702,6 +702,15 @@ var AccountInterfaces = {
 						unitBase.isHidden = true;
 						return unitBase.setAppearance({classes: {add: 'hidden'}});
 					}
+
+					// caption unit data
+					// The caption unit is disconnected from the virtual token it is displaying.
+					// The unit will operate independently but can update the virtual in several ways:
+					// 1. QUERY: any query is added to the query of the virtual containing it, and triggers an update if the complete changes.
+					// 2. COMPLETE: right arrow key to complete will trigger a completion on every token in the virtual.
+					// 3. DELETE: the delete key on an empty token will remove the virtual from the buffer if it is the only token.
+					// 4. CONFIRM: the enter key (space bar if there are no queries containing further spaces) will complete the virtual and replace it with sub-virtuals.
+					// 5. SPACE: the space bar will create a new token in the virtual buffer.
 					unitBase.updateUnitMetadata = function (token) {
 						// each datum should contain the type and content of a token
 						if (token) {
@@ -740,7 +749,7 @@ var AccountInterfaces = {
 						}));
 					}
 
-					// as search bar
+					// search bar mods
 					unitBase.complete = function (options) {
 						unitBase.completeQuery = ((unitBase.metadata || {}).complete || '');
 						if (unitBase.completeQuery !== unitBase.metadata.query) {
