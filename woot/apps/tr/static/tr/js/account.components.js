@@ -819,7 +819,7 @@ var AccountComponents = {
 					// NOTE: Rendering of a virtual does not change on focus or blur. Another virtual can be selected and edited.
 					// The rendering will stay the same.
 
-					// only called on change of transcription
+					// NEW CAPTION: only called on change of transcription
 					// virtual is cleared and replaced.
 					// always in the form:
 					// {
@@ -833,7 +833,10 @@ var AccountComponents = {
 					// 	],
 					//
 					// 	// implicit
+					// 	update: false, // always. These tokens are being added.
 					// 	index: 0,
+					// 	head: calculated,
+					// 	focus: calculated,
 					// 	complete: calculated,
 					// 	query: ==complete,
 					// 	combined: ==complete,
@@ -841,11 +844,10 @@ var AccountComponents = {
 					// 	completeTokens: [],
 					// 	combinedTokens: [],
 					// }
-
 					// after id is set and virtual is cleared, metadata can be sent to the main method one token at a time,
 					// yielding one virtual slot per token, rather than entering it as a phrase.
 					// Hide all tokens until this is complete, rather than showing them upon individual completion.
-					switch: function (metadata) {
+					newCaption: function (metadata) {
 						metadata = (metadata || base.data.storage.virtual[0]);
 						// change to a new transcription
 						// 1. tokens of phrase with type and content
@@ -868,12 +870,13 @@ var AccountComponents = {
 						// WHEN READY, convert to individual phrase group for each word. Leave now for phrase testing.
 					},
 
-					// called on change of complete
+					// UPDATE: called on change of complete
 					// always in the form:
 					// {
 					// 	// given
 					// 	index: 0, // where to place in virtual, default last
 					// 	query: '',
+					// 	complete: '',
 					// 	tokens: [ // implicit index
 					// 		{
 					// 			content: '',
@@ -882,13 +885,20 @@ var AccountComponents = {
 					// 	],
 					//
 					// 	// calculated
-					// 	focus: 0, // based on the length of the query relative to complete
-					// 	complete: '', // can be provided by phrase
+					// 	head: 0, // based on the length of the query relative to complete
+					// 	focus: 0, // the index of the active token
 					// 	combined: '',
 					// 	queryTokens: [],
 					// 	completeTokens: [],
 					// 	combinedTokens: [],
 					// }
+					update: function (metadata) {
+						// 1. check old complete
+							// - if changed: replace tokens
+						// 2. recalculate everything
+					},
+
+					// may be redundant
 					main: function (metadata) {
 						// 2. splice into place in the phrase list (index must be active token)
 						return base.control.setup().then(function () {
@@ -899,6 +909,8 @@ var AccountComponents = {
 							return base.control.input.showActiveAndHideRemaining();
 						});
 					},
+
+					// standardises metadata and direct to buffers
 					metadata: function (metadata) {
 						var incoming = metadata;
 						if (!incoming.tokens.length) {
@@ -946,6 +958,8 @@ var AccountComponents = {
 							return Util.ep();
 						});
 					},
+
+					// call actions on each unit
 					display: function () {
 						// portion of rendered array smaller than tokens
 						return Promise.all(base.data.storage.tokens.slice(0, base.data.storage.rendered.length).map(function (token, index) {
@@ -990,6 +1004,8 @@ var AccountComponents = {
 							}));
 						});
 					},
+
+					// show or hide simultaneously
 					showActiveAndHideRemaining: function () {
 						return Promise.all(base.data.storage.rendered.map(function (listItemId, index) {
 							return UI.getComponent(listItemId).then(function (listItem) {
