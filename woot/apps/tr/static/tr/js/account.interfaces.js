@@ -705,12 +705,21 @@ var AccountInterfaces = {
 
 					// caption unit data
 					// The caption unit is disconnected from the virtual token it is displaying.
-					// The unit will operate independently but can update the virtual in several ways:
+					// The unit will operate independently but can update the connected virtual in several ways:
 					// 1. QUERY: any query is added to the query of the virtual containing it, and triggers an update if the complete changes.
 					// 2. COMPLETE: right arrow key to complete will trigger a completion on every token in the virtual.
 					// 3. DELETE: the delete key on an empty token will remove the virtual from the buffer if it is the only token.
-					// 4. CONFIRM: the enter key (space bar if there are no queries containing further spaces) will complete the virtual and replace it with sub-virtuals.
+					// 4. CONFIRM: the enter key (space bar if there are no queries containing further spaces) will complete the virtual and replace it with separate virtuals.
 					// 5. SPACE: the space bar will create a new token in the virtual buffer.
+
+					// Interaction between focus token and others in the same virtual:
+					// Only tokens forward of the focus token can be changed by its actions
+					// In the example query: hel {complete: hello world}
+					// It would be rendered as two tokens: {hel[lo]} {[world]} -> head[tail]
+					// 1. CLICKING on any tail section in the virtual is bound to focus the head of the focus token.
+						// The tail of the focus token has no special bindings beyond its default behaviour
+					// 2. COMPLETING the focus token will cause the subsequent tokens to complete. The last token in the virtual will be focussed.
+					// 3. CHANGING COMPLETE (e.g. hello world -> hellscape) can cause tokens to be removed from the virtual
 					unitBase.updateUnitMetadata = function (token) {
 						// each datum should contain the type and content of a token
 						if (token) {
