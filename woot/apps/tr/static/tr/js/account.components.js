@@ -778,6 +778,20 @@ var AccountComponents = {
 					rendered: [], // stores units rendered
 				},
 
+				// objects
+				objects: {
+					virtual: function (metadata) {
+						// properties
+						// methods
+
+						// setup
+						this.setup();
+					},
+					token: function () {
+
+					},
+				},
+
 				// methods
 				idgen: function () {
 					return '{base}-{id}'.format({base: base.id, id: Util.makeid()});
@@ -810,7 +824,6 @@ var AccountComponents = {
 					}
 				},
 
-				// walks token index, not virtual index
 				setActive: function (options) {
 
 				},
@@ -831,46 +844,15 @@ var AccountComponents = {
 					// 			type: '',
 					// 		},
 					// 	],
-					//
-					// 	// implicit
-					// 	update: false, // always. These tokens are being added.
-					// 	index: 0,
-					// 	head: calculated,
-					// 	focus: calculated,
-					// 	complete: calculated,
-					// 	query: ==complete,
-					// 	combined: ==complete,
-					// 	queryTokens: [],
-					// 	completeTokens: [],
-					// 	combinedTokens: [],
 					// }
 					// after id is set and virtual is cleared, metadata can be sent to the main method one token at a time,
 					// yielding one virtual slot per token, rather than entering it as a phrase.
 					// Hide all tokens until this is complete, rather than showing them upon individual completion.
 					newCaption: function (metadata) {
-						metadata = (metadata || base.data.storage.virtual[0]);
-						// change to a new transcription
-						// 1. tokens of phrase with type and content
-						// 2. id of transcription
-						base.data.currentId = metadata.id;
 
-						// delete current content
-						base.data.currentIndex = 0;
-						base.data.storage.virtual = [];
-
-						// modify metadata
-						metadata.complete = metadata.tokens.reduce(function (whole, part) {
-							return '{whole} {part}'.format({whole: whole, part: part.content});
-						}, '');
-						metadata.query = metadata.complete;
-
-						// then do input on the new data
-						return base.control.input.main(metadata);
-
-						// WHEN READY, convert to individual phrase group for each word. Leave now for phrase testing.
 					},
 
-					// UPDATE: called on change of complete
+					// INSERTVIRTUAL: called on change of complete
 					// always in the form:
 					// {
 					// 	// given
@@ -892,127 +874,38 @@ var AccountComponents = {
 					// 	completeTokens: [],
 					// 	combinedTokens: [],
 					// }
-					update: function (metadata) {
-						// 1. check old complete
-							// - if changed: replace tokens
-						// 2. recalculate everything
+
+					// Adds a phrase to the virtual buffer.
+					hello world _ _ _ _
+
+					[0,0,none,none,none,none]
+
+					hello world _ _ _ _
+
+					[0,1,none,none,none,none]
+
+					hello world world _ _ _
+
+					[0,0,1,none,none,none]
+
+					for unit in units:
+						currentToken = currentVirtual().next();
+						if currentToken:
+
+					[All tokens before focus]
+					[focus token]
+					[All tokens after focus]
+
+					for virtual in virtuals from focus
+						for token in virtual from focus token
+							token.update()
+
+					addVirtual: function (index, metadata) {
+
 					},
-
-					// may be redundant
-					main: function (metadata) {
-						// 2. splice into place in the phrase list (index must be active token)
-						return base.control.setup().then(function () {
-							return base.control.input.metadata(metadata);
-						}).then(function () {
-							return base.control.input.display();
-						}).then(function () {
-							return base.control.input.showActiveAndHideRemaining();
-						});
-					},
-
-					// standardises metadata and direct to buffers
-					metadata: function (metadata) {
-						var incoming = metadata;
-						if (!incoming.tokens.length) {
-							incoming.tokens = [{content: incoming.complete, type: incoming.type, index: 0}];
-						}
-
-						incoming.complete = metadata.complete.trim()
-						incoming.query = metadata.query.trim().slice(0,15);
-						incoming.queryTokens = incoming.query.split(' ');
-						incoming.focus = incoming.queryTokens.length - 1; // the index of the last token with a query
-						incoming.completeTokens = metadata.complete.trim().split(' ');
-						incoming.combinedTokens = incoming.completeTokens.map(function (fragment, index) {
-							if (index < incoming.queryTokens.length) {
-								return incoming.queryTokens[index] + fragment.substring(incoming.queryTokens[index].length);
-							} else {
-								return fragment;
-							}
-						});
-
-						return base.data.virtualIndex().then(function (virtualIndex) {
-							var [macro, micro] = virtualIndex;
-
-							// replace virtual
-							base.data.storage.virtual.splice(macro, 1, incoming);
-
-							// convert to tokens
-							base.data.storage.tokens = [];
-
-							var i, j;
-							for (i=0; i<base.data.storage.virtual.length; i++) {
-								var virtualEntry = base.data.storage.virtual[i];
-								for (j=0; j<virtualEntry.tokens.length; j++) {
-									var token = virtualEntry.tokens[j];
-
-									// metadata for individual token
-									token.query = (virtualEntry.queryTokens[j] || '');
-									token.combined = (virtualEntry.combinedTokens[j] || '');
-									token.complete = (virtualEntry.completeTokens[j] || '');
-									token.macro = i;
-									token.micro = j;
-
-									base.data.storage.tokens.push(token);
-								}
-							}
-							return Util.ep();
-						});
-					},
-
-					// call actions on each unit
-					display: function () {
-						// portion of rendered array smaller than tokens
-						return Promise.all(base.data.storage.tokens.slice(0, base.data.storage.rendered.length).map(function (token, index) {
-							var unitId = base.data.storage.rendered[index];
-							var virtual = base.data.storage.virtual[token.macro];
-							return UI.getComponent(unitId).then(function (unit) {
-								unit.virtual = virtual;
-								virtual.tokens[token.micro].rendered = unit.id;
-								return Promise.all([
-									unit.updateUnitMetadata(token),
-									base.data.tokenIndex(token.macro, virtual.focus).then(function (focusIndex) {
-										if (index !== focusIndex) {
-											var focusUnitId = base.data.storage.rendered[focusIndex];
-											return unit.updateBindings(focusUnitId);
-										} else {
-											return Util.ep();
-										}
-									}),
-								]);
-							});
-						})).then(function () {
-							// add more if needed
-							return Promise.ordered(base.data.storage.tokens.slice(base.data.storage.rendered.length, base.data.storage.tokens.length).map(function (token, index) {
-								return function () {
-									var virtual = base.data.storage.virtual[token.macro];
-									return base.unit(token).then(function (unit) {
-										unit.virtual = virtual;
-										token.rendered = unit.id;
-										base.data.storage.rendered.push(unit.id);
-										return base.data.tokenIndex(token.macro, virtual.focus).then(function (focusIndex) {
-											if (index !== focusIndex) {
-												var focusUnitId = base.data.storage.rendered[focusIndex];
-												return unit.updateBindings(focusUnitId);
-											} else {
-												return Util.ep();
-											}
-										}).then(function () {
-											return content.setChildren([unit]);
-										});
-									});
-								}
-							}));
-						});
-					},
-
-					// show or hide simultaneously
-					showActiveAndHideRemaining: function () {
-						return Promise.all(base.data.storage.rendered.map(function (listItemId, index) {
-							return UI.getComponent(listItemId).then(function (listItem) {
-								return (index >= base.data.storage.tokens.length ? listItem.hide : listItem.show)();
-							});
-						}));
-					},
+				},
+				updateBuffer: function () {
+					return Util.ep();
 				},
 			}
 
@@ -1057,7 +950,18 @@ var AccountComponents = {
 			return Promise.all([
 				base.setBindings({
 					'click': function (_this) {
+						return _this.focusFirstAvailable();
 
+						// if nothing:
+						// 1. create virtual
+						// 2. create token in virtual
+						// 3. display virtual
+						// 4. show and hide
+						// 5. focus empty token
+
+						// if something:
+						// 1. get last token in last virtual
+						// 2. focus last token
 					},
 				}),
 			]).then(function () {
