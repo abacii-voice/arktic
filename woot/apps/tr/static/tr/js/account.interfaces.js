@@ -238,7 +238,7 @@ var AccountInterfaces = {
 						resolve();
 					}).then(function () {
 						// load caption into caption field
-						return caption.control.input.switch({tokens: current.tokens, id: current.parent});
+						// TRIGGER CAPTION
 					});
 				});
 			}
@@ -943,7 +943,7 @@ var AccountInterfaces = {
 					states: {
 						'transcription-state': {
 							fn: function (_this) {
-								return _this.control.input.switch();
+
 							},
 						},
 					},
