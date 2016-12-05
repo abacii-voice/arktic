@@ -876,29 +876,32 @@ var AccountComponents = {
 					// }
 
 					// Adds a phrase to the virtual buffer.
-					hello world _ _ _ _
+					[hello world] _ _ _ _
 
 					[0,0,none,none,none,none]
 
-					hello world _ _ _ _
+					[hello] [world] _ _ _ _
 
 					[0,1,none,none,none,none]
 
-					hello world world _ _ _
+					[hello world] [world] _ _ _
 
 					[0,0,1,none,none,none]
 
-					for unit in units:
-						currentToken = currentVirtual().next();
-						if currentToken:
-
-					[All tokens before focus]
-					[focus token]
-					[All tokens after focus]
-
 					for virtual in virtuals from focus
-						for token in virtual from focus token
+						virtual.update()
+						for token in virtual.tokens from focus token
 							token.update()
+
+					virtual
+						.update(metadata):
+							virtual.metadata = metadata
+							virtual.recalculateTokens()
+
+						.recalculateTokens:
+							for token in virtual.data.tokens:
+								virtual.tokens[i] = token.calculate(query, complete, combined)
+
 
 					addVirtual: function (index, metadata) {
 
