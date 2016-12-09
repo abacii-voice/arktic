@@ -216,8 +216,22 @@ var UI = {
 
 				// classes need to be a combination of ones removed and ones added. If "add" and "remove" are not present, defaults to using whole object.
 				this.classes = currentClasses;
-				var addClasses = appearance.classes ? (appearance.classes.add ? ($.isArray(appearance.classes.add) ? appearance.classes.add : [appearance.classes.add]) : (appearance.classes.remove ? [] : appearance.classes)) : [];
-				var removeClasses = appearance.classes ? (appearance.classes.remove ? ($.isArray(appearance.classes.remove) ? appearance.classes.remove : [appearance.classes.remove]) : []) : [];
+				var _classes = (appearance.classes || {});
+
+				// _classes can be:
+				// 1. 'class' -> implied add
+				// 2. {add: 'class'}
+				// 3. {remove: 'class'}
+				// 4. {add: 'class', remove: 'class'}
+				// 5. all of the above but with arrays instead of strings.
+
+				// make defaults arrays
+				_classes.add = _classes ? (_classes.add ? _classes.add : (_classes.remove ? [] : _classes)) : [];
+				_classes.remove = _classes ? (_classes.remove ? _classes.remove : []) : [];
+
+				// force arrays
+				var addClasses = $.isArray(_classes.add) ? _classes.add : [_classes.add];
+				var removeClasses = $.isArray(_classes.remove) ? _classes.remove : [_classes.remove];
 				var _this = this;
 
 				if (addClasses) {
