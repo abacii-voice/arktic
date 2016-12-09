@@ -239,6 +239,7 @@ var AccountInterfaces = {
 					}).then(function () {
 						// load caption into caption field
 						// TRIGGER CAPTION
+						return caption.control.input.newCaption(current);
 					});
 				});
 			}
@@ -584,7 +585,7 @@ var AccountInterfaces = {
 					// Should trigger caption set metadata to check for phrase and other expansions.
 					// return caption action
 					if (caption.isFocussed) {
-						// return caption.control.input.main(_this.metadata);
+						// return caption.control.input.newCaption(_this.metadata);
 					} else {
 						return Util.ep();
 					}
@@ -701,6 +702,14 @@ var AccountInterfaces = {
 					unitBase.hide = function () {
 						unitBase.isHidden = true;
 						return unitBase.setAppearance({classes: {add: 'hidden'}});
+					}
+					unitBase.reset = function () {
+						unitBase.virtual = undefined;
+						return Promise.all([
+							unitBase.setContent({content: ''}),
+							unitBase.setType({type: 'words'}),
+							unitBase.hide(),
+						]);
 					}
 
 					// caption unit data
@@ -943,7 +952,7 @@ var AccountInterfaces = {
 					states: {
 						'transcription-state': {
 							fn: function (_this) {
-
+								return _this.control.setup();
 							},
 						},
 					},
