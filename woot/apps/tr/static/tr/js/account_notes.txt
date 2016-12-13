@@ -100,3 +100,15 @@ ways to cause tokens to re-render
 1. change complete by changing query
 2. select multiple tokens
 3. enter or space for new word
+
+BIG CHANGES:
+1. Remove registry and permissions entirely. Or make permission feed of Context.
+2. Load code in Django template according to permission. Get small permission summary of user before loading.
+3. Split components into individual files
+4. Modify django models to include my personal serialisation
+5. use websockets for message passing
+6. nested state system
+
+search and replace
+1. underscores with spaces
+2. @hes@ [hesitation]

@@ -562,7 +562,6 @@ var AccountInterfaces = {
 				} else {
 					complete = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
 					type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
-					// console.log(_this.data.storage.virtual.list[_this.currentIndex]);
 					tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
 				}
 				return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
@@ -706,8 +705,7 @@ var AccountInterfaces = {
 					unitBase.reset = function () {
 						unitBase.virtual = undefined;
 						return Promise.all([
-							unitBase.setContent({content: ''}),
-							unitBase.setType({type: 'words'}),
+							// unitBase.setMetadata({query: '', complete: '', type: 'words'}),
 							unitBase.hide(),
 						]);
 					}
@@ -732,8 +730,6 @@ var AccountInterfaces = {
 					unitBase.updateUnitMetadata = function (token) {
 						// each datum should contain the type and content of a token
 						if (token) {
-							unitBase.macro = token.macro;
-							unitBase.micro = token.micro;
 							return Promise.all([
 								unitBase.setType({type: token.type}),
 								unitBase.setContent(token),
@@ -757,14 +753,6 @@ var AccountInterfaces = {
 								});
 							},
 						});
-					}
-					unitBase.virtualComplete = function () {
-						// do complete for each token in virtual and focus the last.
-						return Promise.all(unitBase.virtual.tokens.map(function (token) {
-							return UI.getComponent(token.rendered).then(function (unit) {
-								return unit.complete({end: (token.micro === unitBase.virtual.tokens.length - 1)});
-							});
-						}));
 					}
 
 					// search bar mods

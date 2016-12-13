@@ -765,7 +765,7 @@ var AccountComponents = {
 			base.data = {
 
 				// variables
-				defaultLimit: 10, // how many default tokens to render
+				defaultLimit: 5, // how many default tokens to render
 				currentId: undefined, // the id of the current transcription
 
 				// datasets
@@ -813,6 +813,7 @@ var AccountComponents = {
 								var _this = this;
 								if (index >= _this.tokens.length) { // if there is no token to fetch
 									return base.data.objects.token.create(metadata).then(function (token) {
+										token.index = index;
 										_this.tokens.splice(index, 0, token);
 										return Util.ep(token);
 									});
@@ -898,15 +899,18 @@ var AccountComponents = {
 							}
 						})).then(function () {
 							return base.control.input.update.main();
-						})
+						});
 					},
 					addPhrase: function (index, metadata) {
 
 					},
 					update: {
 						main: function () {
-							return base.control.input.update.rendered().then(function (virtualPosition) {
-								return base.control.input.update.tail(virtualPosition);
+							var update = base.control.input.update;
+							return update.rendered().then(function (virtualPosition) {
+								return update.tail(virtualPosition);
+							}).then(function () {
+								return update.show();
 							});
 						},
 						rendered: function () {
@@ -914,33 +918,62 @@ var AccountComponents = {
 							var micro = 0;
 							var reachedTokenCount = false;
 							return Promise.all(content.children.map(function (unit, index) {
-								if (reachedTokenCount) {
-									// hide the rest of the units
-									return unit.reset();
-								} else {
+								if (!reachedTokenCount) {
 									var phrase = base.data.storage.virtual[macro];
 									var token = phrase.tokens[micro];
 
+									// check token count
+									var end = micro === phrase.tokens.length - 1;
+									micro = end ? 0 : micro + 1;
+									macro = end ? macro + 1 : macro;
+
+									reachedTokenCount = end && macro === base.data.storage.virtual.length;
+
 									// render
+									unit.isActive = true;
 									return unit.updateUnitMetadata(token).then(function () {
 										return unit.updateBindings(phrase);
 									});
-
-									// check token count
-									micro = (micro === phrase.tokens.length - 1) ? micro : micro + 1;
-
+								} else {
+									// hide the rest of the units
+									unit.isActive = false;
+									return unit.reset();
 								}
 							})).then(function () {
-								return Util.ep([macro, micro]);
+								return Util.ep([macro, micro, reachedTokenCount]);
 							});
 						},
 						tail: function (virtualPosition) {
-							var [macro, micro] = virtualPosition; // the location in virtual where rendering stopped.
-							if (macro < base.data.storage.virtual - 1) {
-								return Util.ep();
+							var [lastMacro, lastMicro, reachedTokenCount] = virtualPosition; // the location in virtual where rendering stopped.
+							if (!reachedTokenCount) {
+								return Promise.ordered(base.data.storage.virtual.slice(lastMacro).map(function (phrase, macro) {
+									return function () {
+										return Promise.ordered(phrase.tokens.slice((macro===lastMacro ? lastMicro : 0)).map(function (token, micro) {
+											return function () {
+												return base.unit().then(function (unit) {
+													unit.isActive = true;
+													return Promise.all([
+														unit.hide(),
+														unit.updateUnitMetadata(token),
+														unit.updateBindings(phrase),
+													]).then(function () {
+														return content.setChildren([unit]);
+													});
+												});
+											}
+										}));
+									}
+								}));
 							} else {
 								return Util.ep();
 							}
+						},
+						show: function () {
+							return Promise.all(content.children.filter(function (unit) {
+								return unit.isActive;
+							}).map(function (unit) {
+								return unit.show();
+							}));
 						},
 					},
 				},
