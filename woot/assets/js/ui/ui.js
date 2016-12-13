@@ -205,14 +205,11 @@ var UI = {
 			});
 		}
 		this.setAppearance = function (appearance) {
-			var currentProperties = (this.properties || {});
-			var currentHTML = (this.html || '');
 			var currentClasses = (this.classes || []);
-			var currentStyle = (this.style || {});
 
 			if (appearance !== undefined) {
-				this.properties = (appearance.properties || currentProperties);
-				this.html = appearance.html !== undefined ? appearance.html : currentHTML;
+				this.properties = appearance.properties;
+				this.html = appearance.html;
 
 				// classes need to be a combination of ones removed and ones added. If "add" and "remove" are not present, defaults to using whole object.
 				this.classes = currentClasses;
@@ -226,13 +223,18 @@ var UI = {
 				// 5. all of the above but with arrays instead of strings.
 
 				// make defaults arrays
-				_classes.add = _classes ? (_classes.add ? _classes.add : (_classes.remove ? [] : _classes)) : [];
-				_classes.remove = _classes ? (_classes.remove ? _classes.remove : []) : [];
+				// {add: undefined, remove: ""}
+				_classes.add = _classes.add ? _classes.add : (_classes.remove ? [] : ($.isArray(_classes) ? _classes : []));
+				_classes.remove = _classes.remove ? _classes.remove : [];
 
 				// force arrays
 				var addClasses = $.isArray(_classes.add) ? _classes.add : [_classes.add];
 				var removeClasses = $.isArray(_classes.remove) ? _classes.remove : [_classes.remove];
 				var _this = this;
+
+				if (this.id.contains('tb-cp-caption-')) {
+					console.log(this.id, _classes, addClasses);
+				}
 
 				if (addClasses) {
 					this.classes = this.classes.concat(addClasses.filter(function (cls) {
@@ -244,12 +246,25 @@ var UI = {
 					return removeClasses.indexOf(cls) === -1;
 				});
 
-				this.style = (appearance.style || currentStyle);
+				this.style = (appearance.style || this.style);
 
 				if (this.isRendered) {
 					// model
 					var model = _this.model();
 					return model.animate(appearance.style, 300).promise().then(function () {
+
+						// html - this will erase children of the current model
+						if (appearance.html !== undefined) {
+							model.html(_this.html);
+						}
+
+						// properties
+						if (appearance.properties) {
+							Object.keys(_this.properties).forEach(function (property) {
+								model.attr(property, _this.properties[property]);
+							});
+						}
+
 						// classes
 						if (appearance.classes) {
 							return Promise.all([
@@ -268,35 +283,13 @@ var UI = {
 							]);
 						}
 					}).then(function () {
-						return new Promise(function(resolve, reject) {
-							// html - this will erase children of the current model
-							if (appearance.html !== undefined) {
-								model.html(_this.html);
-							}
-
-							// properties
-							if (appearance.properties) {
-								Object.keys(_this.properties).forEach(function (property) {
-									model.attr(property, _this.properties[property]);
-								});
-							}
-							resolve();
-						});
+						return Util.ep(appearance);
 					});
 				} else {
-					return new Promise(function(resolve, reject) {
-						resolve(appearance);
-					});
+					return Util.ep(appearance);
 				}
 			} else {
-				return new Promise(function(resolve, reject) {
-					resolve({
-						properties: currentProperties,
-						html: currentHTML,
-						classes: currentClasses,
-						style: currentStyle,
-					});
-				});
+				return Util.ep();
 			}
 		}
 
