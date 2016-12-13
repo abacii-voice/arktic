@@ -767,6 +767,7 @@ var AccountComponents = {
 				// variables
 				defaultLimit: 5, // how many default tokens to render
 				currentId: undefined, // the id of the current transcription
+				maxTokens: 0,
 
 				// datasets
 				storage: {
@@ -800,6 +801,7 @@ var AccountComponents = {
 										var tokenMetadata = {
 											query: (_this.queryTokens[index] || ''),
 											complete: complete,
+											type: (metadata.type || 'words'),
 										}
 										return _this.getOrCreateToken(index, tokenMetadata).then(function (tokenOutput) {
 
@@ -840,6 +842,7 @@ var AccountComponents = {
 								this.query = metadata.query;
 								this.complete = metadata.complete;
 								this.combined = this.query + this.complete.slice(this.query.length);
+								this.type = (metadata.type || 'words');
 
 								// run standard process
 								var _this = this;
@@ -884,7 +887,25 @@ var AccountComponents = {
 					}
 				},
 				setActive: function (options) {
+					// new index
+					var previousIndex = base.currentIndex;
+					base.currentIndex = (options.index || base.currentIndex || 0) + (options.increment || 0);
 
+					// apply boundary conditions
+					base.currentIndex = base.currentIndex < base.data.maxTokens ? (base.currentIndex > 0 ? base.currentIndex : 0) : base.data.maxTokens - 1;
+
+					// deactivate active then find next and activate
+					if (previousIndex !== base.currentIndex) {
+						return base.control.deactivate().then(function () {
+							base.active = content.children[base.currentIndex];
+							return base.active.activate();
+						});
+					} else {
+						return Util.ep();
+					}
+				},
+				deactivate: function () {
+					return ((base.active || {}).deactivate || Util.ep)();
 				},
 				input: {
 					newCaption: function (metadata) {
@@ -928,6 +949,9 @@ var AccountComponents = {
 									macro = end ? macro + 1 : macro;
 
 									reachedTokenCount = end && macro === base.data.storage.virtual.length;
+									if (reachedTokenCount) {
+										base.data.maxTokens = index + 1; // stops at index, not count
+									}
 
 									// render
 									unit.isActive = true;
@@ -979,6 +1003,9 @@ var AccountComponents = {
 				},
 				updateBuffer: function () {
 					return Util.ep();
+				},
+				runChecks: function () {
+
 				},
 			}
 

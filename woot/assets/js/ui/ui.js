@@ -232,10 +232,6 @@ var UI = {
 				var removeClasses = $.isArray(_classes.remove) ? _classes.remove : [_classes.remove];
 				var _this = this;
 
-				if (this.id.contains('tb-cp-caption-')) {
-					console.log(this.id, _classes, addClasses);
-				}
-
 				if (addClasses) {
 					this.classes = this.classes.concat(addClasses.filter(function (cls) {
 						return _this.classes.indexOf(cls) === -1;
