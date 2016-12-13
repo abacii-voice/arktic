@@ -634,6 +634,18 @@ var AccountInterfaces = {
 			}
 
 			// CAPTION
+			caption.checks = [
+
+				// check if tag unit matches a valid tag
+				function () {
+					return Util.ep();
+				},
+
+				// check capitals and make lower case
+				function () {
+					return Util.ep();
+				},
+			]
 			caption.styles = function () {
 				// word
 				jss.set('#{id} .words'.format({id: caption.id}), {
@@ -705,7 +717,7 @@ var AccountInterfaces = {
 					unitBase.reset = function () {
 						unitBase.virtual = undefined;
 						return Promise.all([
-							// unitBase.setMetadata({query: '', complete: '', type: 'words'}),
+							unitBase.updateUnitMetadata({query: '', complete: '', type: 'words'}),
 							unitBase.hide(),
 						]);
 					}
@@ -718,7 +730,6 @@ var AccountInterfaces = {
 					// 3. DELETE: the delete key on an empty token will remove the virtual from the buffer if it is the only token.
 					// 4. CONFIRM: the enter key (space bar if there are no queries containing further spaces) will complete the virtual and replace it with separate virtuals.
 					// 5. SPACE: the space bar will create a new token in the virtual buffer.
-
 					// Interaction between focus token and others in the same virtual:
 					// Only tokens forward of the focus token can be changed by its actions
 					// In the example query: hel {complete: hello world}
@@ -753,6 +764,11 @@ var AccountInterfaces = {
 								});
 							},
 						});
+					}
+
+					// caption unit export
+					unitBase.runChecks = function () {
+
 					}
 
 					// search bar mods
@@ -805,6 +821,7 @@ var AccountInterfaces = {
 									return unitBase.input();
 								});
 							});
+							return Util.ep();
 						} else {
 							return Util.ep();
 						}
