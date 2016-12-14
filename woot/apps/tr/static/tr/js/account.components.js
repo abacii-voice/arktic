@@ -822,6 +822,12 @@ var AccountComponents = {
 									return _this.tokens[index].update(metadata);
 								}
 							}
+							this.updatedQuery = function (index, query) {
+								var result = this.queryTokens.reduce(function (whole, token, i) {
+									return '{whole} {part}'.format({whole: whole, part: (i===index ? query : token)});
+								}, '');
+								return Util.ep(result);
+							}
 						},
 						create: function (index, metadata) {
 							var phrase = new base.data.objects.phrase.Phrase();
