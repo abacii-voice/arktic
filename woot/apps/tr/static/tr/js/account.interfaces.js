@@ -749,6 +749,8 @@ var AccountInterfaces = {
 						// PRACTISE UPDATING PHRASES AND RE-RENDERING TOKENS
 
 						if (phrase && token && (unitBase.unitComplete !== token.complete || unitBase.unitType !== token.type)) {
+							unitBase.phrase = phrase;
+							unitBase.token = token;
 							return Promise.all([
 								unitBase.setType(token.type),
 								unitBase.setContent(token),
@@ -824,9 +826,9 @@ var AccountInterfaces = {
 					}
 					unitBase.input = function () {
 						return unitBase.getContent().then(function (unitContent) {
-							unitBase.virtual.queryTokens[unitBase.virtual.focus] = unitContent;
-							unitBase.virtual.query = unitBase.virtual.queryTokens.join(' ').trim();
-							return autocomplete.search.setContent({query: unitBase.virtual.query, trigger: true});
+							return unitBase.phrase.updatedQuery(unitBase.token.index, unitContent).then(function (updatedQuery) {
+								return autocomplete.search.setContent({query: updatedQuery, trigger: true});
+							});
 						});
 					}
 					unitBase.focus = function (position) {
