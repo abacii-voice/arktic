@@ -889,23 +889,24 @@ var AccountComponents = {
 				setActive: function (options) {
 					// new index
 					var previousIndex = base.currentIndex;
-					base.currentIndex = (options.index || base.currentIndex || 0) + (options.increment || 0);
+					base.currentIndex = ((options.index !== undefined ? options.index : base.currentIndex) || 0) + (options.increment || 0);
 
 					// apply boundary conditions
 					base.currentIndex = base.currentIndex < base.data.maxTokens ? (base.currentIndex > 0 ? base.currentIndex : 0) : base.data.maxTokens - 1;
 
 					// deactivate active then find next and activate
-					if (previousIndex !== base.currentIndex) {
-						return base.control.deactivate().then(function () {
-							base.active = content.children[base.currentIndex];
-							return base.active.activate();
-						});
+					var deactivateCondition = previousIndex !== base.currentIndex;
+					return base.control.deactivate(deactivateCondition).then(function () {
+						base.active = content.children[base.currentIndex];
+						return base.active.activate();
+					});
+				},
+				deactivate: function (deactivateCondition) {
+					if (deactivateCondition) {
+						return ((base.active || {}).deactivate || Util.ep)();
 					} else {
 						return Util.ep();
 					}
-				},
-				deactivate: function () {
-					return ((base.active || {}).deactivate || Util.ep)();
 				},
 				input: {
 					newCaption: function (metadata) {
