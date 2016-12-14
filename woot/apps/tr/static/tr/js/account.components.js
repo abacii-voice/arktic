@@ -779,7 +779,7 @@ var AccountComponents = {
 				objects: {
 					phrase: {
 						// base
-						phrase: function () {
+						Phrase: function () {
 							// methods
 							this.update = function (metadata) {
 								metadata = (metadata || {
@@ -793,6 +793,7 @@ var AccountComponents = {
 								this.queryTokens = this.query.split(' ');
 								this.complete = metadata.complete;
 								this.completeTokens = this.complete.split(' ');
+								this.focus = this.queryTokens.length - 1;
 
 								// run process
 								var _this = this;
@@ -803,9 +804,7 @@ var AccountComponents = {
 											complete: complete,
 											type: (metadata.type || 'words'),
 										}
-										return _this.getOrCreateToken(index, tokenMetadata).then(function (tokenOutput) {
-
-										});
+										return _this.getOrCreateToken(index, tokenMetadata);
 									}
 								})).then(function () {
 									return Util.ep(_this);
@@ -825,7 +824,7 @@ var AccountComponents = {
 							}
 						},
 						create: function (index, metadata) {
-							var phrase = new base.data.objects.phrase.phrase();
+							var phrase = new base.data.objects.phrase.Phrase();
 							base.data.storage.virtual.splice(index, 0, phrase);
 							return phrase.update(metadata);
 						},
@@ -834,7 +833,7 @@ var AccountComponents = {
 						},
 					},
 					token: {
-						token: function () {
+						Token: function () {
 							// methods
 							this.update = function (metadata) {
 
@@ -850,7 +849,7 @@ var AccountComponents = {
 							}
 						},
 						create: function (metadata) {
-							var token = new base.data.objects.token.token();
+							var token = new base.data.objects.token.Token();
 							return token.update(metadata);
 						},
 						remove: function () {
@@ -895,14 +894,13 @@ var AccountComponents = {
 					base.currentIndex = base.currentIndex < base.data.maxTokens ? (base.currentIndex > 0 ? base.currentIndex : 0) : base.data.maxTokens - 1;
 
 					// deactivate active then find next and activate
-					var deactivateCondition = previousIndex !== base.currentIndex;
-					return base.control.deactivate(deactivateCondition).then(function () {
+					return base.control.deactivate(previousIndex).then(function () {
 						base.active = content.children[base.currentIndex];
 						return base.active.activate();
 					});
 				},
-				deactivate: function (deactivateCondition) {
-					if (deactivateCondition) {
+				deactivate: function (previousIndex) {
+					if (previousIndex !== base.currentIndex) {
 						return ((base.active || {}).deactivate || Util.ep)();
 					} else {
 						return Util.ep();
@@ -912,7 +910,6 @@ var AccountComponents = {
 					newCaption: function (metadata) {
 						base.data.currentId = metadata.parent;
 						base.data.storage.virtual = [];
-						base.data.virtualIndex = 0;
 
 						var complete = (metadata.content || '');
 						return Promise.ordered(complete.split(' ').map(function (completeToken, index) {
@@ -924,7 +921,7 @@ var AccountComponents = {
 						});
 					},
 					addPhrase: function (index, metadata) {
-
+						// this can only be done via ENTER or SPACE
 					},
 					update: {
 						main: function () {
@@ -956,9 +953,7 @@ var AccountComponents = {
 
 									// render
 									unit.isActive = true;
-									return unit.updateUnitMetadata(token).then(function () {
-										return unit.updateBindings(phrase);
-									});
+									return unit.updateUnitMetadata(phrase, token);
 								} else {
 									// hide the rest of the units
 									unit.isActive = false;
@@ -979,8 +974,7 @@ var AccountComponents = {
 													unit.isActive = true;
 													return Promise.all([
 														unit.hide(),
-														unit.updateUnitMetadata(token),
-														unit.updateBindings(phrase),
+														unit.updateUnitMetadata(phrase, token),
 													]).then(function () {
 														return content.setChildren([unit]);
 													});
