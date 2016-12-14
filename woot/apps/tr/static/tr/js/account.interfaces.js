@@ -738,28 +738,46 @@ var AccountInterfaces = {
 						// The tail of the focus token has no special bindings beyond its default behaviour
 					// 2. COMPLETING the focus token will cause the subsequent tokens to complete. The last token in the virtual will be focussed.
 					// 3. CHANGING COMPLETE (e.g. hello world -> hellscape) can cause tokens to be removed from the virtual
-					unitBase.updateUnitMetadata = function (token) {
-						// each datum should contain the type and content of a token
-						if (token) {
+					unitBase.updateUnitMetadata = function (phrase, token) {
+
+						// this does three things:
+						// 1. remember the phrase and token it is associated with to recall correctly upon focus.
+						// 2. bind to the first unit in the phrase with content if it has none.
+						// 3. modify the content and type of this token specifically.
+
+						// HERE TOMORROW
+						// PRACTISE UPDATING PHRASES AND RE-RENDERING TOKENS
+
+						if (phrase && token && (unitBase.unitComplete !== token.complete || unitBase.unitType !== token.type)) {
 							return Promise.all([
-								unitBase.setType({type: token.type}),
+								unitBase.setType(token.type),
 								unitBase.setContent(token),
-							]);
+							]).then(function () {
+								// binding
+								if (token.index === phrase.focus) {
+									phrase.focusId = unitBase.id;
+									return Util.ep();
+								} else if (token.index > phrase.focus) {
+									return unitBase.updateBindings(phrase);
+								} else {
+									return Util.ep();
+								}
+							});
 						} else {
 							return Util.ep();
 						}
 					}
-					unitBase.setType = function (options) {
-						options.type = (options.type || unitBase.unitType);
-						return unitBase.setAppearance({classes: {add: options.type, remove: (unitBase.unitType || '')}}).then(function () {
-							unitBase.unitType = options.type;
+					unitBase.setType = function (type) {
+						type = (type || 'words');
+						return unitBase.setAppearance({classes: {add: type, remove: (unitBase.unitType || '')}}).then(function () {
+							unitBase.unitType = type;
 							return Util.ep();
 						});
 					}
-					unitBase.updateBindings = function (focusUnitId) {
+					unitBase.updateBindings = function (phrase) {
 						return unitBase.setBindings({
 							'click': function (_this) {
-								return UI.getComponent(focusUnitId).then(function (focusUnit) {
+								return UI.getComponent(phrase.focusId).then(function (focusUnit) {
 									return focusUnit.focus('end');
 								});
 							},
@@ -801,7 +819,7 @@ var AccountInterfaces = {
 							return Util.ep();
 						}).then(function () {
 							// set metadata
-							return unitBase.setType({type: metadata.type});
+							return unitBase.setType(metadata.type);
 						});
 					}
 					unitBase.input = function () {
