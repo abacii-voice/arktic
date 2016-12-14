@@ -926,7 +926,13 @@ var AccountComponents = {
 							return base.control.input.update.main();
 						});
 					},
-					addPhrase: function (index, metadata) {
+					editPhrase: function (metadata) {
+						var currentPhrase = base.data.storage.virtual[base.currentIndex];
+						return currentPhrase.update(metadata).then(function () {
+							
+						});
+					},
+					addPhrase: function () {
 						// this can only be done via ENTER or SPACE
 					},
 					update: {
