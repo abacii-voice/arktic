@@ -511,6 +511,7 @@ var AccountInterfaces = {
 						return unitBase.setAppearance({classes: {add: 'hidden'}});
 					}
 					unitBase.updateMetadata = function (ndatum, query) {
+						// console.log(ndatum, query);
 						// if there are changes, do stuff.
 						return unitBase.updateDatum(ndatum).then(function () {
 							return unitBase.updateQuery(query);
@@ -527,8 +528,8 @@ var AccountInterfaces = {
 					unitBase.updateQuery = function (query) {
 						unitBase.query = query;
 						return Promise.all([
-							unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
-							unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
+							unitMainHead.setAppearance({html: unitBase.datum.main.substring(0, query.length)}),
+							unitMainTail.setAppearance({html: unitBase.datum.main}),
 						]);
 					}
 
@@ -550,7 +551,7 @@ var AccountInterfaces = {
 			}
 			autocomplete.data.display.render.setMetadata = function () {
 				var _this = autocomplete;
-				var query = _this.data.query; // query is set no matter the status of virtual
+				var query = _this.data.query.trim(); // query is set no matter the status of virtual
 
 				// MAYBE RESET THE FILTER ON ENTER FOR THE AUTOCOMPLETE
 
@@ -570,7 +571,7 @@ var AccountInterfaces = {
 				var _this = autocomplete.search;
 				metadata = (metadata || {});
 				_this.metadata = (_this.metadata || {});
-				_this.metadata.query = metadata.query !== undefined ? metadata.query : (_this.metadata.query || '');
+				_this.metadata.query = metadata.query !== undefined ? metadata.query.trim() : (_this.metadata.query || '');
 				_this.metadata.complete = metadata.complete !== undefined ? metadata.complete : _this.metadata.query;
 				_this.metadata.combined = _this.metadata.query + _this.metadata.complete.substring(_this.metadata.query.length);
 				_this.metadata.tokens = (metadata.tokens || []);
@@ -813,7 +814,7 @@ var AccountInterfaces = {
 					unitBase.setMetadata = function (metadata) {
 						metadata = (metadata || {});
 						unitBase.metadata = (unitBase.metadata || {});
-						unitBase.metadata.query = metadata.query !== undefined ? metadata.query : (unitBase.metadata.query || '');
+						unitBase.metadata.query = metadata.query !== undefined ? metadata.query.trim() : (unitBase.metadata.query || '');
 						unitBase.metadata.complete = metadata.complete !== undefined ? metadata.complete : unitBase.metadata.query;
 						unitBase.metadata.combined = unitBase.metadata.query + unitBase.metadata.complete.substring(unitBase.metadata.query.length);
 						return unitBase.components.tail.setAppearance({html: ((unitBase.isComplete ? unitBase.metadata.complete : '') || unitBase.metadata.combined || unitBase.metadata.query || unitBase.filterString || unitBase.placeholder || '')}).then(function () {

@@ -628,7 +628,7 @@ var Components = {
 											// NO RETURN: releases promise immediately. No need to wait for order if one exists.
 											UI.getComponent(base.data.storage.virtual.rendered[index]).then(function (existingListItem) {
 												// console.log(datum);
-												return existingListItem.updateMetadata(datum, base.data.query.toLowerCase());
+												return existingListItem.updateMetadata(datum, base.data.query.toLowerCase().trim());
 											}).then(function () {
 												if (base.currentIndex === undefined) {
 													return base.control.setActive.main({index: 0});
