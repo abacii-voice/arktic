@@ -788,6 +788,7 @@ var AccountComponents = {
 								});
 
 								// update metadata
+								this.completeChanged = this.complete !== metadata.complete;
 								this.tokens = [];
 								this.query = metadata.query;
 								this.queryTokens = this.query.split(' ');
@@ -928,8 +929,12 @@ var AccountComponents = {
 					},
 					editPhrase: function (metadata) {
 						var currentPhrase = base.data.storage.virtual[base.currentIndex];
-						return currentPhrase.update(metadata).then(function () {
-
+						return currentPhrase.update(metadata).then(function (updatedPhrase) {
+							if (updatedPhrase.completeChanged) {
+								return base.control.input.update.main();
+							} else {
+								return Util.ep();
+							}
 						});
 
 						// PROBLEMS TO SOLVE:
