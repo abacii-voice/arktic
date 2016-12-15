@@ -61,7 +61,8 @@ class Dictionary(models.Model):
 					type = token_types[token_primitive[0]]
 					token_primitive = token_primitive[1:]
 
-				token, token_created = self.tokens.get_or_create(type=type, content=token_primitive)
-				token_instance, token_instance_created = token.instances.get_or_create(phrase=phrase, index=index)
+				if token_primitive != '':
+					token, token_created = self.tokens.get_or_create(type=type, content=token_primitive)
+					token_instance, token_instance_created = token.instances.get_or_create(phrase=phrase, index=index)
 
 		return phrase, phrase_created
