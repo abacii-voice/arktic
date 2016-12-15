@@ -929,8 +929,14 @@ var AccountComponents = {
 					editPhrase: function (metadata) {
 						var currentPhrase = base.data.storage.virtual[base.currentIndex];
 						return currentPhrase.update(metadata).then(function () {
-							
+
 						});
+
+						// PROBLEMS TO SOLVE:
+						// 1. Even blank query is given a row from the caption but not the autocomplete.
+						// 2. make the update happen an appropriate number of times, and not feedback. For example, check complete change.
+						// 3. Make sure additional tokens render from a new phrase.
+
 					},
 					addPhrase: function () {
 						// this can only be done via ENTER or SPACE
