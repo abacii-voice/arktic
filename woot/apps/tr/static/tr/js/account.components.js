@@ -803,7 +803,7 @@ var AccountComponents = {
 										var tokenMetadata = {
 											query: (_this.queryTokens[index] || ''),
 											complete: complete,
-											type: (metadata.type || 'words'),
+											type: (metadata.type || 'word'),
 										}
 										return _this.getOrCreateToken(index, tokenMetadata);
 									}
@@ -848,7 +848,7 @@ var AccountComponents = {
 								this.query = metadata.query;
 								this.complete = metadata.complete;
 								this.combined = this.query + this.complete.slice(this.query.length);
-								this.type = (metadata.type || 'words');
+								this.type = (metadata.type || 'word');
 
 								// run standard process
 								var _this = this;
@@ -929,13 +929,19 @@ var AccountComponents = {
 					},
 					editPhrase: function (metadata) {
 						var currentPhrase = base.data.storage.virtual[base.currentIndex];
-						return currentPhrase.update(metadata).then(function (updatedPhrase) {
-							if (updatedPhrase.completeChanged) {
-								return base.control.input.update.main();
-							} else {
-								return Util.ep();
-							}
-						});
+						if (!base.data.storage.lock) {
+							base.data.storage.lock = true;
+							return currentPhrase.update(metadata).then(function (updatedPhrase) {
+								base.data.storage.lock = false;
+								if (updatedPhrase.completeChanged) {
+									return base.control.input.update.main();
+								} else {
+									return base.active.setMetadata({query: updatedPhrase.queryTokens[base.active.tokenIndex], complete: updatedPhrase.completeTokens[base.active.tokenIndex]});
+								}
+							});
+						} else {
+							return Util.ep();
+						}
 
 						// PROBLEMS TO SOLVE:
 						// 1. Even blank query is given a row from the caption but not the autocomplete.
@@ -953,6 +959,12 @@ var AccountComponents = {
 								return update.tail(virtualPosition);
 							}).then(function () {
 								return update.show();
+							}).then(function () {
+								if (base.active) {
+									return base.active.setCaretPosition('end');
+								} else {
+									return Util.ep();
+								}
 							});
 						},
 						rendered: function () {
@@ -976,7 +988,7 @@ var AccountComponents = {
 
 									// render
 									unit.isActive = true;
-									return unit.updateUnitMetadata(phrase, token);
+									return unit.updateUnitMetadata(phrase, micro);
 								} else {
 									// hide the rest of the units
 									unit.isActive = false;
@@ -997,7 +1009,7 @@ var AccountComponents = {
 													unit.isActive = true;
 													return Promise.all([
 														unit.hide(),
-														unit.updateUnitMetadata(phrase, token),
+														unit.updateUnitMetadata(phrase, micro),
 													]).then(function () {
 														return content.setChildren([unit]);
 													});
