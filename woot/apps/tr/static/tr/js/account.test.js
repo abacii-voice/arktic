@@ -790,16 +790,15 @@ var Test = {
 
 			console.log(data);
 		},
+
+		test_phrases: function () {
+			return UI.getComponent('tb-cp-caption').then(function (component) {
+				console.log(component.data.storage.virtual);
+			})
+		},
 	},
 
 	test: function () {
-
-		Test.tests.test_sort();
-
-		// all
-		// Object.keys(Test.tests).forEach(function (test) {
-		// 	var fn = Test.tests[test];
-		// 	fn();
-		// });
+		Test.tests.test_phrases();
 	},
 }
