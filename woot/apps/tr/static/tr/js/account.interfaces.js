@@ -247,7 +247,7 @@ var AccountInterfaces = {
 			// Autocomplete
 			// LIST
 			autocomplete.targets = [
-				{name: 'words',
+				{name: 'word',
 					path: function () {
 						return Promise.all([
 							Active.get('client'),
@@ -265,7 +265,7 @@ var AccountInterfaces = {
 								return {
 									id: key,
 									main: word.content,
-									rule: 'words',
+									rule: 'word',
 								}
 							});
 							resolve(results);
@@ -280,11 +280,11 @@ var AccountInterfaces = {
 						key: 'forwardslash',
 						input: 'Words',
 						display: 'Word',
-						rule: 'words',
+						rule: 'word',
 						limit: 10,
 					},
 				},
-				{name: 'tags',
+				{name: 'tag',
 					path: function () {
 						return Promise.all([
 							Active.get('client'),
@@ -302,7 +302,7 @@ var AccountInterfaces = {
 								return {
 									id: key,
 									main: tag.content,
-									rule: 'tags',
+									rule: 'tag',
 								}
 							});
 							resolve(results);
@@ -315,10 +315,10 @@ var AccountInterfaces = {
 					},
 					setStyle: function () {
 						return new Promise(function(resolve, reject) {
-							jss.set('#{id} .tags'.format({id: autocomplete.id}), {
+							jss.set('#{id} .tag'.format({id: autocomplete.id}), {
 								'background-color': 'rgba(255,255,0,0.05)'
 							});
-							jss.set('#{id} .tags.active'.format({id: autocomplete.id}), {
+							jss.set('#{id} .tag.active'.format({id: autocomplete.id}), {
 								'background-color': 'rgba(255,255,0,0.1)'
 							});
 							resolve();
@@ -330,12 +330,12 @@ var AccountInterfaces = {
 						key: 'colon',
 						input: 'Tags',
 						display: 'Tag',
-						rule: 'tags',
+						rule: 'tag',
 						limit: 10,
 						autocompleteOverride: true,
 					},
 				},
-				{name: 'phrases',
+				{name: 'phrase',
 					path: function () {
 						return Promise.all([
 							Active.get('client'),
@@ -364,7 +364,7 @@ var AccountInterfaces = {
 								return {
 									id: key,
 									main: main.trim(),
-									rule: 'phrases',
+									rule: 'phrase',
 									tokens: sortedTokens,
 								}
 							});
@@ -378,10 +378,10 @@ var AccountInterfaces = {
 					},
 					setStyle: function () {
 						return new Promise(function(resolve, reject) {
-							jss.set('#{id} .phrases'.format({id: autocomplete.id}), {
+							jss.set('#{id} .phrase'.format({id: autocomplete.id}), {
 								'background-color': 'rgba(255,100,255,0.05)'
 							});
-							jss.set('#{id} .phrases.active'.format({id: autocomplete.id}), {
+							jss.set('#{id} .phrase.active'.format({id: autocomplete.id}), {
 								'background-color': 'rgba(255,100,255,0.4)'
 							});
 							resolve();
@@ -393,7 +393,7 @@ var AccountInterfaces = {
 						key: 'dot',
 						input: 'Phrases',
 						display: 'Phrase',
-						rule: 'phrases',
+						rule: 'phrase',
 						limit: 10,
 					},
 				},
@@ -585,6 +585,7 @@ var AccountInterfaces = {
 					// Should trigger caption set metadata to check for phrase and other expansions.
 					// return caption action
 					if (caption.isFocussed) {
+						// console.log('setMetadata: once a result comes in, it is sent to the caption', _this.metadata);
 						return caption.control.input.editPhrase(_this.metadata);
 					} else {
 						return Util.ep();
@@ -649,19 +650,27 @@ var AccountInterfaces = {
 			]
 			caption.styles = function () {
 				// word
-				jss.set('#{id} .words'.format({id: caption.id}), {
+				jss.set('#{id} .word'.format({id: caption.id}), {
 					'color': '#ccc',
 				});
-				jss.set('#{id} .words.active'.format({id: caption.id}), {
+				jss.set('#{id} .word.active'.format({id: caption.id}), {
 					'color': '#eee',
 				});
 
 				// tag
-				jss.set('#{id} .tags'.format({id: caption.id}), {
+				jss.set('#{id} .tag'.format({id: caption.id}), {
 					'color': 'rgba(255,255,0,0.4)',
 				});
-				jss.set('#{id} .tags.active'.format({id: caption.id}), {
+				jss.set('#{id} .tag.active'.format({id: caption.id}), {
 					'color': '05DA01',
+				});
+
+				// phrase
+				jss.set('#{id} .phrase'.format({id: caption.id}), {
+					'color': '#ccc',
+				});
+				jss.set('#{id} .phrase.active'.format({id: caption.id}), {
+					'color': '#eee',
 				});
 
 				// ghost
@@ -672,7 +681,7 @@ var AccountInterfaces = {
 
 				return Util.ep();
 			}
-			caption.unit = function (token) {
+			caption.unit = function () {
 				var id = caption.data.idgen();
 				return Promise.all([
 					// base
@@ -718,7 +727,7 @@ var AccountInterfaces = {
 					unitBase.reset = function () {
 						unitBase.virtual = undefined;
 						return Promise.all([
-							unitBase.updateUnitMetadata({query: '', complete: '', type: 'words'}),
+							unitBase.updateUnitMetadata(),
 							unitBase.hide(),
 						]);
 					}
@@ -739,39 +748,50 @@ var AccountInterfaces = {
 						// The tail of the focus token has no special bindings beyond its default behaviour
 					// 2. COMPLETING the focus token will cause the subsequent tokens to complete. The last token in the virtual will be focussed.
 					// 3. CHANGING COMPLETE (e.g. hello world -> hellscape) can cause tokens to be removed from the virtual
-					unitBase.updateUnitMetadata = function (phrase, token) {
+					unitBase.updateUnitMetadata = function (phrase, micro) {
 
 						// this does three things:
 						// 1. remember the phrase and token it is associated with to recall correctly upon focus.
 						// 2. bind to the first unit in the phrase with content if it has none.
 						// 3. modify the content and type of this token specifically.
 
-						// HERE TOMORROW
-						// PRACTISE UPDATING PHRASES AND RE-RENDERING TOKENS
+						if (phrase) {
+							var token = phrase.tokens[micro];
+							if (unitBase.unitComplete !== token.complete || unitBase.unitType !== token.type) {
+								unitBase.phrase = phrase;
+								unitBase.tokenIndex = token.index;
+								phrase.tokens[micro].unit = unitBase.id;
 
-						if (phrase && token && (unitBase.unitComplete !== token.complete || unitBase.unitType !== token.type)) {
-							unitBase.phrase = phrase;
-							unitBase.token = token;
-							return Promise.all([
-								unitBase.setType(token.type),
-								unitBase.setContent(token),
-							]).then(function () {
-								// binding
-								if (token.index === phrase.focus) {
-									phrase.focusId = unitBase.id;
-									return Util.ep();
-								} else if (token.index > phrase.focus) {
-									return unitBase.updateBindings(phrase);
-								} else {
-									return Util.ep();
-								}
-							});
+								return Promise.all([
+									unitBase.setMetadata(token),
+									unitBase.setUnitContent(token),
+								]).then(function () {
+									// binding
+									if (token.index === phrase.focus) {
+										phrase.focusId = unitBase.id;
+										return Util.ep();
+									} else if (token.index > phrase.focus) {
+										return unitBase.updateBindings(phrase);
+									} else {
+										return Util.ep();
+									}
+								});
+							} else {
+								return Util.ep();
+							}
+						} else {
+							return Util.ep();
+						}
+					}
+					unitBase.setUnitContent = function (metadata) {
+						if (!unitBase.isFocussed) {
+							return unitBase.setContent(metadata);
 						} else {
 							return Util.ep();
 						}
 					}
 					unitBase.setType = function (type) {
-						type = (type || 'words');
+						type = (type || 'word');
 						return unitBase.setAppearance({classes: {add: type, remove: (unitBase.unitType || '')}}).then(function () {
 							unitBase.unitType = type;
 							return Util.ep();
@@ -786,6 +806,14 @@ var AccountInterfaces = {
 							},
 						});
 					}
+					unitBase.completePhrase = function () {
+						console.log(unitBase.phrase);
+						return Promise.all(unitBase.phrase.tokens.slice(unitBase.phrase.focus).map(function (token) {
+							return UI.getComponent(token.unit).then(function (unit) {
+								return unit.complete();
+							});
+						}));
+					}
 
 					// caption unit export
 					unitBase.runChecks = function () {
@@ -794,8 +822,9 @@ var AccountInterfaces = {
 
 					// search bar mods
 					unitBase.complete = function (options) {
+						options = (options || {});
 						unitBase.completeQuery = ((unitBase.metadata || {}).complete || '');
-						if (unitBase.completeQuery !== unitBase.metadata.query) {
+						if (unitBase.completeQuery !== unitBase.metadata.query && !unitBase.isComplete) {
 							unitBase.isComplete = true;
 							unitBase.metadata.query = unitBase.completeQuery;
 							return unitBase.components.tail.setAppearance({html: unitBase.completeQuery}).then(function () {
@@ -827,7 +856,7 @@ var AccountInterfaces = {
 					}
 					unitBase.input = function () {
 						return unitBase.getContent().then(function (unitContent) {
-							return unitBase.phrase.updatedQuery(unitBase.token.index, unitContent).then(function (updatedQuery) {
+							return unitBase.phrase.updatedQuery(unitBase.tokenIndex, unitContent).then(function (updatedQuery) {
 								return autocomplete.search.setContent({query: updatedQuery, trigger: true});
 							});
 						});
@@ -865,7 +894,6 @@ var AccountInterfaces = {
 					}
 
 					return Promise.all([
-						unitBase.updateUnitMetadata(token),
 						unitBase.components.head.setBindings({
 							'focus': function (_this) {
 								return unitBase.focus();
@@ -885,7 +913,7 @@ var AccountInterfaces = {
 							caption.completionOverride = true; // introduce a little chaos.
 							return Promise.all([
 								autocomplete.behaviours.right(),
-								caption.active.virtualComplete(),
+								caption.active.completePhrase(),
 							]);
 						} else {
 							return autocomplete.behaviours.right();
@@ -896,7 +924,8 @@ var AccountInterfaces = {
 				}
 			}
 			caption.behaviours.space = function () {
-
+				// skip to the next token in the phrase.
+				// if there is no next token, start a new phrase.
 			}
 
 			// connect
