@@ -758,6 +758,7 @@ var AccountInterfaces = {
 						if (phrase) {
 							var token = phrase.tokens[micro];
 							if (unitBase.unitComplete !== token.complete || unitBase.unitType !== token.type) {
+								// console.log(phrase.tokens.length, token.complete);
 								unitBase.phrase = phrase;
 								unitBase.tokenIndex = token.index;
 								phrase.tokens[micro].unit = unitBase.id;
@@ -807,7 +808,6 @@ var AccountInterfaces = {
 						});
 					}
 					unitBase.completePhrase = function () {
-						console.log(unitBase.phrase);
 						return Promise.all(unitBase.phrase.tokens.slice(unitBase.phrase.focus).map(function (token) {
 							return UI.getComponent(token.unit).then(function (unit) {
 								return unit.complete();
