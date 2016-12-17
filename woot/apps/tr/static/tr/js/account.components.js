@@ -988,7 +988,9 @@ var AccountComponents = {
 
 									// render
 									unit.isActive = true;
-									return unit.updateUnitMetadata(phrase, micro);
+									return unit.updateUnitMetadata(phrase, token.index).then(function () {
+
+									});
 								} else {
 									// hide the rest of the units
 									unit.isActive = false;
