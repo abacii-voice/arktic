@@ -792,24 +792,28 @@ var AccountComponents = {
 								this.tokens = [];
 								this.query = metadata.query;
 								this.queryTokens = this.query.split(' ');
-								this.complete = metadata.complete;
+								this.complete = metadata.complete || metadata.query;
 								this.completeTokens = this.complete.split(' ');
 								this.focus = this.queryTokens.length - 1;
 
 								// run process
 								var _this = this;
-								return Promise.ordered(_this.completeTokens.map(function (complete, index) {
-									return function () {
-										var tokenMetadata = {
-											query: (_this.queryTokens[index] || ''),
-											complete: complete,
-											type: (metadata.type || 'word'),
+								if (_this.completeChanged) {
+									return Promise.ordered(_this.completeTokens.map(function (complete, index) {
+										return function () {
+											var tokenMetadata = {
+												query: (_this.queryTokens[index] || ''),
+												complete: complete,
+												type: (metadata.type || 'word'),
+											}
+											return _this.getOrCreateToken(index, tokenMetadata);
 										}
-										return _this.getOrCreateToken(index, tokenMetadata);
-									}
-								})).then(function () {
+									})).then(function () {
+										return Util.ep(_this);
+									});
+								} else {
 									return Util.ep(_this);
-								});
+								}
 							}
 							this.getOrCreateToken = function (index, metadata) {
 								var _this = this;
@@ -929,25 +933,21 @@ var AccountComponents = {
 					},
 					editPhrase: function (metadata) {
 						var currentPhrase = base.data.storage.virtual[base.currentIndex];
-						if (!base.data.storage.lock) {
-							base.data.storage.lock = true;
+						if (!base.lock) {
+							base.lock = true;
 							return currentPhrase.update(metadata).then(function (updatedPhrase) {
-								base.data.storage.lock = false;
 								if (updatedPhrase.completeChanged) {
 									return base.control.input.update.main();
 								} else {
 									return base.active.setMetadata({query: updatedPhrase.queryTokens[base.active.tokenIndex], complete: updatedPhrase.completeTokens[base.active.tokenIndex]});
 								}
+							}).then(function () {
+								base.lock = false;
+								return Util.ep();
 							});
 						} else {
 							return Util.ep();
 						}
-
-						// PROBLEMS TO SOLVE:
-						// 1. Even blank query is given a row from the caption but not the autocomplete.
-						// 2. make the update happen an appropriate number of times, and not feedback. For example, check complete change.
-						// 3. Make sure additional tokens render from a new phrase.
-
 					},
 					addPhrase: function () {
 						// this can only be done via ENTER or SPACE

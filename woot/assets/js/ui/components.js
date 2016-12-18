@@ -515,7 +515,6 @@ var Components = {
 				load: {
 					get: function () {
 						// this looks at the Context.get and Context.get:force, separately.
-						base.data.lock = false;
 						if (base.data.reset) {
 							base.data.storage.dataset = {};
 							base.data.storage.subset = {};
