@@ -795,6 +795,7 @@ var AccountComponents = {
 								this.completeTokens = this.complete.split(' ');
 								this.focus = this.queryTokens.length - 1;
 								this.index = metadata.index;
+								this.isComplete = this.query === this.complete;
 
 								// run process
 								var _this = this;

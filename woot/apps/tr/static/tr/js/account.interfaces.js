@@ -894,11 +894,16 @@ var AccountInterfaces = {
 				if (caption.isFocussed) {
 					return caption.active.isCaretInPosition('end').then(function (inPosition) {
 						if (inPosition) {
-							caption.completionOverride = true; // introduce a little chaos.
-							return Promise.all([
-								autocomplete.behaviours.right(),
-								caption.active.completePhrase(),
-							]);
+							if (caption.active.phrase.isComplete) {
+								return caption.control.setActive({increment: 1}).then(function () {
+									return caption.active.focus('start');
+								});
+							} else {
+								return Promise.all([
+									autocomplete.behaviours.right(),
+									caption.active.completePhrase(),
+								]);
+							}
 						} else {
 							return autocomplete.behaviours.right();
 						}
