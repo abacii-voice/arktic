@@ -788,17 +788,18 @@ var AccountComponents = {
 								});
 
 								// update metadata
-								this.completeChanged = this.complete !== metadata.complete;
-								this.tokens = [];
+								this.completeChanged = (this.complete !== metadata.complete) || !metadata.complete;
 								this.query = metadata.query;
 								this.queryTokens = this.query.split(' ');
 								this.complete = metadata.complete || metadata.query;
 								this.completeTokens = this.complete.split(' ');
 								this.focus = this.queryTokens.length - 1;
+								this.index = metadata.index;
 
 								// run process
 								var _this = this;
 								if (_this.completeChanged) {
+									this.tokens = [];
 									return Promise.ordered(_this.completeTokens.map(function (complete, index) {
 										return function () {
 											var tokenMetadata = {
@@ -837,10 +838,20 @@ var AccountComponents = {
 						create: function (index, metadata) {
 							var phrase = new base.data.objects.phrase.Phrase();
 							base.data.storage.virtual.splice(index, 0, phrase);
-							return phrase.update(metadata);
+							return phrase.update(metadata).then(function () {
+								base.data.objects.phrase.redoNumbering();
+							});
 						},
 						remove: function () {
 
+						},
+						redoNumbering: function () {
+							return Promise.ordered(base.data.storage.virtual.map(function (phrase, index) {
+								return function () {
+									phrase.index = index;
+									return Util.ep();
+								}
+							}));
 						},
 					},
 					token: {
@@ -907,6 +918,7 @@ var AccountComponents = {
 					// deactivate active then find next and activate
 					return base.control.deactivate(previousIndex).then(function () {
 						base.active = content.children[base.currentIndex];
+						base.phraseIndex = base.active.phrase.index;
 						return base.active.activate();
 					});
 				},
@@ -932,7 +944,7 @@ var AccountComponents = {
 						});
 					},
 					editPhrase: function (metadata) {
-						var currentPhrase = base.data.storage.virtual[base.currentIndex];
+						var currentPhrase = base.data.storage.virtual[base.phraseIndex];
 						if (!base.lock) {
 							base.lock = true;
 							return currentPhrase.update(metadata).then(function (updatedPhrase) {
