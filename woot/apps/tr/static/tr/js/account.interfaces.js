@@ -758,7 +758,6 @@ var AccountInterfaces = {
 						if (phrase) {
 							var token = phrase.tokens[micro];
 							if (unitBase.unitComplete !== token.complete || unitBase.unitType !== token.type) {
-								// console.log(phrase.tokens.length, token.complete);
 								unitBase.phrase = phrase;
 								unitBase.tokenIndex = token.index;
 								phrase.tokens[micro].unit = unitBase.id;
@@ -785,11 +784,13 @@ var AccountInterfaces = {
 						}
 					}
 					unitBase.setUnitContent = function (metadata) {
-						if (!unitBase.isFocussed) {
-							return unitBase.setContent(metadata);
-						} else {
-							return Util.ep();
-						}
+						return unitBase.setContent(metadata).then(function () {
+							if (unitBase.isFocussed) {
+								return unitBase.setCaretPosition('end');
+							} else {
+								return Util.ep();
+							}
+						});
 					}
 					unitBase.setType = function (type) {
 						type = (type || 'word');
