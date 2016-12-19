@@ -168,7 +168,7 @@ var AccountInterfaces = {
 			Mousetrap.bind('backspace', function (event) {
 				Promise.all([
 					autocomplete.behaviours.backspace(),
-					// caption.behaviours.backspace(),
+					caption.behaviours.backspace(),
 				]);
 			});
 
@@ -585,7 +585,6 @@ var AccountInterfaces = {
 					// Should trigger caption set metadata to check for phrase and other expansions.
 					// return caption action
 					if (caption.isFocussed) {
-						// console.log('setMetadata: once a result comes in, it is sent to the caption', _this.metadata);
 						return caption.control.input.editPhrase(_this.metadata);
 					} else {
 						return Util.ep();
@@ -926,6 +925,15 @@ var AccountInterfaces = {
 				} else {
 					return Util.ep();
 				}
+			}
+			caption.behaviours.backspace = function () {
+				// var index = caption.phraseIndex;
+				// return caption.behaviours.left().then(function () {
+				// 	return base.
+				// });
+			}
+			caption.behaviours.enter = function () {
+
 			}
 			caption.behaviours.space = function () {
 				// skip to the next token in the phrase.
