@@ -140,7 +140,7 @@ var AccountInterfaces = {
 			Mousetrap.bind('left', function (event) {
 				Promise.all([
 					autocomplete.behaviours.left(),
-
+					caption.behaviours.left(),
 				]);
 			});
 
@@ -910,6 +910,21 @@ var AccountInterfaces = {
 					});
 				} else {
 					return autocomplete.behaviours.right();
+				}
+			}
+			caption.behaviours.left = function () {
+				if (caption.isFocussed) {
+					return caption.active.isCaretInPosition('start').then(function (inPosition) {
+						if (inPosition) {
+							return caption.control.setActive({increment: -1}).then(function () {
+								return caption.active.focus('end');
+							});
+						} else {
+							return Util.ep();
+						}
+					});
+				} else {
+					return Util.ep();
 				}
 			}
 			caption.behaviours.space = function () {
