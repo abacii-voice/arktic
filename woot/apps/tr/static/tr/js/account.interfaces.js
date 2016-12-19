@@ -808,11 +808,13 @@ var AccountInterfaces = {
 						});
 					}
 					unitBase.completePhrase = function () {
-						return Promise.all(unitBase.phrase.tokens.slice(unitBase.phrase.focus).map(function (token) {
-							return UI.getComponent(token.unit).then(function (unit) {
-								return unit.complete();
+						var tokens = unitBase.phrase.tokens.slice(unitBase.phrase.focus);
+						return caption.control.input.editPhrase({query: unitBase.phrase.complete}).then(function () {
+							// focus last token
+							return UI.getComponent(tokens[tokens.length-1].unit).then(function (unit) {
+								return unit.focus('end');
 							});
-						}));
+						});
 					}
 
 					// caption unit export
@@ -821,25 +823,6 @@ var AccountInterfaces = {
 					}
 
 					// search bar mods
-					unitBase.complete = function (options) {
-						options = (options || {});
-						unitBase.completeQuery = ((unitBase.metadata || {}).complete || '');
-						if (unitBase.completeQuery !== unitBase.metadata.query && !unitBase.isComplete) {
-							unitBase.isComplete = true;
-							unitBase.metadata.query = unitBase.completeQuery;
-							return unitBase.components.tail.setAppearance({html: unitBase.completeQuery}).then(function () {
-								return unitBase.components.head.setAppearance({html: unitBase.completeQuery});
-							}).then(function () {
-								if (options.end) {
-									return unitBase.setCaretPosition('end');
-								} else {
-									return Util.ep();
-								}
-							});
-						} else {
-							return Util.ep();
-						}
-					}
 					unitBase.setMetadata = function (metadata) {
 						metadata = (metadata || {});
 						unitBase.metadata = (unitBase.metadata || {});
