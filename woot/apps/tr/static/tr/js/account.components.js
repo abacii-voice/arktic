@@ -794,7 +794,6 @@ var AccountComponents = {
 								this.complete = metadata.complete || metadata.query;
 								this.completeTokens = this.complete.split(' ');
 								this.focus = this.queryTokens.length - 1;
-								this.index = metadata.index;
 								this.isComplete = this.query === this.complete;
 
 								// run process
@@ -843,8 +842,9 @@ var AccountComponents = {
 								base.data.objects.phrase.redoNumbering();
 							});
 						},
-						remove: function () {
-
+						remove: function (index) {
+							base.data.storage.virtual.splice(index, 1);
+							return base.data.objects.phrase.redoNumbering();
 						},
 						redoNumbering: function () {
 							return Promise.ordered(base.data.storage.virtual.map(function (phrase, index) {
@@ -874,9 +874,6 @@ var AccountComponents = {
 						create: function (metadata) {
 							var token = new base.data.objects.token.Token();
 							return token.update(metadata);
-						},
-						remove: function () {
-
 						},
 					},
 				},
@@ -964,6 +961,12 @@ var AccountComponents = {
 					},
 					addPhrase: function () {
 						// this can only be done via ENTER or SPACE
+					},
+					removePhrase: function (index) {
+						index = index || base.phraseIndex;
+						return base.data.objects.phrase.remove(index).then(function () {
+							return base.control.input.update.main();
+						});
 					},
 					update: {
 						main: function () {
