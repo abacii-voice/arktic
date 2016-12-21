@@ -59,16 +59,6 @@ var AccountInterfaces = {
 						'height': '60px',
 					},
 				},
-				state: {
-					states: {
-						'transcription-state': {
-							preFn: function (_this) {
-								_this.canvas.start();
-								return _this.update();
-							},
-						},
-					},
-				},
 			}),
 
 			AccountComponents.captionField('tb-cp-caption', {
@@ -748,6 +738,7 @@ var AccountInterfaces = {
 					// 2. COMPLETING the focus token will cause the subsequent tokens to complete. The last token in the virtual will be focussed.
 					// 3. CHANGING COMPLETE (e.g. hello world -> hellscape) can cause tokens to be removed from the virtual
 					unitBase.updateUnitMetadata = function (phrase, micro) {
+						// console.log('{id}: updateUnitMetadata'.format({id: unitBase.id}));
 
 						// this does three things:
 						// 1. remember the phrase and token it is associated with to recall correctly upon focus.
@@ -757,6 +748,7 @@ var AccountInterfaces = {
 						if (phrase) {
 							var token = phrase.tokens[micro];
 							if (unitBase.unitComplete !== token.complete || unitBase.unitType !== token.type) {
+								// console.log('{id}: updateUnitMetadata -> complete has changed'.format({id: unitBase.id}));
 								unitBase.phrase = phrase;
 								unitBase.tokenIndex = token.index;
 								phrase.tokens[micro].unit = unitBase.id;
@@ -783,13 +775,11 @@ var AccountInterfaces = {
 						}
 					}
 					unitBase.setUnitContent = function (metadata) {
-						return unitBase.setContent(metadata).then(function () {
-							if (unitBase.isFocussed) {
-								return unitBase.setCaretPosition('end');
-							} else {
-								return Util.ep();
-							}
-						});
+						if (!unitBase.isFocussed) {
+							return unitBase.setContent(metadata);
+						} else {
+							return Util.ep();
+						}
 					}
 					unitBase.setType = function (type) {
 						type = (type || 'word');
@@ -808,6 +798,7 @@ var AccountInterfaces = {
 						});
 					}
 					unitBase.completePhrase = function () {
+						console.log('{id}: completePhrase'.format({id: unitBase.id}));
 						var tokens = unitBase.phrase.tokens.slice(unitBase.phrase.focus);
 						return caption.control.input.editPhrase({query: unitBase.phrase.complete}).then(function () {
 							// focus last token
@@ -815,6 +806,29 @@ var AccountInterfaces = {
 								return unit.focus('end');
 							});
 						});
+					}
+					unitBase.setCaretPosition = function (position) {
+						console.log(arguments.callee.caller);
+						console.log('{id}: setCaretPosition {position} {caller}'.format({id: unitBase.id, position: position, caller: arguments.callee.caller.name}));
+						// set position
+						var maxLength = unitBase.components.head.model().text().length;
+						var limits = {'start': 0, 'end': maxLength};
+						position = position in limits ? limits[position] : position;
+
+						// boundary conditions
+						position = position > maxLength ? maxLength : (position < 0 ? 0 : position);
+
+						// set the caret position to the end or the beginning
+						if (position !== undefined) {
+							var range = document.createRange(); // Create a range (a range is a like the selection but invisible)
+							var lm = unitBase.components.head.element();
+							range.setStart(lm.childNodes.length ? lm.firstChild : lm, position);
+							var selection = window.getSelection(); // get the selection object (allows you to change selection)
+							selection.removeAllRanges(); // remove any selections already made
+							selection.addRange(range); // make the range you have just created the visible selection
+						}
+
+						return Util.ep();
 					}
 
 					// caption unit export
@@ -824,6 +838,7 @@ var AccountInterfaces = {
 
 					// search bar mods
 					unitBase.setMetadata = function (metadata) {
+						// console.log('{id}: setMetadata'.format({id: unitBase.id}));
 						metadata = (metadata || {});
 						unitBase.metadata = (unitBase.metadata || {});
 						unitBase.metadata.query = metadata.query !== undefined ? metadata.query.trim() : (unitBase.metadata.query || '');
@@ -838,6 +853,7 @@ var AccountInterfaces = {
 						});
 					}
 					unitBase.input = function () {
+						console.log('{id}: input'.format({id: unitBase.id}));
 						return unitBase.getContent().then(function (unitContent) {
 							return unitBase.phrase.updatedQuery(unitBase.tokenIndex, unitContent).then(function (updatedQuery) {
 								return autocomplete.search.setContent({query: updatedQuery, trigger: true});
@@ -845,6 +861,7 @@ var AccountInterfaces = {
 						});
 					}
 					unitBase.focus = function (position) {
+						console.log('{id}: focus {position}'.format({id: unitBase.id, position: position}));
 						if (!unitBase.isFocussed) {
 							caption.isFocussed = true;
 							unitBase.isFocussed = true;
@@ -854,7 +871,6 @@ var AccountInterfaces = {
 									return unitBase.input();
 								});
 							});
-							return Util.ep();
 						} else {
 							return Util.ep();
 						}
@@ -891,13 +907,18 @@ var AccountInterfaces = {
 			}
 			caption.behaviours.right = function () {
 				if (caption.isFocussed) {
+					console.log('active {id}: caption.behaviours.right'.format({id: caption.active.id}));
 					return caption.active.isCaretInPosition('end').then(function (inPosition) {
 						if (inPosition) {
+							console.log('active {id}: caption.behaviours.right -> inPosition'.format({id: caption.active.id}));
 							if (caption.active.phrase.isComplete) {
+								console.log('active {id}: caption.behaviours.right -> isComplete'.format({id: caption.active.id}));
 								return caption.control.setActive({increment: 1}).then(function () {
 									return caption.active.focus('start');
 								});
 							} else {
+								console.log('active {id}: caption.behaviours.right -> completing'.format({id: caption.active.id}));
+								caption.completionOverride = true;
 								return Promise.all([
 									autocomplete.behaviours.right(),
 									caption.active.completePhrase(),
@@ -960,6 +981,24 @@ var AccountInterfaces = {
 				// buttonPanel
 
 				// audioCaptionPanel
+				audio.components.track.setState({
+					states: {
+						'transcription-state': {
+							preFn: function (_this) {
+								_this.canvas.start();
+								return Promise.all([
+									_this.update(),
+									new Promise(function (r, e) {
+										setInterval(function () {
+											console.log('mark');
+										}, 100);
+										r();
+									}),
+								]);
+							},
+						},
+					},
+				}),
 				audioCaptionPanel.setChildren([
 					audio,
 					caption,
