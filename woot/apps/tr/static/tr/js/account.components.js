@@ -457,8 +457,6 @@ var AccountComponents = {
 
 					},
 				}),
-				audioTrack.setRegistry(args.registry),
-				audioTrack.setState(args.state),
 				audioTrackCanvas.setBindings({
 
 					// like it says
@@ -977,7 +975,8 @@ var AccountComponents = {
 								return update.show();
 							}).then(function () {
 								if (base.active) {
-									return base.active.setCaretPosition('end');
+									// return base.active.setCaretPosition('end');
+									return Util.ep();
 								} else {
 									return Util.ep();
 								}
