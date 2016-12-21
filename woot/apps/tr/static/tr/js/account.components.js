@@ -973,13 +973,6 @@ var AccountComponents = {
 								return update.tail(virtualPosition);
 							}).then(function () {
 								return update.show();
-							}).then(function () {
-								if (base.active) {
-									// return base.active.setCaretPosition('end');
-									return Util.ep();
-								} else {
-									return Util.ep();
-								}
 							});
 						},
 						rendered: function () {
@@ -1003,9 +996,8 @@ var AccountComponents = {
 
 									// render
 									unit.isActive = true;
-									return unit.updateUnitMetadata(phrase, token.index).then(function () {
-
-									});
+									// console.log(token);
+									return unit.updateUnitMetadata(phrase, token.index);
 								} else {
 									// hide the rest of the units
 									unit.isActive = false;
@@ -1020,10 +1012,13 @@ var AccountComponents = {
 							if (!reachedTokenCount) {
 								return Promise.ordered(base.data.storage.virtual.slice(lastMacro).map(function (phrase, macro) {
 									return function () {
-										return Promise.ordered(phrase.tokens.slice((macro===lastMacro ? lastMicro : 0)).map(function (token, micro) {
+										var microSlice = macro===lastMacro ? lastMicro : 0;
+										return Promise.ordered(phrase.tokens.slice(microSlice).map(function (token, micro) {
+											micro += microSlice;
 											return function () {
 												return base.unit().then(function (unit) {
 													unit.isActive = true;
+													// console.log(token);
 													return Promise.all([
 														unit.hide(),
 														unit.updateUnitMetadata(phrase, micro),
