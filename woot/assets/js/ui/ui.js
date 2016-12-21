@@ -208,7 +208,7 @@ var UI = {
 			var currentClasses = (this.classes || []);
 
 			if (appearance !== undefined) {
-				this.properties = appearance.properties;
+				this.properties = appearance.properties || this.properties;
 				this.html = appearance.html;
 
 				// classes need to be a combination of ones removed and ones added. If "add" and "remove" are not present, defaults to using whole object.
