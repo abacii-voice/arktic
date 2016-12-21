@@ -102,13 +102,35 @@ ways to cause tokens to re-render
 3. enter or space for new word
 
 BIG CHANGES:
-1. Remove registry and permissions entirely. Or make permission feed of Context.
+1. Remove registry and permissions entirely. Or make permission feed off Context.
 2. Load code in Django template according to permission. Get small permission summary of user before loading.
 3. Split components into individual files
 4. Modify django models to include my personal serialisation
 5. use websockets for message passing
-6. nested state system
+6. nested state system. restrict accessibility. enhance specificity.
 
 search and replace
 1. underscores with spaces
 2. @hes@ [hesitation]
+
+________________________________________
+bugs with caption:
+1. when a completed phrase is edited in the middle, right arrow at the end of any word in the phrase will go to the end of the next word.
+2. editing the middle of the last token in a completed phrase causes the caret to go to the end of the word.
+3. long phrases do not display fully. may have something to do with rendered boundary.
+4. phrases not loading when typed in the caption. load fine in the autocomplete.
+5. caret disappears when completing long phrases. setActive is still working with right arrow though. Just not focus.
+
+caption needs to follow predictable loop:
+1. type something in caption
+2. query is wrapped up and sent to autocomplete
+3. autocomplete treats the query as it would its own query
+4. autocomplete setMetadata events trigger caption setMetadata events
+5. caption is re-rendered efficiently
+
+other things that can affect the caption
+1. right arrow complete
+2. left or right arrow next or previous
+3. enter new phrase
+4. backspace remove phrase
+5.
