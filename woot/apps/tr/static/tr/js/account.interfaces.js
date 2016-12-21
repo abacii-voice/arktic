@@ -753,10 +753,9 @@ var AccountInterfaces = {
 								unitBase.tokenIndex = token.index;
 								phrase.tokens[micro].unit = unitBase.id;
 
-								return Promise.all([
-									unitBase.setMetadata(token),
-									unitBase.setUnitContent(token),
-								]).then(function () {
+								return unitBase.setUnitContent(token).then(function () {
+									return unitBase.setMetadata(token);
+								}).then(function () {
 									// binding
 									if (token.index === phrase.focus) {
 										phrase.focusId = unitBase.id;
@@ -778,7 +777,12 @@ var AccountInterfaces = {
 						if (!unitBase.isFocussed) {
 							return unitBase.setContent(metadata);
 						} else {
-							return Util.ep();
+							if (unitBase.completionOverride && !unitBase.isComplete) {
+								unitBase.completionOverride = false;
+								return unitBase.complete();
+							} else {
+								return Util.ep();
+							}
 						}
 					}
 					unitBase.setType = function (type) {
@@ -799,6 +803,7 @@ var AccountInterfaces = {
 					}
 					unitBase.completePhrase = function () {
 						var tokens = unitBase.phrase.tokens.slice(unitBase.phrase.focus);
+						unitBase.completionOverride = true;
 						return caption.control.input.editPhrase({query: unitBase.phrase.complete}).then(function () {
 							// focus last token
 							return UI.getComponent(tokens[tokens.length-1].unit).then(function (unit) {
