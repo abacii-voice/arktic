@@ -1018,7 +1018,6 @@ var AccountComponents = {
 											return function () {
 												return base.unit().then(function (unit) {
 													unit.isActive = true;
-													// console.log(token);
 													return Promise.all([
 														unit.hide(),
 														unit.updateUnitMetadata(phrase, micro),
