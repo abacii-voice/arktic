@@ -134,3 +134,15 @@ other things that can affect the caption
 3. enter new phrase
 4. backspace remove phrase
 5.
+
+|||_____
+Bindings left:
+1. backspace (remove phrase)
+2. enter (confirm phrase, new phrase)
+3. space if no other options (confirm phrase)
+4. right arrow (confirm phrase)
+4. numbers (complete phrase)
+5. selection (merge phrases)
+6. alt + left, alt + right (focus end next previous)
+7. alt + backspace (remove phrase)
+8. make sure blur and focus work properly
