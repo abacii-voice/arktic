@@ -930,7 +930,19 @@ var AccountInterfaces = {
 			caption.behaviours.enter = function () {
 				// confirms current phrase, but does not complete.
 				// splits phrase into sub-phrases, each containing a single token.
-				return caption.active.phrase.split();
+				return caption.control.input.addPhrase().then(function () {
+					return caption.control.input.update.main();
+				}).then(function () {
+					return caption.control.setActive({increment: 1}).then(function () {
+						return caption.active.focus('end');
+					});
+				}).then(function () {
+					return caption.data.objects.phrase.split(caption.phraseIndex-1);
+				}).then(function () {
+					return caption.control.input.update.main();
+				}).then(function () {
+					return caption.control.setActive();
+				});
 			}
 			caption.behaviours.space = function () {
 				// skip to the next token in the phrase.
