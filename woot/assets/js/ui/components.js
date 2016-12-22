@@ -580,10 +580,29 @@ var Components = {
 							// For the null query, the override only diplays everything if the query is still null, then is more specific when something is typed.
 							var conditions = [
 								(datum.rule === base.data.filter || base.data.filter === ''), // filter matches or no filter
-								((datum.main.toLowerCase().indexOf(base.data.query.toLowerCase().trim()) === 0 && base.data.query.toLowerCase().trim() !== '') || ((base.data.autocompleteOverride || false) && base.data.query === '')), // lower case query match at beginning
+
+
+								(
+									(
+										datum.main.toLowerCase().indexOf(base.data.query.toLowerCase().trim()) === 0
+										&&
+										base.data.query.toLowerCase().trim() !== ''
+									)
+									||
+									(
+										(base.data.autocompleteOverride || false)
+										&&
+										base.data.query === ''
+									)
+									|| true
+									// ADD CONDITION FOR AUTOCOMPLETE HERE.
+								), // lower case query match at beginning
+
+
 								(!base.autocomplete || (base.autocomplete && base.data.query !== '') || (base.data.autocompleteOverride || false)), // autocomplete mode or no query
 								datum.id in base.data.storage.dataset, // datum is currently in dataset (prevent bleed over from change of dataset)
 							];
+							console.log(datum.main, base.data.query, base.data.autocompleteOverride);
 							return Util.ep(conditions.reduce(function (a,b) {
 								return a && b;
 							}));
