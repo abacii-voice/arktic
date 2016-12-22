@@ -829,7 +829,7 @@ var AccountComponents = {
 							this.updatedQuery = function (index, query) {
 								var result = this.queryTokens.reduce(function (whole, token, i) {
 									return '{whole} {part}'.format({whole: whole, part: (i===index ? query : token)});
-								}, '');
+								}, '').trim();
 								return Util.ep(result);
 							}
 						},
