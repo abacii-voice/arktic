@@ -827,10 +827,24 @@ var AccountComponents = {
 								}
 							}
 							this.updatedQuery = function (index, query) {
-								var result = this.queryTokens.reduce(function (whole, token, i) {
-									return '{whole} {part}'.format({whole: whole, part: (i===index ? query : token)});
+								var _this = this;
+								_this.queryTokens[index] = query;
+								_this.query = _this.queryTokens.reduce(function (whole, part) {
+									return '{whole} {part}'.format({whole: whole, part: part});
 								}, '').trim();
-								return Util.ep(result);
+								_this.isComplete = _this.query === _this.complete;
+								return _this.tokens[index].update({query: query}).then(function () {
+									return Util.ep(_this.query);
+								})
+							}
+							this.split = function () {
+								var _this = this;
+								return Promise.all(_this.tokens.map(function (token) {
+									var subPhrase = new base.data.objects.phrase.Phrase();
+									return subPhrase.update(token);
+								})).then(function (phrases) {
+									console.log(phrases);
+								});
 							}
 						},
 						create: function (index, metadata) {
@@ -859,10 +873,11 @@ var AccountComponents = {
 							this.update = function (metadata) {
 
 								// update metadata
-								this.query = metadata.query;
-								this.complete = metadata.complete;
+								this.query = metadata.query || this.query || '';
+								this.complete = metadata.complete || this.complete || '';
 								this.combined = this.query + this.complete.slice(this.query.length);
-								this.type = (metadata.type || 'word');
+								this.type = (metadata.type || this.type || 'word');
+
 
 								// run standard process
 								var _this = this;
