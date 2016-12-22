@@ -802,7 +802,7 @@ var Components = {
 					return base.control.update({query: '', filter: ''}).then(function () {
 						return base.search.clear();
 					}).then(function () {
-						return base.search.setMetadata({query: '', complete: ''});
+						return base.search.input();
 					});
 				},
 				update: function (data, defaults) {
