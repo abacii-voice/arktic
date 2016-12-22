@@ -145,4 +145,3 @@ Bindings left:
 5. selection (merge phrases)
 6. alt + left, alt + right (focus end next previous)
 7. alt + backspace (remove phrase)
-8. make sure blur and focus work properly

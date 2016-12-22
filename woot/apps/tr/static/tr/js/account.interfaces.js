@@ -928,7 +928,9 @@ var AccountInterfaces = {
 				// });
 			}
 			caption.behaviours.enter = function () {
-
+				// confirms current phrase, but does not complete.
+				// splits phrase into sub-phrases, each containing a single token.
+				return caption.active.phrase.split();
 			}
 			caption.behaviours.space = function () {
 				// skip to the next token in the phrase.
