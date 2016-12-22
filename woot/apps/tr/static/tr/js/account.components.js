@@ -837,33 +837,41 @@ var AccountComponents = {
 									return Util.ep(_this.query);
 								})
 							}
-							this.split = function () {
-								var _this = this;
-								return Promise.all(_this.tokens.map(function (token) {
-									var subPhrase = new base.data.objects.phrase.Phrase();
-									return subPhrase.update(token);
-								})).then(function (phrases) {
-									console.log(phrases);
-								});
-							}
 						},
 						create: function (index, metadata) {
 							var phrase = new base.data.objects.phrase.Phrase();
 							base.data.storage.virtual.splice(index, 0, phrase);
 							return phrase.update(metadata).then(function () {
-								base.data.objects.phrase.redoNumbering();
+								return base.data.objects.phrase.redoNumbering();
 							});
 						},
 						remove: function (index) {
 							base.data.storage.virtual.splice(index, 1);
 							return base.data.objects.phrase.redoNumbering();
 						},
+						split: function (index) {
+							var _this = base.data.storage.virtual[index];
+							return Promise.all(_this.tokens.map(function (token) {
+								var subPhrase = new base.data.objects.phrase.Phrase();
+								return subPhrase.update(token);
+							})).then(function (phrases) {
+								return base.data.objects.phrase.remove(_this.index).then(function () {
+									return Promise.ordered(phrases.map(function (subPhrase, i) {
+										return function () {
+											var position = index + i;
+											base.data.storage.virtual.splice(position, 0, subPhrase);
+											return Util.ep();
+										}
+									}));
+								}).then(function () {
+									return base.data.objects.phrase.redoNumbering();
+								});
+							});
+						},
 						redoNumbering: function () {
-							return Promise.ordered(base.data.storage.virtual.map(function (phrase, index) {
-								return function () {
-									phrase.index = index;
-									return Util.ep();
-								}
+							return Promise.all(base.data.storage.virtual.map(function (phrase, index) {
+								phrase.index = index;
+								return Util.ep();
 							}));
 						},
 					},
@@ -919,6 +927,7 @@ var AccountComponents = {
 					}
 				},
 				setActive: function (options) {
+					options = options || {};
 					// new index
 					var previousIndex = base.currentIndex;
 					base.currentIndex = ((options.index !== undefined ? options.index : base.currentIndex) || 0) + (options.increment || 0);
@@ -974,6 +983,9 @@ var AccountComponents = {
 					},
 					addPhrase: function () {
 						// this can only be done via ENTER or SPACE
+						return base.data.objects.phrase.create(base.phraseIndex+1, {query: '', complete: ''}).then(function () {
+
+						});
 					},
 					removePhrase: function (index) {
 						index = index || base.phraseIndex;
@@ -1011,7 +1023,6 @@ var AccountComponents = {
 
 									// render
 									unit.isActive = true;
-									// console.log(token);
 									return unit.updateUnitMetadata(phrase, token.index);
 								} else {
 									// hide the rest of the units

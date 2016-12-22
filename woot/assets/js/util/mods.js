@@ -45,6 +45,12 @@ Array.range = function (start, end, step) {
 	return range;
 }
 
+if (!Array.prototype.last){
+	Array.prototype.last = function(){
+		return this[this.length - 1];
+	};
+};
+
 // Ordered promises
 Promise.ordered = function (promiseFunctions, input) {
 	if (promiseFunctions.length !== 0) {
