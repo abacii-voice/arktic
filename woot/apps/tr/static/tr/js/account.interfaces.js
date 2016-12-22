@@ -861,11 +861,10 @@ var AccountInterfaces = {
 								caption.isFocussed = false;
 								autocomplete.isFocussed = false;
 							}
-							return unitBase.getContent().then(function (content) {
-								return unitBase.components.tail.setAppearance({html: (content || unitBase.placeholder)});
-							}).then(function () {
-								return unitBase.deactivate();
-							});
+							return Promise.all([
+								unitBase.deactivate(),
+								autocomplete.control.reset(),
+							]);
 						} else {
 							return Util.ep();
 						}
