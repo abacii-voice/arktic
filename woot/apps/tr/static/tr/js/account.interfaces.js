@@ -943,6 +943,9 @@ var AccountInterfaces = {
 				}).then(function () {
 					return caption.control.setActive();
 				});
+
+				// THIS IS DISGUSTING. This would be improved by a deeper understanding of the entire possibility space of the caption.
+				// The new phrase is added before the splitting so the split can happen while not focussed. This is stupid, and should be refactored.
 			}
 			caption.behaviours.space = function () {
 				// skip to the next token in the phrase.
