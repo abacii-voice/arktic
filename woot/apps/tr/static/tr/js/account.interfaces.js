@@ -932,18 +932,24 @@ var AccountInterfaces = {
 			caption.behaviours.enter = function () {
 				// confirms current phrase, but does not complete.
 				// splits phrase into sub-phrases, each containing a single token.
-				return caption.control.input.addPhrase().then(function () {
-					return caption.control.input.update.main();
-				}).then(function () {
-					return caption.control.setActive({increment: 1}).then(function () {
-						return caption.active.focus('end');
-					});
-				}).then(function () {
-					return caption.data.objects.phrase.split(caption.phraseIndex-1);
-				}).then(function () {
-					return caption.control.input.update.main();
-				}).then(function () {
-					return caption.control.setActive();
+				return caption.active.isCaretInPosition().then(function (inPosition) {
+					if (inPosition) {
+						return caption.control.input.addPhrase().then(function () {
+							return caption.control.input.update.main();
+						}).then(function () {
+							return caption.control.setActive({increment: 1}).then(function () {
+								return caption.active.focus('end');
+							});
+						}).then(function () {
+							return caption.data.objects.phrase.split(caption.phraseIndex-1);
+						}).then(function () {
+							return caption.control.input.update.main();
+						}).then(function () {
+							return caption.control.setActive();
+						});
+					} else {
+						return Util.ep();
+					}
 				});
 
 				// TODO: THIS IS DISGUSTING. This would be improved by a deeper understanding of the entire possibility space of the caption.
@@ -952,27 +958,34 @@ var AccountInterfaces = {
 			caption.behaviours.space = function () {
 				// skip to the next token in the phrase.
 				// if there is no next token, start a new phrase.
-				// return caption.active.phrase.addToken().then(function () {
-				// 	return caption.control.input.update.main();
-				// }).then(function () {
-				// 	return caption.control.setActive({increment: 1}).then(function () {
-				// 		return caption.active.focus('end');
-				// 	});
-				// });
-
 				return caption.active.isCaretInPosition().then(function (inPosition) {
 					if (inPosition) {
 						// last token? -> <enter>
 						var isLastToken = caption.active.phrase.focus === caption.active.phrase.tokens.length - 1;
 						// no more phrases? -> <enter>
 						var noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {return item.rule === 'phrase';}).length === 0;
-						if (isLastToken || noMorePhrases) {
-							// <enter>
+						if (isLastToken) {
+							if (noMorePhrases) {
+								// <enter>
+								return caption.behaviours.enter();
+							} else {
+								// new token
+								return caption.active.phrase.addToken().then(function () {
+									return caption.control.input.update.main();
+								}).then(function () {
+									return caption.control.setActive({increment: 1}).then(function () {
+										return caption.active.focus('end');
+									});
+								});
+							}
 						} else {
-							// 
+							// next token
+							return caption.control.setActive({increment: 1}).then(function () {
+								return caption.active.focus('end');
+							});
 						}
 					} else {
-						return Util.ep();
+						return caption.active.focus('end');
 					}
 				});
 			}
