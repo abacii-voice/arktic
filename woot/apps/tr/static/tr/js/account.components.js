@@ -826,7 +826,7 @@ var AccountComponents = {
 									return _this.tokens[index].update(metadata);
 								}
 							}
-							this.newToken = function () {
+							this.addToken = function () {
 								var _this = this;
 								if (_this.focus === _this.tokens.length - 1) {
 									return this.getOrCreateToken(_this.tokens.length, {query: '', complete: ''});
