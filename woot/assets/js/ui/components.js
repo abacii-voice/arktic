@@ -223,7 +223,8 @@ var Components = {
 				});
 			}
 			base.getContent = function () {
-				return Util.ep(head.model().text());
+				// also replaces generic whitespace, including char160/&nbsp;, with a space character.
+				return Util.ep(head.model().text().replace(/\s+/gi, ' '));
 			}
 			base.setContent = function (metadata) {
 				return head.setAppearance({html: metadata.query}).then(function () {
@@ -581,12 +582,11 @@ var Components = {
 							var conditions = [
 								(datum.rule === base.data.filter || base.data.filter === ''), // filter matches or no filter
 
-
 								(
 									(
-										datum.main.toLowerCase().indexOf(base.data.query.toLowerCase().trim()) === 0
+										datum.main.toLowerCase().indexOf(base.data.query.toLowerCase()) === 0
 										&&
-										base.data.query.toLowerCase().trim() !== ''
+										base.data.query.toLowerCase() !== ''
 									)
 									||
 									(
@@ -601,6 +601,7 @@ var Components = {
 								(!base.autocomplete || (base.autocomplete && base.data.query !== '') || (base.data.autocompleteOverride || false)), // autocomplete mode or no query
 								datum.id in base.data.storage.dataset, // datum is currently in dataset (prevent bleed over from change of dataset)
 							];
+
 							return Util.ep(conditions.reduce(function (a,b) {
 								return a && b;
 							}));
@@ -644,7 +645,7 @@ var Components = {
 											// NO RETURN: releases promise immediately. No need to wait for order if one exists.
 											UI.getComponent(base.data.storage.virtual.rendered[index]).then(function (existingListItem) {
 												// console.log(datum);
-												return existingListItem.updateMetadata(datum, base.data.query.toLowerCase().trim());
+												return existingListItem.updateMetadata(datum, base.data.query.toLowerCase());
 											}).then(function () {
 												if (base.currentIndex === undefined) {
 													return base.control.setActive.main({index: 0});

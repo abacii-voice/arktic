@@ -138,7 +138,6 @@ other things that can affect the caption
 |||_____
 Bindings left:
 1. backspace (remove phrase)
-2. enter (confirm phrase, new phrase)
 3. space if no other options (confirm phrase)
 4. right arrow (confirm phrase)
 4. numbers (complete phrase)
