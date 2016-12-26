@@ -169,7 +169,9 @@ var AccountInterfaces = {
 			});
 
 			Mousetrap.bind('space', function (event) {
-				event.preventDefault();
+				if (caption.isFocussed) {
+					event.preventDefault();
+				}
 				Promise.all([
 					caption.behaviours.space(),
 				]);
@@ -950,6 +952,8 @@ var AccountInterfaces = {
 			caption.behaviours.space = function () {
 				// skip to the next token in the phrase.
 				// if there is no next token, start a new phrase.
+
+
 			}
 
 			// connect

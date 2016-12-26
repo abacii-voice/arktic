@@ -829,9 +829,7 @@ var AccountComponents = {
 							this.updatedQuery = function (index, query) {
 								var _this = this;
 								_this.queryTokens[index] = query;
-								_this.query = _this.queryTokens.reduce(function (whole, part) {
-									return '{whole} {part}'.format({whole: whole, part: part});
-								}, '').trim();
+								_this.query = _this.queryTokens.join(' ');
 								_this.isComplete = _this.query === _this.complete;
 								return _this.tokens[index].update({query: query}).then(function () {
 									return Util.ep(_this.query);
@@ -1038,7 +1036,7 @@ var AccountComponents = {
 							if (!reachedTokenCount) {
 								return Promise.ordered(base.data.storage.virtual.slice(lastMacro).map(function (phrase, macro) {
 									return function () {
-										var microSlice = macro===lastMacro ? lastMicro : 0;
+										var microSlice = macro === 0 ? lastMicro : 0;
 										return Promise.ordered(phrase.tokens.slice(microSlice).map(function (token, micro) {
 											micro += microSlice;
 											return function () {
