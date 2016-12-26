@@ -952,7 +952,7 @@ var AccountInterfaces = {
 			caption.behaviours.space = function () {
 				// skip to the next token in the phrase.
 				// if there is no next token, start a new phrase.
-				// return caption.active.phrase.newToken().then(function () {
+				// return caption.active.phrase.addToken().then(function () {
 				// 	return caption.control.input.update.main();
 				// }).then(function () {
 				// 	return caption.control.setActive({increment: 1}).then(function () {
@@ -960,9 +960,21 @@ var AccountInterfaces = {
 				// 	});
 				// });
 
-				// 1. in end position?
-				// 2. last token?
-				// 3. 
+				return caption.active.isCaretInPosition().then(function (inPosition) {
+					if (inPosition) {
+						// last token? -> <enter>
+						var isLastToken = caption.active.phrase.focus === caption.active.phrase.tokens.length - 1;
+						// no more phrases? -> <enter>
+						var noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {return item.rule === 'phrase';}).length === 0;
+						if (isLastToken || noMorePhrases) {
+							// <enter>
+						} else {
+							// 
+						}
+					} else {
+						return Util.ep();
+					}
+				});
 			}
 
 			// connect
