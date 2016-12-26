@@ -925,9 +925,16 @@ var AccountInterfaces = {
 			}
 			caption.behaviours.backspace = function () {
 				// var index = caption.phraseIndex;
-				// return caption.behaviours.left().then(function () {
-				// 	return base.
-				// });
+				return caption.active.isCaretInPosition('start').then(function (inPosition) {
+					var noQuery = caption.active.metadata.query === '';
+					if (inPosition && noQuery) {
+						return caption.behaviours.left().then(function () {
+							return caption.control.input.removePhrase(caption.phraseIndex + 1);
+						});
+					} else {
+
+					}
+				});
 			}
 			caption.behaviours.enter = function () {
 				// confirms current phrase, but does not complete.
@@ -985,7 +992,7 @@ var AccountInterfaces = {
 							});
 						}
 					} else {
-						return caption.active.focus('end');
+						return caption.active.setCaretPosition('end');
 					}
 				});
 			}
