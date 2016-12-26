@@ -826,6 +826,14 @@ var AccountComponents = {
 									return _this.tokens[index].update(metadata);
 								}
 							}
+							this.newToken = function () {
+								var _this = this;
+								if (_this.focus === _this.tokens.length - 1) {
+									return this.getOrCreateToken(_this.tokens.length, {query: '', complete: ''});
+								} else {
+									return Util.ep();
+								}
+							}
 							this.updatedQuery = function (index, query) {
 								var _this = this;
 								_this.queryTokens[index] = query;
@@ -884,8 +892,6 @@ var AccountComponents = {
 								this.combined = this.query + this.complete.slice(this.query.length);
 								this.type = (metadata.type || this.type || 'word');
 
-
-								// run standard process
 								var _this = this;
 								return Util.ep(_this);
 							}

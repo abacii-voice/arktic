@@ -946,14 +946,23 @@ var AccountInterfaces = {
 					return caption.control.setActive();
 				});
 
-				// THIS IS DISGUSTING. This would be improved by a deeper understanding of the entire possibility space of the caption.
+				// TODO: THIS IS DISGUSTING. This would be improved by a deeper understanding of the entire possibility space of the caption.
 				// The new phrase is added before the splitting so the split can happen while not focussed. This is stupid, and should be refactored.
 			}
 			caption.behaviours.space = function () {
 				// skip to the next token in the phrase.
 				// if there is no next token, start a new phrase.
+				// return caption.active.phrase.newToken().then(function () {
+				// 	return caption.control.input.update.main();
+				// }).then(function () {
+				// 	return caption.control.setActive({increment: 1}).then(function () {
+				// 		return caption.active.focus('end');
+				// 	});
+				// });
 
-
+				// 1. in end position?
+				// 2. last token?
+				// 3. 
 			}
 
 			// connect
