@@ -987,9 +987,7 @@ var AccountComponents = {
 					},
 					addPhrase: function () {
 						// this can only be done via ENTER or SPACE
-						return base.data.objects.phrase.create(base.phraseIndex+1, {query: '', complete: ''}).then(function () {
-
-						});
+						return base.data.objects.phrase.create(base.phraseIndex+1, {query: '', complete: ''});
 					},
 					removePhrase: function (index) {
 						index = index || base.phraseIndex;
