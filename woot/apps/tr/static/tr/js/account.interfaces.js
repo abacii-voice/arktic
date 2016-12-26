@@ -939,6 +939,9 @@ var AccountInterfaces = {
 			caption.behaviours.enter = function () {
 				// confirms current phrase, but does not complete.
 				// splits phrase into sub-phrases, each containing a single token.
+
+				// TODO: set complete to query before next token
+
 				return caption.active.isCaretInPosition().then(function (inPosition) {
 					if (inPosition) {
 						return caption.control.input.addPhrase().then(function () {
