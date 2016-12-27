@@ -1008,24 +1008,29 @@ var AccountComponents = {
 							var macro = 0;
 							var micro = 0;
 							var reachedTokenCount = false;
+							var activeIndex = base.active ? base.active.index : 0;
 							return Promise.all(content.children.map(function (unit, index) {
 								if (!reachedTokenCount) {
-									var phrase = base.data.storage.virtual[macro];
-									var token = phrase.tokens[micro];
+									if (index >= activeIndex) {
+										var phrase = base.data.storage.virtual[macro];
+										var token = phrase.tokens[micro];
 
-									// check token count
-									var end = micro === phrase.tokens.length - 1;
-									micro = end ? 0 : micro + 1;
-									macro = end ? macro + 1 : macro;
+										// check token count
+										var end = micro === phrase.tokens.length - 1;
+										micro = end ? 0 : micro + 1;
+										macro = end ? macro + 1 : macro;
 
-									reachedTokenCount = end && macro === base.data.storage.virtual.length;
-									if (reachedTokenCount) {
-										base.data.maxTokens = index + 1; // stops at index, not count
+										reachedTokenCount = end && macro === base.data.storage.virtual.length;
+										if (reachedTokenCount) {
+											base.data.maxTokens = index + 1; // stops at index, not count
+										}
+
+										// render
+										unit.isActive = true;
+										return unit.updateUnitMetadata(phrase, token.index);
+									} else {
+										return Util.ep();
 									}
-
-									// render
-									unit.isActive = true;
-									return unit.updateUnitMetadata(phrase, token.index);
 								} else {
 									// hide the rest of the units
 									unit.isActive = false;
