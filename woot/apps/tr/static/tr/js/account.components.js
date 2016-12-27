@@ -1005,66 +1005,10 @@ var AccountComponents = {
 							});
 						},
 						rendered: function () {
-							var macro = 0;
-							var micro = 0;
-							var reachedTokenCount = false;
-							var activeIndex = base.active ? base.active.index : 0;
-							return Promise.all(content.children.map(function (unit, index) {
-								if (!reachedTokenCount) {
-									if (index >= activeIndex) {
-										var phrase = base.data.storage.virtual[macro];
-										var token = phrase.tokens[micro];
 
-										// check token count
-										var end = micro === phrase.tokens.length - 1;
-										micro = end ? 0 : micro + 1;
-										macro = end ? macro + 1 : macro;
-
-										reachedTokenCount = end && macro === base.data.storage.virtual.length;
-										if (reachedTokenCount) {
-											base.data.maxTokens = index + 1; // stops at index, not count
-										}
-
-										// render
-										unit.isActive = true;
-										return unit.updateUnitMetadata(phrase, token.index);
-									} else {
-										return Util.ep();
-									}
-								} else {
-									// hide the rest of the units
-									unit.isActive = false;
-									return unit.reset();
-								}
-							})).then(function () {
-								return Util.ep([macro, micro, reachedTokenCount]);
-							});
 						},
 						tail: function (virtualPosition) {
-							var [lastMacro, lastMicro, reachedTokenCount] = virtualPosition; // the location in virtual where rendering stopped.
-							if (!reachedTokenCount) {
-								return Promise.ordered(base.data.storage.virtual.slice(lastMacro).map(function (phrase, macro) {
-									return function () {
-										var microSlice = macro === 0 ? lastMicro : 0;
-										return Promise.ordered(phrase.tokens.slice(microSlice).map(function (token, micro) {
-											micro += microSlice;
-											return function () {
-												return base.unit().then(function (unit) {
-													unit.isActive = true;
-													return Promise.all([
-														unit.hide(),
-														unit.updateUnitMetadata(phrase, micro),
-													]).then(function () {
-														return content.setChildren([unit]);
-													});
-												});
-											}
-										}));
-									}
-								}));
-							} else {
-								return Util.ep();
-							}
+
 						},
 						show: function () {
 							return Promise.all(content.children.filter(function (unit) {
