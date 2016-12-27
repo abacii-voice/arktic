@@ -797,51 +797,13 @@ var AccountComponents = {
 								// run process
 								var _this = this;
 								if (_this.completeChanged) {
-									this.tokens = [];
-									return Promise.ordered(_this.completeTokens.map(function (complete, index) {
-										return function () {
-											var tokenMetadata = {
-												query: (_this.queryTokens[index] || ''),
-												complete: complete,
-												type: (metadata.type || 'word'),
-											}
-											return _this.getOrCreateToken(index, tokenMetadata);
-										}
-									})).then(function () {
-										return Util.ep(_this);
-									});
+
 								} else {
 									return Util.ep(_this);
 								}
 							}
-							this.getOrCreateToken = function (index, metadata) {
-								var _this = this;
-								if (index >= _this.tokens.length) { // if there is no token to fetch
-									return base.data.objects.token.create(metadata).then(function (token) {
-										token.index = index;
-										_this.tokens.splice(index, 0, token);
-										return Util.ep(token);
-									});
-								} else {
-									return _this.tokens[index].update(metadata);
-								}
-							}
-							this.addToken = function () {
-								var _this = this;
-								if (_this.focus === _this.tokens.length - 1) {
-									return this.getOrCreateToken(_this.tokens.length, {query: '', complete: ''});
-								} else {
-									return Util.ep();
-								}
-							}
 							this.updatedQuery = function (index, query) {
-								var _this = this;
-								_this.queryTokens[index] = query;
-								_this.query = _this.queryTokens.join(' ');
-								_this.isComplete = _this.query === _this.complete;
-								return _this.tokens[index].update({query: query}).then(function () {
-									return Util.ep(_this.query);
-								})
+
 							}
 						},
 						create: function (index, metadata) {
@@ -852,53 +814,13 @@ var AccountComponents = {
 							});
 						},
 						remove: function (index) {
-							base.data.storage.virtual.splice(index, 1);
-							return base.data.objects.phrase.redoNumbering();
+
 						},
 						split: function (index) {
-							var _this = base.data.storage.virtual[index];
-							return Promise.all(_this.tokens.map(function (token) {
-								var subPhrase = new base.data.objects.phrase.Phrase();
-								return subPhrase.update(token);
-							})).then(function (phrases) {
-								return base.data.objects.phrase.remove(_this.index).then(function () {
-									return Promise.ordered(phrases.map(function (subPhrase, i) {
-										return function () {
-											var position = index + i;
-											base.data.storage.virtual.splice(position, 0, subPhrase);
-											return Util.ep();
-										}
-									}));
-								}).then(function () {
-									return base.data.objects.phrase.redoNumbering();
-								});
-							});
+
 						},
 						redoNumbering: function () {
-							return Promise.all(base.data.storage.virtual.map(function (phrase, index) {
-								phrase.index = index;
-								return Util.ep();
-							}));
-						},
-					},
-					token: {
-						Token: function () {
-							// methods
-							this.update = function (metadata) {
 
-								// update metadata
-								this.query = metadata.query || this.query || '';
-								this.complete = metadata.complete || this.complete || '';
-								this.combined = this.query + this.complete.slice(this.query.length);
-								this.type = (metadata.type || this.type || 'word');
-
-								var _this = this;
-								return Util.ep(_this);
-							}
-						},
-						create: function (metadata) {
-							var token = new base.data.objects.token.Token();
-							return token.update(metadata);
 						},
 					},
 				},
@@ -986,14 +908,10 @@ var AccountComponents = {
 						}
 					},
 					addPhrase: function () {
-						// this can only be done via ENTER or SPACE
-						return base.data.objects.phrase.create(base.phraseIndex+1, {query: '', complete: ''});
+						
 					},
 					removePhrase: function (index) {
-						index = index || base.phraseIndex;
-						return base.data.objects.phrase.remove(index).then(function () {
-							return base.control.input.update.main();
-						});
+
 					},
 					update: {
 						main: function () {
