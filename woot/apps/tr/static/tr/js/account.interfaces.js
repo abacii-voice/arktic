@@ -762,6 +762,9 @@ var AccountInterfaces = {
 							return Util.ep();
 						});
 					}
+					unitBase.completePhrase = function () {
+						return unitBase.phrase.complete();
+					}
 
 					// caption unit export
 					unitBase.runChecks = function () {
