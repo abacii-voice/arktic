@@ -28,22 +28,28 @@ Array.prototype.sum = function (object) {
 	});
 }
 
-Array.range = function (start, end, step) {
-	// options
-	var End = (end || start) - 1;
-	start = end ? start : 0;
-	step = (step || 1);
-	step = End > start ? step : -step;
-
-	//
-	var range = [];
-	while (step > 0 ? End >= start : End <= start) {
-		range.push(start);
-		start += step;
+Array.range = function (start, stop, step) {
+	if (typeof stop == 'undefined') {
+		// one param defined
+		stop = start;
+		start = 0;
 	}
 
-	return range;
-}
+	if (typeof step == 'undefined') {
+		step = 1;
+	}
+
+	if ((step > 0 && start >= stop) || (step < 0 && start <= stop)) {
+		return [];
+	}
+
+	var result = [];
+	for (var i = start; step > 0 ? i < stop : i > stop; i += step) {
+		result.push(i);
+	}
+
+	return result;
+};
 
 if (!Array.prototype.last){
 	Array.prototype.last = function(){

@@ -724,53 +724,28 @@ var AccountInterfaces = {
 					}
 
 					// caption unit data
-					// The caption unit is disconnected from the virtual token it is displaying.
-					// The unit will operate independently but can update the connected virtual in several ways:
-					// 1. QUERY: any query is added to the query of the virtual containing it, and triggers an update if the complete changes.
-					// 2. COMPLETE: right arrow key to complete will trigger a completion on every token in the virtual.
-					// 3. DELETE: the delete key on an empty token will remove the virtual from the buffer if it is the only token.
-					// 4. CONFIRM: the enter key (space bar if there are no queries containing further spaces) will complete the virtual and replace it with separate virtuals.
-					// 5. SPACE: the space bar will create a new token in the virtual buffer.
-					// Interaction between focus token and others in the same virtual:
-					// Only tokens forward of the focus token can be changed by its actions
-					// In the example query: hel {complete: hello world}
-					// It would be rendered as two tokens: {hel[lo]} {[world]} -> head[tail]
-					// 1. CLICKING on any tail section in the virtual is bound to focus the head of the focus token.
-						// The tail of the focus token has no special bindings beyond its default behaviour
-					// 2. COMPLETING the focus token will cause the subsequent tokens to complete. The last token in the virtual will be focussed.
-					// 3. CHANGING COMPLETE (e.g. hello world -> hellscape) can cause tokens to be removed from the virtual
-					unitBase.updateUnitMetadata = function (phrase, micro) {
-						// console.log('{id}: updateUnitMetadata'.format({id: unitBase.id}));
+					unitBase.updateUnitMetadata = function (metadata) {
+						// get changes
+						metadata = (metadata || {});
+						unitBase.completeChanged = unitBase.complete !== metadata.complete;
+						unitBase.queryChanged = unitBase.query !== metadata.query;
+						unitBase.typeChanged = unitBase.type !== metadata.type;
 
-						// this does three things:
-						// 1. remember the phrase and token it is associated with to recall correctly upon focus.
-						// 2. bind to the first unit in the phrase with content if it has none.
-						// 3. modify the content and type of this token specifically.
-
-						if (phrase) {
-							var token = phrase.tokens[micro];
-							if (unitBase.unitComplete !== token.complete || unitBase.unitType !== token.type) {
-								// console.log('{id}: updateUnitMetadata -> complete has changed'.format({id: unitBase.id}));
-								unitBase.phrase = phrase;
-								unitBase.tokenIndex = token.index;
-								phrase.tokens[micro].unit = unitBase.id;
-
-								return unitBase.setUnitContent(token).then(function () {
-									return unitBase.setMetadata(token);
-								}).then(function () {
-									// binding
-									if (token.index === phrase.focus) {
-										phrase.focusId = unitBase.id;
-										return Util.ep();
-									} else if (token.index > phrase.focus) {
-										return unitBase.updateBindings(phrase);
-									} else {
-										return Util.ep();
-									}
-								});
-							} else {
-								return Util.ep();
-							}
+						if (unitBase.completeChanged || unitBase.typeChanged || unitBase.queryChanged) {
+							// update
+							return unitBase.setUnitContent(metadata).then(function () {
+								return unitBase.setMetadata(metadata);
+							}).then(function () {
+								// binding
+								if (unitBase.tokenIndex === unitBase.phrase.focus) {
+									unitBase.phrase.focusId = unitBase.id;
+									return Util.ep();
+								} else if (unitBase.tokenIndex > unitBase.phrase.focus) {
+									return unitBase.updateBindings();
+								} else {
+									return Util.ep();
+								}
+							});
 						} else {
 							return Util.ep();
 						}
@@ -797,21 +772,14 @@ var AccountInterfaces = {
 					unitBase.updateBindings = function (phrase) {
 						return unitBase.setBindings({
 							'click': function (_this) {
-								return UI.getComponent(phrase.focusId).then(function (focusUnit) {
-									return focusUnit.focus('end');
-								});
+
 							},
 						});
 					}
 					unitBase.completePhrase = function () {
 						var tokens = unitBase.phrase.tokens.slice(unitBase.phrase.focus);
 						unitBase.completionOverride = true;
-						return caption.control.input.editPhrase({query: unitBase.phrase.complete}).then(function () {
-							// focus last token
-							return UI.getComponent(tokens[tokens.length-1].unit).then(function (unit) {
-								return unit.focus('end');
-							});
-						});
+
 					}
 
 					// caption unit export
@@ -821,7 +789,6 @@ var AccountInterfaces = {
 
 					// search bar mods
 					unitBase.setMetadata = function (metadata) {
-						// console.log('{id}: setMetadata'.format({id: unitBase.id}));
 						metadata = (metadata || {});
 						unitBase.metadata = (unitBase.metadata || {});
 						unitBase.metadata.query = metadata.query !== undefined ? metadata.query.trim() : (unitBase.metadata.query || '');
@@ -831,27 +798,19 @@ var AccountInterfaces = {
 							unitBase.isComplete = unitBase.metadata.query === unitBase.metadata.complete;
 							return Util.ep();
 						}).then(function () {
-							// set metadata
+							// set type
 							return unitBase.setType(metadata.type);
 						});
 					}
 					unitBase.input = function () {
-						return unitBase.getContent().then(function (unitContent) {
-							return unitBase.phrase.updatedQuery(unitBase.tokenIndex, unitContent).then(function (updatedQuery) {
-								return autocomplete.search.setContent({query: updatedQuery, trigger: true});
-							});
-						});
+						return unitBase.phrase.updateFromActive();
 					}
 					unitBase.focus = function (position) {
 						if (!unitBase.isFocussed) {
 							caption.isFocussed = true;
 							unitBase.isFocussed = true;
 							autocomplete.isFocussed = true;
-							return caption.control.setActive({index: unitBase.index}).then(function () {
-								return unitBase.setCaretPosition(position).then(function () {
-									return unitBase.input();
-								});
-							});
+
 						} else {
 							return Util.ep();
 						}
