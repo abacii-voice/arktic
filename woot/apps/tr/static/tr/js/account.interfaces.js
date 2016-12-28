@@ -784,7 +784,14 @@ var AccountInterfaces = {
 						});
 					}
 					unitBase.input = function () {
-						return unitBase.phrase.updateFromActive();
+						if (unitBase.isFocussed) {
+							return unitBase.getContent().then(function (unitContent) {
+								unitBase.pending = unitContent;
+								return autocomplete;
+							});
+						} else {
+							return Util.ep();
+						}
 					}
 					unitBase.focus = function (position) {
 						if (!unitBase.isFocussed) {
@@ -794,7 +801,7 @@ var AccountInterfaces = {
 							return caption.control.setActive({unit: unitBase}).then(function () {
 								return unitBase.setCaretPosition(position);
 							}).then(function () {
-								
+								return unitBase.input();
 							});
 						} else {
 							return Util.ep();
