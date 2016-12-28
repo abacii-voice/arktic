@@ -757,7 +757,7 @@ var AccountInterfaces = {
 					}
 					unitBase.setType = function (type) {
 						type = (type || 'word');
-						return unitBase.setAppearance({classes: {add: type, remove: (unitBase.unitType || '')}}).then(function () {
+						return unitBase.setAppearance({classes: {add: type, remove: (unitBase.unitType !== type ? unitBase.unitType : '')}}).then(function () {
 							unitBase.unitType = type;
 							return Util.ep();
 						});
@@ -791,7 +791,11 @@ var AccountInterfaces = {
 							caption.isFocussed = true;
 							unitBase.isFocussed = true;
 							autocomplete.isFocussed = true;
-							return caption.control.setActive({unit: unitBase});
+							return caption.control.setActive({unit: unitBase}).then(function () {
+								return unitBase.setCaretPosition(position);
+							}).then(function () {
+								
+							});
 						} else {
 							return Util.ep();
 						}
@@ -830,7 +834,7 @@ var AccountInterfaces = {
 					return caption.active.isCaretInPosition('end').then(function (inPosition) {
 						if (inPosition) {
 							if (caption.active.phrase.isComplete) {
-								return caption.control.setActive({increment: 1}).then(function () {
+								return caption.next().then(function () {
 									return caption.active.focus('start');
 								});
 							} else {
@@ -852,7 +856,7 @@ var AccountInterfaces = {
 				if (caption.isFocussed) {
 					return caption.active.isCaretInPosition('start').then(function (inPosition) {
 						if (inPosition) {
-							return caption.control.setActive({increment: -1}).then(function () {
+							return caption.previous().then(function () {
 								return caption.active.focus('end');
 							});
 						} else {

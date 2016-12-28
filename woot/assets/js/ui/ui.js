@@ -233,18 +233,18 @@ var UI = {
 				var _this = this;
 
 				if (addClasses) {
-					this.classes = this.classes.concat(addClasses.filter(function (cls) {
+					_this.classes = _this.classes.concat(addClasses.filter(function (cls) {
 						return _this.classes.indexOf(cls) === -1;
 					}));
 				}
 
-				this.classes = this.classes.filter(function (cls) {
+				_this.classes = _this.classes.filter(function (cls) {
 					return removeClasses.indexOf(cls) === -1;
 				});
 
-				this.style = (appearance.style || this.style);
+				_this.style = (appearance.style || _this.style);
 
-				if (this.isRendered) {
+				if (_this.isRendered) {
 					// model
 					var model = _this.model();
 					return model.animate(appearance.style, 300).promise().then(function () {
@@ -263,9 +263,6 @@ var UI = {
 
 						// classes
 						if (appearance.classes) {
-							if (_this.id.contains('')) {
-
-							}
 							return Promise.all([
 								Promise.all(removeClasses.map(function (cls) {
 									return new Promise(function(resolve, reject) {
