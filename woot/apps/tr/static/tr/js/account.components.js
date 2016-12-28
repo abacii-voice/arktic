@@ -865,7 +865,7 @@ var AccountComponents = {
 							this.newUnit = function (extraIndex, token) {
 								var _this = this;
 								var trueIndex = _this.renderedUnits.length + extraIndex;
-								var defaultAfter = _this.renderedUnits.length ? _this.renderedUnits[_this.renderedUnits.length-1].id : undefined;
+								var defaultAfter = _this.renderedUnits.length ? _this.renderedUnits[_this.renderedUnits.length-1].id : undefined; // not '' lol
 								return base.unit().then(function (unit) {
 									unit.after = _this.currentAfter || defaultAfter;
 									unit.phrase = _this;
