@@ -817,8 +817,14 @@ var AccountComponents = {
 								_this.renderedUnits = (_this.renderedUnits || []);
 								return Promise.all(_this.renderedUnits.map(function (renderedUnit, index) {
 									var token = _this.tokens[index];
+									renderedUnit.isReserved = token === undefined;
 									return renderedUnit.updateUnitMetadata(token).then(function () {
 										_this.currentAfter = renderedUnit.id;
+										if (renderedUnit.isReserved) {
+											return renderedUnit.hide();
+										} else {
+											return Util.ep();
+										}
 									});
 								})).then(function () {
 
@@ -877,7 +883,6 @@ var AccountComponents = {
 						},
 						create: function (index, metadata) {
 							var phrase = new base.data.objects.phrase.Phrase();
-							phrase.index = index;
 							base.data.storage.virtual.splice(index, 0, phrase);
 							return phrase.update(metadata).then(function () {
 								return base.data.objects.phrase.renumber();
@@ -892,8 +897,10 @@ var AccountComponents = {
 
 						},
 						renumber: function () {
-							return Promise.all();
-							// NOW
+							return Promise.all(base.data.storage.virtual.map(function (phrase, index) {
+								phrase.index = index;
+								return Util.ep();
+							}));
 						},
 					},
 				},
@@ -913,23 +920,26 @@ var AccountComponents = {
 				},
 				setActive: function (options) {
 					options = options || {};
-					// new index
-					var previousIndex = base.currentIndex;
-					base.currentIndex = ((options.index !== undefined ? options.index : base.currentIndex) || 0) + (options.increment || 0);
 
-					// apply boundary conditions
-					base.currentIndex = base.currentIndex < base.data.maxTokens ? (base.currentIndex > 0 ? base.currentIndex : 0) : base.data.maxTokens - 1;
+					var previousUnit = base.active;
+					if (options.unit) {
+						base.active = options.unit;
+					} else {
+						// construct array of active units
+						var visibleChildren = content.children.filter(function (unit) {
+							return !unit.isHidden;
+						});
+						var newIndex = visibleChildren.indexOf(base.active) + (options.increment || 0);
+						base.active = visibleChildren[newIndex];
+					}
 
-					// deactivate active then find next and activate
-					return base.control.deactivate(previousIndex).then(function () {
-						base.active = content.children[base.currentIndex];
-						base.phraseIndex = base.active.phrase.index;
+					return base.control.deactivate(previousUnit).then(function () {
 						return base.active.activate();
 					});
 				},
-				deactivate: function (previousIndex) {
-					if (previousIndex !== base.currentIndex) {
-						return ((base.active || {}).deactivate || Util.ep)();
+				deactivate: function (previousUnit) {
+					if (previousUnit && previousUnit.id !== base.active.id) {
+						return previousUnit.deactivate();
 					} else {
 						return Util.ep();
 					}
