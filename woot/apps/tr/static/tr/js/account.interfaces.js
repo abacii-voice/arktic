@@ -715,13 +715,6 @@ var AccountInterfaces = {
 						unitBase.isHidden = true;
 						return unitBase.setAppearance({classes: {add: 'hidden'}});
 					}
-					unitBase.reset = function () {
-						unitBase.virtual = undefined;
-						return Promise.all([
-							unitBase.updateUnitMetadata(),
-							unitBase.hide(),
-						]);
-					}
 
 					// caption unit data
 					unitBase.updateUnitMetadata = function (metadata) {
@@ -769,18 +762,6 @@ var AccountInterfaces = {
 							return Util.ep();
 						});
 					}
-					unitBase.updateBindings = function (phrase) {
-						return unitBase.setBindings({
-							'click': function (_this) {
-
-							},
-						});
-					}
-					unitBase.completePhrase = function () {
-						var tokens = unitBase.phrase.tokens.slice(unitBase.phrase.focus);
-						unitBase.completionOverride = true;
-
-					}
 
 					// caption unit export
 					unitBase.runChecks = function () {
@@ -810,7 +791,7 @@ var AccountInterfaces = {
 							caption.isFocussed = true;
 							unitBase.isFocussed = true;
 							autocomplete.isFocussed = true;
-
+							return base.setActive({unit: unitBase});
 						} else {
 							return Util.ep();
 						}

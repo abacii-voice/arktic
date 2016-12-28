@@ -822,7 +822,7 @@ var AccountComponents = {
 									});
 								})).then(function () {
 
-									// 2. next render units for the rest of the token if necessary.
+									// 2. next render units for the rest of the tokens if necessary.
 									if (_this.tokens.length > _this.renderedUnits.length) {
 										return Promise.ordered(_this.tokens.slice(_this.renderedUnits.length).map(function (token, extraIndex) {
 											return function () {
@@ -861,7 +861,6 @@ var AccountComponents = {
 								return base.unit().then(function (unit) {
 									unit.after = _this.currentAfter;
 									unit.phrase = _this;
-									unit.tokenIndex = trueIndex;
 									unit.isReserved = token === undefined;
 									_this.renderedUnits.push(unit);
 									return unit.updateUnitMetadata(token).then(function () {
@@ -893,7 +892,8 @@ var AccountComponents = {
 
 						},
 						renumber: function () {
-							return Util.ep();
+							return Promise.all();
+							// NOW
 						},
 					},
 				},
@@ -908,6 +908,7 @@ var AccountComponents = {
 			base.control = {
 				setup: function () {
 					// set styles - nothing else for now
+					// NOW - may be something to do here. blank phrases? abandon?
 					return base.styles();
 				},
 				setActive: function (options) {
@@ -952,29 +953,6 @@ var AccountComponents = {
 					},
 					removePhrase: function () {
 
-					},
-					update: {
-						main: function () {
-							var update = base.control.input.update;
-							return update.rendered().then(function (virtualPosition) {
-								return update.tail(virtualPosition);
-							}).then(function () {
-								return update.show();
-							});
-						},
-						rendered: function () {
-
-						},
-						tail: function (virtualPosition) {
-
-						},
-						show: function () {
-							return Promise.all(content.children.filter(function (unit) {
-								return unit.isActive;
-							}).map(function (unit) {
-								return unit.show();
-							}));
-						},
 					},
 				},
 				updateBuffer: function () {
