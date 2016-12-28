@@ -785,9 +785,8 @@ var AccountInterfaces = {
 					}
 					unitBase.input = function () {
 						if (unitBase.isFocussed) {
-							return unitBase.getContent().then(function (unitContent) {
-								unitBase.pending = unitContent;
-								return autocomplete;
+							return unitBase.phrase.updateQueryFromActive().then(function (updatedQuery) {
+								return autocomplete.search.setContent({query: updatedQuery, trigger: true});
 							});
 						} else {
 							return Util.ep();
