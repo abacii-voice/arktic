@@ -577,7 +577,7 @@ var AccountInterfaces = {
 					// Should trigger caption set metadata to check for phrase and other expansions.
 					// return caption action
 					if (caption.isFocussed) {
-						return caption.control.input.editPhrase(_this.metadata);
+						return caption.control.input.editActive(_this.metadata);
 					} else {
 						return Util.ep();
 					}
