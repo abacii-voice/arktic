@@ -763,9 +763,8 @@ var AccountComponents = {
 			base.data = {
 
 				// variables
-				defaultLimit: 5, // how many default tokens to render
+				minimumPhraseLength: 3,
 				currentId: undefined, // the id of the current transcription
-				maxTokens: 0,
 
 				// datasets
 				storage: {
@@ -783,34 +782,108 @@ var AccountComponents = {
 								metadata = (metadata || {
 									query: '',
 									complete: '',
+									tokens: [],
 								});
 
-								// update metadata
-								this.completeChanged = (this.complete !== metadata.complete) || !metadata.complete;
-								this.query = metadata.query;
-								this.queryTokens = this.query.split(' ');
-								this.complete = metadata.complete || metadata.query;
-								this.completeTokens = this.complete.split(' ');
-								this.focus = this.queryTokens.length - 1;
-								this.isComplete = this.query === this.complete;
-
-								// run process
+								// update complete changed
 								var _this = this;
-								if (_this.completeChanged) {
+								_this.completeChanged = (_this.complete !== metadata.complete) || !metadata.complete;
 
+								if (_this.completeChanged) {
+									_this.query = _this.query || metadata.query;
+									_this.complete = metadata.complete || metadata.query;
+									_this.queryTokens = _this.query.split(' ');
+									_this.focus = _this.queryTokens.length - 1;
+									_this.isComplete = _this.query === _this.complete;
+									_this.tokens = (_this.tokens || metadata.tokens).map(function (token, index) {
+										return {
+											complete: (token.content || token.complete),
+											query: _this.queryTokens[index] || '',
+											type: token.type,
+										}
+									});
+
+									// render to tokens
+									return _this.render();
 								} else {
 									return Util.ep(_this);
 								}
 							}
-							this.updatedQuery = function (index, query) {
+							this.render = function () {
+								// based on index, start creating tokens in caption content.
+								var _this = this;
 
+								// 1. rendered units first
+								_this.renderedUnits = (_this.renderedUnits || []);
+								return Promise.all(_this.renderedUnits.map(function (renderedUnit, index) {
+									var token = _this.tokens[index];
+									return renderedUnit.updateUnitMetadata(token).then(function () {
+										_this.currentAfter = renderedUnit.id;
+									});
+								})).then(function () {
+
+									// 2. next render units for the rest of the token if necessary.
+									if (_this.tokens.length > _this.renderedUnits.length) {
+										return Promise.ordered(_this.tokens.slice(_this.renderedUnits.length).map(function (token, extraIndex) {
+											return function () {
+												return _this.newUnit(extraIndex, token);
+											}
+										}));
+									} else {
+										return Util.ep();
+									}
+								}).then(function () {
+
+									// 3. render until the default unit limit
+									var difference = base.data.minimumPhraseLength-_this.renderedUnits.length;
+									if (difference > 0) {
+										return Promise.ordered(Array.range(difference).map(function (extraIndex) {
+											return function () {
+												return _this.newUnit(extraIndex);
+											}
+										}));
+									} else {
+										return Util.ep();
+									}
+								}).then(function () {
+
+									// 4. show what is hidden
+									return Promise.all(_this.renderedUnits.filter(function (unit) {
+										return unit.isHidden && !unit.isReserved;
+									}).map(function (unit) {
+										return unit.show();
+									}));
+								});
+							}
+							this.newUnit = function (extraIndex, token) {
+								var _this = this;
+								var trueIndex = _this.renderedUnits.length + extraIndex;
+								return base.unit().then(function (unit) {
+									unit.after = _this.currentAfter;
+									unit.phrase = _this;
+									unit.tokenIndex = trueIndex;
+									unit.isReserved = token === undefined;
+									_this.renderedUnits.push(unit);
+									return unit.updateUnitMetadata(token).then(function () {
+										return unit.hide().then(function () {
+
+											return content.setChildren([unit]);
+										});
+									}).then(function () {
+										_this.currentAfter = unit.id;
+										return Util.ep();
+									});
+								});
 							}
 						},
 						create: function (index, metadata) {
 							var phrase = new base.data.objects.phrase.Phrase();
+							phrase.index = index;
 							base.data.storage.virtual.splice(index, 0, phrase);
 							return phrase.update(metadata).then(function () {
-								return base.data.objects.phrase.redoNumbering();
+								return base.data.objects.phrase.renumber();
+							}).then(function () {
+								return Util.ep(phrase);
 							});
 						},
 						remove: function (index) {
@@ -819,8 +892,8 @@ var AccountComponents = {
 						split: function (index) {
 
 						},
-						redoNumbering: function () {
-
+						renumber: function () {
+							return Util.ep();
 						},
 					},
 				},
@@ -834,23 +907,8 @@ var AccountComponents = {
 			// control
 			base.control = {
 				setup: function () {
-					// render 10 units
-					if (content.children.length === 0) {
-						return Promise.ordered(Array.range(base.data.defaultLimit).map(function (index) {
-							return function () {
-								return base.unit().then(function (unit) {
-									return unit.hide().then(function () {
-										return content.setChildren([unit]);
-									});
-								});
-							}
-						})).then(function () {
-							// set styles
-							return base.styles();
-						});
-					} else {
-						return Util.ep();
-					}
+					// set styles - nothing else for now
+					return base.styles();
 				},
 				setActive: function (options) {
 					options = options || {};
@@ -880,37 +938,19 @@ var AccountComponents = {
 						base.data.currentId = metadata.parent;
 						base.data.storage.virtual = [];
 
-						var complete = (metadata.content || '');
-						return Promise.ordered(complete.split(' ').map(function (completeToken, index) {
+						return Promise.ordered(metadata.tokens.map(function (token, index) {
 							return function () {
-								return base.data.objects.phrase.create(index, {query: completeToken, complete: completeToken});
+								return base.data.objects.phrase.create(index, {query: token.content, complete: token.content, tokens: [token]});
 							}
-						})).then(function () {
-							return base.control.input.update.main();
-						});
+						}));
 					},
-					editPhrase: function (metadata) {
-						var currentPhrase = base.data.storage.virtual[base.phraseIndex];
-						if (!base.lock) {
-							base.lock = true;
-							return currentPhrase.update(metadata).then(function (updatedPhrase) {
-								if (updatedPhrase.completeChanged) {
-									return base.control.input.update.main();
-								} else {
-									return base.active.setMetadata({query: updatedPhrase.queryTokens[base.active.tokenIndex], complete: updatedPhrase.completeTokens[base.active.tokenIndex]});
-								}
-							}).then(function () {
-								base.lock = false;
-								return Util.ep();
-							});
-						} else {
-							return Util.ep();
-						}
+					editPhrase: function () {
+
 					},
 					addPhrase: function () {
-						
+
 					},
-					removePhrase: function (index) {
+					removePhrase: function () {
 
 					},
 					update: {
