@@ -971,8 +971,9 @@ var AccountComponents = {
 							}
 						}));
 					},
-					editPhrase: function () {
-
+					editActive: function (metadata) {
+						
+						return Util.ep();
 					},
 					addPhrase: function () {
 
