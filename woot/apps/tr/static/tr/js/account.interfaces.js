@@ -791,7 +791,7 @@ var AccountInterfaces = {
 							caption.isFocussed = true;
 							unitBase.isFocussed = true;
 							autocomplete.isFocussed = true;
-							return base.setActive({unit: unitBase});
+							return caption.control.setActive({unit: unitBase});
 						} else {
 							return Util.ep();
 						}
