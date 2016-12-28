@@ -784,6 +784,7 @@ var AccountComponents = {
 									complete: '',
 									tokens: [],
 								});
+								metadata.tokens = metadata.tokens.length ? metadata.tokens : [{query: metadata.query, complete: metadata.complete, type: 'word'}]
 
 								// update complete changed
 								var _this = this;
@@ -791,13 +792,13 @@ var AccountComponents = {
 
 								if (_this.completeChanged) {
 									_this.query = _this.query || metadata.query;
-									_this.complete = metadata.complete || metadata.query;
+									_this.complete = metadata.complete;
 									_this.queryTokens = _this.query.split(' ');
 									_this.focus = _this.queryTokens.length - 1;
 									_this.isComplete = _this.query === _this.complete;
-									_this.tokens = (_this.tokens || metadata.tokens).map(function (token, index) {
+									_this.tokens = metadata.tokens.map(function (token, index) {
 										return {
-											complete: (token.content || token.complete),
+											complete: token.content || token.complete,
 											query: _this.queryTokens[index] || '',
 											type: token.type,
 										}
@@ -815,11 +816,11 @@ var AccountComponents = {
 
 								// 1. rendered units first
 								_this.renderedUnits = (_this.renderedUnits || []);
+								_this.currentAfter = undefined;
 								return Promise.all(_this.renderedUnits.map(function (renderedUnit, index) {
 									var token = _this.tokens[index];
 									renderedUnit.isReserved = token === undefined;
 									return renderedUnit.updateUnitMetadata(token).then(function () {
-										_this.currentAfter = renderedUnit.id;
 										if (renderedUnit.isReserved) {
 											return renderedUnit.hide();
 										} else {
@@ -864,8 +865,9 @@ var AccountComponents = {
 							this.newUnit = function (extraIndex, token) {
 								var _this = this;
 								var trueIndex = _this.renderedUnits.length + extraIndex;
+								var defaultAfter = _this.renderedUnits.length ? _this.renderedUnits[_this.renderedUnits.length-1].id : undefined;
 								return base.unit().then(function (unit) {
-									unit.after = _this.currentAfter;
+									unit.after = _this.currentAfter || defaultAfter;
 									unit.phrase = _this;
 									unit.isReserved = token === undefined;
 									_this.renderedUnits.push(unit);
@@ -884,7 +886,7 @@ var AccountComponents = {
 								var _this = this;
 								return base.active.getContent().then(function (activeContent) {
 									var tokenIndex = _this.renderedUnits.indexOf(base.active);
-									var updatedQuery = _this.tokens.map(function (token, index) {
+									_this.query = _this.tokens.map(function (token, index) {
 										if (index === tokenIndex) {
 											token.query = activeContent;
 											return activeContent;
@@ -893,7 +895,8 @@ var AccountComponents = {
 										}
 									}).join(' ');
 
-									return Util.ep(updatedQuery);
+
+									return Util.ep(_this.query);
 								});
 							}
 						},
@@ -972,8 +975,7 @@ var AccountComponents = {
 						}));
 					},
 					editActive: function (metadata) {
-						
-						return Util.ep();
+						return base.active.phrase.update(metadata);
 					},
 					addPhrase: function () {
 
