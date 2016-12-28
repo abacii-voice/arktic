@@ -880,6 +880,22 @@ var AccountComponents = {
 									});
 								});
 							}
+							this.updateQueryFromActive = function () {
+								var _this = this;
+								return base.active.getContent().then(function (activeContent) {
+									var tokenIndex = _this.renderedUnits.indexOf(base.active);
+									var updatedQuery = _this.tokens.map(function (token, index) {
+										if (index === tokenIndex) {
+											token.query = activeContent;
+											return activeContent;
+										} else {
+											return token.query;
+										}
+									}).join(' ');
+
+									return Util.ep(updatedQuery);
+								});
+							}
 						},
 						create: function (index, metadata) {
 							var phrase = new base.data.objects.phrase.Phrase();
