@@ -263,6 +263,9 @@ var UI = {
 
 						// classes
 						if (appearance.classes) {
+							if (_this.id.contains('')) {
+
+							}
 							return Promise.all([
 								Promise.all(removeClasses.map(function (cls) {
 									return new Promise(function(resolve, reject) {
