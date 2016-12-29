@@ -543,7 +543,7 @@ var AccountInterfaces = {
 			}
 			autocomplete.data.display.render.setMetadata = function () {
 				var _this = autocomplete;
-				var query = _this.data.query.trim(); // query is set no matter the status of virtual
+				var query = _this.data.query; // query is set no matter the status of virtual
 
 				// MAYBE RESET THE FILTER ON ENTER FOR THE AUTOCOMPLETE
 
