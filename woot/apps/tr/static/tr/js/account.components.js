@@ -967,7 +967,7 @@ var AccountComponents = {
 							});
 						},
 						remove: function (phrase) {
-							
+
 						},
 						split: function (index) {
 
