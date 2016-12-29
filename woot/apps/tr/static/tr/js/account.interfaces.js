@@ -906,14 +906,11 @@ var AccountInterfaces = {
 				// if there is no next token, start a new phrase.
 				return caption.active.isCaretInPosition('end').then(function (inPosition) {
 					if (inPosition) {
-						var noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {return item.rule === 'phrase';}).length === 0;
+						// var noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {return item.rule === 'phrase';}).length === 0;
 						caption.active.phrase.spaceOverride = true;
-						return autocomplete.search.setContent({query: caption.active.phrase.query + ' ', trigger: true}).then(function () {
-
-						});
-
+						return autocomplete.search.setContent({query: caption.active.phrase.query + ' ', trigger: true});
 					} else {
-						return Util.ep();
+						return caption.active.setCaretPosition('end');
 					}
 				});
 			}
