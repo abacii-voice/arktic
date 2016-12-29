@@ -886,8 +886,11 @@ var AccountInterfaces = {
 						var noPhraseQuery = caption.active.phrase.query === '';
 						if (noPhraseQuery) {
 							// delete phrase
+							return caption.data.object.phrase.remove(caption.active.phrase);
 						} else {
 							// just update and focus previous token
+							caption.active.phrase.spaceOverride = true;
+							return autocomplete.search.setContent({query: caption.active.phrase.query.trim(), trigger: true});
 						}
 					} else {
 
