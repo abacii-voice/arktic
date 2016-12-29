@@ -747,7 +747,7 @@ var AccountInterfaces = {
 						if (!unitBase.isFocussed) {
 							return unitBase.setContent(metadata);
 						} else {
-							if (unitBase.completionOverride && !unitBase.isComplete) {
+							if (unitBase.completionOverride) {
 								unitBase.completionOverride = false;
 								return unitBase.complete();
 							} else {
@@ -761,9 +761,6 @@ var AccountInterfaces = {
 							unitBase.unitType = type;
 							return Util.ep();
 						});
-					}
-					unitBase.completePhrase = function () {
-						return unitBase.phrase.complete();
 					}
 
 					// caption unit export
@@ -848,10 +845,9 @@ var AccountInterfaces = {
 								});
 							} else {
 								caption.completionOverride = true;
-								return Promise.all([
-									autocomplete.behaviours.right(),
-									caption.active.completePhrase(),
-								]);
+								caption.active.completionOverride = true;
+								caption.active.phrase.completionOverride = true;
+								return autocomplete.behaviours.right();
 							}
 						} else {
 							return autocomplete.behaviours.right();
