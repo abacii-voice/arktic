@@ -791,7 +791,6 @@ var AccountComponents = {
 										type: ((metadata.tokens[index] || {}).type || 'word'),
 									}
 								});
-								console.log(metadata);
 
 								// update complete changed
 								var _this = this;
@@ -819,62 +818,71 @@ var AccountComponents = {
 								// 1. rendered units first
 								_this.renderedUnits = (_this.renderedUnits || []);
 								_this.currentAfter = undefined;
-								return Promise.all(_this.renderedUnits.map(function (renderedUnit, index) {
-									var token = _this.tokens[index];
-									renderedUnit.isReserved = token === undefined;
-									return renderedUnit.updateUnitMetadata(token).then(function () {
-										if (renderedUnit.isReserved) {
-											return renderedUnit.hide();
+								if (!base.lock) {
+									base.lock = true;
+									return Promise.all(_this.renderedUnits.map(function (renderedUnit, index) {
+										var token = _this.tokens[index];
+										renderedUnit.isReserved = token === undefined;
+										return renderedUnit.updateUnitMetadata(token).then(function () {
+											if (renderedUnit.isReserved) {
+												return renderedUnit.hide();
+											} else {
+												return Util.ep();
+											}
+										});
+									})).then(function () {
+
+										// 2. next render units for the rest of the tokens if necessary.
+										if (_this.tokens.length > _this.renderedUnits.length) {
+											return Promise.ordered(_this.tokens.slice(_this.renderedUnits.length).map(function (token, extraIndex) {
+												return function () {
+													return _this.newUnit(extraIndex, token);
+												}
+											}));
 										} else {
 											return Util.ep();
 										}
+									}).then(function () {
+
+										// 3. render until the default unit limit
+										var difference = base.data.minimumPhraseLength-_this.renderedUnits.length;
+										if (difference > 0) {
+											return Promise.ordered(Array.range(difference).map(function (extraIndex) {
+												return function () {
+													return _this.newUnit(extraIndex);
+												}
+											}));
+										} else {
+											return Util.ep();
+										}
+									}).then(function () {
+
+										// 4. show what is hidden
+										return Promise.all(_this.renderedUnits.filter(function (unit) {
+											return unit.isHidden && !unit.isReserved;
+										}).map(function (unit) {
+											return unit.show();
+										}));
+									}).then(function () {
+
+										// 5. focus last token if just completed.
+										if (_this.completionOverride) {
+											_this.completionOverride = false;
+											return _this.lastUnit().focus('end');
+										} else if (_this.spaceOverride) {
+											_this.spaceOverride = false;
+
+											return _this.renderedUnits[_this.focus].focus('end');
+										} else {
+											return Util.ep();
+										}
+									}).then(function () {
+										base.lock = false;
+										return Util.ep();
 									});
-								})).then(function () {
-
-									// 2. next render units for the rest of the tokens if necessary.
-									if (_this.tokens.length > _this.renderedUnits.length) {
-										return Promise.ordered(_this.tokens.slice(_this.renderedUnits.length).map(function (token, extraIndex) {
-											return function () {
-												return _this.newUnit(extraIndex, token);
-											}
-										}));
-									} else {
-										return Util.ep();
-									}
-								}).then(function () {
-
-									// 3. render until the default unit limit
-									var difference = base.data.minimumPhraseLength-_this.renderedUnits.length;
-									if (difference > 0) {
-										return Promise.ordered(Array.range(difference).map(function (extraIndex) {
-											return function () {
-												return _this.newUnit(extraIndex);
-											}
-										}));
-									} else {
-										return Util.ep();
-									}
-								}).then(function () {
-
-									// 4. show what is hidden
-									return Promise.all(_this.renderedUnits.filter(function (unit) {
-										return unit.isHidden && !unit.isReserved;
-									}).map(function (unit) {
-										return unit.show();
-									}));
-								}).then(function () {
-
-									// 5. focus last token if just completed.
-									if (_this.completionOverride) {
-										_this.completionOverride = false;
-										return _this.lastUnit().focus('end');
-									} else if (_this.spaceOverride) {
-										_this.spaceOverride = false;
-										return _this.renderedUnits[_this.focus].focus('end');
-									} else {
-										return Util.ep();
-									}
-								});
+								} else {
+									return Util.ep();
+								}
 							}
 							this.newUnit = function (extraIndex, token) {
 								var _this = this;
