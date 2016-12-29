@@ -883,7 +883,12 @@ var AccountInterfaces = {
 				return caption.active.isCaretInPosition('start').then(function (inPosition) {
 					var noQuery = caption.active.metadata.query === '';
 					if (inPosition && noQuery) {
-
+						var noPhraseQuery = caption.active.phrase.query === '';
+						if (noPhraseQuery) {
+							// delete phrase
+						} else {
+							// just update and focus previous token
+						}
 					} else {
 
 					}
