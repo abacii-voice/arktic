@@ -791,21 +791,21 @@ var AccountComponents = {
 										type: ((metadata.tokens[index] || {}).type || 'word'),
 									}
 								});
+								console.log(metadata);
 
 								// update complete changed
 								var _this = this;
-								_this.completeChanged = (_this.complete !== metadata.complete) || _this.completionOverride;
+								_this.completeChanged = (_this.complete !== metadata.complete);
 								_this.query = metadata.query || _this.query;
 								_this.complete = metadata.complete;
 
-								console.log(metadata);
 								var lastToken = metadata.tokens[metadata.queryTokens.length-1];
 								_this.focus = metadata.queryTokens.length + (lastToken.query === lastToken.complete ? 0 : -1);
 								_this.focus = _this.focus >= metadata.completeTokens.length ? metadata.completeTokens.length - 1 : _this.focus;
 								_this.isComplete = _this.query === _this.complete;
 								_this.tokens = metadata.tokens;
 
-								if (_this.completeChanged) {
+								if (_this.completeChanged || _this.completionOverride || _this.spaceOverride) {
 									// render to tokens
 									return _this.render();
 								} else {
@@ -870,9 +870,7 @@ var AccountComponents = {
 										return _this.lastUnit().focus('end');
 									} else if (_this.spaceOverride) {
 										_this.spaceOverride = false;
-										// console.log(_this.renderedUnits[_this.focus].metadata);
 										return _this.renderedUnits[_this.focus].focus('end');
-										// return Util.ep();
 									} else {
 										return Util.ep();
 									}
