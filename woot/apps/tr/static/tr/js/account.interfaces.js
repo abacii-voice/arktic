@@ -881,17 +881,23 @@ var AccountInterfaces = {
 			caption.behaviours.backspace = function () {
 				// var index = caption.phraseIndex;
 				return caption.active.isCaretInPosition('start').then(function (inPosition) {
-					var noQuery = caption.active.metadata.query === '';
-					if (inPosition && noQuery) {
-						var noPhraseQuery = caption.active.phrase.query === '';
-						if (noPhraseQuery) {
-							// delete phrase
-							return caption.data.object.phrase.remove(caption.active.phrase);
-						} else {
-							// just update and focus previous token
-							caption.active.phrase.spaceOverride = true;
-							return autocomplete.search.setContent({query: caption.active.phrase.query.trim(), trigger: true});
-						}
+					if (inPosition && caption.active.metadata.query === '') {
+						return caption.active.blur();
+						// return autocomplete.search.setContent({query: caption.active.phrase.query.trim(), trigger: true}).then(function () {
+						// 	return caption.previous().then(function () {
+						// 		return caption.active.focus('end');
+						// 	});
+						// });
+						// if (noPhraseQuery) {
+						// 	// delete phrase
+						// 	return caption.data.object.phrase.remove(caption.active.phrase);
+						// } else {
+						// 	// just update and focus previous token
+						// 	caption.active.phrase.spaceOverride = true;
+						// 	return caption.active.blur().then(function () {
+						// 		return autocomplete.search.setContent({query: caption.active.phrase.query.trim(), trigger: true});
+						// 	});
+						// }
 					} else {
 
 					}
