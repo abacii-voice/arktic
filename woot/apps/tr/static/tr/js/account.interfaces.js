@@ -563,7 +563,7 @@ var AccountInterfaces = {
 				var _this = autocomplete.search;
 				metadata = (metadata || {});
 				_this.metadata = (_this.metadata || {});
-				_this.metadata.query = metadata.query !== undefined ? metadata.query.trim() : (_this.metadata.query || '');
+				_this.metadata.query = metadata.query !== undefined ? metadata.query : (_this.metadata.query || '');
 				_this.metadata.complete = metadata.complete !== undefined ? metadata.complete : _this.metadata.query;
 				_this.metadata.combined = _this.metadata.query + _this.metadata.complete.substring(_this.metadata.query.length);
 				_this.metadata.tokens = (metadata.tokens || []);
@@ -786,11 +786,13 @@ var AccountInterfaces = {
 					unitBase.input = function () {
 						if (unitBase.isFocussed) {
 							return unitBase.getContent().then(function (unitContent) {
+
+								// temporarily update metadata to prepare for completion, even though this might be overwritten by the subsequent search.setContent.
 								return unitBase.updateUnitMetadata({query: unitContent, complete: unitBase.metadata.complete}).then(function () {
-									return unitBase.phrase.updateQueryFromActive(unitBase, unitContent).then(function (updatedQuery) {
+									return unitBase.phrase.updateQueryFromActive().then(function (updatedQuery) {
 										return autocomplete.search.setContent({query: updatedQuery, trigger: true});
 									});
-								})
+								});
 							});
 						} else {
 							return Util.ep();
@@ -881,9 +883,7 @@ var AccountInterfaces = {
 				return caption.active.isCaretInPosition('start').then(function (inPosition) {
 					var noQuery = caption.active.metadata.query === '';
 					if (inPosition && noQuery) {
-						return caption.behaviours.left().then(function () {
-							return caption.control.input.removePhrase(caption.phraseIndex + 1);
-						});
+
 					} else {
 
 					}
@@ -892,63 +892,28 @@ var AccountInterfaces = {
 			caption.behaviours.enter = function () {
 				// confirms current phrase, but does not complete.
 				// splits phrase into sub-phrases, each containing a single token.
-
-				// TODO: set complete to query before next token
-
-				return caption.active.isCaretInPosition().then(function (inPosition) {
+				return caption.active.isCaretInPosition('end').then(function (inPosition) {
 					if (inPosition) {
-						return caption.control.input.addPhrase().then(function () {
-							return caption.control.input.update.main();
-						}).then(function () {
-							return caption.control.setActive({increment: 1}).then(function () {
-								return caption.active.focus('end');
-							});
-						}).then(function () {
-							return caption.data.objects.phrase.split(caption.phraseIndex-1);
-						}).then(function () {
-							return caption.control.input.update.main();
-						}).then(function () {
-							return caption.control.setActive();
-						});
+
 					} else {
 						return Util.ep();
 					}
 				});
 
-				// TODO: THIS IS DISGUSTING. This would be improved by a deeper understanding of the entire possibility space of the caption.
-				// The new phrase is added before the splitting so the split can happen while not focussed. This is stupid, and should be refactored.
 			}
 			caption.behaviours.space = function () {
 				// skip to the next token in the phrase.
 				// if there is no next token, start a new phrase.
-				return caption.active.isCaretInPosition().then(function (inPosition) {
+				return caption.active.isCaretInPosition('end').then(function (inPosition) {
 					if (inPosition) {
-						// last token? -> <enter>
-						var isLastToken = caption.active.phrase.focus === caption.active.phrase.tokens.length - 1;
-						// no more phrases? -> <enter>
 						var noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {return item.rule === 'phrase';}).length === 0;
-						if (isLastToken) {
-							if (noMorePhrases) {
-								// <enter>
-								return caption.behaviours.enter();
-							} else {
-								// new token
-								return caption.active.phrase.addToken().then(function () {
-									return caption.control.input.update.main();
-								}).then(function () {
-									return caption.control.setActive({increment: 1}).then(function () {
-										return caption.active.focus('end');
-									});
-								});
-							}
-						} else {
-							// next token
-							return caption.control.setActive({increment: 1}).then(function () {
-								return caption.active.focus('end');
-							});
-						}
+						caption.active.phrase.spaceOverride = true;
+						return autocomplete.search.setContent({query: caption.active.phrase.query + ' ', trigger: true}).then(function () {
+
+						});
+
 					} else {
-						return caption.active.setCaretPosition('end');
+						return Util.ep();
 					}
 				});
 			}

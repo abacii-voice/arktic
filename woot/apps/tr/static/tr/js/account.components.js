@@ -779,23 +779,31 @@ var AccountComponents = {
 						Phrase: function () {
 							// methods
 							this.update = function (metadata) {
-								metadata.tokens = (metadata.tokens && metadata.tokens.length) ? metadata.tokens : [{query: metadata.query, complete: metadata.complete, type: 'word'}];
+								// apply rules to metadata
+								metadata.complete = metadata.complete || metadata.query || '';
+								metadata.queryTokens = metadata.query.split(' ');
+								metadata.completeTokens = metadata.complete.split(' ');
+								metadata.tokens = metadata.tokens || [];
+								metadata.tokens = metadata.completeTokens.map(function (completeToken, index) {
+									return {
+										complete: completeToken,
+										query: (metadata.queryTokens[index] || ''),
+										type: ((metadata.tokens[index] || {}).type || 'word'),
+									}
+								});
 
 								// update complete changed
 								var _this = this;
 								_this.completeChanged = (_this.complete !== metadata.complete) || _this.completionOverride;
-								_this.query = (_this.completionOverride || !_this.query) ? metadata.query : _this.query;
+								_this.query = metadata.query || _this.query;
 								_this.complete = metadata.complete;
-								_this.queryTokens = _this.query.split(' ');
-								_this.focus = _this.queryTokens.length - 1;
+
+								console.log(metadata);
+								var lastToken = metadata.tokens[metadata.queryTokens.length-1];
+								_this.focus = metadata.queryTokens.length + (lastToken.query === lastToken.complete ? 0 : -1);
+								_this.focus = _this.focus >= metadata.completeTokens.length ? metadata.completeTokens.length - 1 : _this.focus;
 								_this.isComplete = _this.query === _this.complete;
-								_this.tokens = metadata.tokens.map(function (token, index) {
-									return {
-										complete: token.content || token.complete,
-										query: _this.queryTokens[index] || '',
-										type: token.type,
-									}
-								});
+								_this.tokens = metadata.tokens;
 
 								if (_this.completeChanged) {
 									// render to tokens
@@ -860,6 +868,11 @@ var AccountComponents = {
 									if (_this.completionOverride) {
 										_this.completionOverride = false;
 										return _this.lastUnit().focus('end');
+									} else if (_this.spaceOverride) {
+										_this.spaceOverride = false;
+										// console.log(_this.renderedUnits[_this.focus].metadata);
+										return _this.renderedUnits[_this.focus].focus('end');
+										// return Util.ep();
 									} else {
 										return Util.ep();
 									}
@@ -885,13 +898,13 @@ var AccountComponents = {
 									});
 								});
 							}
-							this.updateQueryFromActive = function (active, activeContent) {
+							this.updateQueryFromActive = function () {
 								var _this = this;
-								var tokenIndex = _this.renderedUnits.indexOf(active);
-								_this.query = _this.tokens.map(function (token, index) {
+								var tokenIndex = _this.renderedUnits.indexOf(base.active);
+								_this.query = _this.tokens.slice(0, _this.focus+1).map(function (token, index) {
 									if (index === tokenIndex) {
-										token.query = activeContent;
-										return activeContent;
+										token.query = base.active.metadata.query;
+										return base.active.metadata.query;
 									} else {
 										return token.query;
 									}
