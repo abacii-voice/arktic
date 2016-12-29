@@ -801,7 +801,7 @@ var AccountComponents = {
 									// render to tokens
 									return _this.render();
 								} else {
-									return Util.ep(_this);
+									return Util.ep();
 								}
 							}
 							this.render = function () {
@@ -885,22 +885,19 @@ var AccountComponents = {
 									});
 								});
 							}
-							this.updateQueryFromActive = function () {
+							this.updateQueryFromActive = function (active, activeContent) {
 								var _this = this;
-								return base.active.getContent().then(function (activeContent) {
-									var tokenIndex = _this.renderedUnits.indexOf(base.active);
-									_this.query = _this.tokens.map(function (token, index) {
-										if (index === tokenIndex) {
-											token.query = activeContent;
-											return activeContent;
-										} else {
-											return token.query;
-										}
-									}).join(' ');
+								var tokenIndex = _this.renderedUnits.indexOf(active);
+								_this.query = _this.tokens.map(function (token, index) {
+									if (index === tokenIndex) {
+										token.query = activeContent;
+										return activeContent;
+									} else {
+										return token.query;
+									}
+								}).join(' ');
 
-
-									return Util.ep(_this.query);
-								});
+								return Util.ep(_this.query);
 							}
 							this.completeQuery = function () {
 								var _this = this;

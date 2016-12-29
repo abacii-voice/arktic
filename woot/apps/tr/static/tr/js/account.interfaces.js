@@ -747,7 +747,7 @@ var AccountInterfaces = {
 						if (!unitBase.isFocussed) {
 							return unitBase.setContent(metadata);
 						} else {
-							if (unitBase.completionOverride) {
+							if (unitBase.completionOverride && !unitBase.isComplete) {
 								unitBase.completionOverride = false;
 								return unitBase.complete();
 							} else {
@@ -785,8 +785,12 @@ var AccountInterfaces = {
 					}
 					unitBase.input = function () {
 						if (unitBase.isFocussed) {
-							return unitBase.phrase.updateQueryFromActive().then(function (updatedQuery) {
-								return autocomplete.search.setContent({query: updatedQuery, trigger: true});
+							return unitBase.getContent().then(function (unitContent) {
+								return unitBase.setMetadata({query: unitContent, complete: unitBase.metadata.complete}).then(function () {
+									return unitBase.phrase.updateQueryFromActive(unitBase, unitContent).then(function (updatedQuery) {
+										return autocomplete.search.setContent({query: updatedQuery, trigger: true});
+									});
+								})
 							});
 						} else {
 							return Util.ep();
