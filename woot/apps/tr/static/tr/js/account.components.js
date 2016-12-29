@@ -779,31 +779,25 @@ var AccountComponents = {
 						Phrase: function () {
 							// methods
 							this.update = function (metadata) {
-								metadata = (metadata || {
-									query: '',
-									complete: '',
-									tokens: [],
-								});
-								metadata.tokens = metadata.tokens.length ? metadata.tokens : [{query: metadata.query, complete: metadata.complete, type: 'word'}]
+								metadata.tokens = (metadata.tokens && metadata.tokens.length) ? metadata.tokens : [{query: metadata.query, complete: metadata.complete, type: 'word'}];
 
 								// update complete changed
 								var _this = this;
-								_this.completeChanged = (_this.complete !== metadata.complete) || !metadata.complete;
+								_this.completeChanged = (_this.complete !== metadata.complete) || _this.completionOverride;
+								_this.query = (_this.completionOverride || !_this.query) ? metadata.query : _this.query;
+								_this.complete = metadata.complete;
+								_this.queryTokens = _this.query.split(' ');
+								_this.focus = _this.queryTokens.length - 1;
+								_this.isComplete = _this.query === _this.complete;
+								_this.tokens = metadata.tokens.map(function (token, index) {
+									return {
+										complete: token.content || token.complete,
+										query: _this.queryTokens[index] || '',
+										type: token.type,
+									}
+								});
 
 								if (_this.completeChanged) {
-									_this.query = _this.query || metadata.query;
-									_this.complete = metadata.complete;
-									_this.queryTokens = _this.query.split(' ');
-									_this.focus = _this.queryTokens.length - 1;
-									_this.isComplete = _this.query === _this.complete;
-									_this.tokens = metadata.tokens.map(function (token, index) {
-										return {
-											complete: token.content || token.complete,
-											query: _this.queryTokens[index] || '',
-											type: token.type,
-										}
-									});
-
 									// render to tokens
 									return _this.render();
 								} else {
@@ -860,6 +854,15 @@ var AccountComponents = {
 									}).map(function (unit) {
 										return unit.show();
 									}));
+								}).then(function () {
+
+									// 5. focus last token if just completed.
+									if (_this.completionOverride) {
+										_this.completionOverride = false;
+										return _this.lastUnit().focus('end');
+									} else {
+										return Util.ep();
+									}
 								});
 							}
 							this.newUnit = function (extraIndex, token) {
@@ -898,6 +901,23 @@ var AccountComponents = {
 
 									return Util.ep(_this.query);
 								});
+							}
+							this.completeQuery = function () {
+								var _this = this;
+								_this.query = _this.tokens.map(function (token) {
+									token.query = token.complete;
+									return token.complete;
+								}).join(' ');
+
+								return Util.ep(_this.query);
+							}
+							this.lastUnit = function () {
+								if (this.renderedUnits) {
+									var activeUnits = this.renderedUnits.filter(function (unit) {
+										return !unit.isHidden;
+									});
+									return activeUnits[activeUnits.length-1];
+								}
 							}
 						},
 						create: function (index, metadata) {
@@ -949,6 +969,11 @@ var AccountComponents = {
 							return !unit.isHidden;
 						});
 						var newIndex = visibleChildren.indexOf(base.active) + (options.increment || 0);
+
+						// boundary conditions
+						newIndex = newIndex > 0 ? (newIndex < visibleChildren.length - 1 ? newIndex : visibleChildren.length - 1) : 0;
+
+						// get new active
 						base.active = visibleChildren[newIndex];
 					}
 
