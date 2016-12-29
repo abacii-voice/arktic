@@ -786,7 +786,7 @@ var AccountInterfaces = {
 					unitBase.input = function () {
 						if (unitBase.isFocussed) {
 							return unitBase.getContent().then(function (unitContent) {
-								return unitBase.setMetadata({query: unitContent, complete: unitBase.metadata.complete}).then(function () {
+								return unitBase.updateUnitMetadata({query: unitContent, complete: unitBase.metadata.complete}).then(function () {
 									return unitBase.phrase.updateQueryFromActive(unitBase, unitContent).then(function (updatedQuery) {
 										return autocomplete.search.setContent({query: updatedQuery, trigger: true});
 									});
