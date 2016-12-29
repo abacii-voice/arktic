@@ -935,6 +935,27 @@ var AccountComponents = {
 									return activeUnits[activeUnits.length-1];
 								}
 							}
+							this.firstUnit = function () {
+								if (this.renderedUnits) {
+									var activeUnits = this.renderedUnits.filter(function (unit) {
+										return !unit.isHidden;
+									});
+									return activeUnits[0];
+								}
+							}
+							this.focus = function (position) {
+								var _this = this;
+								position = position || 'end';
+								if (position === 'end') {
+									// focus the end of the last focussable unit
+									return _this.lastUnit().focus('end');
+								} else if (position === 'start') {
+									// focus the start of the first focussable unit
+									return _this.firstUnit().focus('start');
+								} else {
+									return Util.ep();
+								}
+							}
 						},
 						create: function (index, metadata) {
 							var phrase = new base.data.objects.phrase.Phrase();
@@ -945,8 +966,8 @@ var AccountComponents = {
 								return Util.ep(phrase);
 							});
 						},
-						remove: function (index) {
-
+						remove: function (phrase) {
+							
 						},
 						split: function (index) {
 
