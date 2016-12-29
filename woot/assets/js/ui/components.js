@@ -227,7 +227,7 @@ var Components = {
 				return Util.ep(head.model().text().replace(/\s+/gi, ' '));
 			}
 			base.setContent = function (metadata) {
-				return head.setAppearance({html: metadata.query}).then(function () {
+				return head.setAppearance({html: (metadata.query || '').replace(/\s+/gi, ' ')}).then(function () {
 					if (metadata.trigger) {
 						return base.input();
 					} else {
@@ -601,6 +601,9 @@ var Components = {
 								(!base.autocomplete || (base.autocomplete && base.data.query !== '') || (base.data.autocompleteOverride || false)), // autocomplete mode or no query
 								datum.id in base.data.storage.dataset, // datum is currently in dataset (prevent bleed over from change of dataset)
 							];
+							if (datum.main.contains('avail')) {
+								// console.log(base.data.query + 'a', datum.main, conditions);
+							}
 
 							return Util.ep(conditions.reduce(function (a,b) {
 								return a && b;
