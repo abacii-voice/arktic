@@ -858,11 +858,7 @@ var AccountComponents = {
 									}).then(function () {
 
 										// 4. show what is hidden
-										return Promise.all(_this.renderedUnits.filter(function (unit) {
-											return unit.isHidden && !unit.isReserved;
-										}).map(function (unit) {
-											return unit.show();
-										}));
+										return _this.show();
 									}).then(function () {
 
 										// 5. focus last token if just completed.
@@ -884,12 +880,24 @@ var AccountComponents = {
 									return Util.ep();
 								}
 							}
+							this.show = function () {
+								var _this = this;
+								if (!base.showOverride) {
+									return Promise.all(_this.renderedUnits.filter(function (unit) {
+										return unit.isHidden && !unit.isReserved;
+									}).map(function (unit) {
+										return unit.show();
+									}));
+								} else {
+									return Util.ep();
+								}
+							}
 							this.newUnit = function (extraIndex, token) {
 								var _this = this;
 								var trueIndex = _this.renderedUnits.length + extraIndex;
 								var defaultAfter = _this.renderedUnits.length ? _this.renderedUnits[_this.renderedUnits.length-1].id : undefined; // not '' lol
 								return base.unit().then(function (unit) {
-									unit.after = _this.currentAfter || defaultAfter;
+									unit.after = base.globalAfter || _this.currentAfter || defaultAfter;
 									unit.phrase = _this;
 									unit.isReserved = token === undefined;
 									_this.renderedUnits.push(unit);
@@ -900,6 +908,7 @@ var AccountComponents = {
 										});
 									}).then(function () {
 										_this.currentAfter = unit.id;
+										base.globalAfter = undefined;
 										return Util.ep();
 									});
 								});
@@ -959,6 +968,7 @@ var AccountComponents = {
 						},
 						create: function (index, metadata) {
 							var phrase = new base.data.objects.phrase.Phrase();
+							base.globalAfter = base.data.storage.virtual.length && base.data.storage.virtual[index] ? base.data.storage.virtual[index].firstUnit().id : undefined;
 							base.data.storage.virtual.splice(index, 0, phrase);
 							return phrase.update(metadata).then(function () {
 								return base.data.objects.phrase.renumber();
@@ -1030,11 +1040,17 @@ var AccountComponents = {
 						base.data.currentId = metadata.parent;
 						base.data.storage.virtual = [];
 
+						base.showOverride = true;
 						return Promise.ordered(metadata.tokens.map(function (token, index) {
 							return function () {
 								return base.data.objects.phrase.create(index, {query: token.content, complete: token.content, tokens: [token]});
 							}
-						}));
+						})).then(function () {
+							base.showOverride = false;
+							return Promise.all(base.data.storage.virtual.map(function (phrase) {
+								return phrase.show();
+							}));
+						});
 					},
 					editActive: function (metadata) {
 						return base.active.phrase.update(metadata);
