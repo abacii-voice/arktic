@@ -158,7 +158,7 @@ var AccountInterfaces = {
 			Mousetrap.bind('backspace', function (event) {
 				Promise.all([
 					autocomplete.behaviours.backspace(),
-					caption.behaviours.backspace(),
+					caption.behaviours.backspace(event),
 				]);
 			});
 
@@ -585,6 +585,7 @@ var AccountInterfaces = {
 					// Should trigger caption set metadata to check for phrase and other expansions.
 					// return caption action
 					if (caption.isFocussed) {
+						_this.metadata.target = autocomplete.target;
 						return caption.control.input.editActive(_this.metadata);
 					} else {
 						return Util.ep();
@@ -804,6 +805,7 @@ var AccountInterfaces = {
 								// temporarily update metadata to prepare for completion, even though this might be overwritten by the subsequent search.setContent.
 								return unitBase.updateUnitMetadata({query: unitContent, complete: unitBase.metadata.complete}).then(function () {
 									return unitBase.phrase.updateQueryFromActive().then(function (updatedQuery) {
+										autocomplete.target = unitBase.phrase.id;
 										return autocomplete.search.setContent({query: updatedQuery, trigger: true});
 									});
 								});
@@ -892,24 +894,26 @@ var AccountInterfaces = {
 					return Util.ep();
 				}
 			}
-			caption.behaviours.backspace = function () {
+			caption.behaviours.backspace = function (event) {
 				// var index = caption.phraseIndex;
 				return caption.active.isCaretInPosition('start').then(function (inPosition) {
 					if (inPosition && caption.active.metadata.query === '') {
-						caption.active.phrase.backspaceOverride = true;
-						return autocomplete.search.setContent({query: caption.active.phrase.query.trim(), trigger: true});
-						// if (noPhraseQuery) {
-						// 	// delete phrase
-						// 	return caption.data.object.phrase.remove(caption.active.phrase);
-						// } else {
-						// 	// just update and focus previous token
-						// 	caption.active.phrase.spaceOverride = true;
-						// 	return caption.active.blur().then(function () {
-						// 		return autocomplete.search.setContent({query: caption.active.phrase.query.trim(), trigger: true});
-						// 	});
-						// }
+						var noPhraseQuery = caption.active.phrase.query === '';
+						if (noPhraseQuery) {
+							// remove phrase
+							event.preventDefault();
+							return caption.previous().then(function () {
+								return caption.active.setCaretPosition('end').then(function () {
+									return caption.data.object.phrase.remove(caption.active.phrase);
+								});
+							});
+						} else {
+							caption.active.phrase.backspaceOverride = true;
+							autocomplete.target = caption.active.phrase.id;
+							return autocomplete.search.setContent({query: caption.active.phrase.query.trim(), trigger: true});
+						}
 					} else {
-
+						return Util.ep();
 					}
 				});
 			}
@@ -939,6 +943,7 @@ var AccountInterfaces = {
 							return caption.behaviours.enter();
 						} else {
 							caption.active.phrase.spaceOverride = true;
+							autocomplete.target	= caption.active.phrase.id;
 							return autocomplete.search.setContent({query: caption.active.phrase.query + ' ', trigger: true});
 						}
 					} else {
