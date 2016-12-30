@@ -907,7 +907,7 @@ var AccountInterfaces = {
 				// splits phrase into sub-phrases, each containing a single token.
 				return caption.active.isCaretInPosition('end').then(function (inPosition) {
 					if (inPosition) {
-
+						return caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]});
 					} else {
 						return Util.ep();
 					}
