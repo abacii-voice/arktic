@@ -623,14 +623,9 @@ var AccountInterfaces = {
 				var index = parseInt(char);
 				if (index < autocomplete.data.storage.virtual.rendered.length) {
 					return autocomplete.control.setActive.main({index: index}).then(function () {
-						// don't know what behaviour to have here
-						return Promise.all([
-							autocomplete.search.behaviours.right(),
-							caption.behaviours.right(),
-						]);
-
-						// Maybe do this
-						// return search.behaviours.enter();
+						return autocomplete.behaviours.right().then(function () {
+							// return caption.behaviours.right();
+						});
 					});
 				}
 			}
@@ -777,6 +772,12 @@ var AccountInterfaces = {
 						});
 						return activeUnits[unitBase.phrase.queryTokens.length - 1].id === unitBase.id;
 					}
+					unitBase.isLastToken = function () {
+						var activeUnits = unitBase.phrase.renderedUnits.filter(function (unit) {
+							return !unit.isHidden;
+						});
+						return activeUnits[activeUnits.length - 1].id === unitBase.id;
+					}
 
 					// caption unit export
 					unitBase.runChecks = function () {
@@ -895,18 +896,22 @@ var AccountInterfaces = {
 				}
 			}
 			caption.behaviours.backspace = function (event) {
-				// var index = caption.phraseIndex;
 				return caption.active.isCaretInPosition('start').then(function (inPosition) {
 					if (inPosition && caption.active.metadata.query === '') {
 						var noPhraseQuery = caption.active.phrase.query === '';
 						if (noPhraseQuery) {
 							// remove phrase
-							event.preventDefault();
-							return caption.previous().then(function () {
-								return caption.active.setCaretPosition('end').then(function () {
-									return caption.data.object.phrase.remove(caption.active.phrase);
+							event.preventDefault(); // prevent the delete from happening after 'caption.previous'. It is only there to 'remove' the 'space'.
+							var phrase = caption.active.phrase;
+							if (phrase.index > 0) {
+								return caption.previous().then(function () {
+									return caption.active.setCaretPosition('end').then(function () {
+										return caption.data.objects.phrase.remove(phrase);
+									});
 								});
-							});
+							} else {
+								return Util.ep();
+							}
 						} else {
 							caption.active.phrase.backspaceOverride = true;
 							autocomplete.target = caption.active.phrase.id;
@@ -921,17 +926,25 @@ var AccountInterfaces = {
 				// confirms current phrase, but does not complete.
 				// splits phrase into sub-phrases, each containing a single token.
 				return caption.active.isCaretInPosition('end').then(function (inPosition) {
-					if (inPosition && caption.active.isLastQueryToken()) {
-						return caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
-							return caption.next().then(function () {
-								return caption.active.setCaretPosition('start');
+					if (inPosition) {
+						if (caption.active.isLastToken() && caption.active.isComplete) {
+							var phrase = caption.active.phrase;
+							return caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
+								return caption.next().then(function () {
+									return caption.active.setCaretPosition('start');
+								});
+							}).then(function () {
+								return caption.data.objects.phrase.split(phrase);
 							});
-						});
+						} else if (caption.active.isLastQueryToken()) {
+							return caption.behaviours.right();
+						} else {
+							return Util.ep();
+						}
 					} else {
 						return Util.ep();
 					}
 				});
-
 			}
 			caption.behaviours.space = function () {
 				// skip to the next token in the phrase.
