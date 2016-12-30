@@ -1020,7 +1020,6 @@ var AccountComponents = {
 						},
 						renumber: function () {
 							return Promise.all(base.data.storage.virtual.map(function (phrase, index) {
-								console.log(phrase.complete, index);
 								phrase.index = index;
 								return Util.ep();
 							}));
