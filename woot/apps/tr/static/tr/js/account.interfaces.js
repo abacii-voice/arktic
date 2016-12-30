@@ -130,13 +130,13 @@ var AccountInterfaces = {
 			Mousetrap.bind('left', function (event) {
 				Promise.all([
 					autocomplete.behaviours.left(),
-					caption.behaviours.left(),
+					caption.behaviours.left(event),
 				]);
 			});
 
 			Mousetrap.bind('right', function (event) {
 				Promise.all([
-					caption.behaviours.right(),
+					caption.behaviours.right(event),
 				]);
 			});
 
@@ -858,10 +858,11 @@ var AccountInterfaces = {
 					});
 				});
 			}
-			caption.behaviours.right = function () {
+			caption.behaviours.right = function (event) {
 				if (caption.isFocussed) {
 					return caption.active.isCaretInPosition('end').then(function (inPosition) {
 						if (inPosition) {
+							event.preventDefault();
 							if (caption.active.phrase.isComplete) {
 								return caption.next().then(function () {
 									return caption.active.focus('start');
@@ -880,10 +881,11 @@ var AccountInterfaces = {
 					return autocomplete.behaviours.right();
 				}
 			}
-			caption.behaviours.left = function () {
+			caption.behaviours.left = function (event) {
 				if (caption.isFocussed) {
 					return caption.active.isCaretInPosition('start').then(function (inPosition) {
 						if (inPosition) {
+							event.preventDefault();
 							return caption.previous().then(function () {
 								return caption.active.focus('end');
 							});
