@@ -882,7 +882,6 @@ var AccountInterfaces = {
 				// var index = caption.phraseIndex;
 				return caption.active.isCaretInPosition('start').then(function (inPosition) {
 					if (inPosition && caption.active.metadata.query === '') {
-						return caption.active.blur();
 						// return autocomplete.search.setContent({query: caption.active.phrase.query.trim(), trigger: true}).then(function () {
 						// 	return caption.previous().then(function () {
 						// 		return caption.active.focus('end');
@@ -920,9 +919,13 @@ var AccountInterfaces = {
 				// if there is no next token, start a new phrase.
 				return caption.active.isCaretInPosition('end').then(function (inPosition) {
 					if (inPosition) {
-						// var noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {return item.rule === 'phrase';}).length === 0;
+						var noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {return item.rule === 'phrase' && item.main !== caption.active.phrase.complete;}).length === 0;
 						caption.active.phrase.spaceOverride = true;
-						return autocomplete.search.setContent({query: caption.active.phrase.query + ' ', trigger: true});
+						if (noMorePhrases) {
+							return caption.behaviours.enter();
+						} else {
+							return autocomplete.search.setContent({query: caption.active.phrase.query + ' ', trigger: true});
+						}
 					} else {
 						return caption.active.setCaretPosition('end');
 					}
