@@ -804,7 +804,8 @@ var AccountComponents = {
 								_this.isComplete = _this.query === _this.complete;
 								_this.tokens = metadata.tokens;
 
-								if (_this.completeChanged || _this.completionOverride || _this.spaceOverride || _this.backspaceOverride) {
+								var idMatches = (_this.id === metadata.target) || !_this.id;
+								if ((_this.completeChanged || _this.completionOverride || _this.spaceOverride || _this.backspaceOverride) && idMatches) {
 									// render to tokens
 									return _this.render();
 								} else {
@@ -975,11 +976,12 @@ var AccountComponents = {
 							return phrase.update(metadata).then(function () {
 								return base.data.objects.phrase.renumber();
 							}).then(function () {
+								phrase.id = Util.makeid();
 								return Util.ep(phrase);
 							});
 						},
 						remove: function (phrase) {
-
+							
 						},
 						split: function (index) {
 
