@@ -545,19 +545,27 @@ var AccountInterfaces = {
 				var _this = autocomplete;
 				var query = _this.data.query; // query is set no matter the status of virtual
 
-				// MAYBE RESET THE FILTER ON ENTER FOR THE AUTOCOMPLETE
-
-				var complete = '';
-				var type = '';
-				var tokens = []; // account for phrases
 				if (!_this.data.storage.virtual.list.length) {
 					_this.currentIndex = undefined;
+					return _this.search.setMetadata({query: query, complete: '', type: '', tokens: []});
 				} else {
-					complete = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
-					type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
-					tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
+					// console.log(_this.active.datum.main, _this.currentIndex);
+					if (_this.currentIndex >= _this.data.storage.virtual.list.length) {
+						// console.log('here');
+						return _this.control.setActive.main({index: 0}).then(function () {
+							// console.log(_this.active.datum.main, _this.currentIndex);
+							var _this = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
+							var type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
+							var tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
+							return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
+						});
+					} else {
+						var complete = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
+						var type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
+						var tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
+						return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
+					}
 				}
-				return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
 			}
 			autocomplete.search.setMetadata = function (metadata) {
 				var _this = autocomplete.search;
@@ -762,6 +770,12 @@ var AccountInterfaces = {
 							return Util.ep();
 						});
 					}
+					unitBase.isLastQueryToken = function () {
+						var activeUnits = unitBase.phrase.renderedUnits.filter(function (unit) {
+							return !unit.isHidden;
+						});
+						return activeUnits[unitBase.phrase.queryTokens.length - 1].id === unitBase.id;
+					}
 
 					// caption unit export
 					unitBase.runChecks = function () {
@@ -882,11 +896,8 @@ var AccountInterfaces = {
 				// var index = caption.phraseIndex;
 				return caption.active.isCaretInPosition('start').then(function (inPosition) {
 					if (inPosition && caption.active.metadata.query === '') {
-						// return autocomplete.search.setContent({query: caption.active.phrase.query.trim(), trigger: true}).then(function () {
-						// 	return caption.previous().then(function () {
-						// 		return caption.active.focus('end');
-						// 	});
-						// });
+						caption.active.phrase.backspaceOverride = true;
+						return autocomplete.search.setContent({query: caption.active.phrase.query.trim(), trigger: true});
 						// if (noPhraseQuery) {
 						// 	// delete phrase
 						// 	return caption.data.object.phrase.remove(caption.active.phrase);
@@ -906,8 +917,12 @@ var AccountInterfaces = {
 				// confirms current phrase, but does not complete.
 				// splits phrase into sub-phrases, each containing a single token.
 				return caption.active.isCaretInPosition('end').then(function (inPosition) {
-					if (inPosition) {
-						return caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]});
+					if (inPosition && caption.active.isLastQueryToken()) {
+						return caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
+							return caption.next().then(function () {
+								return caption.active.setCaretPosition('start');
+							});
+						});
 					} else {
 						return Util.ep();
 					}
@@ -918,12 +933,12 @@ var AccountInterfaces = {
 				// skip to the next token in the phrase.
 				// if there is no next token, start a new phrase.
 				return caption.active.isCaretInPosition('end').then(function (inPosition) {
-					if (inPosition) {
+					if (inPosition && caption.active.isLastQueryToken()) {
 						var noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {return item.rule === 'phrase' && item.main !== caption.active.phrase.complete;}).length === 0;
-						caption.active.phrase.spaceOverride = true;
-						if (noMorePhrases) {
+						if (noMorePhrases && caption.active.phrase.isComplete) {
 							return caption.behaviours.enter();
 						} else {
+							caption.active.phrase.spaceOverride = true;
 							return autocomplete.search.setContent({query: caption.active.phrase.query + ' ', trigger: true});
 						}
 					} else {
