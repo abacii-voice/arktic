@@ -981,13 +981,46 @@ var AccountComponents = {
 							});
 						},
 						remove: function (phrase) {
-							
+							return Promise.all(phrase.renderedUnits.map(function (renderedUnit) {
+								return content.removeChild(renderedUnit.id);
+							})).then(function () {
+								base.data.storage.virtual.splice(phrase.index, 1);
+								return Util.ep();
+							});
 						},
-						split: function (index) {
-
+						split: function (phrase) {
+							var activeUnits = phrase.renderedUnits.filter(function (unit) {
+								return !unit.isHidden;
+							});
+							return Promise.all(phrase.renderedUnits.filter(function (unit) {
+								return unit.isHidden;
+							}).map(function (unit) {
+								return content.removeChild(unit.id);
+							})).then(function () {
+								base.data.storage.virtual.splice(phrase.index, 1);
+								return Util.ep();
+							}).then(function () {
+								var position = phrase.index - 1;
+								return Promise.ordered(phrase.tokens.map(function (token, index) {
+									return function () {
+										var unit = activeUnits[index];
+										var newPhrase = new base.data.objects.phrase.Phrase();
+										newPhrase.renderedUnits = [unit];
+										unit.phrase = newPhrase;
+										base.data.storage.virtual.splice(position+index, 0, newPhrase);
+										return newPhrase.update(token).then(function () {
+											newPhrase.id = Util.makeid();
+											return Util.ep();
+										}).then(function () {
+											return base.data.objects.phrase.renumber();
+										});
+									}
+								}));
+							});
 						},
 						renumber: function () {
 							return Promise.all(base.data.storage.virtual.map(function (phrase, index) {
+								console.log(phrase.complete, index);
 								phrase.index = index;
 								return Util.ep();
 							}));
