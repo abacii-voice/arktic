@@ -795,16 +795,16 @@ var AccountComponents = {
 								// update complete changed
 								var _this = this;
 								_this.completeChanged = (_this.complete !== metadata.complete);
-								_this.query = metadata.query || _this.query;
-								_this.complete = metadata.complete;
+								_this.query = metadata.query || (_this.query || metadata.query);
+								_this.queryTokens = _this.query.split(' ');
 
-								var lastToken = metadata.tokens[metadata.queryTokens.length-1];
-								_this.focus = metadata.queryTokens.length + (lastToken.query === lastToken.complete ? 0 : -1);
+								_this.complete = metadata.complete;
+								_this.focus = metadata.queryTokens.length - 1;
 								_this.focus = _this.focus >= metadata.completeTokens.length ? metadata.completeTokens.length - 1 : _this.focus;
 								_this.isComplete = _this.query === _this.complete;
 								_this.tokens = metadata.tokens;
 
-								if (_this.completeChanged || _this.completionOverride || _this.spaceOverride) {
+								if (_this.completeChanged || _this.completionOverride || _this.spaceOverride || _this.backspaceOverride) {
 									// render to tokens
 									return _this.render();
 								} else {
@@ -867,7 +867,9 @@ var AccountComponents = {
 											return _this.lastUnit().focus('end');
 										} else if (_this.spaceOverride) {
 											_this.spaceOverride = false;
-
+											return _this.renderedUnits[_this.focus].focus('end');
+										} else  if (_this.backspaceOverride) {
+											_this.backspaceOverride = false;
 											return _this.renderedUnits[_this.focus].focus('end');
 										} else {
 											return Util.ep();
@@ -968,7 +970,7 @@ var AccountComponents = {
 						},
 						create: function (index, metadata) {
 							var phrase = new base.data.objects.phrase.Phrase();
-							base.globalAfter = base.data.storage.virtual.length && base.data.storage.virtual[index] ? base.data.storage.virtual[index].firstUnit().id : undefined;
+							base.globalAfter = base.data.storage.virtual.length && base.data.storage.virtual[index] ? base.data.storage.virtual[index].lastUnit().id : undefined;
 							base.data.storage.virtual.splice(index, 0, phrase);
 							return phrase.update(metadata).then(function () {
 								return base.data.objects.phrase.renumber();

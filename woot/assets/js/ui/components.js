@@ -697,15 +697,23 @@ var Components = {
 						setMetadata: function () {
 							var query = base.data.query; // query is set no matter the status of virtual
 
-							var complete = '';
-							var type = '';
 							if (!base.data.storage.virtual.list.length) {
 								base.currentIndex = undefined;
+								return base.search.setMetadata({query: query, complete: '', type: ''});
 							} else {
-								complete = (base.data.storage.virtual.list[base.currentIndex] || {}).main;
-								type = (base.data.storage.virtual.list[base.currentIndex] || {}).rule;
+
+								if (base.currentIndex >= base.data.storage.virtual.list.length) {
+									return base.control.setActive({index: 0}).then(function () {
+										var complete = (base.data.storage.virtual.list[base.currentIndex] || {}).main;
+										var type = (base.data.storage.virtual.list[base.currentIndex] || {}).rule;
+										return base.search.setMetadata({query: query, complete: complete, type: type});
+									});
+								} else {
+									var complete = (base.data.storage.virtual.list[base.currentIndex] || {}).main;
+									var type = (base.data.storage.virtual.list[base.currentIndex] || {}).rule;
+									return base.search.setMetadata({query: query, complete: complete, type: type});
+								}
 							}
-							return base.search.setMetadata({query: query, complete: complete, type: type});
 						},
 					},
 				},
