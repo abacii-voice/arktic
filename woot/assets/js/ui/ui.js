@@ -10,7 +10,7 @@ var UI = {
 		return new Promise(function(resolve, reject) {
 			UI.globalState = stateName;
 			resolve();
-		}).then(Registry.trigger).then(function () {
+		}).then(function () {
 			return Promise.all(UI.states.map(function (state) {
 				return state.change();
 			}));
@@ -332,16 +332,6 @@ var UI = {
 		this.triggerState = function () {
 			return UI.changeState(this.mapState(UI.globalState), this.id);
 		}
-		this.setRegistry = function (registry) {
-			var _this = this;
-			if (registry !== undefined) {
-				return Promise.all(Object.keys(registry).map(function (state) {
-					var entry = registry[state];
-					var args = entry.args !== undefined ? entry.args : {};
-					return Registry.register(_this, state, entry.path, args, entry.fn);
-				}));
-			}
-		}
 
 		// DOM
 		this.setBindings = function (bindings) {
@@ -478,9 +468,6 @@ var UI = {
 				// state
 				_this.setState(args.state),
 
-				// registry
-				_this.setRegistry(args.registry),
-
 				// bindings
 				_this.setBindings(args.bindings),
 			]).then(function (results) {
@@ -596,7 +583,7 @@ var UI = {
 			return component.removeChildren().then(function () {
 				return component.removeModel();
 			}).then(function () {
-				return Promise.all([UI.remove(component), Registry.delete(component)]);
+				return UI.remove(component);
 			});
 		});
 	},
@@ -711,16 +698,17 @@ var Context = {
 	context: {},
 
 	// GET
-	// This will get from the current store. If it does not exist, a request will be made for it. This will trigger registry.
+	// This will get from the current store. If it does not exist, a request will be made for it.
 	get: function (path, args) {
 		// force load from the server?
 		var force = (args || {}).force || false;
 		var options = ((args || {}).options || {});
 		var overwrite = ((args || {}).overwrite || false);
 
-		return (path.then !== undefined ? path : new Promise(function(resolve, reject) {
+		return ((path && path.then !== undefined) ? path : new Promise(function(resolve, reject) {
 			resolve(path);
 		})).then(function (calculatedPath) {
+			calculatedPath = (calculatedPath || '');
 			return new Promise(function(resolve, reject) {
 				// proceed to get from context object
 				context_path = calculatedPath.split('.');
@@ -753,9 +741,10 @@ var Context = {
 	// The load method gets the requested path from the server if it does not exist locally.
 	// This operation can be forced from the get method.
 	load: function (path, options) {
-		return (path.then !== undefined ? path : new Promise(function(resolve, reject) {
+		return (path && path.then !== undefined ? path : new Promise(function(resolve, reject) {
 			resolve(path);
 		})).then(function (calculatedPath) {
+			calculatedPath = (calculatedPath || '');
 			return Permission.permit(options).then(function (data) {
 				var ajax_data = {
 					type: 'post',
@@ -777,10 +766,11 @@ var Context = {
 	// Sets the value of a path in the store. If the value changes, a request is sent to change this piece of data.
 	set: function (path, value, overwrite) {
 		overwrite = (overwrite || false);
-		return (path.then !== undefined ? path : new Promise(function(resolve, reject) {
+		return (path && path.then !== undefined ? path : new Promise(function(resolve, reject) {
 			resolve(path);
 		})).then(function (calculatedPath) {
 			return new Promise(function (resolve, reject) {
+				calculatedPath = (calculatedPath || '');
 				context_path = calculatedPath.split('.');
 				sub = Context.context;
 				if (context_path[0] !== '') {
@@ -916,101 +906,6 @@ var Permission = {
 // Stores a record of the actions performed by the user and relays them to the server.
 var Action = {
 	actions: {},
-}
-
-// REGISTRY
-// Keeps a record of the state dependent paths that objects are waiting for. Updates them when data arrives in Context.
-var Registry = {
-	registry: {},
-
-	// register an object with a state, path, and function
-	register: function (component, state, path, args, fn) {
-		var force = args !== undefined ? (args.force !== undefined ? args.force : false) : false;
-		context_path = path.split('.');
-
-		// add state if necessary
-		if (Registry.registry[state] === undefined) {
-			Registry.registry[state] = {};
-		}
-		sub = Registry.registry[state];
-
-		for (i=0; i<context_path.length; i++) {
-			if (i+1 === context_path.length) {
-				// initialise
-				if (sub[context_path[i]] === undefined) {
-					sub[context_path[i]] = {
-						registered: {},
-					};
-				}
-
-				// add fn to id
-				sub[context_path[i]].registered[component.id] = fn;
-
-				// set force if needed -> set to true if false or undefined and force=true
-				sub[context_path[i]].force = sub[context_path[i]].force !== undefined ? (sub[context_path[i]].force || force) : force;
-			} else {
-				if (sub[context_path[i]] === undefined) {
-					sub[context_path[i]] = {
-						registered: {},
-					};
-				}
-			}
-			sub = sub[context_path[i]];
-		}
-	},
-
-	trigger: function (parent, level) {
-		// What is this method: if "registered", then return Context.get, else a loop of promises.
-
-		// initialise at the top of the tree. This will traverse recursively.
-		parent = parent !== undefined ? parent : '';
-		level = level !== undefined ? level : (Registry.registry[UI.globalState] !== undefined ? Registry.registry[UI.globalState] : {});
-
-		if ('registered' in level && parent !== '') {
-			return Context.get(parent, {force: level.registered.force !== undefined ? level.registered.force : false}).then(function (data) {
-				return Promise.all(Object.keys(level.registered).map(function (componentId) {
-					return UI.getComponent(componentId).then(function (component) {
-						var fn = level.registered[component.id];
-						return fn(component, data); // must return a promise
-					});
-				})).then(function () {
-					return Promise.all(Object.keys(level).map(function (path) {
-						if (path !== 'registered' && path !== 'force') {
-							var get = '{parent}{dot}{path}'.format({parent: parent, dot: (parent !== '' ? '.' : ''), path: path});
-							return Registry.trigger(get, level[path]);
-						}
-					}));
-				});
-			});
-		} else {
-			// continue without changing anything.
-			return Promise.all(Object.keys(level).map(function (path) {
-				if (path !== 'force') {
-					var get = '{parent}{dot}{path}'.format({parent: parent, dot: (parent !== '' ? '.' : ''), path: path});
-					return Registry.trigger(get, level[path]);
-				}
-			}));
-		}
-	},
-
-	delete: function (component, level) {
-		// initialise state and level
-		level = level !== undefined ? level : (Registry.registry !== undefined ? Registry.registry : {});
-
-		// scan registry for this component and remove fn from each entry
-		if ('registered' in level) {
-			if (component.id in level.registered) {
-				delete level.registered[component.id];
-			}
-		}
-
-		return Promise.all(Object.keys(level).map(function (key) {
-			// each key is a top level state
-			if (key !== 'registered' && key !== 'force') {
-				return Registry.delete(component, level[key]);
-			}
-		}));
-	},
 }
 
 var Request = {
