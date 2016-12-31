@@ -90,21 +90,6 @@ UI.createApp('hook', [
 								'margin-bottom': '10px',
 							},
 						},
-						registry: {
-							path: function () {
-								return ['first_name'];
-							},
-							fn: function (_this, data) {
-								var firstName = data;
-								_this.update({
-									appearance: {
-										properties: {
-											'placeholder': firstName,
-										},
-									},
-								});
-							},
-						},
 					}),
 					UI.createComponent('usdp-last-name-input', {
 						template: UI.template('input', 'ie show input border border-radius relative'),
@@ -114,21 +99,6 @@ UI.createApp('hook', [
 								'left': '10px',
 								'width': '200px',
 								'margin-bottom': '10px',
-							},
-						},
-						registry: {
-							path: function () {
-								return ['last_name'];
-							},
-							fn: function (_this, data) {
-								var lastName = data;
-								_this.update({
-									appearance: {
-										properties: {
-											'placeholder': lastName,
-										},
-									},
-								});
 							},
 						},
 					}),
