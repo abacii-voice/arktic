@@ -665,7 +665,6 @@ var AccountComponents = {
 					return _this.set();
 				});
 			}
-			headerWrapper.setRegistry(args.registry);
 			headerWrapper.setChildren([
 				dailyHeader,
 				cycleHeader,
@@ -1076,14 +1075,18 @@ var AccountComponents = {
 				input: {
 					newCaption: function (metadata) {
 						base.data.currentId = metadata.parent;
-						base.data.storage.virtual = [];
-
 						base.showOverride = true;
-						return Promise.ordered(metadata.tokens.map(function (token, index) {
-							return function () {
-								return base.data.objects.phrase.create(index, {query: token.content, complete: token.content, tokens: [token]});
-							}
+
+						return Promise.all(base.data.storage.virtual.map(function (phrase) {
+							return base.data.objects.phrase.remove(phrase);
 						})).then(function () {
+							base.data.storage.virtual = [];
+							return Promise.ordered(metadata.tokens.map(function (token, index) {
+								return function () {
+									return base.data.objects.phrase.create(index, {query: token.content, complete: token.content, tokens: [token]});
+								}
+							}))
+						}).then(function () {
 							base.showOverride = false;
 							return Promise.all(base.data.storage.virtual.map(function (phrase) {
 								return phrase.show();
