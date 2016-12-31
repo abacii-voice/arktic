@@ -1,0 +1,29 @@
+31/12/2016 - Consolidating first build [1.0] of arktic transcription site.
+
+Core components:
+1. Admin dashboard - a way to add users
+2. User signup application
+3. Admin upload interface - a way to add projects
+4. Transcription interface
+5. Moderation interface
+6. Admin project management interface - export, modify, and monitor projects
+7. Admin user management interface - monitor and communicate with users
+8. Moderator dashboard - monitor users and projects
+9. User dashboard - self monitor and billing
+
+Key tasks:
+1. [SHORT] Separation of js source files into per-component files for permission-based loading via template.
+2. [SHORT] Removal of Registry from source
+3. [MEDIUM] Addition of action logging
+4. [LONG] Design and implement interfaces
+5. [LONG] Move to websockets with Django 1.10
+6. [LONG] Design and implement unit tests and regression tests
+7. [MEDIUM] Addition of nested states
+8. [MEDIUM] Investigate caption cloning
+
+Next steps:
+1. Finish caption bindings before branch
+	a. alt+right,left
+	b. alt+delete
+	c. autocomplete tag bindings
+2. branch for build 1.0
