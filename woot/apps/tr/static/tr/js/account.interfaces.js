@@ -164,7 +164,7 @@ var AccountInterfaces = {
 
 			Mousetrap.bind('alt+backspace', function (event) {
 				Promise.all([
-
+					caption.behaviours.altbackspace(event),
 				]);
 			});
 
@@ -178,11 +178,15 @@ var AccountInterfaces = {
 			});
 
 			Mousetrap.bind('alt+right', function (event) {
-
+				Promise.all([
+					caption.behaviours.altright(event),
+				]);
 			});
 
 			Mousetrap.bind('alt+left', function (event) {
-
+				Promise.all([
+					caption.behaviours.altleft(event),
+				]);
 			});
 
 			// Audio
@@ -904,76 +908,150 @@ var AccountInterfaces = {
 				}
 			}
 			caption.behaviours.backspace = function (event) {
-				return caption.active.isCaretInPosition('start').then(function (inPosition) {
-					if (inPosition && caption.active.metadata.query === '') {
-						var noPhraseQuery = caption.active.phrase.query === '';
-						if (noPhraseQuery) {
-							// remove phrase
+				if (caption.isFocussed) {
+					return caption.active.isCaretInPosition('start').then(function (inPosition) {
+						if (inPosition && caption.active.metadata.query === '') {
+							var noPhraseQuery = caption.active.phrase.query === '';
 							if (event) {
 								// prevent the delete from happening after 'caption.previous'. It is only there to 'remove' the 'space'.
 								event.preventDefault();
 							}
-							var phrase = caption.active.phrase;
-							if (phrase.index > 0) {
-								return caption.previous().then(function () {
-									return caption.active.setCaretPosition('end').then(function () {
-										return caption.data.objects.phrase.remove(phrase);
+							if (noPhraseQuery) {
+								// remove phrase
+								var phrase = caption.active.phrase;
+								if (phrase.index > 0) {
+									return caption.previous().then(function () {
+										return caption.active.setCaretPosition('end').then(function () {
+											return caption.data.objects.phrase.remove(phrase);
+										});
 									});
-								});
+								} else {
+									return Util.ep();
+								}
 							} else {
-								return Util.ep();
+								caption.active.phrase.backspaceOverride = true;
+								autocomplete.target = caption.active.phrase.id;
+								return autocomplete.search.setContent({query: caption.active.phrase.query.trim(), trigger: true});
 							}
 						} else {
-							caption.active.phrase.backspaceOverride = true;
-							autocomplete.target = caption.active.phrase.id;
-							return autocomplete.search.setContent({query: caption.active.phrase.query.trim(), trigger: true});
+							return Util.ep();
 						}
-					} else {
-						return Util.ep();
-					}
-				});
+					});
+				} else {
+					return Util.ep();
+				}
 			}
 			caption.behaviours.enter = function () {
 				// confirms current phrase, but does not complete.
 				// splits phrase into sub-phrases, each containing a single token.
-				return caption.active.isCaretInPosition('end').then(function (inPosition) {
-					if (inPosition) {
-						if (caption.active.isLastToken() && caption.active.isComplete) {
-							var phrase = caption.active.phrase;
-							return caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
-								return caption.next().then(function () {
-									return caption.active.setCaretPosition('start');
+				if (caption.isFocussed) {
+					return caption.active.isCaretInPosition('end').then(function (inPosition) {
+						if (inPosition) {
+							if (caption.active.isLastToken() && caption.active.isComplete) {
+								var phrase = caption.active.phrase;
+								return caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
+									return caption.next().then(function () {
+										return caption.active.setCaretPosition('start');
+									});
+								}).then(function () {
+									return caption.data.objects.phrase.split(phrase);
 								});
-							}).then(function () {
-								return caption.data.objects.phrase.split(phrase);
-							});
-						} else if (caption.active.isLastQueryToken()) {
-							return caption.behaviours.right();
+							} else if (caption.active.isLastQueryToken()) {
+								return caption.behaviours.right();
+							} else {
+								return Util.ep();
+							}
 						} else {
 							return Util.ep();
 						}
-					} else {
-						return Util.ep();
-					}
-				});
+					});
+				} else {
+					return Util.ep();
+				}
 			}
 			caption.behaviours.space = function () {
 				// skip to the next token in the phrase.
 				// if there is no next token, start a new phrase.
-				return caption.active.isCaretInPosition('end').then(function (inPosition) {
-					if (inPosition && caption.active.isLastQueryToken()) {
-						var noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {return item.rule === 'phrase' && item.main !== caption.active.phrase.complete;}).length === 0;
-						if (noMorePhrases && caption.active.phrase.isComplete) {
-							return caption.behaviours.enter();
+				if (caption.isFocussed) {
+					return caption.active.isCaretInPosition('end').then(function (inPosition) {
+						if (inPosition && caption.active.isLastQueryToken()) {
+							var noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {return item.rule === 'phrase' && item.main !== caption.active.phrase.complete;}).length === 0;
+							if (noMorePhrases && caption.active.phrase.isComplete) {
+								return caption.behaviours.enter();
+							} else {
+								caption.active.phrase.spaceOverride = true;
+								autocomplete.target	= caption.active.phrase.id;
+								return autocomplete.search.setContent({query: caption.active.phrase.query + ' ', trigger: true});
+							}
 						} else {
-							caption.active.phrase.spaceOverride = true;
-							autocomplete.target	= caption.active.phrase.id;
-							return autocomplete.search.setContent({query: caption.active.phrase.query + ' ', trigger: true});
+							return caption.active.setCaretPosition('end');
+						}
+					});
+				} else {
+					return Util.ep();
+				}
+			}
+			caption.behaviours.altright = function (event) {
+				if (caption.isFocussed) {
+					if (event) {
+						event.preventDefault();
+					}
+					if (caption.active.phrase.isComplete) {
+						return caption.next().then(function () {
+							return caption.active.focus('end');
+						});
+					} else {
+						caption.completionOverride = true;
+						caption.active.completionOverride = true;
+						caption.active.phrase.completionOverride = true;
+						return autocomplete.behaviours.right();
+					}
+				} else {
+					return autocomplete.behaviours.right();
+				}
+			}
+			caption.behaviours.altleft = function (event) {
+				if (caption.isFocussed) {
+					if (event) {
+						event.preventDefault();
+					}
+					return caption.previous().then(function () {
+						return caption.active.focus('end');
+					});
+				} else {
+					return Util.ep();
+				}
+			}
+			caption.behaviours.altbackspace = function (event) {
+				if (caption.isFocussed) {
+					var isOnlyToken = caption.active.phrase.tokens.length === 1;
+					if (event) {
+						// prevent the delete from happening after 'caption.previous'. It is only there to 'remove' the 'space'.
+						event.preventDefault();
+					}
+					if (isOnlyToken) {
+						// remove phrase
+						var phrase = caption.active.phrase;
+						if (phrase.index > 0) {
+							return caption.previous().then(function () {
+								return caption.active.setCaretPosition('end').then(function () {
+									return caption.data.objects.phrase.remove(phrase);
+								});
+							});
+						} else {
+							return caption.active.setContent({query: '', trigger: true})
 						}
 					} else {
-						return caption.active.setCaretPosition('end');
+						return caption.active.setContent({content: ''}).then(function () {
+							caption.active.phrase.backspaceOverride = true;
+							autocomplete.target = caption.active.phrase.id;
+							var newQuery = caption.active.phrase.query.split(' ').slice(0, caption.active.phrase.queryTokens.length-1).join(' ').trim();
+							return autocomplete.search.setContent({query: newQuery, trigger: true});
+						});
 					}
-				});
+				} else {
+					return Util.ep();
+				}
 			}
 
 			// connect
