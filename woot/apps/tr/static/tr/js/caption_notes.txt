@@ -1,0 +1,11 @@
+I need to understand the possibility space of the caption in order to make sure actions are consistent with one another.
+Some actions can be unified and generalised.
+
+Each caption unit does a very predictable set of things. Second order interactions are a little more complicated.
+1. The unit must display the three fundamental parameters (query, complete, and type). For this reason, the base of a search field is used.
+2. The query parameter must never be updated while the unit, and hence the head, is focussed.
+3.
+
+The key problem seems to be the speed at which the phrases and tokens are updated.
+Perhaps a more efficient system for updating can be found. When splitting, the currently focussed unit will not change.
+Yet, when splitting, it seems focussing really throws it off.

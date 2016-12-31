@@ -2,19 +2,17 @@
 from django.db import models
 
 # local
-from apps.tr.models.client.project import Project, Batch
 from apps.tr.idgen import idgen
 
 ### Grammar model
 class Grammar(models.Model):
 	'''
 	This is generated automatically to narrow the results of the recogniser.
-	It belongs to an end client and is part of a project: Project.generate_grammar()
+	It belongs to an end client.
 	'''
 
 	### Connections
-	project = models.ForeignKey(Project, related_name='grammars')
-	batch = models.ForeignKey(Batch, related_name='grammars')
+	client = models.ForeignKey('tr.Client', related_name='grammars')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)

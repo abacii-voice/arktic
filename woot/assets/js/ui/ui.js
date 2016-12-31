@@ -54,6 +54,22 @@ var UI = {
 				return this.id;
 			}
 		}
+		this.setName = function (name) {
+			var currentName = this.name;
+			name = (name || currentName);
+
+			if (name !== currentName) {
+				var _this = this;
+				_this.name = name;
+				return _this.parent().then(function (parent) {
+					if (parent) {
+						parent.components[_this.name] = _this;
+						delete parent.components[currentName];
+					}
+					return Util.ep();
+				});
+			}
+		}
 		this.setAfter = function (after) {
 			var currentAfter = this.after;
 			after = after !== undefined ? after : currentAfter;
@@ -64,25 +80,34 @@ var UI = {
 				// 1. Parent stays the same.
 				// 2. Or does it...
 				// 3. No other element has to change.
-				if (after !== '') {
-					return UI.getComponent(_this.after).then(function (before) {
-						return _this.setRoot(before.root).then(function (child) {
+
+				if (_this.isRendered) {
+					return (after !== '' ? function () {
+						return UI.getComponent(_this.after).then(function (before) {
+							return _this.setRoot(before.root).then(function (child) {
+								return new Promise(function(resolve, reject) {
+									_this.model().insertAfter(before.model());
+									resolve();
+								});
+							});
+						});
+					} : function () {
+						return _this.parent().then(function (parent) {
 							return new Promise(function(resolve, reject) {
-								_this.model().insertAfter(before.model());
+								_this.model().insertBefore(parent.model().children().first());
 								resolve();
 							});
 						});
+					})().then(function () {
+						return _this.parent().then(function (parent) {
+							return parent.setChildIndexes();
+						})
 					});
 				} else {
-					return _this.parent().then(function (parent) {
-						return new Promise(function(resolve, reject) {
-							_this.model().insertBefore(parent.model().children().first());
-							resolve();
-						});
-					});
+					return Util.ep(_this.after);
 				}
 			} else {
-				return this.after;
+				return Util.ep(this.after);
 			}
 		}
 		this.setRoot = function (root) {
@@ -113,7 +138,7 @@ var UI = {
 						return newParent.addChild(_this);
 					});
 				} else {
-					return emptyPromise();
+					return Util.ep();
 				}
 			} else {
 				_this.root = newRoot;
@@ -171,42 +196,71 @@ var UI = {
 				var html = _this.html !== undefined ? _this.html : '';
 				var renderedTemplate = _this.template.format({
 					id: _this.id,
-					classes: formatClasses(classes),
-					style: formatStyle(style),
-					properties: formatProperties(properties),
+					classes: Util.format.classes(classes),
+					style: Util.format.style(style),
+					properties: Util.format.properties(properties),
 					html: html,
 				});
 				resolve(renderedTemplate);
 			});
 		}
 		this.setAppearance = function (appearance) {
-			var currentProperties = (this.properties || {});
-			var currentHTML = (this.html || '');
 			var currentClasses = (this.classes || []);
-			var currentStyle = (this.style || {});
 
 			if (appearance !== undefined) {
-				this.properties = (appearance.properties || currentProperties);
-				this.html = appearance.html !== undefined ? appearance.html : currentHTML;
+				this.properties = appearance.properties || this.properties;
+				this.html = appearance.html;
 
 				// classes need to be a combination of ones removed and ones added. If "add" and "remove" are not present, defaults to using whole object.
 				this.classes = currentClasses;
-				var addClasses = appearance.classes ? (appearance.classes.add ? ($.isArray(appearance.classes.add) ? appearance.classes.add : [appearance.classes.add]) : (appearance.classes.remove ? [] : appearance.classes)) : [];
-				var removeClasses = appearance.classes ? (appearance.classes.remove ? ($.isArray(appearance.classes.remove) ? appearance.classes.remove : [appearance.classes.remove]) : []) : [];
+				var _classes = (appearance.classes || {});
+
+				// _classes can be:
+				// 1. 'class' -> implied add
+				// 2. {add: 'class'}
+				// 3. {remove: 'class'}
+				// 4. {add: 'class', remove: 'class'}
+				// 5. all of the above but with arrays instead of strings.
+
+				// make defaults arrays
+				// {add: undefined, remove: ""}
+				_classes.add = _classes.add ? _classes.add : (_classes.remove ? [] : ($.isArray(_classes) ? _classes : []));
+				_classes.remove = _classes.remove ? _classes.remove : [];
+
+				// force arrays
+				var addClasses = $.isArray(_classes.add) ? _classes.add : [_classes.add];
+				var removeClasses = $.isArray(_classes.remove) ? _classes.remove : [_classes.remove];
 				var _this = this;
-				this.classes = this.classes.concat(addClasses.filter(function (cls) {
-					return _this.classes.indexOf(cls) === -1;
-				}));
-				this.classes = this.classes.filter(function (cls) {
+
+				if (addClasses) {
+					_this.classes = _this.classes.concat(addClasses.filter(function (cls) {
+						return _this.classes.indexOf(cls) === -1;
+					}));
+				}
+
+				_this.classes = _this.classes.filter(function (cls) {
 					return removeClasses.indexOf(cls) === -1;
 				});
 
-				this.style = (appearance.style || currentStyle);
+				_this.style = (appearance.style || _this.style);
 
-				if (this.isRendered) {
+				if (_this.isRendered) {
 					// model
 					var model = _this.model();
 					return model.animate(appearance.style, 300).promise().then(function () {
+
+						// html - this will erase children of the current model
+						if (appearance.html !== undefined) {
+							model.html(_this.html);
+						}
+
+						// properties
+						if (appearance.properties) {
+							Object.keys(_this.properties).forEach(function (property) {
+								model.attr(property, _this.properties[property]);
+							});
+						}
+
 						// classes
 						if (appearance.classes) {
 							return Promise.all([
@@ -225,35 +279,13 @@ var UI = {
 							]);
 						}
 					}).then(function () {
-						return new Promise(function(resolve, reject) {
-							// html - this will erase children of the current model
-							if (appearance.html !== undefined) {
-								model.html(_this.html);
-							}
-
-							// properties
-							if (appearance.properties) {
-								Object.keys(_this.properties).forEach(function (property) {
-									model.attr(property, _this.properties[property]);
-								});
-							}
-							resolve();
-						});
+						return Util.ep(appearance);
 					});
 				} else {
-					return new Promise(function(resolve, reject) {
-						resolve(appearance);
-					});
+					return Util.ep(appearance);
 				}
 			} else {
-				return new Promise(function(resolve, reject) {
-					resolve({
-						properties: currentProperties,
-						html: currentHTML,
-						classes: currentClasses,
-						style: currentStyle,
-					});
-				});
+				return Util.ep();
 			}
 		}
 
@@ -322,6 +354,7 @@ var UI = {
 						var binding = bindings[name];
 						// if rendered, add to model
 						if (_this.isRendered) {
+							_this.model().off(name);
 							_this.model().on(name, function (event) {
 								binding(_this, event);
 							});
@@ -337,6 +370,9 @@ var UI = {
 			var _this = this;
 			return new Promise(function(resolve, reject) {
 				child.index = (child.index || _this.children.length);
+				if (child.name) {
+					_this.components[child.name] = child;
+				}
 				child.isAddedToParent = true;
 				_this.children.splice(child.index, 0, child);
 				resolve(child);
@@ -365,6 +401,7 @@ var UI = {
 		this.setChildren = function (children) {
 			var _this = this;
 			_this.children = (_this.children || []);
+			_this.components = (_this.components || {});
 			if (children !== undefined) {
 				return Promise.ordered(children.map(function (child) {
 					return function () {
@@ -432,6 +469,7 @@ var UI = {
 			return Promise.all([
 				// id, root, after, template
 				_this.setId(args.id),
+				_this.setName(args.name),
 				_this.setRoot(args.root),
 				_this.setAfter(args.after),
 				_this.setTemplate(args.template),
@@ -475,7 +513,11 @@ var UI = {
 				return new Promise(function(resolve, reject) {
 					if (root.children().length !== 0) {
 						if (_this.after !== undefined) {
-							root.children('#{id}'.format({id: _this.after})).after(renderedTemplate); // add as child after 'after'.
+							if (_this.after) {
+								root.children('#{id}'.format({id: _this.after})).after(renderedTemplate); // add as child after 'after'.
+							} else {
+								root.children().first().before(renderedTemplate); // add as child before first child.
+							}
 						} else {
 							root.children().last().after(renderedTemplate); // add as child after last child.
 						}
@@ -507,7 +549,7 @@ var UI = {
 			var _this = this;
 
 			// 1. Run preFn
-			return (state.preFn || emptyPromise)(_this).then(function () {
+			return (state.preFn || Util.ep)(_this).then(function () {
 				// 2. Run appearance
 				return _this.setAppearance({
 					classes: state.classes,
@@ -516,7 +558,7 @@ var UI = {
 				});
 			}).then(function () {
 				// 3. Run fn
-				return (state.fn || emptyPromise)(_this);
+				return (state.fn || Util.ep)(_this);
 			});
 		}
 
@@ -644,21 +686,13 @@ var UI = {
 	// FUNCTIONS
 	functions: {
 		show: function (_this) {
-			return _this.setAppearance({
-				classes: {remove: ['hidden']},
-			}).then(function () {
-				return _this.setAppearance({
-					style: {opacity: 1},
-				});
+			return _this.setAppearance({classes: {remove: ['hidden']}}).then(function () {
+				return _this.setAppearance({style: {opacity: 1}});
 			});
 		},
 		hide: function (_this) {
-			return _this.setAppearance({
-				style: {opacity: 0},
-			}).then(function () {
-				return _this.setAppearance({
-					classes: {add: ['hidden']},
-				});
+			return _this.setAppearance({style: {opacity: 0}}).then(function () {
+				return _this.setAppearance({classes: {add: ['hidden']}});
 			});
 		},
 		triggerState: function (_this) {
@@ -680,8 +714,9 @@ var Context = {
 	// This will get from the current store. If it does not exist, a request will be made for it. This will trigger registry.
 	get: function (path, args) {
 		// force load from the server?
-		var force = args !== undefined ? (args.force !== undefined ? args.force : false) : false;
-		var options = args !== undefined ? (args.options !== undefined ? args.options : {}) : {};
+		var force = (args || {}).force || false;
+		var options = ((args || {}).options || {});
+		var overwrite = ((args || {}).overwrite || false);
 
 		return (path.then !== undefined ? path : new Promise(function(resolve, reject) {
 			resolve(path);
@@ -707,7 +742,7 @@ var Context = {
 		}).then(function (data) {
 			if (data === undefined || force) {
 				return Context.load(path, options).then(function (data) {
-					return Context.set(path, data);
+					return Context.set(path, data, overwrite);
 				});
 			} else {
 				return data;
@@ -740,7 +775,8 @@ var Context = {
 
 	// SET
 	// Sets the value of a path in the store. If the value changes, a request is sent to change this piece of data.
-	set: function (path, value) {
+	set: function (path, value, overwrite) {
+		overwrite = (overwrite || false);
 		return (path.then !== undefined ? path : new Promise(function(resolve, reject) {
 			resolve(path);
 		})).then(function (calculatedPath) {
@@ -755,8 +791,12 @@ var Context = {
 							// if (typeof value === 'object' && typeof sub[context_path[i]] === 'object') {
 							//
 							// } else {
-							sub[context_path[i]] = value;
 							// }
+							if (sub[context_path[i]] !== undefined && !overwrite) {
+								$.extend(sub[context_path[i]], value);
+							} else {
+								sub[context_path[i]] = value;
+							}
 						} else {
 							if (sub[context_path[i]] === undefined) {
 								sub[context_path[i]] = {};
