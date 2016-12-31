@@ -194,7 +194,7 @@ var AccountInterfaces = {
 			audio.path = function () {
 				return Promise.all([
 					Active.get('client'),
-					Permission.get(),
+					Active.get('role'),
 				]).then(function (results) {
 					// unpack variable
 					var [client_id, role_id] = results;
@@ -1595,7 +1595,6 @@ var AccountInterfaces = {
 									return Promise.all([
 										Active.set('project', project_id),
 										Active.set('role', datum.id),
-										Permission.set(datum.id),
 									]);
 								}).then(function () {
 									return _this.triggerState();
