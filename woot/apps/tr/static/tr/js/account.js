@@ -35,9 +35,6 @@ UI.app('hook', [
 						// active
 						Active.set('role', roleId),
 
-						// permission
-						Permission.set(roleId),
-
 						// project
 						Context.get('user.clients.{client}.roles.{role}.project'.format({client: clientId, role: roleId})).then(function (project) {
 							return Active.set('project', project);
