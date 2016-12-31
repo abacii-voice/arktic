@@ -13,14 +13,14 @@ Core components:
 
 Key tasks:
 1. [SHORT] Separation of js source files into per-component files for permission-based loading via template.
-2. [SHORT] Removal of Registry from source
+2. [x][SHORT] Removal of Registry from source
 3. [MEDIUM] Addition of action logging
 4. [LONG] Design and implement interfaces
 5. [LONG] Move to websockets with Django 1.10
 6. [LONG] Design and implement unit tests and regression tests
 7. [MEDIUM] Addition of nested states
 8. [MEDIUM] Investigate caption cloning
-9. [SHORT] Move Permission to Active
+9. [][SHORT] Move Permission to Active
 
 Next steps:
 1. Finish caption bindings before branch
