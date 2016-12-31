@@ -29,7 +29,7 @@ class QualityCheckInstance(models.Model):
 
 	### Connections
 	parent = models.ForeignKey('tr.QualityCheck', related_name='instances')
-	caption = models.ForeignKey('tr.CaptionInstance', related_name='checks')
+	transcription = models.ForeignKey('tr.TranscriptionInstance', related_name='checks')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
