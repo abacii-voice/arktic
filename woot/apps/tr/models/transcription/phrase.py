@@ -1,19 +1,4 @@
 
-# On Phrases:
-# I want Phrases to be another way of storing tokens. Not locked down to a caption.
-# That way, users can store phrases that they see a lot.
-
-# On Ghost Units:
-# I think the caption units need to be rendered in a very similar manner to searchableList.
-# A predetermined number (10) of units will be rendered with nothing in them.
-# Then, they can be updated, but never removed.
-# Three types:
-# 1. Word
-# 2. Tag
-# 3. Ghost
-
-# Ghost units are dimmed out
-
 # django
 from django.db import models
 
@@ -31,8 +16,18 @@ class Phrase(models.Model):
 	# methods
 	def data(self, path, permission):
 		data = {
-
+			'content': self.content,
 		}
+
+		# if path.check('token_instances'):
+		data.update({
+			'token_instances': {token.id: token.data(path, permission) for token in self.tokens.filter(**path.get_filter('token_instances'))},
+		})
+
+		if permission.is_worker and permission.check_client(self.dictionary.project.production_client):
+			data.update({
+				'subscriptions': {subscription.id: subscription.data(path, permission) for subscription in self.subscriptions.filter(**path.get_filter('subscriptions')).filter(role=permission.role)}
+			})
 
 		return data
 
@@ -43,26 +38,28 @@ class PhraseInstance(models.Model):
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	from_recogniser = models.BooleanField(default=False)
 	date_created = models.DateTimeField(auto_now_add=True)
 	metadata = models.TextField(default='')
 
 	# methods
 	def data(self, path, permission):
 		data = {
-
+			'from_recogniser': str(self.from_recogniser),
+			'date_created': str(self.date_created),
+			'metadata': self.metadata,
 		}
 
 		return data
 
-class PhraseBlock(models.Model):
+class PhraseSubscription(models.Model):
 	'''
-	Prevents phrase from being displayed to a user.
-	Can be imposed by the user and removed by re-entering the phrase, or in the editor.
+	Available for a user to add to their list of commonly used phrases.
 	'''
 
 	### Connections
-	parent = models.ForeignKey('tr.Phrase', related_name='blocks')
-	role = models.ForeignKey('tr.Role', related_name='phrase_blocks')
+	parent = models.ForeignKey('tr.Phrase', related_name='subscriptions')
+	role = models.ForeignKey('tr.Role', related_name='phrase_subscriptions')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
@@ -74,7 +71,8 @@ class PhraseBlock(models.Model):
 	# methods
 	def data(self, path, permission):
 		data = {
-			
+			'is_active': str(self.is_active),
+			'metadata': self.metadata,
 		}
 
 		return data

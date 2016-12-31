@@ -23,6 +23,7 @@ class Client(models.Model):
 	def data(self, path, permission):
 		data = {}
 
+		path.set_key('client', self.id)
 		if path.is_blank:
 			data.update({
 				'name': self.name,
@@ -78,6 +79,8 @@ class Client(models.Model):
 		if not self.users.filter(id=user.id).exists():
 			self.users.add(user)
 		role, role_created = self.roles.get_or_create(user=user, type='admin')
+		role.status = 'enabled'
+		role.save()
 		return role
 
 	def add_moderator(self, user):
@@ -85,6 +88,8 @@ class Client(models.Model):
 			if not self.users.filter(id=user.id).exists():
 				self.users.add(user)
 			role, role_created = self.roles.get_or_create(user=user, type='moderator')
+			role.status = 'enabled'
+			role.save()
 			return role
 
 	def add_worker(self, user, moderator):
@@ -92,4 +97,14 @@ class Client(models.Model):
 			if not self.users.filter(id=user.id).exists():
 				self.users.add(user)
 			role, role_created = self.roles.get_or_create(user=user, type='worker', supervisor=moderator)
+			role.status = 'enabled'
+			role.save()
 			return role
+
+	def create_rule(self, name, description, project=None):
+		rule, rule_created = self.rules.get_or_create(project=project, name=name, description=description)
+		rule.number = self.rules.count()
+		rule.save()
+
+	def create_flag(self, name, project=None):
+		flag, flag_created = self.flags.get_or_create(project=project, name=name)

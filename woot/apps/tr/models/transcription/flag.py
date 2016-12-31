@@ -28,7 +28,8 @@ class FlagInstance(models.Model):
 
 	### Connections
 	parent = models.ForeignKey('tr.Flag', related_name='instances')
-	caption = models.ForeignKey('tr.CaptionInstance', related_name='flags')
+	transcription = models.ForeignKey('tr.TranscriptionInstance', related_name='flags')
+	role = models.ForeignKey('tr.Role', related_name='flags')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
@@ -38,7 +39,7 @@ class FlagInstance(models.Model):
 	def data(self, path, permission):
 		data = self.parent.data(path, permission)
 		data.update({
-			'caption': self.caption.id,
+			'name': self.parent.name,
 		})
 
 		return data

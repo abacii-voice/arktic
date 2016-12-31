@@ -1,0 +1,28 @@
+Global actions
+	Click
+
+Token actions
+	Focussed
+		Click
+		Blur
+		a char key
+		a number
+		right arrow -> at end?
+		left arrow -> at beginning?
+		enter
+		backspace
+
+	Blurred
+		Click
+		Focus: position
+
+	Ghost
+		Click
+
+Autocomplete not accepting spaces in completion
+
+____
+Any input should be the same
+
+Load -> input
+Type -> input
