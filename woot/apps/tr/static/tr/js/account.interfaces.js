@@ -1023,12 +1023,12 @@ var AccountInterfaces = {
 				}
 			}
 			caption.behaviours.altbackspace = function (event) {
-				if (caption.isFocussed) {
+				if (event) {
+					// prevent the delete from happening after 'caption.previous'. It is only there to 'remove' the 'space'.
+					event.preventDefault();
+				}
+				if (caption.isFocussed && caption.active.isLastQueryToken()) {
 					var isOnlyToken = caption.active.phrase.tokens.length === 1;
-					if (event) {
-						// prevent the delete from happening after 'caption.previous'. It is only there to 'remove' the 'space'.
-						event.preventDefault();
-					}
 					if (isOnlyToken) {
 						// remove phrase
 						var phrase = caption.active.phrase;
@@ -1039,10 +1039,12 @@ var AccountInterfaces = {
 								});
 							});
 						} else {
-							return caption.active.setContent({query: '', trigger: true})
+							return caption.active.setContent({query: ''}).then(function () {
+								return caption.active.input(); // don't know trigger shouldn't work here
+							});
 						}
 					} else {
-						return caption.active.setContent({content: ''}).then(function () {
+						return caption.active.setContent({query: ''}).then(function () {
 							caption.active.phrase.backspaceOverride = true;
 							autocomplete.target = caption.active.phrase.id;
 							var newQuery = caption.active.phrase.query.split(' ').slice(0, caption.active.phrase.queryTokens.length-1).join(' ').trim();

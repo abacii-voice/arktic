@@ -701,13 +701,10 @@ var Context = {
 	// This will get from the current store. If it does not exist, a request will be made for it.
 	get: function (path, args) {
 		// force load from the server?
-		var force = (args || {}).force || false;
+		var force = ((args || {}).force || false);
 		var options = ((args || {}).options || {});
 		var overwrite = ((args || {}).overwrite || false);
-
-		return ((path && path.then !== undefined) ? path : new Promise(function(resolve, reject) {
-			resolve(path);
-		})).then(function (calculatedPath) {
+		return (typeof path !== 'string' ? path : Util.ep)(path).then(function (calculatedPath) {
 			calculatedPath = (calculatedPath || '');
 			return new Promise(function(resolve, reject) {
 				// proceed to get from context object
@@ -723,7 +720,6 @@ var Context = {
 				} else {
 					sub = Object.keys(sub).length !== 0 ? sub : undefined; // empty context
 				}
-
 				resolve(sub);
 
 			});
@@ -741,9 +737,7 @@ var Context = {
 	// The load method gets the requested path from the server if it does not exist locally.
 	// This operation can be forced from the get method.
 	load: function (path, options) {
-		return (path && path.then !== undefined ? path : new Promise(function(resolve, reject) {
-			resolve(path);
-		})).then(function (calculatedPath) {
+		return (typeof path !== 'string' ? path : Util.ep)(path).then(function (calculatedPath) {
 			calculatedPath = (calculatedPath || '');
 			return Permission.permit(options).then(function (data) {
 				var ajax_data = {
@@ -766,9 +760,7 @@ var Context = {
 	// Sets the value of a path in the store. If the value changes, a request is sent to change this piece of data.
 	set: function (path, value, overwrite) {
 		overwrite = (overwrite || false);
-		return (path && path.then !== undefined ? path : new Promise(function(resolve, reject) {
-			resolve(path);
-		})).then(function (calculatedPath) {
+		return (typeof path !== 'string' ? path : Util.ep)(path).then(function (calculatedPath) {
 			return new Promise(function (resolve, reject) {
 				calculatedPath = (calculatedPath || '');
 				context_path = calculatedPath.split('.');
