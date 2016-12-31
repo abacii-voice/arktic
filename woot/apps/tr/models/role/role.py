@@ -2,18 +2,16 @@
 from django.db import models
 
 # local
-from apps.tr.models.client.client import Client
 from apps.tr.models.client.project import Project
-from apps.users.models import User
 from apps.tr.idgen import idgen
 
 ### Role classes
 class Role(models.Model):
 	### Connections
-	client = models.ForeignKey(Client, related_name='roles')
-	project = models.ForeignKey(Project, related_name='assigned', null=True)
-	supervisor = models.ForeignKey('self', related_name='subordinates', null=True)
-	user = models.ForeignKey(User, related_name='roles')
+	client = models.ForeignKey('tr.Client', related_name='roles')
+	project = models.ForeignKey('tr.Project', related_name='assigned', null=True)
+	supervisor = models.ForeignKey('tr.Role', related_name='subordinates', null=True)
+	user = models.ForeignKey('users.User', related_name='roles')
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
@@ -57,12 +55,12 @@ class Role(models.Model):
 
 		if self.project is not None and self.type == 'worker' and permission.check_user(self.user):
 			data.update({
-				'active_transcription_token': self.active_transcription_token(force=path.check('active_transcription_token', blank=False)).data(path, permission),
+				'active_transcription_token': self.active_transcription_token(force=path.check('active_transcription_token', blank=False)).data(path.down('active_transcription_token'), permission),
 			})
 
 		if self.project is not None and self.type == 'moderator' and permission.check_user(self.user):
 			data.update({
-				'active_moderation_token': self.active_moderation_token(force=path.check('active_moderation_token', blank=False)).data(path, permission),
+				'active_moderation_token': self.active_moderation_token(force=path.check('active_moderation_token', blank=False)).data(path.down('active_moderation_token'), permission),
 			})
 
 		if self.type == 'moderator' or self.type == 'worker':
@@ -129,8 +127,8 @@ class Role(models.Model):
 class Threshold(models.Model):
 
 	### Connections
-	project = models.ForeignKey(Project, related_name='thresholds')
-	role = models.ForeignKey(Role, related_name='thresholds')
+	project = models.ForeignKey('tr.Project', related_name='thresholds')
+	role = models.ForeignKey('tr.Role', related_name='thresholds')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)

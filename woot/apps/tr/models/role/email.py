@@ -2,15 +2,14 @@
 from django.db import models
 
 # local
-from apps.tr.models.role.role import Role
 from apps.tr.idgen import idgen
 
 ### Email models
 class Email(models.Model):
 
 	### Connections
-	from_user = models.ForeignKey(Role, related_name='emails_from')
-	to_user = models.ForeignKey(Role, related_name='emails_to')
+	from_user = models.ForeignKey('tr.Role', related_name='emails_from')
+	to_user = models.ForeignKey('tr.Role', related_name='emails_to')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)

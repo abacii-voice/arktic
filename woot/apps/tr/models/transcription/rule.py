@@ -2,10 +2,6 @@
 from django.db import models
 
 # local
-from apps.tr.models.client.client import Client
-from apps.tr.models.client.project import Project
-from apps.tr.models.transcription.caption import Caption
-from apps.tr.models.role.role import Role
 from apps.tr.idgen import idgen
 
 ### Rule classes
@@ -15,8 +11,8 @@ class Rule(models.Model):
 	'''
 
 	### Connections
-	client = models.ForeignKey(Client, related_name='rules', null=True)
-	project = models.ForeignKey(Project, related_name='rules', null=True)
+	client = models.ForeignKey('tr.Client', related_name='rules') # need to have default rules that are added to a client
+	project = models.ForeignKey('tr.Project', related_name='rules', null=True)
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
@@ -28,7 +24,6 @@ class Rule(models.Model):
 	# data
 	def data(self, path, permission):
 		data = {
-			'project': self.project.id,
 			'number': str(self.number),
 			'name': self.name,
 			'description': self.description,
@@ -42,13 +37,15 @@ class RuleInstance(models.Model):
 	'''
 
 	### Connections
-	parent = models.ForeignKey(Rule, related_name='instances')
-	caption = models.ForeignKey(Caption, related_name='rules_cited')
-	role = models.ForeignKey(Role, related_name='rules_cited')
+	parent = models.ForeignKey('tr.Rule', related_name='instances')
+	transcription = models.ForeignKey('tr.TranscriptionInstance', related_name='rules_cited')
+	role = models.ForeignKey('tr.Role', related_name='rules_cited')
 
 	### Methods
 	# data
 	def data(self, path, permission):
-		data = self.parent.data(path, permission)
+		data = {
+			'name': self.parent.name,
+		}
 
 		return data

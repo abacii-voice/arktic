@@ -2,16 +2,14 @@
 from django.db import models
 
 # local
-from apps.tr.models.client.client import Client
-from apps.tr.models.role.role import Role
 from apps.tr.idgen import idgen
 
 ### Message models
 class Message(models.Model):
 
 	### Connections
-	from_user = models.ForeignKey(Role, related_name='messages_from')
-	to_user = models.ForeignKey(Role, related_name='messages_to')
+	from_user = models.ForeignKey('tr.Role', related_name='messages_from')
+	to_user = models.ForeignKey('tr.Role', related_name='messages_to')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
@@ -36,7 +34,7 @@ class Message(models.Model):
 class MessageToken(models.Model):
 
 	### Connections
-	message = models.ForeignKey(Message, related_name='tokens')
+	message = models.ForeignKey('tr.Message', related_name='tokens')
 
 	### Properties
 	value = models.CharField(max_length=255)
@@ -56,7 +54,7 @@ class MessageToken(models.Model):
 class Attachment(models.Model):
 
 	### Connections
-	message = models.ForeignKey(Message, related_name='attachments')
+	message = models.ForeignKey('tr.Message', related_name='attachments')
 
 	### Properties
 	index = models.PositiveIntegerField(default=0)

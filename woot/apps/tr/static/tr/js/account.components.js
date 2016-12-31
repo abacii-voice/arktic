@@ -17,6 +17,7 @@ var AccountComponents = {
 
 			// play button
 			UI.createComponent('{id}-play-button'.format({id: id}), {
+				name: 'playButton',
 				template: UI.template('div', 'ie button border abs'),
 				appearance: {
 					style: {
@@ -32,6 +33,7 @@ var AccountComponents = {
 			// AUDIO GROUP
 			// audio wrapper
 			UI.createComponent('{id}-audio-wrapper'.format({id: id}), {
+				name: 'audioWrapper',
 				template: UI.template('div', 'ie abs border'),
 				appearance: {
 					style: {
@@ -47,6 +49,7 @@ var AccountComponents = {
 
 			// audio track wrapper
 			UI.createComponent('{id}-audio-track-wrapper'.format({id: id}), {
+				name: 'audioTrackWrapper',
 				template: UI.template('div', 'ie abs'),
 				appearance: {
 					style: {
@@ -103,22 +106,6 @@ var AccountComponents = {
 
 			// modify components and add methods etc.
 			// BUTTON GROUP
-			playButton.setBindings({
-				'mousedown': function (_this) {
-					// The play button will always return to the anchor and play from there.
-					audioTrack.play();
-				},
-
-				// display tooltip in track info field
-				'mouseover': function (_this) {
-
-				},
-
-				// remove tooltip
-				'mouseout': function (_this) {
-
-				},
-			});
 
 			// AUDIO GROUP
 			// determines which audio references to create as audio tags
@@ -148,94 +135,86 @@ var AccountComponents = {
 				}).length;
 				if (remaining === 0) {
 					return _this.load().then(function () {
-						return _this.pre();
+						return _this.pre.main();
 					});
 				} else if (remaining < (base.threshold || 4)) {
 					return Promise.all([
 						_this.load({force: true}),
-						_this.pre(),
+						_this.pre.main(),
 					]);
 				} else {
-					return _this.pre();
+					return _this.pre.main();
 				}
 			}
 			audioTrack.load = function (force) {
 				force = force !== undefined ? force.force : false;
 				var _this = audioTrack;
-				var total = Object.keys(_this.buffer).length;
 				// load more and process into buffer
-				return Promise.all([
-					base.path(),
-					base.token().then(function (tokenPath) {
-						return Context.get(tokenPath, {force: force});
-					}),
-				]).then(function (options) {
-					return Context.get(options[0], {force: force, options: {filter: {token: options[1].id}}});
-				}).then(function (result) {
-					// Result is a list of transcriptions filtered by active token
-					// // console.log(Object.keys(_this.buffer), Object.keys(result));
-					Object.keys(result).sort(function (a, b) {
-						return result[a].original_caption > result[b].original_caption ? 1 : -1;
-					}).forEach(function (key, index) {
-						_this.buffer[key] = {
-							original_caption: result[key].original_caption,
-							is_available: true,
-							is_active: true,
-							index: index + total,
-						}
-					});
-				}).then(function () {
+				return base.path().then(function (tokenPath) {
+					return Context.get(tokenPath, {force: force, overwrite: true});
+				}).then(base.process).then(function () {
 					return new Promise(function(resolve, reject) {
 						resolve(_this.buffer);
 					});
 				});
 			}
-			audioTrack.pre = function () {
-				var _this = audioTrack;
-				// determine which audio elements to load
-				// load n either side of active index.
-				var lower = _this.active > 1 ? _this.active - (base.threshold || 4) + 2 : 0;
-				var upper = _this.active > 1 ? _this.active + (base.threshold || 4) - 1 : (base.threshold || 4) + 1;
-				var indices = [];
-				for (i=lower; i<upper; i++) {
-					indices.push(i);
-				}
+			audioTrack.pre = {
+				main: function () {
+					var _this = audioTrack.pre;
+					return _this.load_audio().then(function () {
+						return _this.current();
+					}).then(function () {
+						return _this.remove();
+					});
+				},
+				load_audio: function () {
+					var _this = audioTrack;
+					// determine which audio elements to load
+					// load n either side of active index.
+					var lower = _this.active > 1 ? _this.active - (base.threshold || 4) + 2 : 0;
+					var upper = _this.active > 1 ? _this.active + (base.threshold || 4) - 1 : (base.threshold || 4) + 1;
+					_this.indices = [];
+					for (i=lower; i<upper; i++) {
+						_this.indices.push(i);
+					}
 
-				// once the indices have been chosen, load the audio file for each one.
-				return Promise.all(indices.map(function (index) {
-					var transcriptionId = Object.keys(_this.buffer).filter(function (key) {
-						return _this.buffer[key].index === index;
-					})[0];
-					var storage = _this.buffer[transcriptionId];
-					if (storage.data === undefined) {
-						return Request.load_audio(transcriptionId).then(function (audioData) {
-							return new Promise(function(resolve, reject) {
+					// once the indices have been chosen, load the audio file for each one.
+					return Promise.all(_this.indices.map(function (index) {
+						var transcriptionId = Object.keys(_this.buffer).filter(function (key) {
+							return _this.buffer[key].index === index;
+						})[0];
+						var storage = _this.buffer[transcriptionId];
+						if (storage.data === undefined) {
+							return Request.load_audio(storage.parent).then(function (audioData) {
+								return new Promise(function(resolve, reject) {
 
-								// decode the incoming audio data and store it with the metadata.
-								_this.controller.context.decodeAudioData(audioData, function (decoded) {
-									storage.data = decoded;
-									storage.has_waveform = true;
-									resolve();
+									// decode the incoming audio data and store it with the metadata.
+									_this.controller.context.decodeAudioData(audioData, function (decoded) {
+										storage.data = decoded;
+										storage.has_waveform = true;
+										resolve();
+									});
 								});
 							});
-						});
-					}
-				})).then(function () {
+						}
+					}));
+				},
+				current: function () {
+					var _this = audioTrack;
 					// get current operation
 					return _this.current().then(function (current) {
 						return new Promise(function(resolve, reject) {
 							audioTrackCanvas.data = current.data;
 							audioTrackCanvas.duration = current.data.duration;
-							if (base.current !== undefined) {
-								base.current(current);
-							}
 							resolve();
 						});
 					});
-				}).then(function () {
+				},
+				remove: function () {
+					var _this = audioTrack;
 					// remove data from all indices not in the chosen array.
 					return Promise.all(Object.keys(_this.buffer).filter(function (key) {
-						return indices.indexOf(_this.buffer[key].index) === -1;
+						return _this.indices.indexOf(_this.buffer[key].index) === -1;
 					}).map(function (key) {
 						var removeBuffer = _this.buffer[key];
 						if (removeBuffer.source !== undefined) {
@@ -245,7 +224,7 @@ var AccountComponents = {
 							delete removeBuffer.waveform;
 						}
 					}));
-				});
+				},
 			}
 			audioTrack.play = function (position, duration) {
 				var _this = audioTrack;
@@ -314,6 +293,9 @@ var AccountComponents = {
 					return _this.current();
 				}).then(function (current) {
 					return new Promise(function(resolve, reject) {
+
+						// RECONCILE CURRENT WITH AUDIOTRACK.BUFFER and check is_available
+
 						current.is_available = false;
 						resolve();
 					});
@@ -343,9 +325,6 @@ var AccountComponents = {
 					return _this.play();
 				});
 			}
-
-			audioTrack.setRegistry(args.registry);
-			audioTrack.setState(args.state);
 
 			//// CANVAS
 			audioTrackCanvas.is_running = false;
@@ -388,7 +367,7 @@ var AccountComponents = {
 					_this.sample = Array.apply(null, Array(_this.canvas.width)).map(Number.prototype.valueOf, 0);
 				} else {
 					_this.waveform = _this.data.getChannelData(0);
-					_this.sample = getAbsNormalised(interpolateArray(_this.waveform, _this.canvas.width / _this.barWidth), _this.canvas.height);
+					_this.sample = Util.arrays.getAbsNormalised(Util.arrays.interpolateArray(_this.waveform, _this.canvas.width / _this.barWidth), _this.canvas.height);
 				}
 				// ANIMATING https://www.kirupa.com/html5/animating_many_things_on_a_canvas.htm
 
@@ -449,78 +428,100 @@ var AccountComponents = {
 				audioTrack.cutStart = 0;
 				audioTrack.cutEnd = 0;
 			}
-			audioTrackCanvas.setBindings({
 
-				// like it says
-				'mousedown': function (_this, event) {
-					_this.mouseDown = true;
-					_this.drag = false;
-					_this.cutStart = _this.getMousePosition(event).x;
-				},
-
-				// continuous movement
-				'mousemove': function (_this, event) {
-					_this.mousePosition = _this.getMousePosition(event).x;
-					if (_this.mouseDown) {
-						_this.cut = true;
-						_this.drag = true;
-						_this.cutEnd = _this.mousePosition;
-					}
-				},
-
-				// let mouse up
-				'mouseup': function (_this, event) {
-					_this.mouseDown = false;
-					if (_this.cut) {
-						if (_this.drag && (_this.cutEnd - _this.cutStart > 1)) {
-							audioTrack.cut = true;
-							audioTrack.cutStart = _this.cutStart / _this.canvas.width * _this.duration;
-							audioTrack.cutEnd = _this.cutEnd / _this.canvas.width * _this.duration;
-							audioTrack.play(audioTrack.cutStart);
-						} else {
-							_this.cut = false;
-							audioTrack.cut = false;
-							audioTrack.cutStart = 0;
-							audioTrack.cutEnd = 0;
-							audioTrack.stop();
-						}
-					} else {
-						_this.time = _this.getMousePosition(event).x / _this.canvas.width * _this.duration;
-						audioTrack.play(_this.time);
-					}
-				},
-
-				'mouseout': function (_this) {
-					_this.mousePosition = 0;
-				},
-			});
-			audioTrackWrapper.setChildren([
-				audioTrack,
-				audioTrackCanvas,
-				audioTrackInfo,
-			]);
-			audioWrapper.setChildren([
-				audioTrackWrapper,
-			]);
-
-			// resolve list of components to be rendered.
+			// base methods
 			base.next = function () {
 				return audioTrack.next();
 			}
 			base.previous = function () {
 				return audioTrack.previous();
 			}
-			base.components = {
-				playButton: playButton,
-				audioWrapper: audioWrapper,
-				audioTrackWrapper: audioTrackWrapper,
-			}
-			base.setChildren([
-				audioWrapper,
-				playButton,
-			]);
 
-			return base;
+			// complete promises
+			return Promise.all([
+				playButton.setBindings({
+					'mousedown': function (_this) {
+						// The play button will always return to the anchor and play from there.
+						return audioTrack.next().catch(function (error) {
+							console.log(error);
+						});
+					},
+
+					// display tooltip in track info field
+					'mouseover': function (_this) {
+
+					},
+
+					// remove tooltip
+					'mouseout': function (_this) {
+
+					},
+				}),
+				audioTrackCanvas.setBindings({
+
+					// like it says
+					'mousedown': function (_this, event) {
+						_this.mouseDown = true;
+						_this.drag = false;
+						_this.cutStart = _this.getMousePosition(event).x;
+					},
+
+					// continuous movement
+					'mousemove': function (_this, event) {
+						_this.mousePosition = _this.getMousePosition(event).x;
+						if (_this.mouseDown) {
+							_this.cut = true;
+							_this.drag = true;
+							_this.cutEnd = _this.mousePosition;
+						}
+					},
+
+					// let mouse up
+					'mouseup': function (_this, event) {
+						_this.mouseDown = false;
+						if (_this.cut) {
+							if (_this.drag && (_this.cutEnd - _this.cutStart > 1)) {
+								audioTrack.cut = true;
+								audioTrack.cutStart = _this.cutStart / _this.canvas.width * _this.duration;
+								audioTrack.cutEnd = _this.cutEnd / _this.canvas.width * _this.duration;
+								audioTrack.play(audioTrack.cutStart);
+							} else {
+								_this.cut = false;
+								audioTrack.cut = false;
+								audioTrack.cutStart = 0;
+								audioTrack.cutEnd = 0;
+								audioTrack.stop();
+							}
+						} else {
+							_this.time = _this.getMousePosition(event).x / _this.canvas.width * _this.duration;
+							audioTrack.play(_this.time);
+						}
+					},
+
+					'mouseout': function (_this) {
+						_this.mousePosition = 0;
+					},
+				}),
+				audioTrackWrapper.setChildren([
+					audioTrack,
+					audioTrackCanvas,
+					audioTrackInfo,
+				]),
+				audioWrapper.setChildren([
+					audioTrackWrapper,
+				]),
+			]).then(function () {
+				base.components = {
+					track: audioTrack,
+					canvas: audioTrackCanvas,
+				}
+				return base.setChildren([
+					audioWrapper,
+					playButton,
+				]);
+			}).then(function () {
+				return base;
+			});
 		});
 	},
 
@@ -737,234 +738,426 @@ var AccountComponents = {
 	// A content panel with bindings for adding and removing tokens.
 	// contenteditable is set to 'true' with appropriate bindings.
 	captionField: function (id, args) {
-		args.appearance = (args.appearance || {
-			style: {
-				'width': '100%',
-				'height': '100%',
-			},
-		});
-
-		// components
 		return Promise.all([
 			// base
-			UI.createComponent('{id}-base'.format({id: id}), {
+			UI.createComponent(id, {
 				template: UI.template('div', 'ie'),
 				appearance: args.appearance,
 			}),
 
 			// content
-			Components.contentPanel('{id}-content'.format({id: id}), {
-				appearance: {
-					style: {
-						'width': '100%',
-						'height': '100%',
-					},
-				},
-			}),
+			UI.createComponent('{id}-content'.format({id: id}), {
 
+			}),
 		]).then(function (components) {
-			// unpack components
 			var [
 				base,
 				content,
 			] = components;
 
-			// methods and properties
-			var wrapper = content.components.wrapper;
-			wrapper.load = function () {
+			base.defaultUnitStyle = function () {
 
 			}
-			wrapper.token = function (options) {
-				// console.log('{} caption token'.format(base.id));
-				options = (options || {});
-				var _this = wrapper;
-				if (_this.active !== undefined && !options.swap) {
-					return (options.end ? _this.setActive : emptyPromise)({index: 'last'}).then(function () {
-						return _this.active.focus('end');
-					}).then(function () {
-						return _this.active;
-					});
-				} else {
-					_this.currentIndex = _this.currentIndex !== undefined ? _this.currentIndex + 1 : 0;
-					return base.unit(options.text, options.type).then(function (unit) {
-						// methods
 
-						// set after HERE
-						if (_this.active) {
-							unit.after = options.before ? '' : _this.active.id;
-						}
-						return _this.setChildren([unit]).then(function () {
-							_this.active = unit;
-							return _this.active.activate();
-						}).then(function () {
-							return _this.active.focus('end');
-						}).then(function () {
-							return _this.active;
-						});
-					});
-				}
-			}
-			wrapper.isCaretInPosition = function (mode) {
-				return wrapper.active.components.autocomplete.search.isCaretInPosition(mode);
-			}
-			wrapper.isComplete = function () {
-				return wrapper.active.components.autocomplete.search.isComplete();
-			}
-			wrapper.setActive = function (options) {
-				// console.log('{} caption setActive'.format(base.id));
-				var _this = wrapper;
-				// args
-				options.index = (options || {}).index !== undefined ? (options.index === 'last' ? _this.children.length - 1 : options.index) : undefined; // allow keyword "last"
+			// data
+			base.data = {
 
-				// changes
-				var previousIndex = _this.currentIndex ? _this.currentIndex : 0;
-				_this.currentIndex = (options.index !== undefined ? options.index : undefined || ((_this.currentIndex || 0) + (options.increment || 0)));
+				// variables
+				minimumPhraseLength: 3,
+				currentId: undefined, // the id of the current transcription
 
-				// boundary conditions
-				_this.currentIndex = _this.currentIndex > _this.children.length - 1 ? _this.children.length - 1 : (_this.currentIndex < 0 ? 0 : _this.currentIndex);
+				// datasets
+				storage: {
+					buffer: {}, // stores all sets that have been entered this session when confirmed. Key is transcription id.
+					virtual: [], // stores data in order
+				},
 
-				var hasChanged = _this.currentIndex !== previousIndex || options.force;
-				if (hasChanged) {
-					_this.active = _this.children[_this.currentIndex];
-				}
-				return new Promise(function(resolve, reject) {
-					resolve(hasChanged); // returns whether anything has changed.
-				});
-			}
-			wrapper.next = function () {
-				// console.log('{} caption next'.format(base.id));
-				return wrapper.setActive({increment: 1}).then(function (indexChanged) {
-					return (indexChanged ? wrapper.active.focus : emptyPromise)('start');
-				});
-			}
-			wrapper.previous = function () {
-				// console.log('{} caption previous'.format(base.id));
-				return wrapper.setActive({increment: -1}).then(function (indexChanged) {
-					return (indexChanged ? wrapper.active.focus : emptyPromise)('end');
-				});
-			}
-			wrapper.delete = function () {
-				var content = wrapper.active.getContent();
-				var isAtStart = wrapper.active.isAtStart();
-				return wrapper.removeChild(wrapper.active.id).then(function () {
-					wrapper.active = undefined;
-					var forceNext = function () {
-						if (wrapper.children.length) {
-							return wrapper.setActive({force: true}).then(function () {
-								return wrapper.active.focus('start');
+				// objects
+				objects: {
+					phrase: {
+						// base
+						Phrase: function () {
+							// methods
+							this.update = function (metadata) {
+								// apply rules to metadata
+								metadata.complete = metadata.complete || metadata.query || '';
+								metadata.queryTokens = metadata.query.split(' ');
+								metadata.completeTokens = metadata.complete.split(' ');
+								metadata.tokens = metadata.tokens || [];
+								metadata.tokens = metadata.completeTokens.map(function (completeToken, index) {
+									// console.log(metadata.tokens[index], metadata.type, 'word');
+									return {
+										complete: completeToken,
+										query: (metadata.queryTokens[index] || ''),
+										type: ((metadata.tokens[index] || {}).type || metadata.type || 'word'),
+									}
+								});
+								// console.log(metadata.tokens);
+
+								// update complete changed
+								var _this = this;
+								_this.completeChanged = (_this.complete !== metadata.complete);
+								_this.query = metadata.query || (_this.query || metadata.query);
+								_this.queryTokens = _this.query.split(' ');
+
+								_this.complete = metadata.complete;
+								_this.focus = metadata.queryTokens.length - 1;
+								_this.focus = _this.focus >= metadata.completeTokens.length ? metadata.completeTokens.length - 1 : _this.focus;
+								_this.isComplete = _this.query === _this.complete;
+								_this.tokens = metadata.tokens;
+
+								var idMatches = (_this.id === metadata.target) || !_this.id;
+								if ((_this.completeChanged || _this.completionOverride || _this.spaceOverride || _this.backspaceOverride) && idMatches) {
+									// render to tokens
+									return _this.render();
+								} else {
+									return Util.ep();
+								}
+							}
+							this.render = function () {
+								// based on index, start creating tokens in caption content.
+								var _this = this;
+
+								// 1. rendered units first
+								_this.renderedUnits = (_this.renderedUnits || []);
+								_this.currentAfter = undefined;
+								if (!base.lock) {
+									base.lock = true;
+									return Promise.all(_this.renderedUnits.map(function (renderedUnit, index) {
+										var token = _this.tokens[index];
+										renderedUnit.isReserved = token === undefined;
+										return renderedUnit.updateUnitMetadata(token).then(function () {
+											if (renderedUnit.isReserved) {
+												return renderedUnit.hide();
+											} else {
+												return Util.ep();
+											}
+										});
+									})).then(function () {
+
+										// 2. next render units for the rest of the tokens if necessary.
+										if (_this.tokens.length > _this.renderedUnits.length) {
+											return Promise.ordered(_this.tokens.slice(_this.renderedUnits.length).map(function (token, extraIndex) {
+												return function () {
+													return _this.newUnit(extraIndex, token);
+												}
+											}));
+										} else {
+											return Util.ep();
+										}
+									}).then(function () {
+
+										// 3. render until the default unit limit
+										var difference = base.data.minimumPhraseLength-_this.renderedUnits.length;
+										if (difference > 0) {
+											return Promise.ordered(Array.range(difference).map(function (extraIndex) {
+												return function () {
+													return _this.newUnit(extraIndex);
+												}
+											}));
+										} else {
+											return Util.ep();
+										}
+									}).then(function () {
+
+										// 4. show what is hidden
+										return _this.show();
+									}).then(function () {
+
+										// 5. focus last token if just completed.
+										if (_this.completionOverride) {
+											_this.completionOverride = false;
+											return _this.lastUnit().focus('end');
+										} else if (_this.spaceOverride) {
+											_this.spaceOverride = false;
+											return _this.renderedUnits[_this.focus].focus('end');
+										} else  if (_this.backspaceOverride) {
+											_this.backspaceOverride = false;
+											return _this.renderedUnits[_this.focus].focus('end');
+										} else {
+											return Util.ep();
+										}
+									}).then(function () {
+										base.lock = false;
+										return Util.ep();
+									});
+								} else {
+									return Util.ep();
+								}
+							}
+							this.show = function () {
+								var _this = this;
+								if (!base.showOverride) {
+									return Promise.all(_this.renderedUnits.filter(function (unit) {
+										return unit.isHidden && !unit.isReserved;
+									}).map(function (unit) {
+										return unit.show();
+									}));
+								} else {
+									return Util.ep();
+								}
+							}
+							this.newUnit = function (extraIndex, token) {
+								var _this = this;
+								var trueIndex = _this.renderedUnits.length + extraIndex;
+								var defaultAfter = _this.renderedUnits.length ? _this.renderedUnits[_this.renderedUnits.length-1].id : undefined; // not '' lol
+								return base.unit().then(function (unit) {
+									unit.after = base.globalAfter || _this.currentAfter || defaultAfter;
+									unit.phrase = _this;
+									unit.isReserved = token === undefined;
+									_this.renderedUnits.push(unit);
+									return unit.updateUnitMetadata(token).then(function () {
+										return unit.hide().then(function () {
+
+											return content.setChildren([unit]);
+										});
+									}).then(function () {
+										_this.currentAfter = unit.id;
+										base.globalAfter = undefined;
+										return Util.ep();
+									});
+								});
+							}
+							this.updateQueryFromActive = function () {
+								var _this = this;
+								var tokenIndex = _this.renderedUnits.indexOf(base.active);
+								_this.query = _this.tokens.slice(0, _this.focus+1).map(function (token, index) {
+									if (index === tokenIndex) {
+										token.query = base.active.metadata.query;
+										return base.active.metadata.query;
+									} else {
+										return token.query;
+									}
+								}).join(' ');
+
+								return Util.ep(_this.query);
+							}
+							this.completeQuery = function () {
+								var _this = this;
+								_this.query = _this.tokens.map(function (token) {
+									token.query = token.complete;
+									return token.complete;
+								}).join(' ');
+
+								return Util.ep(_this.query);
+							}
+							this.lastUnit = function () {
+								if (this.renderedUnits) {
+									var activeUnits = this.renderedUnits.filter(function (unit) {
+										return !unit.isHidden;
+									});
+									return activeUnits[activeUnits.length-1];
+								}
+							}
+							this.firstUnit = function () {
+								if (this.renderedUnits) {
+									var activeUnits = this.renderedUnits.filter(function (unit) {
+										return !unit.isHidden;
+									});
+									return activeUnits[0];
+								}
+							}
+							this.focus = function (position) {
+								var _this = this;
+								position = position || 'end';
+								if (position === 'end') {
+									// focus the end of the last focussable unit
+									return _this.lastUnit().focus('end');
+								} else if (position === 'start') {
+									// focus the start of the first focussable unit
+									return _this.firstUnit().focus('start');
+								} else {
+									return Util.ep();
+								}
+							}
+						},
+						create: function (index, metadata) {
+							var phrase = new base.data.objects.phrase.Phrase();
+							base.globalAfter = base.data.storage.virtual.length && base.data.storage.virtual[index] ? base.data.storage.virtual[index].lastUnit().id : undefined;
+							base.data.storage.virtual.splice(index, 0, phrase);
+							return phrase.update(metadata).then(function () {
+								return base.data.objects.phrase.renumber();
+							}).then(function () {
+								phrase.id = Util.makeid();
+								return Util.ep(phrase);
 							});
-						} else {
-							return wrapper.token();
-						}
-					}
-					return (wrapper.currentIndex ? wrapper.previous : forceNext)();
-				}).then(function () {
-					if (content && isAtStart) {
-						var activeContent = wrapper.active.getContent();
-						return wrapper.active.setContent({content: (activeContent + content), trigger: true}).then(function () {
-							// set caret position to active content length
-							return wrapper.active.components.autocomplete.search.setCaretPosition(activeContent.length);
+						},
+						remove: function (phrase) {
+							return Promise.all(phrase.renderedUnits.map(function (renderedUnit) {
+								return content.removeChild(renderedUnit.id);
+							})).then(function () {
+								base.data.storage.virtual.splice(phrase.index, 1);
+								return Util.ep();
+							});
+						},
+						split: function (phrase) {
+							var activeUnits = phrase.renderedUnits.filter(function (unit) {
+								return !unit.isHidden;
+							});
+							return Promise.all(phrase.renderedUnits.filter(function (unit) {
+								return unit.isHidden;
+							}).map(function (unit) {
+								return content.removeChild(unit.id);
+							})).then(function () {
+								base.data.storage.virtual.splice(phrase.index, 1);
+								return Util.ep();
+							}).then(function () {
+								var position = phrase.index - 1;
+								return Promise.ordered(phrase.tokens.map(function (token, index) {
+									return function () {
+										var unit = activeUnits[index];
+										var newPhrase = new base.data.objects.phrase.Phrase();
+										newPhrase.renderedUnits = [unit];
+										unit.phrase = newPhrase;
+										base.data.storage.virtual.splice(position+index, 0, newPhrase);
+										return newPhrase.update(token).then(function () {
+											newPhrase.id = Util.makeid();
+											return Util.ep();
+										}).then(function () {
+											return base.data.objects.phrase.renumber();
+										});
+									}
+								}));
+							});
+						},
+						renumber: function () {
+							return Promise.all(base.data.storage.virtual.map(function (phrase, index) {
+								phrase.index = index;
+								return Util.ep();
+							}));
+						},
+					},
+				},
+
+				// methods
+				idgen: function () {
+					return '{base}-{id}'.format({base: base.id, id: Util.makeid()});
+				},
+			}
+
+			// control
+			base.control = {
+				setup: function () {
+					// set styles - nothing else for now
+					// NOW - may be something to do here. blank phrases? abandon?
+					return base.styles();
+				},
+				setActive: function (options) {
+					options = options || {};
+
+					var previousUnit = base.active;
+					if (options.unit) {
+						base.active = options.unit;
+					} else {
+						// construct array of active units
+						var visibleChildren = content.children.filter(function (unit) {
+							return !unit.isHidden;
 						});
+						var newIndex = visibleChildren.indexOf(base.active) + (options.increment || 0);
+
+						// boundary conditions
+						newIndex = newIndex > 0 ? (newIndex < visibleChildren.length - 1 ? newIndex : visibleChildren.length - 1) : 0;
+
+						// get new active
+						base.active = visibleChildren[newIndex];
 					}
-				});
+
+					return base.control.deactivate(previousUnit).then(function () {
+						return base.active.activate();
+					});
+				},
+				deactivate: function (previousUnit) {
+					if (previousUnit && previousUnit.id !== base.active.id) {
+						return previousUnit.deactivate();
+					} else {
+						return Util.ep();
+					}
+				},
+				input: {
+					newCaption: function (metadata) {
+						base.data.currentId = metadata.parent;
+						base.data.storage.virtual = [];
+
+						base.showOverride = true;
+						return Promise.ordered(metadata.tokens.map(function (token, index) {
+							return function () {
+								return base.data.objects.phrase.create(index, {query: token.content, complete: token.content, tokens: [token]});
+							}
+						})).then(function () {
+							base.showOverride = false;
+							return Promise.all(base.data.storage.virtual.map(function (phrase) {
+								return phrase.show();
+							}));
+						});
+					},
+					editActive: function (metadata) {
+						return base.active.phrase.update(metadata);
+					},
+					addPhrase: function () {
+
+					},
+					removePhrase: function () {
+
+					},
+				},
+				updateBuffer: function () {
+					return Util.ep();
+				},
+				runChecks: function () {
+
+				},
+			}
+
+			base.next = function () {
+				return base.control.setActive({increment: 1});
+			}
+			base.previous = function () {
+				return base.control.setActive({increment: -1});
 			}
 
 			// behaviours
 			base.behaviours = {
-				up: function () {
-					// console.log('{} caption behaviours up'.format(base.id));
-					return Promise.all([
-						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.up : emptyPromise)(),
-					]);
-				},
-				down: function () {
-					// console.log('{} caption behaviours down'.format(base.id));
-					return Promise.all([
-						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.down : emptyPromise)(),
-					]);
+				right: function () {
+
 				},
 				left: function () {
-					// console.log('{} caption behaviours left'.format(base.id));
-					// go to previous token if at end
-					return ((wrapper.active && wrapper.isCaretInPosition('start')) ? wrapper.previous : emptyPromise)();
+
 				},
-				altleft: function () {
-					// console.log('{} caption behaviours altleft'.format(base.id));
-					// go to previous token
-					return (wrapper.active ? wrapper.previous : emptyPromise)();
+				up: function () {
+
 				},
-				right: function () {
-					// console.log('{} caption behaviours right'.format(base.id));
-					// complete or go to next token if already complete
-					return Promise.all([
-						((wrapper.active && wrapper.isCaretInPosition('end') && wrapper.isComplete()) ? wrapper.next : emptyPromise)(),
-						(wrapper.active && !wrapper.isComplete() ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)(),
-					]);
+				down: function () {
+
+				},
+				shiftright: function () {
+
+				},
+				shiftleft: function () {
+
 				},
 				altright: function () {
-					// console.log('{} caption behaviours altright'.format(base.id));
-					// go to next token
-					var shiftright = function () {
-						return wrapper.setActive({increment: 1}).then(function (indexChanged) {
-							return (indexChanged ? wrapper.active.focus : emptyPromise)('end');
-						});
-					}
-					return Promise.all([
-						(wrapper.active ? shiftright : emptyPromise)(),
-					]);
+
+				},
+				altleft: function () {
+
 				},
 				enter: function () {
-					// console.log('{} caption behaviours enter'.format(base.id));
-					// complete and new token
-					return Promise.all([
-						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.right : emptyPromise)().then(function () {
-							return (wrapper.active ? wrapper.token : emptyPromise)({swap: true});
-						}),
-					]);
-				},
-				backspace: function () {
-					// console.log('{} caption behaviours backspace'.format(base.id));
-					// delete token if at beginning
-					return ((wrapper.active && wrapper.active.isAtStart() && wrapper.children.length > 1) ? wrapper.delete : emptyPromise)();
-				},
-				altbackspace: function () {
-					// console.log('{} caption behaviours altbackspace'.format(base.id));
-					// delete token
-					return ((wrapper.active && wrapper.children.length) ? wrapper.delete : emptyPromise)();
-				},
-				space: function () {
-					// console.log('{} caption behaviours space'.format(base.id));
-					// new token
-					return Promise.all([
-						// ((wrapper.active && (!wrapper.active.components.autocomplete.virtual.length || wrapper.isComplete())) ? wrapper.token : emptyPromise)({swap: true}),
-					]);
-				},
-				number: function (char) {
-					// console.log('{} caption behaviours number'.format(base.id));
-					return Promise.all([
-						(wrapper.active ? wrapper.active.components.autocomplete.behaviours.number : emptyPromise)(char),
-					]);
-				},
+
+				}
 			}
 
-			// complete promises
 			return Promise.all([
-				wrapper.setBindings({
+				base.setBindings({
 					'click': function (_this) {
-						wrapper.token({end: true});
+						// return _this.data.objects.phrase.create();
 					},
 				}),
 			]).then(function () {
-				base.components = {
-					wrapper: wrapper,
-				}
-				return base.setChildren([
-					content,
-				]);
+				return base.setChildren([content]);
 			}).then(function () {
 				return base;
 			});
-		});;
+		});
 	},
 
 	// ROLE DISPLAY ICON

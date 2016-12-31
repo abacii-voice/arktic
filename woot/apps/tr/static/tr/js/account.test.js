@@ -756,16 +756,49 @@ var Test = {
 				console.log(p1, p2);
 			});
 		},
+
+		test_sort: function () {
+			var data = [{id: "66d1e391-9158-403b-ac43-303ee61b171b", main: "TestContractClient", rule: "clients", index: 0},
+									{id: "ebb9e77a-0ed1-412f-9579-83242186d63d", main: "TestProductionClient", rule: "clients", index: 1},
+									{id: "68034013-4c21-45f5-8d48-c182e97f9366", main: "tars", rule: "tokens", index: 2},
+									{id: "f3fdd8f6-4473-4237-9c88-326fff270390", main: "the", rule: "tokens", index: 3},
+									{id: "59add26d-90fb-4056-96cd-6e3a5cc24ee7", main: "these", rule: "tokens", index: 4},
+									{id: "65d4fc90-0828-437c-a7a8-f30c8834a5dd", main: "this", rule: "tokens", index: 5},
+									{id: "43a6820d-cda2-48dd-ac7b-b315a91b033b", main: "time", rule: "tokens", index: 6},
+									{id: "82466783-2bdb-452e-837e-d14bff976692", main: "to", rule: "tokens", index: 7},
+									{id: "1ea7a381-8c77-4e82-833f-4b171ebfd3c2", main: "today", rule: "tokens", index: 8},];
+
+			console.log(data);
+			data.sort(function (d1, d2) {
+				// sort by usage
+				// if (d1.usage && d2.usage) {
+				// 	if (d1.usage > d2.usage) {
+				// 		return 1;
+				// 	} else if (d1.usage < d2.usage) {
+				// 		return -1;
+				// 	}
+				// }
+
+				// then alphabetically
+				// Needs to be lower case, capital letters are "greater than" lower case letters
+				if (d1.main.toLowerCase() > d2.main.toLowerCase()) {
+					return 1;
+				} else {
+					return -1;
+				}
+			});
+
+			console.log(data);
+		},
+
+		test_phrases: function () {
+			return UI.getComponent('tb-cp-caption').then(function (component) {
+				console.log(component.data.storage.virtual);
+			})
+		},
 	},
 
 	test: function () {
-
-		Test.tests.test_when();
-
-		// all
-		// Object.keys(Test.tests).forEach(function (test) {
-		// 	var fn = Test.tests[test];
-		// 	fn();
-		// });
+		Test.tests.test_phrases();
 	},
 }
