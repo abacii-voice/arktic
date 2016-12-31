@@ -2,15 +2,13 @@
 from django.db import models
 
 # local
-from apps.tr.models.client.client import Client
-from apps.tr.models.transcription.caption import Caption
 from apps.tr.idgen import idgen
 
 ### Flag classes
 class Flag(models.Model):
 
 	### Connections
-	client = models.ForeignKey(Client, related_name='flags')
+	client = models.ForeignKey('tr.Client', related_name='flags')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
@@ -29,8 +27,9 @@ class Flag(models.Model):
 class FlagInstance(models.Model):
 
 	### Connections
-	parent = models.ForeignKey(Flag, related_name='instances')
-	caption = models.ForeignKey(Caption, related_name='flags')
+	parent = models.ForeignKey('tr.Flag', related_name='instances')
+	transcription = models.ForeignKey('tr.TranscriptionInstance', related_name='flags')
+	role = models.ForeignKey('tr.Role', related_name='flags')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
@@ -40,7 +39,7 @@ class FlagInstance(models.Model):
 	def data(self, path, permission):
 		data = self.parent.data(path, permission)
 		data.update({
-			'caption': self.caption.id,
+			'name': self.parent.name,
 		})
 
 		return data

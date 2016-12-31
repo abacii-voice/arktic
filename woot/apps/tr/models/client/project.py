@@ -2,15 +2,14 @@
 from django.db import models
 
 # local
-from apps.tr.models.client.client import Client
 from apps.tr.idgen import idgen
 
 ### Project model
 class Project(models.Model):
 
 	### Connections
-	production_client = models.ForeignKey(Client, related_name='production_projects')
-	contract_client = models.ForeignKey(Client, related_name='contract_projects')
+	production_client = models.ForeignKey('tr.Client', related_name='production_projects')
+	contract_client = models.ForeignKey('tr.Client', related_name='contract_projects')
 
 	### Properties
 	# Identification
@@ -48,14 +47,9 @@ class Project(models.Model):
 				'assigned_users': [user.id for user in self.assigned_users.all()],
 			})
 
-		if path.check('dictionaries'):
+		if path.check('dictionary') and hasattr(self, 'dictionary') and permission.check_client(path.get_key('client')):
 			data.update({
-				'dictionaries': {dictionary.id: dictionary.data(path.down('dictionaries'), permission) for dictionary in self.dictionaries.filter(id__startswith=path.get_id())},
-			})
-
-		if path.check('grammars') and permission.is_admin:
-			data.update({
-				'grammars': {grammar.id: grammar.data(path.down('grammars'), permission) for grammar in self.grammars.filter(id__startswith=path.get_id())},
+				'dictionary': self.dictionary.data(path.down('dictionary'), permission),
 			})
 
 		if path.check('batches') and permission.is_admin:
@@ -65,27 +59,20 @@ class Project(models.Model):
 
 		if path.check('transcriptions', blank=False):
 			data.update({
-				'transcriptions': {transcription.id: transcription.data(path.down('transcriptions'), permission) for transcription in self.transcriptions.filter(id__startswith=path.get_id()).filter(**path.get_filter('transcriptions')).order_by('original_caption')},
-			})
-
-		if path.check('moderations', blank=False):
-			data.update({
-				'moderations': {moderation.id: moderation.data(path.down('moderations'), permission) for moderation in self.moderations.filter(id__startswith=path.get_id()).filter(**path.get_filter('moderations'))},
+				'transcriptions': {transcription.id: transcription.data(path.down('transcriptions'), permission) for transcription in self.transcriptions.filter(id__startswith=path.get_id()).filter(**path.get_filter('transcriptions')).order_by('content')},
 			})
 
 		return data
 
 	def get_transcription(self):
-
 		'''
 		Select a single transcription based on several criteria.
 
 		'''
-
-		transcriptions = self.transcriptions.filter(is_active=True, is_available=True).order_by('original_caption', 'date_created')
+		transcriptions = self.transcriptions.filter(is_active=True, is_available=True).order_by('content__content', 'date_created')
 		if transcriptions.count() > 0:
 			transcription = transcriptions[0]
-			transcription.is_available = False
+			transcription.update_availability()
 			transcription.save()
 
 			return transcription
@@ -93,16 +80,14 @@ class Project(models.Model):
 			return None
 
 	def get_moderation(self):
+		'''
+		Select a single moderation based on several criteria.
 
 		'''
-		Select a single transcription based on several criteria.
-
-		'''
-
-		moderations = self.moderations.filter(is_active=True, is_available=True).order_by('date_created')
+		moderations = self.moderations.filter(is_active=True, is_available=True).order_by('transcription__content__content', 'date_created')
 		if moderations.count() > 0:
 			moderation = moderations[0]
-			moderation.is_available = False
+			moderation.update_availability()
 			moderation.save()
 
 			return moderation
@@ -112,7 +97,7 @@ class Project(models.Model):
 class Batch(models.Model):
 
 	### Connections
-	project = models.ForeignKey(Project, related_name='batches')
+	project = models.ForeignKey('tr.Project', related_name='batches')
 
 	### Properties
 	# Identification
@@ -120,12 +105,14 @@ class Batch(models.Model):
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	name = models.CharField(max_length=255)
 	description = models.TextField(default='')
-	priority_index = models.PositiveIntegerField(default=0)
 
 	# Statistics
-	deadline = models.DateTimeField(auto_now_add=True)
 	completion_percentage = models.FloatField(default=0.0)
 	redundancy_percentage = models.FloatField(default=0.0)
+
+	# Variables
+	deadline = models.DateTimeField(auto_now_add=True)
+	priority_index = models.PositiveIntegerField(default=0)
 
 	### Methods
 	# data
@@ -158,31 +145,35 @@ class Upload(models.Model):
 	'''
 
 	### Connections
-	batch = models.ForeignKey(Batch, related_name='uploads')
+	batch = models.ForeignKey('tr.Batch', related_name='uploads')
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	archive_name = models.CharField(max_length=255, default='')
-	relfile_name = models.CharField(max_length=255, default='')
-	total_fragments = models.PositiveIntegerField(default=0)
-	completed_fragments = models.PositiveIntegerField(default=0)
-	completion_percentage = models.FloatField(default=0.0)
 	is_complete = models.BooleanField(default=False)
 
 	### Methods
+	# stats
+	def completed(self):
+		total = self.fragments.count()
+		completed = self.fragments.filter(is_reconciled=True).count()
+		completion_percentage = completed / total
+
+		return total, completed, completion_percentage
+
 	# data
 	def data(self, path, permission):
 		data = {}
+		total_fragments, completed_fragments, completion_percentage = self.completed()
 
 		if path.is_blank:
 			data.update({
 				'date_created': str(self.date_created),
 				'archive_name': self.archive_name,
-				'relfile_name': self.relfile_name,
-				'total_fragments': str(self.total_fragments),
-				'completed_fragments': str(self.completed_fragments),
-				'completion_percentage': str(self.completion_percentage),
+				'total_fragments': str(total_fragments),
+				'completed_fragments': str(completed_fragments),
+				'completion_percentage': str(completion_percentage),
 				'is_complete': self.is_complete,
 			})
 
@@ -201,7 +192,7 @@ class Fragment(models.Model):
 	'''
 
 	### Connections
-	upload = models.ForeignKey(Upload, related_name='fragments')
+	upload = models.ForeignKey('tr.Upload', related_name='fragments')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
