@@ -785,12 +785,14 @@ var AccountComponents = {
 								metadata.completeTokens = metadata.complete.split(' ');
 								metadata.tokens = metadata.tokens || [];
 								metadata.tokens = metadata.completeTokens.map(function (completeToken, index) {
+									// console.log(metadata.tokens[index], metadata.type, 'word');
 									return {
 										complete: completeToken,
 										query: (metadata.queryTokens[index] || ''),
-										type: ((metadata.tokens[index] || {}).type || 'word'),
+										type: ((metadata.tokens[index] || {}).type || metadata.type || 'word'),
 									}
 								});
+								// console.log(metadata.tokens);
 
 								// update complete changed
 								var _this = this;
