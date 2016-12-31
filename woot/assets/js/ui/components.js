@@ -191,12 +191,17 @@ var Components = {
 			}
 			base.complete = function () {
 				base.completeQuery = ((base.metadata || {}).complete || '');
-				base.isComplete = true;
-				return tail.setAppearance({html: base.completeQuery}).then(function () {
-					return head.setAppearance({html: base.completeQuery});
-				}).then(function () {
-					return base.setCaretPosition('end');
-				});
+				if (base.completeQuery !== base.metadata.query) {
+					base.isComplete = true;
+					base.metadata.query = base.completeQuery;
+					return tail.setAppearance({html: base.completeQuery}).then(function () {
+						return head.setAppearance({html: base.completeQuery});
+					}).then(function () {
+						return base.setCaretPosition('end');
+					});
+				} else {
+					return Util.ep();
+				}
 			}
 			base.focus = function (position) {
 				if (!base.isFocussed) {
@@ -218,12 +223,15 @@ var Components = {
 				});
 			}
 			base.getContent = function () {
-				return Util.ep(head.model().text());
+				// also replaces generic whitespace, including char160/&nbsp;, with a space character.
+				return Util.ep(head.model().text().replace(/\s+/gi, ' '));
 			}
-			base.setContent = function (options) {
-				return head.setAppearance({html: options.content}).then(function () {
-					if (options.trigger) {
+			base.setContent = function (metadata) {
+				return head.setAppearance({html: (metadata.query || '').replace(/\s+/gi, ' ')}).then(function () {
+					if (metadata.trigger) {
 						return base.input();
+					} else {
+						return base.setMetadata(metadata);
 					}
 				});
 			}
@@ -508,7 +516,6 @@ var Components = {
 				load: {
 					get: function () {
 						// this looks at the Context.get and Context.get:force, separately.
-						base.data.lock = false;
 						if (base.data.reset) {
 							base.data.storage.dataset = {};
 							base.data.storage.subset = {};
@@ -519,7 +526,7 @@ var Components = {
 						// Load each target
 						return Promise.all(base.targets.map(function (target) {
 							return Promise.all([
-								Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query}}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
+								Context.get(target.resolvedPath, {options: {filter: target.filterRequest(base.data.query)}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
 
 								// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
 								// Also, only query if this query has never been queried before
@@ -532,7 +539,7 @@ var Components = {
 										}, 1000);
 									}).then(function (timeout) {
 										if (timeout) {
-											return Context.get(target.resolvedPath, {options: {filter: {'content__startswith': base.data.query}}, force: true}).then(target.process).then(base.data.load.append).then(base.data.display.main);
+											return Context.get(target.resolvedPath, {options: {filter: target.filterRequest(base.data.query)}, force: true}).then(target.process).then(base.data.load.append).then(base.data.display.main);
 										} else {
 											return Util.ep();
 										}
@@ -569,12 +576,35 @@ var Components = {
 							})
 						},
 						condition: function (datum) {
+
+							// Here, the lack of matching query and the global autocomplete mode can be overridden by base.data.autocompleteOverride.
+							// For the null query, the override only diplays everything if the query is still null, then is more specific when something is typed.
 							var conditions = [
 								(datum.rule === base.data.filter || base.data.filter === ''), // filter matches or no filter
-								datum.main.toLowerCase().indexOf(base.data.query.toLowerCase()) === 0, // lower case query match at beginning
-								(!base.autocomplete || (base.autocomplete && base.data.query !== '')), // autocomplete mode or no query
+
+								(
+									(
+										datum.main.toLowerCase().indexOf(base.data.query.toLowerCase()) === 0
+										&&
+										base.data.query.toLowerCase() !== ''
+									)
+									||
+									(
+										(base.data.autocompleteOverride || !base.autocomplete || false)
+										&&
+										base.data.query === ''
+									)
+								), // lower case query match at beginning
+
+								// TODO: THESE CONDITIONS NEED TO BE OVERHAULED
+
+								(!base.autocomplete || (base.autocomplete && base.data.query !== '') || (base.data.autocompleteOverride || false)), // autocomplete mode or no query
 								datum.id in base.data.storage.dataset, // datum is currently in dataset (prevent bleed over from change of dataset)
-							]
+							];
+							if (datum.main.contains('avail')) {
+								// console.log(base.data.query + 'a', datum.main, conditions);
+							}
+
 							return Util.ep(conditions.reduce(function (a,b) {
 								return a && b;
 							}));
@@ -665,15 +695,25 @@ var Components = {
 							return Util.ep();
 						},
 						setMetadata: function () {
-							var query = '';
-							var complete = '';
-							if (!base.data.query) {
+							var query = base.data.query; // query is set no matter the status of virtual
+
+							if (!base.data.storage.virtual.list.length) {
 								base.currentIndex = undefined;
+								return base.search.setMetadata({query: query, complete: '', type: ''});
 							} else {
-								query = base.data.query;
-								complete = (base.data.storage.virtual.list[base.currentIndex] || {}).main;
+
+								if (base.currentIndex >= base.data.storage.virtual.list.length) {
+									return base.control.setActive({index: 0}).then(function () {
+										var complete = (base.data.storage.virtual.list[base.currentIndex] || {}).main;
+										var type = (base.data.storage.virtual.list[base.currentIndex] || {}).rule;
+										return base.search.setMetadata({query: query, complete: complete, type: type});
+									});
+								} else {
+									var complete = (base.data.storage.virtual.list[base.currentIndex] || {}).main;
+									var type = (base.data.storage.virtual.list[base.currentIndex] || {}).rule;
+									return base.search.setMetadata({query: query, complete: complete, type: type});
+								}
 							}
-							return base.search.setMetadata({query: query, complete: complete});
 						},
 					},
 				},
@@ -706,7 +746,7 @@ var Components = {
 								return function () {
 									return base.unit({main: ''}, '', index).then(function (newListItem) {
 										base.data.storage.virtual.rendered.push(newListItem.id);
-										return newListItem.setAppearance({classes: {add: 'hidden'}}).then(function () {
+										return newListItem.hide().then(function () {
 											return base.list.components.wrapper.setChildren([newListItem]);
 										});
 									});
@@ -774,7 +814,7 @@ var Components = {
 					return base.control.update({query: '', filter: ''}).then(function () {
 						return base.search.clear();
 					}).then(function () {
-						return base.search.setMetadata({query: '', complete: ''});
+						return base.search.input();
 					});
 				},
 				update: function (data, defaults) {
@@ -793,8 +833,10 @@ var Components = {
 					base.data.filter = rule;
 					if (rule in base.data.storage.filters) {
 						base.data.limit = base.data.storage.filters[rule].limit !== 0 ? (base.data.storage.filters[rule].limit !== undefined ? base.data.storage.filters[rule].limit : base.data.limit) : undefined;
+						base.data.autocompleteOverride = base.data.storage.filters[rule].autocompleteOverride;
 					} else {
 						base.data.limit = base.defaultLimit;
+						base.data.autocompleteOverride = undefined;
 					}
 
 					// 1. update search
@@ -841,15 +883,10 @@ var Components = {
 							return UI.getComponent(base.data.storage.virtual.rendered[base.currentIndex]).then(function (activeListItem) {
 								base.active = activeListItem;
 								return base.active.activate().then(function () {
-									var datum = base.data.storage.virtual.list[base.currentIndex];
-									var complete = (datum || {}).main;
-									return base.control.setActive.final(datum, complete);
+									return base.data.display.render.setMetadata();
 								});
 							})
 						});
-					},
-					final: function (datum, complete) {
-						return base.search.setMetadata({complete: complete});
 					},
 				},
 				deactivate: function () {
@@ -1151,8 +1188,6 @@ var Components = {
 			});
 		});
 	},
-
-	// AUTOCOMPLETE
 
 	// A panel with a state structure and space for a content panel.
 	sidebar: function (id, args) {

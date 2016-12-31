@@ -12,8 +12,8 @@ class Token(models.Model):
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
-	type = models.CharField(max_length=255)
-	content = models.CharField(max_length=255)
+	type = models.CharField(max_length=255, default='')
+	content = models.CharField(max_length=255, default='')
 
 	### Methods
 	# data
@@ -23,16 +23,22 @@ class Token(models.Model):
 			'content': self.content,
 		}
 
+		if permission.is_worker and permission.check_client(self.dictionary.project.production_client):
+			if self.shortcuts.filter(role=permission.role).count():
+				data.update({
+					'shortcut': self.shortcuts.get(role=permission.role).data(path, permission),
+				})
+
 		return data
 
 class TokenInstance(models.Model):
 
 	### Connections
 	parent = models.ForeignKey('tr.Token', related_name='instances')
-	caption = models.ForeignKey('tr.CaptionInstance', related_name='tokens', null=True)
-	phrase = models.ForeignKey('tr.PhraseInstance', related_name='tokens', null=True)
+	phrase = models.ForeignKey('tr.Phrase', related_name='tokens')
 
 	### Properties
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	index = models.IntegerField(default=0)
 
 	### Methods
@@ -41,6 +47,7 @@ class TokenInstance(models.Model):
 		data = self.parent.data(path, permission)
 		data.update({
 			'index': str(self.index),
+			'content': self.parent.content,
 		})
 
 		return data
@@ -63,4 +70,10 @@ class TokenShortcut(models.Model):
 
 	# methods
 	def data(self, path, permission):
-		
+		data = {
+			'date_created': str(self.date_created),
+			'is_active': str(self.is_active),
+			'combo': self.combo,
+		}
+
+		return data

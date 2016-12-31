@@ -26,16 +26,14 @@ class TranscriptionToken(models.Model):
 
 	### Methods
 	def get_transcriptions(self):
-		if self.transcriptions.count() != self.transcription_limit and self.is_active:
+		if self.fragments.count() != self.transcription_limit and self.is_active:
 			for i in range(self.transcription_limit):
 				transcription = self.project.get_transcription()
 				if transcription is not None:
-					transcription.is_available = False
-					self.transcriptions.add(transcription)
-					self.save()
+					self.fragments.create(parent=transcription, index=i)
 
 	def update(self):
-		if self.transcriptions.filter(is_active=False) == self.transcription_limit:
+		if self.fragments.filter(is_reconciled=True) == self.transcription_limit:
 			self.is_active = False
 			self.save()
 
@@ -43,9 +41,14 @@ class TranscriptionToken(models.Model):
 		data = {}
 		if permission.check_user(self.role.user):
 			data.update({
-				'id': self.id,
 				'date_created': str(self.date_created),
+				'transcriptions': {transcription.id: transcription.data(path, permission) for transcription in self.transcriptions.filter(**path.get_filter('transcriptions'))},
 			})
+
+			if path.check('fragments'):
+				data.update({
+					'fragments': {fragment.id: fragment.data(path.down('fragments'), permission) for fragment in self.fragments.filter(**path.get_filter('fragments'))},
+				})
 
 		return data
 
@@ -60,8 +63,6 @@ class Transcription(models.Model):
 	project = models.ForeignKey('tr.Project', related_name='transcriptions')
 	grammar = models.ForeignKey('tr.Grammar', related_name='transcriptions')
 	batch = models.ForeignKey('tr.Batch', related_name='transcriptions')
-	caption = models.ForeignKey('tr.Caption', related_name='transcriptions', null=True)
-	token = models.ForeignKey('tr.TranscriptionToken', related_name='transcriptions', null=True)
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
@@ -69,6 +70,7 @@ class Transcription(models.Model):
 
 	# unique identifier
 	filename = models.CharField(max_length=255)
+	content = models.ForeignKey('tr.Phrase', related_name='transcriptions')
 
 	# requests and flags
 	is_active = models.BooleanField(default=True)
@@ -84,7 +86,6 @@ class Transcription(models.Model):
 		if path.is_blank:
 			data.update({
 				'batch': self.batch.id,
-				'caption': self.caption.content if self.caption else '',
 				'date_created': str(self.date_created),
 				'requests': str(self.requests),
 				'request_allowance': str(self.request_allowance),
@@ -95,11 +96,70 @@ class Transcription(models.Model):
 			data.update({
 				'utterance': self.utterance.data(),
 				'filename': self.filename,
+				'content': self.content.data(path, permission),
 			})
 
-		if path.check('captions') and (permission.is_moderator or permission.is_productionadmin):
+		if path.check('fragments') and (permission.is_moderator or permission.is_productionadmin):
 			data.update({
-				'captions': {caption.id: caption.data(path.down('captions'), permission) for caption in self.captions.filter(id__startswith=path.get_id())},
+				'fragments': {fragment.id: fragment.data(path.down('fragments'), permission) for fragment in self.fragments.filter(**path.get_filter('fragments'))},
+			})
+
+		if path.check('instances') and (permission.is_moderator or permission.is_productionadmin):
+			data.update({
+				'instances': {instance.id: instance.data(path.down('instances'), permission) for instance in self.instances.filter(**path.get_filter('instances'))},
+			})
+
+		return data
+
+	def update_availability(self):
+		self.is_available = self.fragments.filter(is_reconciled=True).count() > 0
+
+class TranscriptionFragment(models.Model):
+
+	### Connections
+	parent = models.ForeignKey('tr.Transcription', related_name='fragments')
+	token = models.ForeignKey('tr.TranscriptionToken', related_name='fragments')
+
+	### Properties
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	index = models.PositiveIntegerField(default=0)
+	date_created = models.DateTimeField(auto_now_add=True)
+	is_reconciled = models.BooleanField(default=False)
+
+	# methods
+	def data(self, path, permission):
+		data = {
+			'date_created': str(self.date_created),
+			'is_reconciled': str(self.is_reconciled),
+			'phrase': self.parent.content.data(path, permission),
+			'index': str(self.index),
+			'parent': self.parent.id,
+		}
+
+		return data
+
+class TranscriptionInstance(models.Model):
+
+	### Connections
+	parent = models.ForeignKey('tr.Transcription', related_name='instances')
+	fragment = models.OneToOneField('tr.TranscriptionFragment', related_name='transcription')
+	token = models.ForeignKey('tr.TranscriptionToken', related_name='transcriptions')
+	phrase = models.OneToOneField('tr.PhraseInstance', related_name='transcription')
+
+	### Properties
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	date_created = models.DateTimeField(auto_now_add=True)
+
+	# methods
+	def data(self, path, permission):
+		data = {
+			'date_created': str(self.date_created),
+			'fragment': self.fragment.id,
+		}
+
+		if True:
+			data.update({
+				'phrase': self.phrase.data(path, permission),
 			})
 
 		return data

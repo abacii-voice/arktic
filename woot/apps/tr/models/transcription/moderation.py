@@ -26,12 +26,11 @@ class ModerationToken(models.Model):
 
 	### Methods
 	def get_moderations(self):
-		if self.moderations.count() != self.moderation_limit and self.is_active:
+		if self.fragments.count() != self.moderation_limit and self.is_active:
 			for i in range(self.moderation_limit):
 				moderation = self.project.get_moderation()
 				if moderation is not None:
-					self.moderations.add(moderation)
-					self.save()
+					self.fragments.create(parent=moderation)
 
 	def update(self):
 		if self.moderations.filter(is_active=False) == self.moderation_limit:
@@ -42,7 +41,6 @@ class ModerationToken(models.Model):
 		data = {}
 		if permission.check_user(self.role.user):
 			data.update({
-				'id': self.id,
 				'date_created': str(self.date_created),
 			})
 
@@ -52,17 +50,15 @@ class Moderation(models.Model):
 
 	### Connections
 	project = models.ForeignKey('tr.Project', related_name='moderations')
-	caption = models.ForeignKey('tr.CaptionInstance', related_name='moderations')
-	moderator = models.ForeignKey('tr.Role', related_name='moderations')
-	token = models.ForeignKey('tr.ModerationToken', related_name='moderations', null=True)
+	transcription = models.ForeignKey('tr.TranscriptionInstance', related_name='moderations')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	date_created = models.DateTimeField(auto_now_add=True)
 	is_approved = models.BooleanField(default=True)
-	metadata = models.TextField(default='')
 	is_active = models.BooleanField(default=True)
 	is_available = models.BooleanField(default=True)
+	metadata = models.TextField(default='')
 
 	### Methods
 	# data
@@ -71,6 +67,45 @@ class Moderation(models.Model):
 			'date_created': str(self.date_created),
 			'is_approved': self.is_approved,
 			'metadata': self.metadata,
+		}
+
+		return data
+
+class ModerationFragment(models.Model):
+
+	### Connections
+	parent = models.ForeignKey('tr.Moderation', related_name='fragments')
+	token = models.ForeignKey('tr.ModerationToken', related_name='fragments')
+
+	### Properties
+	date_created = models.DateTimeField(auto_now_add=True)
+	is_reconciled = models.BooleanField(default=False)
+
+	# methods
+	def data(self, path, permission):
+		data = {
+			'date_created': str(self.date_created),
+			'is_reconciled': str(self.is_reconciled),
+		}
+
+		return data
+
+class ModerationInstance(models.Model):
+
+	### Connections
+	parent = models.ForeignKey('tr.Moderation', related_name='instances')
+	moderator = models.ForeignKey('tr.Role', related_name='moderations')
+	fragment = models.OneToOneField('tr.ModerationFragment', related_name='moderation')
+	token = models.ForeignKey('tr.ModerationToken', related_name='moderations')
+	phrase = models.OneToOneField('tr.PhraseInstance', related_name='moderation')
+
+	### Properties
+	date_created = models.DateTimeField(auto_now_add=True)
+
+	# methods
+	def data(self, path, permission):
+		data = {
+			'date_created': str(self.date_created),
 		}
 
 		return data
