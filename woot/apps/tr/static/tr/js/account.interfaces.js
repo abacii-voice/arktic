@@ -632,7 +632,6 @@ var AccountInterfaces = {
 
 			// CAPTION
 			caption.checks = [
-
 				// check if tag unit matches a valid tag
 				function () {
 					return Util.ep();
@@ -643,6 +642,9 @@ var AccountInterfaces = {
 					return Util.ep();
 				},
 			]
+			caption.export = function () {
+				//
+			}
 			caption.styles = function () {
 				// word
 				jss.set('#{id} .word'.format({id: caption.id}), {
@@ -760,7 +762,7 @@ var AccountInterfaces = {
 						}
 					}
 					unitBase.setType = function (type) {
-						type = (type || 'word');
+						type = (type || unitBase.unitType || 'word');
 						return unitBase.setAppearance({classes: {add: type, remove: (unitBase.unitType !== type ? unitBase.unitType : '')}}).then(function () {
 							unitBase.unitType = type;
 							return Util.ep();
@@ -862,7 +864,9 @@ var AccountInterfaces = {
 				if (caption.isFocussed) {
 					return caption.active.isCaretInPosition('end').then(function (inPosition) {
 						if (inPosition) {
-							event.preventDefault();
+							if (event) {
+								event.preventDefault();
+							}
 							if (caption.active.phrase.isComplete) {
 								return caption.next().then(function () {
 									return caption.active.focus('start');
@@ -885,7 +889,9 @@ var AccountInterfaces = {
 				if (caption.isFocussed) {
 					return caption.active.isCaretInPosition('start').then(function (inPosition) {
 						if (inPosition) {
-							event.preventDefault();
+							if (event) {
+								event.preventDefault();
+							}
 							return caption.previous().then(function () {
 								return caption.active.focus('end');
 							});
@@ -903,7 +909,10 @@ var AccountInterfaces = {
 						var noPhraseQuery = caption.active.phrase.query === '';
 						if (noPhraseQuery) {
 							// remove phrase
-							event.preventDefault(); // prevent the delete from happening after 'caption.previous'. It is only there to 'remove' the 'space'.
+							if (event) {
+								// prevent the delete from happening after 'caption.previous'. It is only there to 'remove' the 'space'.
+								event.preventDefault();
+							}
 							var phrase = caption.active.phrase;
 							if (phrase.index > 0) {
 								return caption.previous().then(function () {
