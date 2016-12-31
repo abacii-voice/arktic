@@ -525,6 +525,7 @@ var Components = {
 
 						// Load each target
 						return Promise.all(base.targets.map(function (target) {
+							target.queries = (target.queries || []);
 							return Promise.all([
 								Context.get(target.resolvedPath, {options: {filter: target.filterRequest(base.data.query)}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
 
@@ -579,35 +580,36 @@ var Components = {
 
 							// Here, the lack of matching query and the global autocomplete mode can be overridden by base.data.autocompleteOverride.
 							// For the null query, the override only diplays everything if the query is still null, then is more specific when something is typed.
-							var conditions = [
-								(datum.rule === base.data.filter || base.data.filter === ''), // filter matches or no filter
+							if (datum && datum.main) {
+								var conditions = [
+									(datum.rule === base.data.filter || base.data.filter === ''), // filter matches or no filter
 
-								(
 									(
-										datum.main.toLowerCase().indexOf(base.data.query.toLowerCase()) === 0
-										&&
-										base.data.query.toLowerCase() !== ''
-									)
-									||
-									(
-										(base.data.autocompleteOverride || !base.autocomplete || false)
-										&&
-										base.data.query === ''
-									)
-								), // lower case query match at beginning
+										(
+											datum.main.toLowerCase().indexOf(base.data.query.toLowerCase()) === 0
+											&&
+											base.data.query.toLowerCase() !== ''
+										)
+										||
+										(
+											(base.data.autocompleteOverride || !base.autocomplete || false)
+											&&
+											base.data.query === ''
+										)
+									), // lower case query match at beginning
 
-								// TODO: THESE CONDITIONS NEED TO BE OVERHAULED
+									// TODO: THESE CONDITIONS NEED TO BE OVERHAULED
 
-								(!base.autocomplete || (base.autocomplete && base.data.query !== '') || (base.data.autocompleteOverride || false)), // autocomplete mode or no query
-								datum.id in base.data.storage.dataset, // datum is currently in dataset (prevent bleed over from change of dataset)
-							];
-							if (datum.main.contains('avail')) {
-								// console.log(base.data.query + 'a', datum.main, conditions);
+									(!base.autocomplete || (base.autocomplete && base.data.query !== '') || (base.data.autocompleteOverride || false)), // autocomplete mode or no query
+									datum.id in base.data.storage.dataset, // datum is currently in dataset (prevent bleed over from change of dataset)
+								];
+
+								return Util.ep(conditions.reduce(function (a,b) {
+									return a && b;
+								}));
+							} else {
+								return Util.ep(false);
 							}
-
-							return Util.ep(conditions.reduce(function (a,b) {
-								return a && b;
-							}));
 						},
 						out: function () {
 							return Promise.all(base.data.storage.virtual.list.map(function (datum, index) {
@@ -1067,7 +1069,7 @@ var Components = {
 				search.isFocussed = false;
 				base.isFocussed = true;
 				return search.getContent().then(function (content) {
-					return tail.setAppearance({html: (content || search.placeholder)});
+					return search.components.tail.setAppearance({html: (content || search.placeholder)});
 				});
 			}
 			search.input = function () {
