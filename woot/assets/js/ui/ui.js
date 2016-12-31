@@ -868,29 +868,13 @@ var Active = {
 // PERMISSION
 // Works the same way as active but stores only the permission information needed to specify the user, role, and client.
 var Permission = {
-	// stores relevant permission details
-	permission: '',
-	get: function () {
-		return new Promise(function(resolve, reject) {
-			resolve(Permission.permission);
-		});
-	},
-
-	set: function (id) {
-		return new Promise(function(resolve, reject) {
-			Permission.permission = id;
-			resolve();
-		});
-	},
-
 	// appends permission details to an object to be passed as data
 	permit: function (data) {
-		return new Promise(function (resolve, reject) {
-			// set
+		return Active.get('role').then(function (id) {
 			data = data !== undefined ? data : {};
-			data.permission = Permission.permission;
-			resolve(JSON.stringify(data));
-		})
+			data.permission = id;
+			return JSON.stringify(data);
+		});
 	},
 }
 
