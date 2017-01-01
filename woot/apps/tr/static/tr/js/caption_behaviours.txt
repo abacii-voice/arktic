@@ -1,0 +1,33 @@
+Things you can do while any word in the caption is focussed:
+
+1. Click
+	a. another token?
+	b. same token?
+
+2. Type letters - sends query to autocomplete
+3. Type numbers - selects item from autocomplete, but does not complete
+4. Enter
+	a. in the middle of a token? - goes to end of token
+	b. at the end of a token?
+		i. complete?
+			1. end of phrase? - starts new phrase
+			2. middle of phrase? - nothing
+		ii. incomplete? - completes token
+
+5. Backspace
+	a. empty token?
+		i. first token of first phrase in caption? - nothing
+		ii. not first phrase? - removes token and goes to previous
+	b. not empty? - normal delete
+
+6. alt+Backspace - does not check if token is empty: deletes entire token
+7. Right arrow
+	a. end of token? - goes to next token
+	b. not? - normal right arrow
+
+8. alt+Right arrow - does not check end of token: focusses end of next token
+9. Left arrow
+	a. beginning of token? - focusses end of next token
+	b. not? - normal left arrow
+
+10. alt+Left arrow - does not check beginning of token: focusses end of previous token
