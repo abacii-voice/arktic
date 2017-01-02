@@ -1,5 +1,5 @@
 UI.app('hook', [
-	AccountInterfaces.unifiedInterface('unified-account-interface', {
+	AccountApplication('unified-account-interface', {
 		interface: {
 			size: 50,
 			margin: 10,

@@ -1,3 +1,6 @@
+// TODO
+// 1. set active is not called to reset to zero when a new query is entered.
+
 // initialise
 var Components = (Components || {});
 

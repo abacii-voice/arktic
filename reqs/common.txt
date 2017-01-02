@@ -1,9 +1,12 @@
 # Django
-django>=1.9
+django>=1.10
 
 # Python base libraries commonly used
 scipy
 pandas
+
+# js
+django_compressor
 
 # Postgres
 psycopg2
