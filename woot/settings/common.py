@@ -248,7 +248,7 @@ DATABASES = {}
 ########## APP CONFIGURATION
 THIRD_PARTY_APPS = (
 	# Asynchronous task scheduling
-	'djcelery',
+	# 'djcelery',
 
 	# Static compression
 	'compressor',
@@ -302,32 +302,32 @@ LOGGING = {
 
 
 ########## CELERY CONFIGURATION
-from djcelery import setup_loader
-
-CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
-
-# : Only add pickle to this list if your broker is secured
-# : from unwanted access (see userguide/security.html)
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-
-# See: http://celery.readthedocs.org/en/latest/configuration.html#celery-task-result-expires
-CELERY_TASK_RESULT_EXPIRES = timedelta(minutes=30)
-
-# See: http://docs.celeryproject.org/en/master/configuration.html#std:setting-CELERY_CHORD_PROPAGATES
-CELERY_CHORD_PROPAGATES = True
-
-# See: http://celery.github.com/celery/django/
-setup_loader()
-
-# rabbitmq: https://www.rabbitmq.com/man/rabbitmqctl.1.man.html
-# celery: https://zapier.com/blog/async-celery-example-why-and-how/
-########## END CELERY CONFIGURATION
-
-
-########## COMPRESSOR CONFIGURATION
-# usage: http://django-compressor.readthedocs.io/en/latest/usage/
-COMPRESS_ENABLED = True
+# from djcelery import setup_loader
+#
+# CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
+#
+# # : Only add pickle to this list if your broker is secured
+# # : from unwanted access (see userguide/security.html)
+# CELERY_ACCEPT_CONTENT = ['json']
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'
+#
+# # See: http://celery.readthedocs.org/en/latest/configuration.html#celery-task-result-expires
+# CELERY_TASK_RESULT_EXPIRES = timedelta(minutes=30)
+#
+# # See: http://docs.celeryproject.org/en/master/configuration.html#std:setting-CELERY_CHORD_PROPAGATES
+# CELERY_CHORD_PROPAGATES = True
+#
+# # See: http://celery.github.com/celery/django/
+# setup_loader()
+#
+# # rabbitmq: https://www.rabbitmq.com/man/rabbitmqctl.1.man.html
+# # celery: https://zapier.com/blog/async-celery-example-why-and-how/
+# ########## END CELERY CONFIGURATION
+#
+#
+# ########## COMPRESSOR CONFIGURATION
+# # usage: http://django-compressor.readthedocs.io/en/latest/usage/
+# COMPRESS_ENABLED = True
 
 ########## END COMPRESSOR CONFIGURATION
