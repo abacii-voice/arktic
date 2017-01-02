@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load compress %}
 
 {# LOAD JS #}
 {% block head-js %}
@@ -39,21 +40,40 @@
 <script src='{% static "js/util/jzip.js" %}'></script>
 
 <!-- general utility stuff comes before local -->
+{% compress js %}
 <script src='{% static "js/util/util.js" %}'></script>
 <script src='{% static "js/util/mods.js" %}'></script>
 <script src='{% static "js/util/shortcuts.js" %}'></script>
 <script src='{% static "js/util/csrf.js" %}'></script>
+{% endcompress %}
 
 <!-- UI -->
 <script src='{% static "js/ui/ui.js" %}'></script>
 <script src='{% static "js/ui/shortcuts.js" %}'></script>
-<script src='{% static "js/ui/components.js" %}'></script>
-{% endblock %}
 
-{% block post_main_script %}
+{% compress js %}
+<script src='{% static "js/ui/components/components.contentPanel.js" %}'></script>
+<script src='{% static "js/ui/components/components.filterButton.js" %}'></script>
+<script src='{% static "js/ui/components/components.search.js" %}'></script>
+<script src='{% static "js/ui/components/components.searchableList.js" %}'></script>
+<script src='{% static "js/ui/components/components.sidebar.js" %}'></script>
+
 <!-- specific UI -->
-<script src="{% static 'tr/js/account.components.js' %}"></script>
-<script src="{% static 'tr/js/account.interfaces.js' %}"></script>
+<script src="{% static 'tr/js/account.components/account.components.audio.js' %}"></script>
+<script src="{% static 'tr/js/account.components/account.components.captionField.js' %}"></script>
+<script src="{% static 'tr/js/account.components/account.components.counter.js' %}"></script>
+<script src="{% static 'tr/js/account.components/account.components.roleDisplayButton.js' %}"></script>
+
+<script src="{% static 'tr/js/account.interfaces/account.interfaces.adminDashboard.js' %}"></script>
+<script src="{% static 'tr/js/account.interfaces/account.interfaces.controlInterface.js' %}"></script>
+<script src="{% static 'tr/js/account.interfaces/account.interfaces.moderationInterface.js' %}"></script>
+<script src="{% static 'tr/js/account.interfaces/account.interfaces.moderatorDashboard.js' %}"></script>
+<script src="{% static 'tr/js/account.interfaces/account.interfaces.projectInterface.js' %}"></script>
+<script src="{% static 'tr/js/account.interfaces/account.interfaces.transcriptionInterface.js' %}"></script>
+<script src="{% static 'tr/js/account.interfaces/account.interfaces.userDashboard.js' %}"></script>
+
+<script src="{% static 'tr/js/account.application.js' %}"></script>
 <script src="{% static 'tr/js/account.js' %}"></script>
-<script src="{% static 'tr/js/account.test.js' %}"></script>
+{% endcompress %}
+
 {% endblock %}
