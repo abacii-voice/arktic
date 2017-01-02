@@ -126,6 +126,9 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
 	'django.contrib.staticfiles.finders.FileSystemFinder',
 	'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+
+	# Compressor
+	'compressor.finders.CompressorFinder',
 )
 ########## END STATIC FILE CONFIGURATION
 
@@ -246,6 +249,9 @@ DATABASES = {}
 THIRD_PARTY_APPS = (
 	# Asynchronous task scheduling
 	'djcelery',
+
+	# Static compression
+	'compressor',
 )
 
 LOCAL_APPS = (
@@ -318,3 +324,10 @@ setup_loader()
 # rabbitmq: https://www.rabbitmq.com/man/rabbitmqctl.1.man.html
 # celery: https://zapier.com/blog/async-celery-example-why-and-how/
 ########## END CELERY CONFIGURATION
+
+
+########## COMPRESSOR CONFIGURATION
+# usage: http://django-compressor.readthedocs.io/en/latest/usage/
+COMPRESS_ENABLED = True
+
+########## END COMPRESSOR CONFIGURATION
