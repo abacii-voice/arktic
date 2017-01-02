@@ -28,29 +28,6 @@ class AccountSPAView(View):
 		if user.is_authenticated():
 
 			# METADATA
-			# several things about the user must be known in order to continue.
-			# 1. Is the user a {superadmin, admin, moderator, or user}?
-			#   a. if superadmin, which user profile?
-			# 2. Is the user approved for activity?
-			# 3. How many clients does the user work for?
-			# 4. How many roles does the user have with those clients?
-			# need a dictionary like this:
-			# {
-			# 	'client1':{
-			# 		'admin':{
-			# 			'is_approved':True,
-			# 			'is_active':True,
-			# 		},
-			# 		'worker':{
-			# 			'is_approved':True,
-			# 			'is_active':True,
-			# 		},
-			# 	},
-			# }
-
-			# PSYCH! The decision about the user permissions isn't even made here! It's made by the template by
-			# simply adding or omitting components server side. What comes across in the code will
-			# just not have parts of the interface that do not pertain to the user.
 			return render(request, 'tr/account.html', {'user': user})
 
 		else:
