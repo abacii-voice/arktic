@@ -1,3 +1,12 @@
+// TODO:
+// Audio changes:
+// 1. Change animation to be only on when mouseover happens.
+// 2. The rest of the time, update using a simple timed loop.
+// 		Maybe cut into bigger chunks with lines between like SoundCloud.
+
+// 3. Needs to have a way of waiting for the request and only changing if there is one available.
+// 		Or have a pop-up that informs the user of this predicament.
+
 // initialise
 var AccountComponents = (AccountComponents || {});
 
@@ -9,7 +18,7 @@ AccountComponents.audio = function (id, args) {
 	// Parts:
 	// 1. Play button
 	// 2. Audio track
-	
+
 	// components
 	return Promise.all([
 		// create the base component and add the children from above.
