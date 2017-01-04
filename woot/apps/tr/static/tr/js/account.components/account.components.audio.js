@@ -7,6 +7,14 @@
 // 3. Needs to have a way of waiting for the request and only changing if there is one available.
 // 		Or have a pop-up that informs the user of this predicament.
 
+// Basic plan:
+// 1. Initial load should draw once.
+// 2. Play should start a timer that updates at regular intervals.
+// 3. Stop should cancel the timer.
+// 4. Have a way to reset the position.
+// 5. 'mouseover' should trigger the animation loop.
+// 6. 'mouseout' should cancel the loop.
+
 // initialise
 var AccountComponents = (AccountComponents || {});
 
@@ -146,6 +154,8 @@ AccountComponents.audio = function (id, args) {
 				return _this.buffer[key].is_available;
 			}).length;
 			if (remaining === 0) {
+				// TODO: if this result is negative, there should be an info message.
+
 				return _this.load().then(function () {
 					return _this.pre.main();
 				});
@@ -238,6 +248,9 @@ AccountComponents.audio = function (id, args) {
 				}));
 			},
 		}
+
+		// Play needs to start a timer that ticks up in regular divisions of the audio track
+
 		audioTrack.play = function (position, duration) {
 			var _this = audioTrack;
 			return _this.current().then(function (current) {
@@ -363,7 +376,9 @@ AccountComponents.audio = function (id, args) {
 		}
 		audioTrackCanvas.draw = function () {
 			var _this = audioTrackCanvas;
-			requestAnimationFrame(_this.draw);
+			if (_this.is_running) {
+				requestAnimationFrame(_this.draw);
+			}
 			_this.canvas.height = parseInt(audioTrack.model().css('height'));
 			_this.canvas.width = parseInt(audioTrack.model().css('width'));
 			_this.time = (audioTrack.controller.context.currentTime - _this.startTime + _this.position) || 0;
@@ -454,9 +469,7 @@ AccountComponents.audio = function (id, args) {
 			playButton.setBindings({
 				'mousedown': function (_this) {
 					// The play button will always return to the anchor and play from there.
-					return audioTrack.next().catch(function (error) {
-						console.log(error);
-					});
+					return audioTrack.next();
 				},
 
 				// display tooltip in track info field
