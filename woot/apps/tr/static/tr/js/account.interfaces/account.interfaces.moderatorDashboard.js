@@ -1,5 +1,5 @@
 var AccountInterfaces = (AccountInterfaces || {});
-AccountInterfaces.controlInterface = function (id, args) {
+AccountInterfaces.moderatorDashboard = function (id, args) {
 	return Promise.all([
 		// base
 		UI.createComponent('{id}-base'.format({id: id}), {
