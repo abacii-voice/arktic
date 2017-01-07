@@ -16,26 +16,17 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 		// control panel
 		UI.createComponent('tb-button-panel', {
-
+			appearance: {
+				style: {
+					'height': '100%',
+					'width': '70px',
+					'float': 'left',
+				},
+			},
 		}),
 		UI.createComponent('tb-bp-confirm-button'),
 		UI.createComponent('tb-bp-previous-button'),
 		UI.createComponent('tb-bp-next-button'),
-
-		// counter panel
-		UI.createComponent('tb-counter-panel', {
-
-		}),
-		AccountComponents.counter('tb-cp-counter', {
-			appearance: {
-				style: {
-					'width': '100px',
-					'height': '100%',
-					'float': 'left',
-					'margin-right': '{}px'.format(args.interface.margin),
-				}
-			},
-		}),
 
 		// audio caption panel
 		UI.createComponent('tb-audio-caption-panel', {
@@ -97,8 +88,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			confirmButton,
 			previousButton,
 			nextButton,
-			counterPanel,
-			counter,
 			audioCaptionPanel,
 			audio,
 			caption,
@@ -1149,10 +1138,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 		]).then(function () {
 			return base.setChildren([
-				buttonPanel,
-				counter,
-				audioCaptionPanel,
-				autocompletePanel,
+				// buttonPanel,
+				// audioCaptionPanel,
+				// autocompletePanel,
 			]);
 		}).then(function () {
 			return base;
