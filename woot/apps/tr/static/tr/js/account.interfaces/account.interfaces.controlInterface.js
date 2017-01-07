@@ -60,7 +60,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 			position: {
 				main: {
 					on: '50px',
-					off: '-300px',
+					off: '300px',
 				},
 				back: {
 					on: '0px',
