@@ -222,15 +222,16 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		}
 		audio.components.track.pre.current = function () {
 			var _this = audio.components.track;
+			var canvas = audio.components.canvas;
 			// get current operation
 			return _this.current().then(function (current) {
-				return new Promise(function(resolve, reject) {
-					audio.components.canvas.data = current.data;
-					audio.components.canvas.duration = current.data.duration;
-					resolve();
+				canvas.data = current.data;
+				canvas.duration = current.data.duration;
+
+				// draw data
+				return canvas.start().then(function () {
+					return canvas.stop();
 				}).then(function () {
-					// load caption into caption field
-					// TRIGGER CAPTION
 					return caption.control.input.newCaption(current);
 				});
 			});
@@ -1076,7 +1077,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				states: {
 					'transcription-state': {
 						preFn: function (_this) {
-							_this.canvas.start();
 							return _this.update();
 						},
 					},
