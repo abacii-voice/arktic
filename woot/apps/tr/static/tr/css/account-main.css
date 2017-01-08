@@ -79,7 +79,7 @@ Buttons
 }
 
 .button:active {
-	color: #eee;
+	color: #ccc;
 	background-color: transparent;
 }
 
@@ -89,12 +89,12 @@ Buttons
 }
 
 .button:active:focus {
-	color: #eee;
+	color: #ccc;
 	background-color: transparent;
 }
 
 .button:active:hover {
-	color: #eee;
+	color: #ccc;
 	background-color: transparent;
 	-webkit-box-shadow: none;
 	box-shadow: none;

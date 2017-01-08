@@ -60,7 +60,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 			position: {
 				main: {
 					on: '50px',
-					off: '300px',
+					off: '-300px',
 				},
 				back: {
 					on: '0px',
@@ -214,7 +214,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 					template: UI.template('span', 'ie'),
 					appearance: {
 						style: {
-							'color': '#eee',
+							'color': '#ccc',
 							'display': 'inline-block',
 							'position': 'absolute',
 						},
@@ -360,7 +360,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 					template: UI.template('span', 'ie'),
 					appearance: {
 						style: {
-							'color': '#eee',
+							'color': '#ccc',
 							'display': 'inline-block',
 							'position': 'absolute',
 						},
