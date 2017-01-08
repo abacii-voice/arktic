@@ -8,17 +8,30 @@ var UI = {
 	// changeState
 	changeState: function (stateName, trigger) {
 		UI.globalState = stateName;
-		var i;
 		var matchingStates = UI.states.filter(function (state) {
 			return state.name === stateName;
 		});
-		for (i=0; i<matchingStates.length; i++) {
-			(function (i) {
-				setTimeout(function () {
-					matchingStates[i].change();
-				}, 0);
-			})(i);
-		}
+		return Promise.all(matchingStates.filter(function (state) {
+			return state.preFn !== undefined;
+		}).map(function (state) {
+			console.log(state.component.id);
+			return state.preFn(state.component);
+		})).then(function () {
+			return Promise.all(matchingStates.map(function (state) {
+				return state.component.setAppearance({
+					style: state.style,
+					classes: state.classes,
+					html: state.html,
+				});
+			}));
+		}).then(function () {
+			return Promise.all(matchingStates.filter(function (state) {
+				return state.fn !== undefined;
+			}).map(function (state) {
+				console.log(state.component.id);
+				return state.fn(state.component);
+			}));
+		});
 	},
 
 	// COMPONENT
