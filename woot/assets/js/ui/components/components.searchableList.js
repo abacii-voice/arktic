@@ -353,12 +353,18 @@ Components.searchableList = function (id, args) {
 			// global control
 			setup: {
 				main: function () {
-					return Promise.all([
-						base.control.setup.resolvePaths(),
-						base.control.setup.renderUntilDefaultLimit(),
-						base.control.setup.extractFilters(),
-					]).then(function () {
-						return base.control.start();
+					return base.control.setup.resolvePaths().then(function () {
+						if (!base.data.isSetup) {
+							return Promise.all([
+								base.control.setup.renderUntilDefaultLimit(),
+								base.control.setup.extractFilters(),
+							]).then(function () {
+								base.data.isSetup = true;
+								return base.control.start();
+							});
+						} else {
+							return base.control.reset();
+						}
 					});
 				},
 				resolvePaths: function () {
