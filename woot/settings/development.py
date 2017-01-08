@@ -97,6 +97,7 @@ MIDDLEWARE_CLASSES += (
 )
 
 DEBUG_TOOLBAR_CONFIG = {
-	'JQUERY_URL': '/static/js/jquery/2.2.2/jquery.min.js'
+	'JQUERY_URL': '/static/js/jquery/2.2.2/jquery.min.js',
+	'SHOW_TOOLBAR_CALLBACK': lambda r: False,  # disables it
 }
 ########## END TOOLBAR CONFIGURATION
