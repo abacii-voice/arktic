@@ -7,14 +7,12 @@ var UI = {
 
 	// changeState
 	changeState: function (stateName, trigger) {
-		return new Promise(function(resolve, reject) {
-			UI.globalState = stateName;
-			resolve();
-		}).then(function () {
-			return Promise.all(UI.states.map(function (state) {
-				return state.change();
-			}));
-		});
+		UI.globalState = stateName;
+		return Promise.all(UI.states.filter(function (state) {
+			return state.name === stateName;
+		}).map(function (state) {
+			return state.change();
+		}));
 	},
 
 	// COMPONENT
@@ -484,7 +482,7 @@ var UI = {
 			});
 		}
 		this.model = function (single) {
-			if (single !== undefined && single) {
+			if (single) {
 				return $('#{id}'.format({id: this.id}))[0];
 			} else {
 				return $('#{id}'.format({id: this.id}));
@@ -535,6 +533,11 @@ var UI = {
 		this.changeState = function (state) {
 			var _this = this;
 
+			// run fn
+			setTimeout(function () {
+				(state.fn || Util.ep)(_this);
+			}, 300);
+
 			// 1. Run preFn
 			return (state.preFn || Util.ep)(_this).then(function () {
 				// 2. Run appearance
@@ -543,9 +546,6 @@ var UI = {
 					style: state.style,
 					html: state.html,
 				});
-			}).then(function () {
-				// 3. Run fn
-				return (state.fn || Util.ep)(_this);
 			});
 		}
 

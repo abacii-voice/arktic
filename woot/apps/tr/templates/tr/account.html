@@ -14,12 +14,7 @@
 {% endblock %}
 
 {# NAV #}
-{% block nav_home_redirect %}
-	<a href='/account/' class='nav-link'>Arktic</a>
-{% endblock %}
-{% block nav_left %}{% endblock %}
-{% block nav_right %}
-<p>Signed in as {{ user.email }}, <a href='/logout/' class='nav-link'>logout</a></p>
+{% block nav %}
 {% endblock %}
 
 {# CONTENT #}
@@ -27,7 +22,6 @@
 {% block content %}
 
 {# UI hook #}
-<div style='position: fixed; top: 50px; left: 0px; height: 10px; width: 1024px; border: solid 1px white;'></div>
 <div id='hook'></div>
 {% endblock %}
 
