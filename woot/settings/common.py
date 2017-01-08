@@ -61,7 +61,7 @@ def get_access():
 
 ########## DEBUG CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = True
+DEBUG = False
 ########## END DEBUG CONFIGURATION
 
 
