@@ -1,19 +1,3 @@
-// TODO:
-// Audio changes:
-// 1. Change animation to be only on when mouseover happens.
-// 2. The rest of the time, update using a simple timed loop.
-// 		Maybe cut into bigger chunks with lines between like SoundCloud.
-
-// 3. Needs to have a way of waiting for the request and only changing if there is one available.
-// 		Or have a pop-up that informs the user of this predicament.
-
-// Basic plan:
-// 1. Initial load should draw once.
-// 2. Play should start a timer that updates at regular intervals.
-// 3. Stop should cancel the timer.
-// 4. Have a way to reset the position.
-// 5. 'mouseover' should trigger the animation loop.
-// 6. 'mouseout' should cancel the loop.
 
 // initialise
 var AccountComponents = (AccountComponents || {});
