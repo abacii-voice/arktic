@@ -480,15 +480,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 						preFn: function (_this) {
 							return _this.control.setup.main();
 						},
-						fn: function () {
-							return clientList.search.clear();
-						},
 					},
-					'role-state': {
-						preFn: function (_this) {
-							return _this.control.reset();
-						}
-					}
 				},
 			}),
 			clientList.setTitle({text: 'Clients', centre: true}),
@@ -513,20 +505,10 @@ AccountInterfaces.controlInterface = function (id, args) {
 			]),
 			roleList.setState({
 				states: {
-					'client-state': {
-						preFn: function (_this) {
-							return _this.control.reset();
-						}
-					},
 					'role-state': {
 						preFn: function (_this) {
 							return _this.control.setup.main();
 						},
-					},
-					'control-state': {
-						preFn: function (_this) {
-							return _this.control.reset();
-						}
 					},
 				}
 			}),
