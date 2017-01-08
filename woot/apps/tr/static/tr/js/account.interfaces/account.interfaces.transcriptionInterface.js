@@ -1065,7 +1065,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			audio.components.track.setState({
 				states: {
 					'transcription-state': {
-						preFn: function (_this) {
+						fn: function (_this) {
 							return _this.update();
 						},
 					},

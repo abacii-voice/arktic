@@ -8,30 +8,11 @@ var UI = {
 	// changeState
 	changeState: function (stateName, trigger) {
 		UI.globalState = stateName;
-		var matchingStates = UI.states.filter(function (state) {
+		return Promise.all(UI.states.filter(function (state) {
 			return state.name === stateName;
-		});
-		return Promise.all(matchingStates.filter(function (state) {
-			return state.preFn !== undefined;
 		}).map(function (state) {
-			console.log(state.component.id);
-			return state.preFn(state.component);
-		})).then(function () {
-			return Promise.all(matchingStates.map(function (state) {
-				return state.component.setAppearance({
-					style: state.style,
-					classes: state.classes,
-					html: state.html,
-				});
-			}));
-		}).then(function () {
-			return Promise.all(matchingStates.filter(function (state) {
-				return state.fn !== undefined;
-			}).map(function (state) {
-				console.log(state.component.id);
-				return state.fn(state.component);
-			}));
-		});
+			return state.change();
+		}));
 	},
 
 	// COMPONENT
@@ -555,7 +536,7 @@ var UI = {
 			// run fn
 			setTimeout(function () {
 				(state.fn || Util.ep)(_this);
-			}, 0);
+			}, 300);
 
 			// 1. Run preFn
 			return (state.preFn || Util.ep)(_this).then(function () {
