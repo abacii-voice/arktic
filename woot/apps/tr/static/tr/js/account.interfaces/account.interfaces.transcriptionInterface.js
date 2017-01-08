@@ -441,7 +441,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					template: UI.template('span', 'ie'),
 					appearance: {
 						style: {
-							'color': '#eee',
+							'color': '#ccc',
 							'display': 'inline-block',
 							'position': 'absolute',
 						},
@@ -641,7 +641,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				'color': '#ccc',
 			});
 			jss.set('#{id} .word.active'.format({id: caption.id}), {
-				'color': '#eee',
+				'color': '#ccc',
 			});
 
 			// tag
@@ -657,7 +657,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				'color': '#ccc',
 			});
 			jss.set('#{id} .phrase.active'.format({id: caption.id}), {
-				'color': '#eee',
+				'color': '#ccc',
 			});
 
 			// ghost
@@ -1065,7 +1065,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			audio.components.track.setState({
 				states: {
 					'transcription-state': {
-						preFn: function (_this) {
+						fn: function (_this) {
 							return _this.update();
 						},
 					},
