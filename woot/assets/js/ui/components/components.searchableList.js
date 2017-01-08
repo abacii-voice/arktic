@@ -153,7 +153,6 @@ Components.searchableList = function (id, args) {
 					// Load each target
 					return Promise.all(base.targets.map(function (target) {
 						target.queries = (target.queries || []);
-						console.log(target);
 						return Promise.all([
 							Context.get((target.resolvedPath || target.path), {options: {filter: target.filterRequest(base.data.query)}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
 
@@ -178,7 +177,6 @@ Components.searchableList = function (id, args) {
 					}));
 				},
 				append: function (data) {
-					// console.log(base.id, base.data.storage.dataset);
 					// Add to dataset. Nothing is ever removed.
 					return Promise.all(data.map(function (datum) {
 						return new Promise(function(resolve, reject) {
