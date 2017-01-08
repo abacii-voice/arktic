@@ -364,7 +364,7 @@ Components.searchableList = function (id, args) {
 				resolvePaths: function () {
 					return Promise.all(base.targets.map(function (target) {
 						return target.path().then(function (path) {
-							target.resolvedPath = path; // this can be recalculated upon stopping and restarting.
+							target.resolvedPath = path; // this is recalculated every time
 							target.queries = [];
 						});
 					}));
