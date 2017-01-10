@@ -460,7 +460,23 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					template: UI.template('div', 'ie button base'),
 					appearance: {
 						classes: [datum.rule],
+						style: {
+							'height': 'auto',
+						},
 					}
+				}),
+
+				// main container
+				UI.createComponent('{base}-main-container'.format({base: base}), {
+					template: UI.template('div', 'ie'),
+					appearance: {
+						style: {
+							'left': '0px',
+							'padding-top': '11px',
+							'padding-bottom': '5px',
+							'width': 'calc(100% - 15px)'
+						},
+					},
 				}),
 
 				// main wrapper
@@ -469,8 +485,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					appearance: {
 						style: {
 							'left': '0px',
-							'width': 'calc(100% - 15px)',
-							'padding-top': '11px',
+							'display': 'inline-block',
 						},
 					},
 				}),
@@ -492,6 +507,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					appearance: {
 						style: {
 							'display': 'inline-block',
+							'max-width': '100%',
 						},
 						html: datum.main,
 					},
@@ -499,11 +515,12 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 				// index
 				UI.createComponent('{base}-index'.format({base: base}), {
-					template: UI.template('div', 'ie abs centred-vertically'),
+					template: UI.template('div', 'ie abs'),
 					appearance: {
 						style: {
 							'width': '10px',
 							'right': '5px',
+							'top': '11px',
 						},
 						html: index,
 					},
@@ -512,6 +529,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			]).then(function (unitComponents) {
 				var [
 					unitBase,
+					unitMainContainer,
 					unitMainWrapper,
 					unitMainHead,
 					unitMainTail,
@@ -561,9 +579,12 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						unitMainHead,
 						unitMainTail,
 					]),
+					unitMainContainer.setChildren([
+						unitMainWrapper
+					]),
 				]).then(function () {
 					return unitBase.setChildren([
-						unitMainWrapper,
+						unitMainContainer,
 						unitIndex,
 					]);
 				}).then(function () {
@@ -870,7 +891,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						}
 						return Promise.all([
 							unitBase.deactivate(),
-							autocomplete.control.reset(),
+							// autocomplete.control.reset(),
 						]);
 					} else {
 						return Util.ep();
