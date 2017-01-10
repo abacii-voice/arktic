@@ -1,21 +1,80 @@
 var AccountInterfaces = (AccountInterfaces || {});
 AccountInterfaces.transcriptionInterface = function (id, args) {
+
+	var autocompleteWidth = '300px';
 	return Promise.all([
+
 		// base
+		// contains:
+		// 1. main panel
+		// 2. autocomplete panel
 		UI.createComponent('transcription-base', {
 			template: UI.template('div', 'ie abs'),
 			appearance: {
 				style: {
-					'height': '70%',
+					'height': '100%',
 					'left': '60px',
-					'width': 'calc(100% - 70px)',
+					'width': 'calc(100% - 60px)',
 				},
 				classes: ['centred-vertically'],
 			},
 		}),
 
-		// control panel
-		UI.createComponent('tb-button-panel', {
+		// main panel
+		// contains:
+		// 1. counter
+		// 2. audio
+		// 3. caption
+		// 4. flags
+		// 5. button panel
+		UI.createComponent('tb-1-main-panel', {
+			template: UI.template('div', 'ie'),
+			appearance: {
+				style: {
+					'height': '100%',
+					'left': '0px',
+					'width': 'calc(100% - {width})'.format({width: autocompleteWidth}),
+					'float': 'left',
+				},
+			},
+		}),
+
+		// counter
+		AccountComponents.counter('tb-1-mp-1-counter', {
+			appearance: {
+				style: {
+					'height': '120px',
+					'width': '200px',
+				},
+			},
+		}),
+
+		// audio
+		AccountComponents.audio('tb-1-mp-2-audio', {
+			appearance: {
+				style: {
+					'height': '60px',
+					'width': '400px',
+				},
+			},
+		}),
+
+		// caption
+		AccountComponents.captionField('tb-1-mp-3-caption', {
+			appearance: {
+				style: {
+					'height': '200px',
+					'width': '500px',
+					'border': '1px solid #888',
+				},
+			},
+		}),
+
+		// button panel
+		// contains:
+		// 1. previous button
+		// 2. next/confirm button
+		UI.createComponent('tb-1-mp-4-button-panel', {
 			appearance: {
 				style: {
 					'height': '100%',
@@ -24,53 +83,30 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				},
 			},
 		}),
-		UI.createComponent('tb-bp-confirm-button'),
-		UI.createComponent('tb-bp-previous-button'),
-		UI.createComponent('tb-bp-next-button'),
 
-		// audio caption panel
-		UI.createComponent('tb-audio-caption-panel', {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'width': '400px',
-					'height': '100%',
-					'float': 'left',
-					'margin-right': '{}px'.format(args.interface.margin),
-				},
-			},
-		}),
-		AccountComponents.audio('tb-cp-audio', {
-			appearance: {
-				style: {
-					'height': '60px',
-				},
-			},
-		}),
+		// previous button
+		UI.createComponent('tb-1-mp-4-bp-1-previous-button'),
 
-		AccountComponents.captionField('tb-cp-caption', {
-			appearance: {
-				style: {
-					'height': '400px',
-					'width': '100%',
-					'border': '1px solid #ccc',
-				},
-			},
-		}),
+		// next/confirm button
+		UI.createComponent('tb-1-mp-4-bp-2-next-confirm-button'),
 
 		// autocomplete panel
-		UI.createComponent('tb-autocomplete-panel', {
+		// contains:
+		// 1. autocomplete
+		UI.createComponent('tb-2-autocomplete-panel', {
 			template: UI.template('div', 'ie'),
 			appearance: {
 				style: {
-					'width': '400px',
 					'height': '100%',
+					'width': autocompleteWidth,
 					'float': 'left',
-					'margin-right': '{}px'.format(args.interface.margin),
 				},
+				classes: ['centred-vertically'],
 			},
 		}),
-		Components.searchableList('tb-ap-autocomplete', {
+
+		// autocomplete
+		Components.searchableList('tb-2-ap-1-autocomplete', {
 			appearance: {
 				style: {
 					'height': '100%',
@@ -84,13 +120,14 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		// unpack components
 		var [
 			base,
-			buttonPanel,
-			confirmButton,
-			previousButton,
-			nextButton,
-			audioCaptionPanel,
+			mainPanel,
+			counter,
 			audio,
 			caption,
+			buttonPanel,
+			previousButton,
+			confirmButton,
+
 			autocompletePanel,
 			autocomplete,
 		] = components;
@@ -384,7 +421,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			return new Promise(function(resolve, reject) {
 				// base class
 				jss.set('#{id} .base'.format({id: autocomplete.id}), {
-					'height': '30px',
+					'min-height': '30px',
 					'width': '100%',
 					'padding': '0px',
 					'padding-left': '10px',
@@ -428,10 +465,12 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 				// main wrapper
 				UI.createComponent('{base}-main-wrapper'.format({base: base}), {
-					template: UI.template('div', 'ie centred-vertically'),
+					template: UI.template('div', 'ie'),
 					appearance: {
 						style: {
 							'left': '0px',
+							'width': 'calc(100% - 15px)',
+							'padding-top': '11px',
 						},
 					},
 				}),
@@ -463,6 +502,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					template: UI.template('div', 'ie abs centred-vertically'),
 					appearance: {
 						style: {
+							'width': '10px',
 							'right': '5px',
 						},
 						html: index,
@@ -1044,11 +1084,13 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 		// connect
 		return Promise.all([
+
+			// base
 			base.setAppearance({
 				classes: ['hidden'],
 			}),
 			base.setState({
-				defaultState: {fn: UI.functions.hide},
+				defaultState: {preFn: UI.functions.hide},
 				states: {
 					'transcription-state': {
 						fn: UI.functions.show,
@@ -1059,9 +1101,14 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				},
 			}),
 
-			// buttonPanel
+			// main panel
+			mainPanel.setChildren([
+				counter,
+				audio,
+				caption,
+			]),
 
-			// audioCaptionPanel
+			// audio
 			audio.components.track.setState({
 				states: {
 					'transcription-state': {
@@ -1071,12 +1118,19 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					},
 				},
 			}),
-			audioCaptionPanel.setChildren([
-				audio,
-				caption,
-			]),
 
-			// autocompletePanel
+			// caption
+			caption.setState({
+				states: {
+					'transcription-state': {
+						fn: function (_this) {
+							return _this.control.setup();
+						},
+					},
+				},
+			}),
+
+			// autocomplete panel
 			autocompletePanel.setChildren([
 				autocomplete,
 			]),
@@ -1108,7 +1162,20 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					},
 				},
 			}),
+			autocomplete.setTitle(),
 			autocomplete.setSearch({mode: 'on', limit: 10, autocomplete: true}),
+			autocomplete.components.search.setAppearance({
+				style: {
+					'border': '0px solid #fff',
+					'border-bottom': '1px solid #888',
+					'border-radius': '0px',
+				},
+			}),
+			autocomplete.components.searchFilterBar.setAppearance({
+				style: {
+					'display': 'none',
+				},
+			}),
 			autocomplete.unitStyle.apply(),
 			autocomplete.setState({
 				states: {
@@ -1125,22 +1192,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				},
 			}),
 
-			// Caption initialisation
-			caption.setState({
-				states: {
-					'transcription-state': {
-						fn: function (_this) {
-							return _this.control.setup();
-						},
-					},
-				},
-			}),
-
 		]).then(function () {
 			return base.setChildren([
-				// buttonPanel,
-				// audioCaptionPanel,
-				// autocompletePanel,
+				mainPanel,
+				autocompletePanel,
 			]);
 		}).then(function () {
 			return base;
