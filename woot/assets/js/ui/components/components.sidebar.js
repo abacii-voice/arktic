@@ -24,7 +24,7 @@ Components.sidebar = function (id, args) {
 			appearance: {
 				style: {
 					'left': '-500px',
-					'height': '90%',
+					'height': '100%',
 					'width': '200px',
 				},
 			},
@@ -37,7 +37,7 @@ Components.sidebar = function (id, args) {
 			appearance: {
 				style: {
 					'left': '-500px',
-					'height': '90%',
+					'height': '100%',
 					'width': '50px',
 				},
 			},

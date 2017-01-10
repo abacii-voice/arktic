@@ -9,8 +9,12 @@ AccountComponents.counter = function (id, args) {
 	// 1. Large number counter with date stamp
 	// 2. Counter field
 	// 3. Counters
-	
+
 	// styling
+	var style = (((args || {}).appearance || {}).style || {
+		'height': '100%',
+		'width': '100%',
+	});
 
 	// components
 	return Promise.all([
@@ -25,8 +29,8 @@ AccountComponents.counter = function (id, args) {
 			template: UI.template('div', 'ie border border-radius'),
 			appearance: {
 				style: {
-					'height': args.appearance.style.width,
-					'width': args.appearance.style.width,
+					'height': style.width,
+					'width': style.width,
 					'border-bottom-left-radius': '0px',
 					'border-bottom-right-radius': '0px',
 					'border-bottom': '0px',
@@ -49,8 +53,8 @@ AccountComponents.counter = function (id, args) {
 			template: UI.template('div', 'ie border'),
 			appearance: {
 				style: {
-					'height': 'calc(100% - {width}px)'.format({width: parseInt(args.appearance.style.width)}),
-					'width': args.appearance.style.width,
+					'height': 'calc(100% - {width}px)'.format({width: parseInt(style.width)}),
+					'width': style.width,
 					'border-bottom-left-radius': '5px',
 					'border-bottom-right-radius': '5px',
 				},
