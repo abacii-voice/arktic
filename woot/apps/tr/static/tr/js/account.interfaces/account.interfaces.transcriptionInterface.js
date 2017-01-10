@@ -134,6 +134,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 			autocompletePanel,
 			autocomplete,
+
+			// non interface elements
+			transcriptionMasterController,
 		] = components;
 
 		// KEYBINDINGS

@@ -10,7 +10,6 @@ AccountComponents.audio = function (id, args) {
 	// Parts:
 	// 1. Play button
 	// 2. Audio track
-	console.log(args.appearance);
 
 	// components
 	return Promise.all([
@@ -114,13 +113,20 @@ AccountComponents.audio = function (id, args) {
 
 		// AUDIO GROUP
 		// determines which audio references to create as audio tags
+
+
+		// REMOVE - move logic to master controller
 		audioTrack.buffer = {};
 		audioTrack.active = 0;
+
+
 		audioTrack.controller = {};
 		audioTrack.canvas = audioTrackCanvas;
 
 		// initialise node and create context
 		audioTrack.controller.context = new (window.AudioContext || window.webkitAudioContext)();
+
+		// REMOVE - replace with something simpler
 		audioTrack.current = function () {
 			var _this = audioTrack;
 			return new Promise(function(resolve, reject) {
@@ -130,6 +136,8 @@ AccountComponents.audio = function (id, args) {
 				resolve(_this.buffer[storageId]);
 			});
 		}
+
+		// REMOVE - move logic to master controller
 		audioTrack.update = function () {
 			var _this = audioTrack;
 			// 1. if the buffer is completely empty, the audio element must wait before attempting to load the audio.
@@ -289,6 +297,8 @@ AccountComponents.audio = function (id, args) {
 				return audioTrackCanvas.stop();
 			});
 		}
+
+		// REMOVE - move logic to master controller
 		audioTrack.next = function () {
 			var _this = audioTrack;
 			return _this.stop().then(function () {
@@ -430,20 +440,12 @@ AccountComponents.audio = function (id, args) {
 			return Util.ep();
 		}
 
-		// base methods
-		base.next = function () {
-			return audioTrack.next();
-		}
-		base.previous = function () {
-			return audioTrack.previous();
-		}
-
 		// complete promises
 		return Promise.all([
 			playButton.setBindings({
 				'mousedown': function (_this) {
 					// The play button will always return to the anchor and play from there.
-					return audioTrack.next();
+					return audioTrack.play();
 				},
 
 				// display tooltip in track info field
