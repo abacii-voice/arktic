@@ -115,6 +115,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			},
 		}),
 
+		// Non interface elements
+		// transcription master controller
+		AccountComponents.transcriptionMasterController(),
+
 	]).then(function (components) {
 
 		// unpack components
