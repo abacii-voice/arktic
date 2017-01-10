@@ -10,6 +10,7 @@ AccountComponents.audio = function (id, args) {
 	// Parts:
 	// 1. Play button
 	// 2. Audio track
+	console.log(args.appearance);
 
 	// components
 	return Promise.all([

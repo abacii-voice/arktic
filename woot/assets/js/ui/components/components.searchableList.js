@@ -32,9 +32,10 @@ Components.searchableList = function (id, args) {
 			appearance: {
 				style: {
 					'width': '100%',
-					'height': '22px',
+					'height': '32px',
 					'font-size': '18px',
-					'display': 'none',
+					'padding-top': '10px',
+					'text-align': 'center',
 				},
 			},
 		}),
@@ -736,13 +737,18 @@ Components.searchableList = function (id, args) {
 
 		// title methods
 		base.setTitle = function (options) {
+			options = (options || {});
 			if (options.text) {
-				return title.setAppearance({
-					html: options.text,
-					style: {
-						'text-align': (options.centre ? 'center': 'left'),
-					},
-				});
+				if (options.center) {
+					title.appearance.style = (title.appearance.style || {});
+					title.appearance.style['text-align'] = 'center';
+					return title.setAppearance({
+						html: options.text,
+						style: title.appearance.style,
+					});
+				} else {
+					return title.setAppearance({html: options.text});
+				}
 			} else {
 				return title.setAppearance({
 					style: {
@@ -811,6 +817,7 @@ Components.searchableList = function (id, args) {
 				list: list,
 				filter: filter,
 				filterButton: filterButton,
+				searchFilterBar: searchFilterBar,
 			}
 			return base.setChildren([
 				title,
