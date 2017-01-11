@@ -13,8 +13,6 @@ AccountComponents.transcriptionMasterController = function () {
 			base,
 		] = components;
 
-		// methods
-
 		// The idea here is that the master controller should point at the list of transcriptions and act on it.
 
 		// The caption and the audio field should only operate on one transcription at a time,
@@ -24,7 +22,17 @@ AccountComponents.transcriptionMasterController = function () {
 		// transcriptions from the server.
 
 		// The problem is, who decides how to load the audio files. Currently, the audio element does it by keeping a buffer in memory.
-		
+
+		// methods
+		// behaviours
+		base.behaviours = {
+			up: function () {
+				return Util.ep();
+			},
+			down: function () {
+				return Util.ep();
+			},
+		}
 
 		return Promise.all([
 
