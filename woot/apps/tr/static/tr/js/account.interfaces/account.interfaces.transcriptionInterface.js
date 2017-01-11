@@ -144,7 +144,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			event.preventDefault();
 			Promise.all([
 				autocomplete.behaviours.up(),
-
+				transcriptionMasterController.behaviours.up(),
 			]);
 		});
 
@@ -152,7 +152,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			event.preventDefault();
 			Promise.all([
 				autocomplete.behaviours.down(),
-
+				transcriptionMasterController.behaviours.down(),
 			]);
 		});
 
