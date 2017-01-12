@@ -111,145 +111,21 @@ AccountComponents.audio = function (id, args) {
 		// modify components and add methods etc.
 		// BUTTON GROUP
 
-		// AUDIO GROUP
-		// determines which audio references to create as audio tags
+		base.context = new (window.AudioContext || window.webkitAudioContext)();
+		base.load = function () {
 
-
-		// REMOVE - move logic to master controller
-		audioTrack.buffer = {};
-		audioTrack.active = 0;
-
-
-		audioTrack.controller = {};
-		audioTrack.canvas = audioTrackCanvas;
-
-		// initialise node and create context
-		audioTrack.controller.context = new (window.AudioContext || window.webkitAudioContext)();
-
-		// REMOVE - replace with something simpler
-		audioTrack.current = function () {
-			var _this = audioTrack;
-			return new Promise(function(resolve, reject) {
-				var storageId = Object.keys(_this.buffer).filter(function (key) {
-					return _this.buffer[key].index === _this.active;
-				})[0];
-				resolve(_this.buffer[storageId]);
-			});
 		}
-
-		// REMOVE - move logic to master controller
-		audioTrack.update = function () {
-			var _this = audioTrack;
-			// 1. if the buffer is completely empty, the audio element must wait before attempting to load the audio.
-			// 2. active_transcription_token is not "active". It should change each time it is requested, unless the page is reloaded.
-
-			var remaining = Object.keys(_this.buffer).filter(function (key) {
-				return _this.buffer[key].is_available;
-			}).length;
-			if (remaining === 0) {
-				// TODO: if this result is negative, there should be an info message.
-
-				return _this.load().then(function () {
-					return _this.pre.main();
-				});
-			} else if (remaining < (base.threshold || 4)) {
-				return Promise.all([
-					_this.load({force: true}),
-					_this.pre.main(),
-				]);
-			} else {
-				return _this.pre.main();
-			}
-		}
-		audioTrack.load = function (force) {
-			force = force !== undefined ? force.force : false;
-			var _this = audioTrack;
-			// load more and process into buffer
-			return base.path().then(function (tokenPath) {
-				return Context.get(tokenPath, {force: force, overwrite: true});
-			}).then(base.process).then(function () {
-				return new Promise(function(resolve, reject) {
-					resolve(_this.buffer);
-				});
-			});
-		}
-		audioTrack.pre = {
-			main: function () {
-				var _this = audioTrack.pre;
-				return _this.load_audio().then(function () {
-					return _this.current();
-				}).then(function () {
-					return _this.remove();
-				});
-			},
-			load_audio: function () {
-				var _this = audioTrack;
-				// determine which audio elements to load
-				// load n either side of active index.
-				var lower = _this.active > 1 ? _this.active - (base.threshold || 4) + 2 : 0;
-				var upper = _this.active > 1 ? _this.active + (base.threshold || 4) - 1 : (base.threshold || 4) + 1;
-				_this.indices = [];
-				for (i=lower; i<upper; i++) {
-					_this.indices.push(i);
-				}
-
-				// once the indices have been chosen, load the audio file for each one.
-				return Promise.all(_this.indices.map(function (index) {
-					var transcriptionId = Object.keys(_this.buffer).filter(function (key) {
-						return _this.buffer[key].index === index;
-					})[0];
-					var storage = _this.buffer[transcriptionId];
-					if (storage.data === undefined) {
-						return Request.load_audio(storage.parent).then(function (audioData) {
-							return new Promise(function(resolve, reject) {
-
-								// decode the incoming audio data and store it with the metadata.
-								_this.controller.context.decodeAudioData(audioData, function (decoded) {
-									storage.data = decoded;
-									storage.has_waveform = true;
-									resolve();
-								});
-							});
-						});
-					}
-				}));
-			},
-			current: function () {
-				var _this = audioTrack;
-				// get current operation
-				return _this.current().then(function (current) {
-					audioTrackCanvas.data = current.data;
-					audioTrackCanvas.duration = current.data.duration;
-					return Util.ep();
-				});
-			},
-			remove: function () {
-				var _this = audioTrack;
-				// remove data from all indices not in the chosen array.
-				return Promise.all(Object.keys(_this.buffer).filter(function (key) {
-					return _this.indices.indexOf(_this.buffer[key].index) === -1;
-				}).map(function (key) {
-					var removeBuffer = _this.buffer[key];
-					if (removeBuffer.source !== undefined) {
-						removeBuffer.source.disconnect();
-						removeBuffer.has_waveform = false;
-						delete removeBuffer.source;
-						delete removeBuffer.waveform;
-					}
-				}));
-			},
-		}
-		audioTrack.play = function (position, duration) {
-			var _this = audioTrack;
+		base.play = function (position, duration) {
+			var _this = base;
 			return _this.current().then(function (current) {
 				// create new source from current data
 				current.isPlaying = true;
 				if (current.source !== undefined) {
 					current.source.disconnect();
 				}
-				current.source = _this.controller.context.createBufferSource();
+				current.source = _this.context.createBufferSource();
 				current.source.buffer = current.data;
-				current.source.connect(_this.controller.context.destination);
+				current.source.connect(_this.context.destination);
 				current.source.onended = audioTrack.reset;
 
 				// set position and duration
@@ -267,7 +143,7 @@ AccountComponents.audio = function (id, args) {
 				audioTrackCanvas.duration = current.source.buffer.duration;
 				audioTrackCanvas.position = position;
 				audioTrackCanvas.isPlaying = true;
-				audioTrackCanvas.startTime = audioTrack.controller.context.currentTime;
+				audioTrackCanvas.startTime = _this.context.currentTime;
 
 				// play
 				current.source.start(0, position, duration);
@@ -275,8 +151,8 @@ AccountComponents.audio = function (id, args) {
 				return audioTrackCanvas.start();
 			});
 		}
-		audioTrack.stop = function () {
-			var _this = audioTrack;
+		base.stop = function () {
+			var _this = base;
 			return _this.current().then(function (current) {
 				if (current.isPlaying) {
 					current.isPlaying = false;
@@ -287,43 +163,14 @@ AccountComponents.audio = function (id, args) {
 				return Util.ep();
 			});
 		}
-		audioTrack.reset = function () {
-			var _this = audioTrack;
+		base.reset = function () {
+			var _this = base;
 			// reset to beginning of current track
 			return _this.current().then(function (current) {
 				current.isPlaying = false;
 				audioTrackCanvas.isPlaying = false;
 				current.source.stop();
 				return audioTrackCanvas.stop();
-			});
-		}
-
-		// REMOVE - move logic to master controller
-		audioTrack.next = function () {
-			var _this = audioTrack;
-			return _this.stop().then(function () {
-				return _this.current();
-			}).then(function (current) {
-
-				// RECONCILE CURRENT WITH AUDIOTRACK.BUFFER and check is_available
-				current.is_available = false;
-				_this.active = _this.active + 1;
-				return audioTrackCanvas.removeCut();
-			}).then(function () {
-				return _this.update();
-			}).then(function () {
-				return _this.play();
-			});
-		}
-		audioTrack.previous = function () {
-			var _this = audioTrack;
-			return _this.stop().then(function () {
-				_this.active = _this.active > 0 ? _this.active - 1 : 0;
-				return audioTrackCanvas.removeCut();
-			}).then(function () {
-				return _this.update();
-			}).then(function () {
-				return _this.play();
 			});
 		}
 
