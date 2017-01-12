@@ -218,8 +218,19 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			]);
 		});
 
+		// Transcription Master Controller
+		transcriptionMasterController.updateThreshold = 4;
+		transcriptionMasterController.path = function () {
+
+		}
+		transcriptionMasterController.process = function () {
+
+		}
+		transcriptionMasterController.pre.interface = function () {
+
+		}
+
 		// Audio
-		audio.threshold = 4;
 		audio.path = function () {
 			return Promise.all([
 				Active.get('client'),
