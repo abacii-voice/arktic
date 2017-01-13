@@ -268,7 +268,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			var _this = transcriptionMasterController;
 			return _this.current().then(function (current) {
 				current.is_available = false;
-				
+
 				return Promise.all([
 					audio.display(current),
 					caption.control.input.newCaption(current),
@@ -923,7 +923,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						}
 						return Promise.all([
 							unitBase.deactivate(),
-							// autocomplete.control.reset(),
+							autocomplete.control.reset(),
 						]);
 					} else {
 						return Util.ep();
