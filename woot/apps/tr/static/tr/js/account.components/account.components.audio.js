@@ -115,23 +115,27 @@ AccountComponents.audio = function (id, args) {
 		base.controller.context = new (window.AudioContext || window.webkitAudioContext)();
 		base.load = function () {
 			var _this = base;
-			if (!_this.isLoaded) {
-				_this.isLoaded = true;
-
-			} else {
+			return Util.ep().then(function () {
+				if (_this.controller.data !== undefined ) {
+					return base.path().then(function (resolvedPath) {
+						base.process(resolvedPath);
+					});
+				} else {
+					return Util.ep();
+				}
+			}).then(function () {
+				if (_this.controller.source !== undefined) {
+					_this.controller.source.disconnect();
+				}
+				_this.controller.source = _this.controller.context.createBufferSource();
+				_this.controller.source.buffer = _this.controller.data;
+				_this.controller.source.connect(_this.context.destination);
+				_this.controller.source.onended = _this.reset;
 				return Util.ep();
-			}
-			if (_this.controller.source !== undefined) {
-				_this.controller.source.disconnect();
-			}
-			_this.controller.source = _this.controller.context.createBufferSource();
-			_this.controller.source.buffer = _this.controller.data;
-			_this.controller.source.connect(_this.context.destination);
-			_this.controller.source.onended = _this.reset;
+			});			
 		}
 		base.play = function (position, duration) {
 			var _this = base;
-
 			return _this.load().then(function () {
 				_this.isPlaying = true;
 
