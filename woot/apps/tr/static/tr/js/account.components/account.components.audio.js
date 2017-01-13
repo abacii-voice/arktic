@@ -159,9 +159,9 @@ AccountComponents.audio = function (id, args) {
 				// set position and duration
 				position = position || 0;
 				duration = duration || _this.controller.source.buffer.duration;
-				if (_this.cut) {
-					position = _this.cutStart;
-					duration = _this.cutEnd - _this.cutStart;
+				if (audioTrack.cut) {
+					position = audioTrack.cutStart;
+					duration = audioTrack.cutEnd - audioTrack.cutStart;
 				}
 				if (position === 0) {
 					audioTrackCanvas.cutStart = 0;
@@ -363,17 +363,17 @@ AccountComponents.audio = function (id, args) {
 							audioTrack.cut = true;
 							audioTrack.cutStart = _this.cutStart / _this.canvas.width * _this.duration;
 							audioTrack.cutEnd = _this.cutEnd / _this.canvas.width * _this.duration;
-							audioTrack.play(audioTrack.cutStart);
+							return base.play(audioTrack.cutStart);
 						} else {
 							_this.cut = false;
 							audioTrack.cut = false;
 							audioTrack.cutStart = 0;
 							audioTrack.cutEnd = 0;
-							audioTrack.stop();
+							return base.stop();
 						}
 					} else {
 						_this.time = _this.getMousePosition(event).x / _this.canvas.width * _this.duration;
-						base.play(_this.time);
+						return base.play(_this.time);
 					}
 				},
 
