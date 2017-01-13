@@ -180,10 +180,12 @@ AccountComponents.audio = function (id, args) {
 		}
 		base.stop = function () {
 			var _this = base;
-			_this.isPlaying = false;
-			_this.controller.source.stop();
-			_this.controller.source.disconnect();
-			audioTrackCanvas.isPlaying = false;
+			if (_this.isPlaying) {
+				_this.isPlaying = false;
+				_this.controller.source.stop();
+				_this.controller.source.disconnect();
+				audioTrackCanvas.isPlaying = false;
+			}
 			return Util.ep();
 		}
 		base.reset = function () {
@@ -371,7 +373,7 @@ AccountComponents.audio = function (id, args) {
 						}
 					} else {
 						_this.time = _this.getMousePosition(event).x / _this.canvas.width * _this.duration;
-						audioTrack.play(_this.time);
+						base.play(_this.time);
 					}
 				},
 

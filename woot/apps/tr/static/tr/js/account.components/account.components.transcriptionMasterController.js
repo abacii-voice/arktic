@@ -129,6 +129,12 @@ AccountComponents.transcriptionMasterController = function () {
 				}));
 			},
 		}
+		base.previous = function () {
+			return base.setActive({increment: -1});
+		}
+		base.next = function () {
+			return base.setActive({increment: 1});
+		}
 
 		// behaviours
 		base.behaviours = {
