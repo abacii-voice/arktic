@@ -174,7 +174,7 @@ AccountComponents.audio = function (id, args) {
 				audioTrackCanvas.startTime = _this.controller.context.currentTime;
 
 				// play
-				current.source.start(0, position, duration);
+				_this.controller.source.start(0, position, duration);
 				return audioTrackCanvas.start();
 			});
 		}
@@ -184,7 +184,7 @@ AccountComponents.audio = function (id, args) {
 			_this.controller.source.stop();
 			_this.controller.source.disconnect();
 			audioTrackCanvas.isPlaying = false;
-			return Util,ep();
+			return Util.ep();
 		}
 		base.reset = function () {
 			var _this = base;
@@ -192,6 +192,13 @@ AccountComponents.audio = function (id, args) {
 			return _this.stop().then(function () {
 				return _this.load();
 			})
+		}
+		base.display = function () {
+			return audioTrackCanvas.start().then(function () {
+				return base.load();
+			}).then(function () {
+				return audioTrackCanvas.stop();
+			});
 		}
 
 		//// CANVAS
@@ -234,7 +241,7 @@ AccountComponents.audio = function (id, args) {
 
 			_this.canvas.height = parseInt(audioTrack.model().css('height'));
 			_this.canvas.width = parseInt(audioTrack.model().css('width'));
-			_this.time = (audioTrack.controller.context.currentTime - _this.startTime + _this.position) || 0;
+			_this.time = (base.controller.context.currentTime - _this.startTime + _this.position) || 0;
 			if (_this.duration && _this.time > _this.duration) {
 				_this.time = 0;
 				_this.isPlaying = false;
@@ -312,7 +319,7 @@ AccountComponents.audio = function (id, args) {
 			playButton.setBindings({
 				'mousedown': function (_this) {
 					// The play button will always return to the anchor and play from there.
-					return audioTrack.play();
+					return base.play();
 				},
 
 				// display tooltip in track info field
