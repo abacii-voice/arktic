@@ -126,12 +126,16 @@ AccountComponents.audio = function (id, args) {
 			}).then(function () {
 				if (!_this.controller.has_waveform) {
 					// decode the incoming audio data and store it with the metadata.
-					_this.controller.context.decodeAudioData(_this.controller.data, function (decoded) {
-						_this.controller.data = decoded;
-						_this.controller.has_waveform = true;
+					return new Promise(function(resolve, reject) {
+						_this.controller.context.decodeAudioData(_this.controller.data, function (decoded) {
+							_this.controller.data = decoded;
+							_this.controller.has_waveform = true;
+							resolve();
+						});
 					});
+				} else {
+					return Util.ep();
 				}
-				return Util.ep();
 			}).then(function () {
 				if (_this.controller.source !== undefined) {
 					_this.controller.source.disconnect();
