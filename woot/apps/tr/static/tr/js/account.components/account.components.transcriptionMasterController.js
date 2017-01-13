@@ -129,33 +129,14 @@ AccountComponents.transcriptionMasterController = function () {
 				}));
 			},
 		}
-		base.next = function () {
-			var _this = base;
-			return _this.stop().then(function () {
-				return _this.current();
-			}).then(function (current) {
-
-				// RECONCILE CURRENT WITH AUDIOTRACK.BUFFER and check is_available
-				current.is_available = false;
-				_this.active = _this.active + 1;
-				return audioTrackCanvas.removeCut();
-			}).then(function () {
-				return _this.update();
-			}).then(function () {
-				return _this.play();
-			});
-		}
-		base.previous = function () {
-
-		}
 
 		// behaviours
 		base.behaviours = {
 			up: function () {
-				return Util.ep();
+				return base.previous();
 			},
 			down: function () {
-				return Util.ep();
+				return base.next();
 			},
 		}
 
