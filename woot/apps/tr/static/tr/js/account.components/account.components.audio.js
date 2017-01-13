@@ -193,9 +193,11 @@ AccountComponents.audio = function (id, args) {
 				return _this.load();
 			})
 		}
-		base.display = function () {
+		base.display = function (current) {
+			var _this = base;
+			_this.controller.data = current.data;
 			return audioTrackCanvas.start().then(function () {
-				return base.load();
+				return _this.load();
 			}).then(function () {
 				return audioTrackCanvas.stop();
 			});
