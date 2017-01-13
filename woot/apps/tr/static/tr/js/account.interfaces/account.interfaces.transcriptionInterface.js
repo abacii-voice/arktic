@@ -259,7 +259,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			return _this.current().then(function (current) {
 				audio.controller.data = current.data;
 				return Promise.all([
-					audio.load(),
+					audio.display(),
 				]);
 			});
 		}
