@@ -14,13 +14,10 @@ AccountComponents.transcriptionMasterController = function () {
 		] = components;
 
 		// The idea here is that the master controller should point at the list of transcriptions and act on it.
-
 		// The caption and the audio field should only operate on one transcription at a time,
 		// and should have no knowledge of the series.
-
 		// The master controller will communicate with the transcription list, confirm, release, and request new
 		// transcriptions from the server.
-
 		// The problem is, who decides how to load the audio files. Currently, the audio element does it by keeping a buffer in memory.
 
 		// data
@@ -31,10 +28,9 @@ AccountComponents.transcriptionMasterController = function () {
 		// methods
 		base.countRemaining = function () {
 			var _this = base;
-			// Tests whether the length of the set of buffer slots marked as available is non-zero.
 			return Util.ep(Object.keys(_this.buffer).filter(function (key) {
 				return _this.buffer[key].is_available;
-			}).length !== 0);
+			}).length);
 		}
 		base.current = function () {
 			var _this = base;
@@ -68,12 +64,12 @@ AccountComponents.transcriptionMasterController = function () {
 				}
 			});
 		}
-		base.loadFromTranscriptionToken = function (force) {
-			force = (force || false);
+		base.loadFromTranscriptionToken = function (options) {
+			options = (options || {});
 			var _this = base;
 			// load more and process into buffer
 			return _this.path().then(function (tokenPath) {
-				return Context.get(tokenPath, {force: force, overwrite: true});
+				return Context.get(tokenPath, {force: (options.force || false), overwrite: true});
 			}).then(_this.process).then(function () {
 				return Util.ep(_this.buffer);
 			});
@@ -115,7 +111,7 @@ AccountComponents.transcriptionMasterController = function () {
 			},
 			interface: function () {
 				// assumed to be external. default pass-through, but delegates data to connected audio field, counter, and caption.
-
+				return Util.ep();
 			},
 			garbageCollect: function () {
 				var _this = base;
