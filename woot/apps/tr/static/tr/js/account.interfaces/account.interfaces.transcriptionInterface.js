@@ -142,18 +142,28 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		// KEYBINDINGS
 		Mousetrap.bind('up', function (event) {
 			event.preventDefault();
-			Promise.all([
-				autocomplete.behaviours.up(),
-				transcriptionMasterController.behaviours.up(),
-			]);
+			if (autocomplete.isFocussed && caption.isFocussed) {
+				Promise.all([
+					autocomplete.behaviours.up(),
+				]);
+			} else {
+				Promise.all([
+					transcriptionMasterController.behaviours.up(),
+				]);
+			}
 		});
 
 		Mousetrap.bind('down', function (event) {
 			event.preventDefault();
-			Promise.all([
-				autocomplete.behaviours.down(),
-				transcriptionMasterController.behaviours.down(),
-			]);
+			if (autocomplete.isFocussed && caption.isFocussed) {
+				Promise.all([
+					autocomplete.behaviours.down(),
+				]);
+			} else {
+				Promise.all([
+					transcriptionMasterController.behaviours.down(),
+				]);
+			}
 		});
 
 		Mousetrap.bind('left', function (event) {
@@ -257,12 +267,13 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		transcriptionMasterController.pre.interface = function () {
 			var _this = transcriptionMasterController;
 			return _this.current().then(function (current) {
-				audio.controller.data = current.data;
 				return Promise.all([
-					audio.display(),
+					audio.display(current),
+					caption.control.input.newCaption(current),
 				]);
 			});
 		}
+		
 
 		// Autocomplete
 		// LIST
