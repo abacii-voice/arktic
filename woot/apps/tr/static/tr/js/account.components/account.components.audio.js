@@ -116,7 +116,7 @@ AccountComponents.audio = function (id, args) {
 		base.load = function () {
 			var _this = base;
 			return Util.ep().then(function () {
-				if (_this.controller.data !== undefined ) {
+				if (_this.controller.data === undefined ) { // external controller just needs to set the _this.controller.data variable to work.
 					return base.path().then(function (resolvedPath) {
 						base.process(resolvedPath);
 					});
@@ -143,7 +143,7 @@ AccountComponents.audio = function (id, args) {
 
 				_this.controller.source = _this.controller.context.createBufferSource();
 				_this.controller.source.buffer = _this.controller.data;
-				_this.controller.source.connect(_this.context.destination);
+				_this.controller.source.connect(_this.controller.context.destination);
 				_this.controller.source.onended = _this.reset;
 				return Util.ep();
 			});
