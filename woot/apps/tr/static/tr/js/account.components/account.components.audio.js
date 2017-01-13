@@ -132,7 +132,7 @@ AccountComponents.audio = function (id, args) {
 				_this.controller.source.connect(_this.context.destination);
 				_this.controller.source.onended = _this.reset;
 				return Util.ep();
-			});			
+			});
 		}
 		base.play = function (position, duration) {
 			var _this = base;
@@ -149,6 +149,12 @@ AccountComponents.audio = function (id, args) {
 				if (position === 0) {
 					audioTrackCanvas.cutStart = 0;
 				}
+
+				// set audioTrackCanvas variables
+				audioTrackCanvas.duration = _this.controller.source.buffer.duration;
+				audioTrackCanvas.position = position;
+				audioTrackCanvas.isPlaying = true;
+				audioTrackCanvas.startTime = _this.controller.context.currentTime;
 
 				// play
 				current.source.start(0, position, duration);
