@@ -145,6 +145,9 @@ AccountComponents.audio = function (id, args) {
 				_this.controller.source.buffer = _this.controller.data;
 				_this.controller.source.connect(_this.controller.context.destination);
 				_this.controller.source.onended = _this.reset;
+
+				audioTrackCanvas.data = _this.controller.data;
+				audioTrackCanvas.duration = _this.controller.data.duration;
 				return Util.ep();
 			});
 		}
