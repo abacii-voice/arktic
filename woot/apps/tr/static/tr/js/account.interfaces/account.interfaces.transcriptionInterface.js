@@ -134,23 +134,36 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 			autocompletePanel,
 			autocomplete,
+
+			// non interface elements
+			transcriptionMasterController,
 		] = components;
 
 		// KEYBINDINGS
 		Mousetrap.bind('up', function (event) {
 			event.preventDefault();
-			Promise.all([
-				autocomplete.behaviours.up(),
-
-			]);
+			if (autocomplete.isFocussed && caption.isFocussed) {
+				Promise.all([
+					autocomplete.behaviours.up(),
+				]);
+			} else {
+				Promise.all([
+					transcriptionMasterController.behaviours.up(),
+				]);
+			}
 		});
 
 		Mousetrap.bind('down', function (event) {
 			event.preventDefault();
-			Promise.all([
-				autocomplete.behaviours.down(),
-
-			]);
+			if (autocomplete.isFocussed && caption.isFocussed) {
+				Promise.all([
+					autocomplete.behaviours.down(),
+				]);
+			} else {
+				Promise.all([
+					transcriptionMasterController.behaviours.down(),
+				]);
+			}
 		});
 
 		Mousetrap.bind('left', function (event) {
@@ -215,9 +228,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			]);
 		});
 
-		// Audio
-		audio.threshold = 4;
-		audio.path = function () {
+		// Transcription Master Controller
+		transcriptionMasterController.updateThreshold = 4;
+		transcriptionMasterController.path = function () {
 			return Promise.all([
 				Active.get('client'),
 				Active.get('role'),
@@ -229,14 +242,15 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				return 'user.clients.{client_id}.roles.{role_id}.active_transcription_token.fragments'.format({client_id: client_id, role_id: role_id});
 			});
 		}
-		audio.process = function (result) {
+		transcriptionMasterController.process = function (result) {
+			var _this = transcriptionMasterController;
 			return Promise.all(Object.keys(result).sort(function (a,b) {
 				return result[a].index > result[b].index ? 1 : -1;
 			}).map(function (key) {
-				audio.components.track.buffer[key] = {
+				_this.buffer[key] = {
 					content: result[key].phrase.content,
 					is_available: true,
-					index: Object.keys(audio.components.track.buffer).length,
+					index: Object.keys(_this.buffer).length,
 					parent: result[key].parent,
 					tokens: Object.keys(result[key].phrase.token_instances).sort(function (a,b) {
 						return result[key].phrase.token_instances[a].index > result[key].phrase.token_instances[b].index ? 1 : -1;
@@ -250,25 +264,38 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				return Util.ep();
 			}));
 		}
-		audio.components.track.pre.current = function () {
-			var _this = audio.components.track;
-			var canvas = audio.components.canvas;
-			// get current operation
+		transcriptionMasterController.pre.interface = function () {
+			var _this = transcriptionMasterController;
 			return _this.current().then(function (current) {
-				canvas.data = current.data;
-				canvas.duration = current.data.duration;
+				current.is_available = false;
+				
+				return Promise.all([
+					audio.display(current),
+					caption.control.input.newCaption(current),
+				]);
+			});
+		}
+		transcriptionMasterController.setActive = function (options) {
+			var _this = transcriptionMasterController;
+			options = (options || {});
 
-				// draw data
-				return canvas.start().then(function () {
-					return canvas.stop();
-				}).then(function () {
-					return caption.control.input.newCaption(current);
-				});
+			audio.controller.has_waveform = false;
+			return Promise.all([
+				caption.export(),
+				audio.stop(),
+				audio.components.canvas.removeCut(),
+			]).then(function () {
+
+				// change active
+				_this.active = (options.index !== undefined ? options.index : undefined || ((_this.active || 0) + (_this.active !== undefined ? (options.increment || 0) : 0)));
+
+				return _this.update();
+			}).then(function () {
+				return audio.play();
 			});
 		}
 
 		// Autocomplete
-		// LIST
 		autocomplete.targets = [
 			{name: 'word',
 				path: function () {
@@ -685,7 +712,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			}
 		}
 
-		// CAPTION
+		// Caption
 		caption.checks = [
 			// check if tag unit matches a valid tag
 			function () {
@@ -699,6 +726,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		]
 		caption.export = function () {
 			//
+			return Util.ep();
 		}
 		caption.styles = function () {
 			// word
@@ -1126,23 +1154,23 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				},
 			}),
 
+			// transcription master controller
+			transcriptionMasterController.setState({
+				states: {
+					'transcription-state': {
+						fn: function (_this) {
+							return _this.update();
+						}
+					},
+				},
+			}),
+
 			// main panel
 			mainPanel.setChildren([
 				counter,
 				audio,
 				caption,
 			]),
-
-			// audio
-			audio.components.track.setState({
-				states: {
-					'transcription-state': {
-						fn: function (_this) {
-							return _this.update();
-						},
-					},
-				},
-			}),
 
 			// caption
 			caption.setState({
