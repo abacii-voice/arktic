@@ -273,7 +273,68 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				]);
 			});
 		}
-		
+		audioTrack.next = function () {
+			var _this = audioTrack;
+			return _this.stop().then(function () {
+				return _this.current();
+			}).then(function (current) {
+
+				// RECONCILE CURRENT WITH AUDIOTRACK.BUFFER and check is_available
+				current.is_available = false;
+				_this.active = _this.active + 1;
+				return audioTrackCanvas.removeCut();
+			}).then(function () {
+				return _this.update();
+			}).then(function () {
+				return _this.play();
+			});
+		}
+		audioTrack.previous = function () {
+			var _this = audioTrack;
+			return _this.stop().then(function () {
+				_this.active = _this.active > 0 ? _this.active - 1 : 0;
+				return audioTrackCanvas.removeCut();
+			}).then(function () {
+				return _this.update();
+			}).then(function () {
+				return _this.play();
+			});
+		}
+
+		transcriptionMasterController.setActive = function (options) {
+			var _this = transcriptionMasterController;
+			options = (options || {});
+
+			return Promise.all([
+				caption.export(),
+				audio.stop(),
+				audio.components.canvas.removeCut(),
+			]).then(function () {
+
+				// change active
+				
+
+				return _this.update();
+			});
+		}
+		transcriptionMasterController.previous = function () {
+
+			// 1. export and save user entered caption in current data storage.
+			// 2. stop audio and remove and cut in the audio track.
+			// 3. decrement active paying attention to boundary conditions.
+			// 4. update the controller
+
+			var _this = transcriptionMasterController;
+			return Promise.all([
+				audio.stop(),
+				audio.components.canvas.removeCut(),
+			]).then(function () {
+				return _this.current();
+			}).then(function (current) {
+				_this.active = _this.active + 1;
+				return _this.update();
+			});
+		}
 
 		// Autocomplete
 		// LIST
@@ -707,6 +768,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		]
 		caption.export = function () {
 			//
+			return Util.ep();
 		}
 		caption.styles = function () {
 			// word
