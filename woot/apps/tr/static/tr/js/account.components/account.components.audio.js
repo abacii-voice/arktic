@@ -111,26 +111,33 @@ AccountComponents.audio = function (id, args) {
 		// modify components and add methods etc.
 		// BUTTON GROUP
 
-		base.context = new (window.AudioContext || window.webkitAudioContext)();
+		base.controller = {};
+		base.controller.context = new (window.AudioContext || window.webkitAudioContext)();
 		base.load = function () {
+			var _this = base;
+			if (!_this.isLoaded) {
+				_this.isLoaded = true;
 
+			} else {
+				return Util.ep();
+			}
+			if (_this.controller.source !== undefined) {
+				_this.controller.source.disconnect();
+			}
+			_this.controller.source = _this.controller.context.createBufferSource();
+			_this.controller.source.buffer = _this.controller.data;
+			_this.controller.source.connect(_this.context.destination);
+			_this.controller.source.onended = _this.reset;
 		}
 		base.play = function (position, duration) {
 			var _this = base;
-			return _this.current().then(function (current) {
-				// create new source from current data
-				current.isPlaying = true;
-				if (current.source !== undefined) {
-					current.source.disconnect();
-				}
-				current.source = _this.context.createBufferSource();
-				current.source.buffer = current.data;
-				current.source.connect(_this.context.destination);
-				current.source.onended = audioTrack.reset;
+
+			return _this.load().then(function () {
+				_this.isPlaying = true;
 
 				// set position and duration
 				position = position || 0;
-				duration = duration || current.source.buffer.duration;
+				duration = duration || _this.controller.source.buffer.duration;
 				if (_this.cut) {
 					position = _this.cutStart;
 					duration = _this.cutEnd - _this.cutStart;
@@ -139,39 +146,25 @@ AccountComponents.audio = function (id, args) {
 					audioTrackCanvas.cutStart = 0;
 				}
 
-				// set audioTrackCanvas variables
-				audioTrackCanvas.duration = current.source.buffer.duration;
-				audioTrackCanvas.position = position;
-				audioTrackCanvas.isPlaying = true;
-				audioTrackCanvas.startTime = _this.context.currentTime;
-
 				// play
 				current.source.start(0, position, duration);
-
 				return audioTrackCanvas.start();
 			});
 		}
 		base.stop = function () {
 			var _this = base;
-			return _this.current().then(function (current) {
-				if (current.isPlaying) {
-					current.isPlaying = false;
-					current.source.stop();
-					current.source.disconnect();
-					audioTrackCanvas.isPlaying = false;
-				}
-				return Util.ep();
-			});
+			_this.isPlaying = false;
+			_this.controller.source.stop();
+			_this.controller.source.disconnect();
+			audioTrackCanvas.isPlaying = false;
+			return Util,ep();
 		}
 		base.reset = function () {
 			var _this = base;
 			// reset to beginning of current track
-			return _this.current().then(function (current) {
-				current.isPlaying = false;
-				audioTrackCanvas.isPlaying = false;
-				current.source.stop();
-				return audioTrackCanvas.stop();
-			});
+			return _this.stop().then(function () {
+				return _this.load();
+			})
 		}
 
 		//// CANVAS
