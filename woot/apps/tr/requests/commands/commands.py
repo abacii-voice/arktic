@@ -29,3 +29,13 @@ def load_audio(request):
 			response['Content-Length'] = audio_file.size
 
 		return response
+
+# submit revisions
+# Continuously submits a buffer of revisions
+def submit_revisions(request):
+	user, permission, data, verified = process_request(request)
+	if verified:
+
+		# 1. for each piece of data, release fragment, complete fragment, or double check.
+
+		pass

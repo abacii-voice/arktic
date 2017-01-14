@@ -518,9 +518,13 @@ Components.searchableList = function (id, args) {
 					return base.control.deactivate().then(function () {
 						return UI.getComponent(base.data.storage.virtual.rendered[base.currentIndex]).then(function (activeListItem) {
 							base.active = activeListItem;
-							return base.active.activate().then(function () {
-								return base.data.display.render.setMetadata();
-							});
+							if (base.active) {
+								return base.active.activate().then(function () {
+									return base.data.display.render.setMetadata();
+								});
+							} else {
+								return Util.ep();
+							}
 						})
 					});
 				},
