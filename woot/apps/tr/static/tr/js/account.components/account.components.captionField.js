@@ -36,7 +36,6 @@ AccountComponents.captionField = function (id, args) {
 
 			// datasets
 			storage: {
-				buffer: {}, // stores all sets that have been entered this session when confirmed. Key is transcription id.
 				virtual: [], // stores data in order
 			},
 
@@ -365,15 +364,6 @@ AccountComponents.captionField = function (id, args) {
 				editActive: function (metadata) {
 					return base.active.phrase.update(metadata);
 				},
-				addPhrase: function () {
-
-				},
-				removePhrase: function () {
-
-				},
-			},
-			updateBuffer: function () {
-				return Util.ep();
 			},
 			runChecks: function () {
 
