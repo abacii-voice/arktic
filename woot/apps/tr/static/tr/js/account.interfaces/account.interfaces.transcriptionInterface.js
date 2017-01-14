@@ -43,6 +43,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		AccountComponents.counter('tb-1-mp-1-counter', {
 			appearance: {
 				style: {
+					'margin-top': '10px',
 					'height': '120px',
 					'width': '200px',
 				},
@@ -53,6 +54,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		AccountComponents.audio('tb-1-mp-2-audio', {
 			appearance: {
 				style: {
+					'margin-top': '10px',
 					'height': '60px',
 					'width': '400px',
 				},
@@ -63,6 +65,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		AccountComponents.captionField('tb-1-mp-3-caption', {
 			appearance: {
 				style: {
+					'margin-top': '10px',
 					'height': '200px',
 					'width': '500px',
 					'border': '1px solid #888',
@@ -161,7 +164,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				]);
 			} else {
 				Promise.all([
-					transcriptionMasterController.behaviours.down(),
+					// transcriptionMasterController.behaviours.down(),
+					caption.export(),
 				]);
 			}
 		});
@@ -725,8 +729,25 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			},
 		]
 		caption.export = function () {
-			//
-			return Util.ep();
+			var i, j, tokens = [];
+			for (i=0; i<caption.data.storage.virtual.length; i++) {
+				var virtual = caption.data.storage.virtual[i];
+				for (j=0; j<virtual.tokens.length; j++) {
+					tokens.push(virtual.tokens[j]);
+				}
+			}
+			return transcriptionMasterController.current().then(function (current) {
+				current.revisions = (current.revisions || []);
+				var revisionAlreadyExists = current.revisions.filter(function (revision) {
+					return JSON.stringify(revision.tokens) === JSON.stringify(tokens);
+				}).length > 0;
+				if (!revisionAlreadyExists) {
+					current.revisions.push({
+						time: new Date(),
+						tokens: tokens,
+					});
+				}
+			});
 		}
 		caption.styles = function () {
 			// word

@@ -24,6 +24,7 @@ AccountComponents.transcriptionMasterController = function () {
 		base.buffer = {};
 		base.active = 0;
 		base.updateThreshold = 4; // default
+		base.releaseThreshold = 50; // if buffer expands beyond this, previous revisions will not be re-sent.
 
 		// methods
 		base.countRemaining = function () {
@@ -134,6 +135,41 @@ AccountComponents.transcriptionMasterController = function () {
 		}
 		base.next = function () {
 			return base.setActive({increment: 1});
+		}
+		base.revision = {
+			period: 5000,
+			id: undefined,
+			main: function () {
+				// 1. get all transcriptions in the buffer
+				// 2. classify into two groups: released and unreleased
+				// 3. send list of transcriptions in the form:
+
+				// {
+				// 	released: false,
+				// 	revisions: [
+				// 		{
+				// 			time: '',
+				// 			tokens: [
+				// 				{
+				// 					complete: '',
+				// 					query: '',
+				// 				}
+				// 			]
+				// 		},
+				// 	]
+				// }
+
+				// A transcription with revisions cannot be released.
+			},
+			start: function () {
+				var _this = base;
+				if (_this.revision.id === undefined) {
+					_this.revision.id = setInterval(_this.revision.main, _this.revision.period);
+				}
+			},
+			stop: function () {
+				cancelInterval(_this.revision.id);
+			},
 		}
 
 		// behaviours
