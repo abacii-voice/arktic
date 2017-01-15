@@ -140,26 +140,19 @@ AccountComponents.transcriptionMasterController = function () {
 			period: 5000,
 			id: undefined,
 			main: function () {
-				// 1. get all transcriptions in the buffer
-				// 2. classify into two groups: released and unreleased
-				// 3. send list of transcriptions in the form:
-
-				// {
-				// 	released: false,
-				// 	revisions: [
-				// 		{
-				// 			time: '',
-				// 			tokens: [
-				// 				{
-				// 					complete: '',
-				// 					query: '',
-				// 				}
-				// 			]
-				// 		},
-				// 	]
-				// }
-
-				// A transcription with revisions cannot be released.
+				var _this = base;
+				
+				var i, j, transcriptions = [], bufferKeys = Object.keys(_this.buffer);
+				for (i=0; i<bufferKeys.length; i++) {
+					var bufferTranscription = _this.buffer[bufferKeys[i]];
+					var isBeforeThreshold = bufferTranscription.index < bufferKeys.length - _this.releaseThreshold;
+					transcriptions.push({
+						parent: bufferKeys[i],
+						revisions: bufferTranscription.revisions,
+						release: isBeforeThreshold,
+					});
+				}
+				Request.submit_revisions(transcriptions);
 			},
 			start: function () {
 				var _this = base;
@@ -168,7 +161,10 @@ AccountComponents.transcriptionMasterController = function () {
 				}
 			},
 			stop: function () {
-				cancelInterval(_this.revision.id);
+				var _this = base;
+				if (_this.revision.id !== undefined) {
+					cancelInterval(_this.revision.id);
+				}
 			},
 		}
 

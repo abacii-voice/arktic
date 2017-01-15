@@ -38,4 +38,4 @@ def submit_revisions(request):
 
 		# 1. for each piece of data, release fragment, complete fragment, or double check.
 
-		pass
+		return HttpResponse()
