@@ -14,4 +14,19 @@ var Request = {
 			});
 		});
 	},
+	submit_revisions: function (revisionData) {
+		return Permission.permit({id: revisionData}).then(function (data) {
+			var ajax_data = {
+				type: 'post',
+				data: data,
+				url: '/command/submit_revisions/',
+				error: function (xhr, ajaxOptions, thrownError) {
+					if (xhr.status === 404 || xhr.status === 0) {
+						Request.submit_revisions(revisionData);
+					}
+				}
+			}
+			return $.ajax(ajax_data);
+		});
+	},
 }
