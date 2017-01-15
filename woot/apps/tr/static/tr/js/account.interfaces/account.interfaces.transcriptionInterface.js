@@ -164,8 +164,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				]);
 			} else {
 				Promise.all([
-					// transcriptionMasterController.behaviours.down(),
-					caption.export(),
+					transcriptionMasterController.behaviours.down(),
 				]);
 			}
 		});
@@ -1180,7 +1179,14 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				states: {
 					'transcription-state': {
 						fn: function (_this) {
+							_this.revision.start();
 							return _this.update();
+						}
+					},
+					'control-state': {
+						fn: function (_this) {
+							_this.revision.stop();
+							return Util.ep();
 						}
 					},
 				},

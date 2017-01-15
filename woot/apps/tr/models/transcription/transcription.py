@@ -125,18 +125,23 @@ class TranscriptionFragment(models.Model):
 	index = models.PositiveIntegerField(default=0)
 	date_created = models.DateTimeField(auto_now_add=True)
 	is_reconciled = models.BooleanField(default=False)
+	is_released = models.BooleanField(default=False)
 
 	# methods
 	def data(self, path, permission):
 		data = {
 			'date_created': str(self.date_created),
 			'is_reconciled': str(self.is_reconciled),
+			'is_released': str(self.is_reconciled),
 			'phrase': self.parent.content.data(path, permission),
 			'index': str(self.index),
 			'parent': self.parent.id,
 		}
 
 		return data
+
+	def release(self):
+		pass
 
 class TranscriptionInstance(models.Model):
 
