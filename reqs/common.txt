@@ -2,8 +2,7 @@
 django>=1.10
 
 # Python base libraries commonly used
-scipy
-pandas
+arrow>=0.10.0
 
 # js
 django_compressor

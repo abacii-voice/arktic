@@ -141,13 +141,14 @@ AccountComponents.transcriptionMasterController = function () {
 			id: undefined,
 			main: function () {
 				var _this = base;
-				
+
 				var i, j, transcriptions = [], bufferKeys = Object.keys(_this.buffer);
 				for (i=0; i<bufferKeys.length; i++) {
 					var bufferTranscription = _this.buffer[bufferKeys[i]];
 					var isBeforeThreshold = bufferTranscription.index < bufferKeys.length - _this.releaseThreshold;
 					transcriptions.push({
-						parent: bufferKeys[i],
+						parent: bufferTranscription.parent,
+						id: bufferKeys[i],
 						revisions: bufferTranscription.revisions,
 						release: isBeforeThreshold,
 					});

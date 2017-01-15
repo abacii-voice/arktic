@@ -7,7 +7,7 @@ from django.conf import settings
 
 # local
 from apps.tr.access import access, process_request
-from apps.tr.models.transcription import Transcription
+from apps.tr.models.transcription import Transcription, TranscriptionFragment
 
 # load audio
 # http://code.tutsplus.com/tutorials/the-web-audio-api-what-is-it--cms-23735
@@ -37,5 +37,14 @@ def submit_revisions(request):
 	if verified:
 
 		# 1. for each piece of data, release fragment, complete fragment, or double check.
+		active_fragments = data['fragments']
+		for active_fragment in active_fragments:
+			# get fragment
+			fragment = TranscriptionFragment.objects.get(id=active_fragment['id'])
+			if active_fragment['release']:
+				fragment.release()
+			elif 'revisions' in active_fragment:
+				for revision in active_fragment['revisions']:
+					fragment.reconcile(revision)
 
 		return HttpResponse()
