@@ -13,7 +13,6 @@ class TranscriptionToken(models.Model):
 
 	'''
 
-
 	### Connections
 	project = models.ForeignKey('tr.Project', related_name='transcription_tokens')
 	role = models.ForeignKey('tr.Role', related_name='transcription_tokens')
@@ -51,7 +50,6 @@ class TranscriptionToken(models.Model):
 				})
 
 		return data
-
 
 class Transcription(models.Model):
 	'''
@@ -141,6 +139,9 @@ class TranscriptionFragment(models.Model):
 		return data
 
 	def release(self):
+		pass
+
+	def reconcile(self, revision):
 		pass
 
 class TranscriptionInstance(models.Model):
