@@ -29,7 +29,7 @@ class TranscriptionToken(models.Model):
 			for i in range(self.transcription_limit):
 				transcription = self.project.get_transcription()
 				if transcription is not None:
-					self.fragments.create(parent=transcription, index=i)
+					self.fragments.create(parent=transcription, session=self.role.user.active_session(), index=i)
 
 	def update(self):
 		if self.fragments.filter(is_reconciled=True) == self.transcription_limit:
@@ -117,13 +117,16 @@ class TranscriptionFragment(models.Model):
 	### Connections
 	parent = models.ForeignKey('tr.Transcription', related_name='fragments')
 	token = models.ForeignKey('tr.TranscriptionToken', related_name='fragments')
+	session = models.ForeignKey('users.Session', related_name='transcription_fragments')
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	index = models.PositiveIntegerField(default=0)
 	date_created = models.DateTimeField(auto_now_add=True)
+	date_reconciled = models.DateTimeField(auto_now_add=True)
 	is_reconciled = models.BooleanField(default=False)
 	is_released = models.BooleanField(default=False)
+	was_released_by_session = models.BooleanField(default=False)
 
 	# methods
 	def data(self, path, permission):
@@ -131,6 +134,7 @@ class TranscriptionFragment(models.Model):
 			'date_created': str(self.date_created),
 			'is_reconciled': str(self.is_reconciled),
 			'is_released': str(self.is_reconciled),
+			'was_released_by_session': str(self.was_released_by_session)
 			'phrase': self.parent.content.data(path, permission),
 			'index': str(self.index),
 			'parent': self.parent.id,
