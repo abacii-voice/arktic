@@ -48,3 +48,19 @@ def submit_revisions(request):
 					fragment.reconcile(revision)
 
 		return HttpResponse()
+
+# submit actions
+# Continuously submits a buffer of user actions
+def submit_actions(request):
+	user, permission, data, verified = process_request(request)
+	if verified:
+
+		# create an action for each piece of data
+		active_actions = data['actions']
+		for active_action in active_actions:
+			# create action
+			# action =
+			pass
+
+
+		return HttpResponse()

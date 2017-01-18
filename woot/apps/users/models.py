@@ -57,6 +57,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 				'last_name': self.last_name,
 				'is_activated': self.is_activated,
 				'billing_date': str(self.billing_date),
+				'active_session': self.sessions.get(is_active=True).data() if self.sessions.filter(is_active=True) else 'none',
 			})
 
 		return data
@@ -114,3 +115,46 @@ class User(AbstractBaseUser, PermissionsMixin):
 			return True
 		else:
 			return False # change to False when testing is done
+
+	def active_session(self):
+		return self.sessions.get(is_active=True) if self.sessions.filter(is_active=True) else None
+
+class Session(models.Model):
+
+	'''
+	This is created when a user loads an application page.
+
+	'''
+
+	### Connections
+	user = models.ForeignKey('users.User', related_name='sessions')
+
+	### Properties
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	is_active = models.BooleanField(default=True)
+	date_created = models.DateTimeField(auto_now_add=True)
+	type = models.CharField(max_length=255)
+
+	### Methods
+	# data
+	def data(self):
+		data = {
+			'is_active': str(self.is_active),
+			'date_created': str(self.date_created),
+			'type': self.type,
+		}
+
+		return data
+
+	def deactivate(self):
+		self.is_active = False
+		self.save()
+		# 1. release all active transcription fragments
+		if self.user.roles.filter(type='worker'):
+			for fragment in self.transcription_fragments.filter(is_reconciled=False):
+				fragment.release()
+
+		# 2. release all active moderation fragments
+		if self.user.roles.filter(type='moderator'):
+			for fragment in self.moderation_fragments.filter(is_reconciled=False):
+				fragment.release()
