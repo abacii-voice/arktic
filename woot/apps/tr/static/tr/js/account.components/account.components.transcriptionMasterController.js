@@ -1,7 +1,7 @@
 // initialise
 var AccountComponents = (AccountComponents || {});
 
-// counter
+// transcription master controller
 AccountComponents.transcriptionMasterController = function () {
 
 	// components

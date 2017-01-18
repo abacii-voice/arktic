@@ -4,6 +4,9 @@ from django.views.generic import View
 from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 
+# local
+from apps.users.models import Session
+
 ### TR views
 # 1. Home view
 class HomeView(View):
@@ -26,6 +29,13 @@ class AccountSPAView(View):
 		# get the user from the request
 		user = request.user
 		if user.is_authenticated():
+
+			# setup
+			# 1. create session and deactivate all other sessions
+			for session in Session.objects.filter(user=user):
+				session.deactivate()
+
+			session = user.sessions.create(type='account')
 
 			# METADATA
 			return render(request, 'tr/account.html', {'user': user})
