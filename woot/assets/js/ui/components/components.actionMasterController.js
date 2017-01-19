@@ -25,7 +25,11 @@ Components.actionMasterController = function () {
 
 		// methods
 		base.addAction = function (action) {
+			console.log('here');
+			var timestamp = new Date();
 			action.index = base.buffer.length;
+			action.time = timestamp.toString();
+			action.millis = timestamp.getMilliseconds().toString();
 			base.buffer.push(action);
 		}
 		base.action = {

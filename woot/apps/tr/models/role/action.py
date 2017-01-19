@@ -15,7 +15,7 @@ class Action(models.Model):
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 
 	session_index = models.PositiveIntegerField(default=0)
-	date_created = models.DateTimeField(auto_now_add=True)
+	date_created = models.DateTimeField(auto_now_add=False)
 	type = models.CharField(max_length=255)
 	metadata = models.TextField(default='')
 

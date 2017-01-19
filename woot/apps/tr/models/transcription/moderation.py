@@ -93,7 +93,7 @@ class ModerationFragment(models.Model):
 			'date_created': str(self.date_created),
 			'is_reconciled': str(self.is_reconciled),
 			'is_released': str(self.is_reconciled),
-			'was_released_by_session': str(self.was_released_by_session)
+			'was_released_by_session': str(self.was_released_by_session),
 			'phrase': self.parent.content.data(path, permission),
 			'index': str(self.index),
 			'parent': self.parent.id,
