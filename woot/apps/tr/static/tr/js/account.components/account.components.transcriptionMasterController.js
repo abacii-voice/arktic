@@ -103,7 +103,7 @@ AccountComponents.transcriptionMasterController = function () {
 					})[0];
 					var storage = _this.buffer[transcriptionId];
 					if (storage.data === undefined) {
-						return Request.load_audio(storage.parent).then(function (audioData) {
+						return AccountRequest.load_audio(storage.parent).then(function (audioData) {
 							storage.data = audioData;
 							return Util.ep();
 						});
@@ -153,7 +153,7 @@ AccountComponents.transcriptionMasterController = function () {
 						release: isBeforeThreshold,
 					});
 				}
-				Request.submit_revisions(transcriptions);
+				AccountRequest.submit_revisions(transcriptions);
 			},
 			start: function () {
 				var _this = base;

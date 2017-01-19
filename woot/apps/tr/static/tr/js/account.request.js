@@ -1,4 +1,4 @@
-var Request = {
+var AccountRequest = {
 	load_audio: function (transcriptionId) {
 		return Permission.permit({id: transcriptionId}).then(function (data) {
 			return new Promise(function(resolve, reject) {
@@ -22,22 +22,7 @@ var Request = {
 				url: '/command/submit_revisions/',
 				error: function (xhr, ajaxOptions, thrownError) {
 					if (xhr.status === 404 || xhr.status === 0) {
-						Request.submit_revisions(revisionData);
-					}
-				},
-			}
-			return $.ajax(ajax_data);
-		});
-	},
-	submit_actions: function (actions) {
-		return Permission.permit({actions: actions}).then(function (data) {
-			var ajax_data = {
-				type: 'post',
-				data: data,
-				url: '/command/submit_actions/',
-				error: function (xhr, ajaxOptions, thrownError) {
-					if (xhr.status === 404 || xhr.status === 0) {
-						Request.submit_actions(actions);
+						AccountRequest.submit_revisions(revisionData);
 					}
 				},
 			}

@@ -9,6 +9,9 @@ from django.conf import settings
 from apps.tr.access import access, process_request
 from apps.tr.models.transcription import Transcription, TranscriptionFragment
 
+# util
+from datetime import datetime
+
 # load audio
 # http://code.tutsplus.com/tutorials/the-web-audio-api-what-is-it--cms-23735
 def load_audio(request):
@@ -59,8 +62,9 @@ def submit_actions(request):
 		active_actions = data['actions']
 		for active_action in active_actions:
 			# create action
-			# action =
-			pass
-
+			date = '{} {}'.format(active_action['time'], int(active_action['millis']) * 1000)
+			# Thu Jan 19 2017 15:42:29 GMT+0000 (GMT) micro
+			# '%a %b %d %Y %H:%M:%S %Z%z (GMT) %f'
+			action, action_created = permission.role.actions.get_or_create(session=user.active_session(), session_index=int(active_action['index']), date_created=datetime.strptime(date, '%a %b %d %Y %H:%M:%S %Z%z (GMT) %f'))
 
 		return HttpResponse()

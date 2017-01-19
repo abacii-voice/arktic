@@ -10,4 +10,5 @@ from apps.tr.requests.commands.commands import *
 urlpatterns = [
 	url(r'^load_audio/', load_audio),
 	url(r'^submit_revisions/', submit_revisions),
+	url(r'^submit_actions/', submit_actions),
 ]
