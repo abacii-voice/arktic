@@ -122,6 +122,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		// transcription master controller
 		AccountComponents.transcriptionMasterController(),
 
+		Components.actionMasterController(),
+
 	]).then(function (components) {
 
 		// unpack components
@@ -140,6 +142,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 			// non interface elements
 			transcriptionMasterController,
+			amc,
 		] = components;
 
 		// KEYBINDINGS
@@ -158,6 +161,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 		Mousetrap.bind('down', function (event) {
 			event.preventDefault();
+			amc.addAction({type: 'key.down'});
 			if (autocomplete.isFocussed && caption.isFocussed) {
 				Promise.all([
 					autocomplete.behaviours.down(),
@@ -291,6 +295,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 				// change active
 				_this.active = (options.index !== undefined ? options.index : undefined || ((_this.active || 0) + (_this.active !== undefined ? (options.increment || 0) : 0)));
+
+				// boundary conditions
+				_this.active = _this.active < 0 ? 0 : (_this.active > Object.keys(_this.buffer).length - 1 ? Object.keys(_this.buffer).length : _this.active);
 
 				return _this.update();
 			}).then(function () {
@@ -1189,6 +1196,22 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							return Util.ep();
 						}
 					},
+				},
+			}),
+
+			// action master controller
+			amc.setState({
+				defaultState: {
+					fn: function (_this) {
+						_this.action.start();
+						return Util.ep();
+					}
+				},
+				states: {
+					'client-state': 'default',
+					'role-state': 'default',
+					'control-state': 'default',
+					'transcription-state': 'default',
 				},
 			}),
 
