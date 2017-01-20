@@ -13,9 +13,9 @@ class Action(models.Model):
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
-
+	context = models.CharField(max_length=255)
 	session_index = models.PositiveIntegerField(default=0)
-	date_created = models.DateTimeField(auto_now_add=False)
+	date_created = models.DateTimeField(auto_now_add=True)
 	type = models.CharField(max_length=255)
 	metadata = models.TextField(default='')
 
@@ -23,6 +23,8 @@ class Action(models.Model):
 	# data
 	def data(self):
 		data = {
+			'context': self.context,
+			'index': str(self.index),
 			'date_created': str(self.date_created),
 			'type': self.type,
 			'metadata': self.metadata,

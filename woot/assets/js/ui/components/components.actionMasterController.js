@@ -2,7 +2,7 @@
 var Components = (Components || {});
 
 // action master controller
-Components.actionMasterController = function () {
+Components.actionMasterController = function (context) {
 
 	// components
 	return Promise.all([
@@ -25,11 +25,11 @@ Components.actionMasterController = function () {
 
 		// methods
 		base.addAction = function (action) {
-			console.log('here');
 			var timestamp = new Date();
 			action.index = base.buffer.length;
 			action.time = timestamp.toString();
 			action.millis = timestamp.getMilliseconds().toString();
+			action.context = context;
 			base.buffer.push(action);
 		}
 		base.action = {
