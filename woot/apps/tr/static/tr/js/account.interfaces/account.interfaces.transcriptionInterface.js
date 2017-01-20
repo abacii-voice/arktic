@@ -44,8 +44,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			appearance: {
 				style: {
 					'margin-top': '10px',
-					'height': '120px',
-					'width': '200px',
+					'height': '80px',
+					'width': '400px',
 				},
 			},
 		}),
@@ -121,8 +121,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		// Non interface elements
 		// transcription master controller
 		AccountComponents.transcriptionMasterController(),
-
-		Components.actionMasterController(),
+		Components.actionMasterController('transcription'),
 
 	]).then(function (components) {
 
@@ -147,6 +146,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 		// KEYBINDINGS
 		Mousetrap.bind('up', function (event) {
+			amc.addAction({type: 'key.up'});
 			event.preventDefault();
 			if (autocomplete.isFocussed && caption.isFocussed) {
 				Promise.all([
@@ -158,7 +158,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				]);
 			}
 		});
-
 		Mousetrap.bind('down', function (event) {
 			event.preventDefault();
 			amc.addAction({type: 'key.down'});
@@ -172,49 +171,49 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				]);
 			}
 		});
-
 		Mousetrap.bind('left', function (event) {
+			amc.addAction({type: 'key.left'});
 			Promise.all([
 				autocomplete.behaviours.left(),
 				caption.behaviours.left(event),
 			]);
 		});
-
 		Mousetrap.bind('right', function (event) {
+			amc.addAction({type: 'key.right'});
 			Promise.all([
 				caption.behaviours.right(event),
 			]);
 		});
-
 		Mousetrap.bind(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], function (event) {
 			event.preventDefault();
 			var char = String.fromCharCode(event.which);
+			amc.addAction({type: 'key.number', metadata: {'value': char}});
 			Promise.all([
 				autocomplete.behaviours.number(char),
 			]);
 		});
-
 		Mousetrap.bind('enter', function (event) {
+			amc.addAction({type: 'key.enter'});
 			event.preventDefault();
 			Promise.all([
 				caption.behaviours.enter(),
 			]);
 		});
-
 		Mousetrap.bind('backspace', function (event) {
+			amc.addAction({type: 'key.backspace'});
 			Promise.all([
 				autocomplete.behaviours.backspace(),
 				caption.behaviours.backspace(event),
 			]);
 		});
-
 		Mousetrap.bind('alt+backspace', function (event) {
+			amc.addAction({type: 'key.alt+backspace'});
 			Promise.all([
 				caption.behaviours.altbackspace(event),
 			]);
 		});
-
 		Mousetrap.bind('space', function (event) {
+			amc.addAction({type: 'key.space'});
 			if (caption.isFocussed) {
 				event.preventDefault();
 			}
@@ -222,14 +221,14 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				caption.behaviours.space(),
 			]);
 		});
-
 		Mousetrap.bind('alt+right', function (event) {
+			amc.addAction({type: 'key.alt+right'});
 			Promise.all([
 				caption.behaviours.altright(event),
 			]);
 		});
-
 		Mousetrap.bind('alt+left', function (event) {
+			amc.addAction({type: 'key.alt+left'});
 			Promise.all([
 				caption.behaviours.altleft(event),
 			]);
@@ -279,6 +278,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				return Promise.all([
 					audio.display(current),
 					caption.control.input.newCaption(current),
+					counter.update(transcriptionMasterController.buffer, current),
 				]);
 			});
 		}
@@ -912,22 +912,27 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					});
 				}
 				unitBase.input = function () {
+					amc.addAction({type: 'caption.input'});
 					if (unitBase.isFocussed) {
-						return unitBase.getContent().then(function (unitContent) {
+						return Promise.all([
+							unitBase.getContent().then(function (unitContent) {
 
-							// temporarily update metadata to prepare for completion, even though this might be overwritten by the subsequent search.setContent.
-							return unitBase.updateUnitMetadata({query: unitContent, complete: unitBase.metadata.complete}).then(function () {
-								return unitBase.phrase.updateQueryFromActive().then(function (updatedQuery) {
-									autocomplete.target = unitBase.phrase.id;
-									return autocomplete.search.setContent({query: updatedQuery, trigger: true});
+								// temporarily update metadata to prepare for completion, even though this might be overwritten by the subsequent search.setContent.
+								return unitBase.updateUnitMetadata({query: unitContent, complete: unitBase.metadata.complete}).then(function () {
+									return unitBase.phrase.updateQueryFromActive().then(function (updatedQuery) {
+										autocomplete.target = unitBase.phrase.id;
+										return autocomplete.search.setContent({query: updatedQuery, trigger: true});
+									});
 								});
-							});
-						});
+							}),
+							counter.active.setPending(),
+						]);
 					} else {
 						return Util.ep();
 					}
 				}
 				unitBase.focus = function (position) {
+					amc.addAction({type: 'caption.focus'});
 					if (!unitBase.isFocussed) {
 						caption.isFocussed = true;
 						unitBase.isFocussed = true;
@@ -942,6 +947,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					}
 				}
 				unitBase.blur = function () {
+					amc.addAction({type: 'caption.blur'});
 					if (unitBase.isFocussed) {
 						unitBase.isFocussed = false;
 						if (caption.active.id === unitBase.id) {
@@ -1055,13 +1061,17 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					if (inPosition) {
 						if (caption.active.isLastToken() && caption.active.isComplete) {
 							var phrase = caption.active.phrase;
-							return caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
-								return caption.next().then(function () {
-									return caption.active.setCaretPosition('start');
-								});
-							}).then(function () {
-								return caption.data.objects.phrase.split(phrase);
-							});
+							return Promise.all([
+								// TODO: modify this behaviour to complete only and move to next when at the end of the transcription
+								counter.active.setComplete(),
+								caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
+									return caption.next().then(function () {
+										return caption.active.setCaretPosition('start');
+									});
+								}).then(function () {
+									return caption.data.objects.phrase.split(phrase);
+								}),
+							]);
 						} else if (caption.active.isLastQueryToken()) {
 							return caption.behaviours.right();
 						} else {
@@ -1160,6 +1170,67 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			} else {
 				return Util.ep();
 			}
+		}
+
+		// Counter
+		counter.unit = function () {
+			var unitId = '{counterId}-icon-{id}'.format({counterId: counter.id, id: Util.makeid()});
+			return Promise.all([
+				// base
+				UI.createComponent(unitId, {
+					template: UI.template('div', 'ie button border'),
+					appearance: {
+						style: {
+							'height': '35px',
+							'width': '35px',
+							'float': 'left',
+							'margin-right': '5px',
+							'margin-bottom': '5px',
+						},
+					},
+				}),
+
+				// done glyph
+				UI.createComponent('{id}-done'.format({id: unitId}), {
+
+				}),
+
+				// pending glyph
+				UI.createComponent('{id}-pending'.format({id: unitId}), {
+
+				}),
+			]).then(function (components) {
+				var [
+					unitBase,
+					doneGlyph,
+					pendingGlyph,
+				] = components;
+
+				// methods
+				unitBase.activate = function () {
+					return Util.ep();
+				}
+				unitBase.deactivate = function () {
+					return Util.ep();
+				}
+				unitBase.setComplete = function () {
+					return Util.ep();
+				}
+				unitBase.setPending = function () {
+					return Util.ep();
+				}
+
+				return Promise.all([
+
+				]).then(function () {
+					return unitBase.setChildren([
+						doneGlyph,
+						pendingGlyph,
+					]);
+				}).then(function () {
+					return unitBase;
+				})
+			});
 		}
 
 		// connect
@@ -1292,6 +1363,13 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							return _this.control.reset();
 						}
 					}
+				},
+			}),
+
+			// counter
+			counter.setState({
+				'transcription-state': function (_this) {
+					return _this.styles();
 				},
 			}),
 

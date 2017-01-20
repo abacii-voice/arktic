@@ -11,6 +11,7 @@ from apps.tr.models.transcription import Transcription, TranscriptionFragment
 
 # util
 from datetime import datetime
+import json
 
 # load audio
 # http://code.tutsplus.com/tutorials/the-web-audio-api-what-is-it--cms-23735
@@ -62,9 +63,20 @@ def submit_actions(request):
 		active_actions = data['actions']
 		for active_action in active_actions:
 			# create action
-			date = '{} {}'.format(active_action['time'], int(active_action['millis']) * 1000)
 			# Thu Jan 19 2017 15:42:29 GMT+0000 (GMT) micro
 			# '%a %b %d %Y %H:%M:%S %Z%z (GMT) %f'
-			action, action_created = permission.role.actions.get_or_create(session=user.active_session(), session_index=int(active_action['index']), date_created=datetime.strptime(date, '%a %b %d %Y %H:%M:%S %Z%z (GMT) %f'))
+			metadata = active_action['metadata'] if 'metadata' in active_action else ''
+			action, action_created = permission.role.actions.get_or_create(
+				context=active_action['context'],
+				session=user.active_session(),
+				session_index=int(active_action['index']),
+				type=active_action['type'],
+			)
+
+			if action_created:
+				date = '{} {}'.format(active_action['time'], int(active_action['millis']) * 1000)
+				action.date_created = datetime.strptime(date, '%a %b %d %Y %H:%M:%S %Z%z (GMT) %f') # damn, girl, you ugly
+				action.metadata = json.dumps(metadata)
+				action.save()
 
 		return HttpResponse()

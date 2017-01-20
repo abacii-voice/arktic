@@ -29,11 +29,10 @@ AccountComponents.counter = function (id, args) {
 			template: UI.template('div', 'ie border border-radius'),
 			appearance: {
 				style: {
-					'height': style.width,
+					'height': '100%',
 					'width': style.width,
 					'border-bottom-left-radius': '0px',
 					'border-bottom-right-radius': '0px',
-					'border-bottom': '0px',
 				},
 			},
 		}),
@@ -61,30 +60,6 @@ AccountComponents.counter = function (id, args) {
 			},
 		}),
 
-		// left column
-		UI.createComponent('{id}-left-column'.format({id: id}), {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '50%',
-					'float': 'left',
-				},
-			},
-		}),
-
-		// right column
-		UI.createComponent('{id}-right-column'.format({id: id}), {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '50%',
-					'float': 'left',
-				},
-			},
-		}),
-
 	]).then(function (components) {
 		// unpack components
 		var [
@@ -93,124 +68,72 @@ AccountComponents.counter = function (id, args) {
 			dailyHeader,
 			cycleHeader,
 			counterWrapper,
-			leftColumn,
-			rightColumn,
 		] = components;
 
-		// COMBINE
+		// methods
+		base.styles = function () {
 
-		// header properties
-		headerWrapper.counter = counterWrapper;
-		headerWrapper.dailyCount = 0;
-		headerWrapper.cycleCount = 0;
-		headerWrapper.increment = function () {
-			// add one to the daily and cycle counts and increment counter wrapper
-			var _this = headerWrapper;
-			// counterWrapper.increment();
-			return Promise.all([
-				new Promise(function(resolve, reject) {
-					_this.dailyCount += 1;
-					_this.cycleCount += 1;
-					resolve();
-				}),
-				counterWrapper.increment(),
-			]).then(function () {
-				return _this.set();
-			});
+			return Util.ep();
 		}
-		headerWrapper.set = function () {
-			var _this = headerWrapper;
-			return new Promise(function(resolve, reject) {
-				dailyHeader.model().html(_this.dailyCount);
-				cycleHeader.model().html(_this.cycleCount);
-				resolve();
-			});
-		}
-		headerWrapper.load = function () {
-			// set value and is_loaded, display value
-			var _this = headerWrapper;
-			return Promise.all([
-				args.options.source.daily(),
-				args.options.source.cycle(),
-			]).then(function (paths) {
-				return Promise.all([
-					Context.get(paths[0]),
-					Context.get(paths[1]),
-				]);
-			}).then(function (values) {
-				return new Promise(function(resolve, reject) {
-					_this.dailyCount = values[0];
-					_this.cycleCount = values[1];
-					resolve();
-				});
-			}).then(function () {
-				return _this.set();
-			});
-		}
-		headerWrapper.setChildren([
-			dailyHeader,
-			cycleHeader,
-		]);
-
-		// counter properties
-		counterWrapper.columnMax = 15; // calculate based on height
-		counterWrapper.leftColumnCount = 0;
-		counterWrapper.rightColumnCount = 0;
-		counterWrapper.increment = function () {
-			var _this = counterWrapper;
-			// if within limit, add another token
-			// else reset and clear all tokens and add a new one
-			return UI.createComponent('completion-token-{index}'.format({index: (_this.leftColumnCount + _this.rightColumnCount)}), {
-				template: UI.template('div', 'ie border'),
-				appearance: {
-					style: {
-						'margin-left': '5px',
-						'margin-top': '5px',
-						'height': '10px',
-						'width': '10px',
-					},
-				},
-			}).then(function (newCompletionToken) {
-				if (_this.leftColumnCount == _this.columnMax) {
-					if (_this.rightColumnCount == _this.columnMax) {
-						// reset both and add to left column
-						_this.leftColumnCount = 0;
-						_this.rightColumnCount = 0;
-						return leftColumn.removeChildren().then(function () {
-							return rightColumn.removeChildren();
-						}).then(function () {
-							_this.leftColumnCount++;
-							return leftColumn.setChildren([
-								newCompletionToken,
-							]);
-						});
-					} else {
-						// add to right column
-						_this.rightColumnCount++;
-						return rightColumn.setChildren([
-							newCompletionToken,
-						]);
-					}
-				} else {
-					// add to left column
-					_this.leftColumnCount++;
-					return leftColumn.setChildren([
-						newCompletionToken,
-					]);
+		base.update = function (buffer, current) {
+			// Display as many units as the length of the buffer filtered for is_available=false
+			// The done and current states can be set afterwards.
+			return Promise.ordered(Object.keys(buffer).map(function (key) {
+				return buffer[key];
+			}).filter(function (bufferItem) {
+				return !bufferItem.is_available && !bufferItem.hasCounter;
+			}).sort(function (bufferItem) {
+				return bufferItem.index;
+			}).map(function (bufferItem) {
+				return function () {
+					bufferItem.hasCounter = true;
+					return base.unit().then(function (unit) {
+						unit.bufferIndex = bufferItem.index;
+						return headerWrapper.setChildren([unit]);
+					});
 				}
-			})
+			})).then(function () {
+				return base.setActive({index: current.index});
+			});
 		}
-		counterWrapper.setChildren([
-			leftColumn,
-			rightColumn,
-		]);
+		base.setActive = function (options) {
+			options = (options || {});
 
-		base.head = headerWrapper;
-		base.setChildren([
-			headerWrapper,
-			counterWrapper,
-		]);
+			// changes
+			var previousIndex = base.currentIndex;
+			base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (base.currentIndex !== undefined ? (options.increment || 0) : 0)));
 
-		return base;
+			// boundary conditions
+			base.currentIndex = base.currentIndex > counterWrapper.children.length - 1 ? counterWrapper.children.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
+
+			if (base.currentIndex !== previousIndex) {
+				return base.deactivate().then(function () {
+					base.active = headerWrapper.children.filter(function (unit) {
+						return unit.bufferIndex === base.currentIndex;
+					})[0];;
+					return base.active.activate();
+				});
+			} else {
+				return Util.ep();
+			}
+		}
+		base.deactivate = function () {
+			if (base.active) {
+				return base.active.deactivate();
+			} else {
+				return Util.ep();
+			}
+		}
+
+		return Promise.all([
+
+		]).then(function () {
+			return base.setChildren([
+				headerWrapper,
+				counterWrapper,
+			]);
+		}).then(function () {
+			return base;
+		})
 	});
 }
