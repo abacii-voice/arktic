@@ -96,11 +96,6 @@ AccountInterfaces.controlInterface = function (id, args) {
 			state: {
 				stateMap: 'transcription-state',
 			},
-			bindings: {
-				'click': function (_this) {
-					return _this.triggerState();
-				},
-			},
 		}),
 		UI.createComponent('cs-cl-moderation-button', {
 			template: UI.template('div', 'ie button'),
@@ -135,6 +130,9 @@ AccountInterfaces.controlInterface = function (id, args) {
 			},
 		}),
 
+		// non-interface elements
+		Components.actionMasterController('control'),
+
 	]).then(function (components) {
 		// unpack components
 		var [
@@ -148,11 +146,11 @@ AccountInterfaces.controlInterface = function (id, args) {
 			transcriptionButton,
 			moderationButton,
 			uploadButton,
+			amc,
 		] = components;
 
-		// ASSOCIATE
-		// key bindings and other
-		// TRANSCRIPTION INTERFACE
+		// action master controller
+		amc.action.period = 20000;
 
 		// CLIENT SIDEBAR
 		clientList.autocomplete = false;
@@ -279,6 +277,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 				return Promise.all([
 					unitBase.setBindings({
 						'click': function (_this) {
+							amc.addAction({type: 'clientlist.click', metadata: {client: datum.id}});
 							Active.set('client', datum.id).then(function () {
 								return _this.triggerState();
 							});
@@ -428,6 +427,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 							return Active.get('client').then(function (client_id) {
 								return Context.get('user.clients.{client_id}.roles.{role_id}.project'.format({client_id: client_id, role_id: datum.id}));
 							}).then(function (project_id) {
+								amc.addAction({type: 'rolelist.click', metadata: {project: project_id, role: datum.id}});
 								return Promise.all([
 									Active.set('project', project_id),
 									Active.set('role', datum.id),
@@ -456,6 +456,22 @@ AccountInterfaces.controlInterface = function (id, args) {
 
 		// complete promises
 		return Promise.all([
+
+			// action master controller
+			amc.setState({
+				defaultState: {
+					fn: function (_this) {
+						_this.action.start();
+						return Util.ep();
+					}
+				},
+				states: {
+					'client-state': 'default',
+					'role-state': 'default',
+					'control-state': 'default',
+					'transcription-state': 'default',
+				},
+			}),
 
 			// CLIENT SIDEBAR
 			clientList.unitStyle.apply(),
@@ -516,6 +532,15 @@ AccountInterfaces.controlInterface = function (id, args) {
 			roleList.setSearch({mode: 'off', placeholder: 'Search roles...'}),
 
 			// CONTROL SIDEBAR
+			transcriptionButton.setBindings({
+				'click': function (_this) {
+					amc.addAction({type: 'transcription-button.click'});
+					return _this.triggerState();
+				},
+			}),
+			moderationButton.setBindings({}),
+			uploadButton.setBindings({}),
+
 			controlSidebar.components.main.setChildren([
 				controlList,
 			]),
