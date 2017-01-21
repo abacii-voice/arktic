@@ -165,6 +165,7 @@ AccountComponents.transcriptionMasterController = function () {
 				var _this = base;
 				if (_this.revision.id !== undefined) {
 					clearInterval(_this.revision.id);
+					_this.revision.id = undefined;
 				}
 			},
 		}

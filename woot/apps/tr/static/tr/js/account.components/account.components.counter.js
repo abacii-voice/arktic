@@ -30,7 +30,7 @@ AccountComponents.counter = function (id, args) {
 			appearance: {
 				style: {
 					'height': '100%',
-					'width': '60px',
+					'width': '105px',
 					'float': 'left',
 				},
 			},
@@ -52,7 +52,7 @@ AccountComponents.counter = function (id, args) {
 			appearance: {
 				style: {
 					'height': style.height,
-					'width': 'calc(100% - 60px)',
+					'width': 'calc(100% - 105px)',
 					'float': 'left',
 				},
 			},
@@ -86,7 +86,12 @@ AccountComponents.counter = function (id, args) {
 			});
 		}
 		base.styles = function () {
-
+			jss.set('#{id} .word'.format({id: base.id}), {
+				'color': '#ccc',
+			});
+			jss.set('#{id} .word.active'.format({id: base.id}), {
+				'color': '#ccc',
+			});
 			return Util.ep();
 		}
 		base.update = function (current) {
