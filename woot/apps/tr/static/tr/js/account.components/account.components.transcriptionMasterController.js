@@ -6,7 +6,7 @@ AccountComponents.transcriptionMasterController = function () {
 
 	// components
 	return Promise.all([
-		UI.createComponent('', {}),
+		UI.createComponent('transcription-master-controller', {}),
 	]).then(function (components) {
 		// unpack components
 		var [
@@ -123,7 +123,7 @@ AccountComponents.transcriptionMasterController = function () {
 					var removeBuffer = _this.buffer[key];
 					if (removeBuffer.source !== undefined) {
 						removeBuffer.source.disconnect();
-						removeBuffer.has_waveform = false;
+						removeBuffer.isLoaded = false;
 						delete removeBuffer.source;
 						delete removeBuffer.waveform;
 					}
@@ -164,7 +164,7 @@ AccountComponents.transcriptionMasterController = function () {
 			stop: function () {
 				var _this = base;
 				if (_this.revision.id !== undefined) {
-					cancelInterval(_this.revision.id);
+					clearInterval(_this.revision.id);
 				}
 			},
 		}

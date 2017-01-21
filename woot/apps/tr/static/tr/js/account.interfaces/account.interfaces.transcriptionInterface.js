@@ -44,7 +44,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			appearance: {
 				style: {
 					'margin-top': '10px',
-					'height': '80px',
+					'height': '68px',
 					'width': '400px',
 				},
 			},
@@ -278,7 +278,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				return Promise.all([
 					audio.display(current),
 					caption.control.input.newCaption(current),
-					counter.update(transcriptionMasterController.buffer, current),
+					// counter.update(current),
 				]);
 			});
 		}
@@ -286,7 +286,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			var _this = transcriptionMasterController;
 			options = (options || {});
 
-			audio.controller.has_waveform = false;
+			audio.controller.isLoaded = false;
 			return Promise.all([
 				caption.export(),
 				audio.stop(),
@@ -1181,11 +1181,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					template: UI.template('div', 'ie button border'),
 					appearance: {
 						style: {
-							'height': '35px',
-							'width': '35px',
+							'height': '34px',
+							'width': '34px',
 							'float': 'left',
-							'margin-right': '5px',
-							'margin-bottom': '5px',
 						},
 					},
 				}),
@@ -1264,7 +1262,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					'control-state': {
 						fn: function (_this) {
 							_this.revision.stop();
-							return Util.ep();
+							return _this.reset();
 						}
 					},
 				},
@@ -1368,8 +1366,12 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 			// counter
 			counter.setState({
-				'transcription-state': function (_this) {
-					return _this.styles();
+				states: {
+					'transcription-state': {
+						fn: function (_this) {
+							return _this.setup();
+						}
+					}
 				},
 			}),
 
