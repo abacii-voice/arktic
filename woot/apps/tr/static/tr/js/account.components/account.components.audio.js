@@ -116,7 +116,7 @@ AccountComponents.audio = function (id, args) {
 		base.load = function () {
 			var _this = base;
 			return Util.ep().then(function () {
-				if (_this.controller.data === undefined ) { // external controller just needs to set the _this.controller.data variable to work.
+				if (_this.controller.rawData === undefined) { // external controller just needs to set the _this.controller.data variable to work.
 					return base.path().then(function (resolvedPath) {
 						base.process(resolvedPath);
 					});
@@ -124,12 +124,12 @@ AccountComponents.audio = function (id, args) {
 					return Util.ep();
 				}
 			}).then(function () {
-				if (!_this.controller.has_waveform) {
+				if (!_this.controller.isLoaded) {
 					// decode the incoming audio data and store it with the metadata.
 					return new Promise(function(resolve, reject) {
-						_this.controller.context.decodeAudioData(_this.controller.data, function (decoded) {
+						_this.controller.context.decodeAudioData(_this.controller.rawData, function (decoded) {
 							_this.controller.data = decoded;
-							_this.controller.has_waveform = true;
+							_this.controller.isLoaded = true;
 							resolve();
 						});
 					});
@@ -140,7 +140,6 @@ AccountComponents.audio = function (id, args) {
 				if (_this.controller.source !== undefined) {
 					_this.controller.source.disconnect();
 				}
-
 				_this.controller.source = _this.controller.context.createBufferSource();
 				_this.controller.source.buffer = _this.controller.data;
 				_this.controller.source.connect(_this.controller.context.destination);
@@ -197,7 +196,7 @@ AccountComponents.audio = function (id, args) {
 		}
 		base.display = function (current) {
 			var _this = base;
-			_this.controller.data = current.data;
+			_this.controller.rawData = current.data;
 			return audioTrackCanvas.start().then(function () {
 				return _this.load();
 			}).then(function () {
