@@ -30,9 +30,8 @@ AccountComponents.counter = function (id, args) {
 			appearance: {
 				style: {
 					'height': '100%',
-					'width': style.width,
-					'border-bottom-left-radius': '0px',
-					'border-bottom-right-radius': '0px',
+					'width': '60px',
+					'float': 'left',
 				},
 			},
 		}),
@@ -49,13 +48,12 @@ AccountComponents.counter = function (id, args) {
 
 		// counter wrapper
 		UI.createComponent('{id}-counter-wrapper'.format({id: id}), {
-			template: UI.template('div', 'ie border'),
+			template: UI.template('div', 'ie'),
 			appearance: {
 				style: {
-					'height': 'calc(100% - {width}px)'.format({width: parseInt(style.width)}),
-					'width': style.width,
-					'border-bottom-left-radius': '5px',
-					'border-bottom-right-radius': '5px',
+					'height': style.height,
+					'width': 'calc(100% - 60px)',
+					'float': 'left',
 				},
 			},
 		}),
@@ -71,30 +69,28 @@ AccountComponents.counter = function (id, args) {
 		] = components;
 
 		// methods
+		base.limit = 20;
+		base.setup = function () {
+			return base.styles().then(function () {
+				if (counterWrapper.children.length === 0) {
+					return Promise.ordered(Array.range(base.limit).map(function (index) {
+						return function () {
+							return base.unit().then(function (unit) {
+								return counterWrapper.setChildren([unit]);
+							});
+						}
+					}));
+				} else {
+					return Util.ep();
+				}
+			});
+		}
 		base.styles = function () {
 
 			return Util.ep();
 		}
-		base.update = function (buffer, current) {
-			// Display as many units as the length of the buffer filtered for is_available=false
-			// The done and current states can be set afterwards.
-			return Promise.ordered(Object.keys(buffer).map(function (key) {
-				return buffer[key];
-			}).filter(function (bufferItem) {
-				return !bufferItem.is_available && !bufferItem.hasCounter;
-			}).sort(function (bufferItem) {
-				return bufferItem.index;
-			}).map(function (bufferItem) {
-				return function () {
-					bufferItem.hasCounter = true;
-					return base.unit().then(function (unit) {
-						unit.bufferIndex = bufferItem.index;
-						return headerWrapper.setChildren([unit]);
-					});
-				}
-			})).then(function () {
-				return base.setActive({index: current.index});
-			});
+		base.update = function (current) {
+			return base.setActive({index: current.index});
 		}
 		base.setActive = function (options) {
 			options = (options || {});
@@ -108,7 +104,7 @@ AccountComponents.counter = function (id, args) {
 
 			if (base.currentIndex !== previousIndex) {
 				return base.deactivate().then(function () {
-					base.active = headerWrapper.children.filter(function (unit) {
+					base.active = counterWrapper.children.filter(function (unit) {
 						return unit.bufferIndex === base.currentIndex;
 					})[0];;
 					return base.active.activate();
