@@ -44,8 +44,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			appearance: {
 				style: {
 					'margin-top': '10px',
-					'height': '68px',
-					'width': '400px',
+					'height': '80px',
+					'width': '555px',
 				},
 			},
 		}),
@@ -56,7 +56,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				style: {
 					'margin-top': '10px',
 					'height': '60px',
-					'width': '400px',
+					'width': '555px',
 				},
 			},
 		}),
@@ -67,9 +67,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				style: {
 					'margin-top': '10px',
 					'height': '200px',
-					'width': '500px',
+					'width': '555px',
 					'border': '1px solid #888',
 				},
+				classes: ['border-radius'],
 			},
 		}),
 
@@ -1178,12 +1179,15 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			return Promise.all([
 				// base
 				UI.createComponent(unitId, {
-					template: UI.template('div', 'ie button border'),
+					template: UI.template('div', 'ie button border border-radius'),
 					appearance: {
 						style: {
-							'height': '34px',
-							'width': '34px',
+							'height': '35px',
+							'width': '35px',
 							'float': 'left',
+							'margin-left': '10px',
+							'margin-bottom': '10px',
+							'box-sizing': 'border-box',
 						},
 					},
 				}),
@@ -1253,16 +1257,16 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			// transcription master controller
 			transcriptionMasterController.setState({
 				states: {
+					'control-state': {
+						fn: function (_this) {
+							_this.revision.stop();
+							return Util.ep();
+						}
+					},
 					'transcription-state': {
 						fn: function (_this) {
 							_this.revision.start();
 							return _this.update();
-						}
-					},
-					'control-state': {
-						fn: function (_this) {
-							_this.revision.stop();
-							return _this.reset();
 						}
 					},
 				},
@@ -1270,17 +1274,19 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 			// action master controller
 			amc.setState({
-				defaultState: {
-					fn: function (_this) {
-						_this.action.start();
-						return Util.ep();
-					}
-				},
 				states: {
-					'client-state': 'default',
-					'role-state': 'default',
-					'control-state': 'default',
-					'transcription-state': 'default',
+					'control-state': {
+						fn: function (_this) {
+							_this.action.stop();
+							return Util.ep();
+						}
+					},
+					'transcription-state': {
+						fn: function (_this) {
+							_this.action.start();
+							return Util.ep();
+						}
+					},
 				},
 			}),
 
