@@ -69,6 +69,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					'height': '200px',
 					'width': '555px',
 					'border': '1px solid #888',
+					'padding': '10px',
 				},
 				classes: ['border-radius'],
 			},
@@ -279,7 +280,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				return Promise.all([
 					audio.display(current),
 					caption.control.input.newCaption(current),
-					// counter.update(current),
+					counter.setActive(current),
 				]);
 			});
 		}
@@ -298,7 +299,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				_this.active = (options.index !== undefined ? options.index : undefined || ((_this.active || 0) + (_this.active !== undefined ? (options.increment || 0) : 0)));
 
 				// boundary conditions
-				_this.active = _this.active < 0 ? 0 : (_this.active > Object.keys(_this.buffer).length - 1 ? Object.keys(_this.buffer).length : _this.active);
+				_this.active = (_this.active % _this.releaseThreshold === _this.releaseThreshold - 1 || _this.active === -1) ? _this.active + 1 : (_this.active > Object.keys(_this.buffer).length - 1 ? Object.keys(_this.buffer).length : _this.active);
 
 				return _this.update();
 			}).then(function () {
@@ -917,7 +918,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					if (unitBase.isFocussed) {
 						return Promise.all([
 							unitBase.getContent().then(function (unitContent) {
-
 								// temporarily update metadata to prepare for completion, even though this might be overwritten by the subsequent search.setContent.
 								return unitBase.updateUnitMetadata({query: unitContent, complete: unitBase.metadata.complete}).then(function () {
 									return unitBase.phrase.updateQueryFromActive().then(function (updatedQuery) {
@@ -927,6 +927,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 								});
 							}),
 							counter.active.setPending(),
+							transcriptionMasterController.setPending(),
 						]);
 					} else {
 						return Util.ep();
@@ -1064,6 +1065,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							var phrase = caption.active.phrase;
 							return Promise.all([
 								// TODO: modify this behaviour to complete only and move to next when at the end of the transcription
+								transcriptionMasterController.setComplete(),
 								counter.active.setComplete(),
 								caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
 									return caption.next().then(function () {
@@ -1179,7 +1181,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			return Promise.all([
 				// base
 				UI.createComponent(unitId, {
-					template: UI.template('div', 'ie button border border-radius'),
+					template: UI.template('div', 'ie unit border border-radius'),
 					appearance: {
 						style: {
 							'height': '35px',
@@ -1194,12 +1196,39 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 				// done glyph
 				UI.createComponent('{id}-done'.format({id: unitId}), {
-
+					template: UI.template('div', 'ie hidden'),
+					appearance: {
+						style: {
+							'height': '100%',
+							'width': '100%',
+							'background-color': '#5cb85c',
+						},
+					},
+					children: [
+						UI.createComponent('{id}-done-glyphicon'.format({id: unitId}), {
+							template: UI.template('span', 'glyphicon glyphicon-ok centred'),
+							appearance: {
+								style: {
+									'font-size': '15px',
+									'color': '#eee',
+									'top': '10px',
+									'left': '9px',
+								},
+							},
+						}),
+					],
 				}),
 
 				// pending glyph
 				UI.createComponent('{id}-pending'.format({id: unitId}), {
-
+					template: UI.template('div', 'ie hidden'),
+					appearance: {
+						style: {
+							'height': '100%',
+							'width': '100%',
+							'background-color': '#eee',
+						},
+					},
 				}),
 			]).then(function (components) {
 				var [
@@ -1209,17 +1238,31 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				] = components;
 
 				// methods
+				unitBase.isComplete = false;
+				unitBase.isPending = false;
 				unitBase.activate = function () {
-					return Util.ep();
+					return unitBase.setAppearance({classes: {add: 'active'}});
 				}
 				unitBase.deactivate = function () {
-					return Util.ep();
+					return unitBase.setAppearance({classes: {remove: 'active'}});
 				}
 				unitBase.setComplete = function () {
-					return Util.ep();
+					unitBase.isComplete = true;
+					unitBase.isPending = false;
+					return Promise.all([
+						unitBase.setAppearance({classes: {add: 'complete', remove: 'pending'}}),
+						doneGlyph.setAppearance({classes: {remove: 'hidden'}}),
+						pendingGlyph.setAppearance({classes: {add: 'hidden'}}),
+					]);
 				}
 				unitBase.setPending = function () {
-					return Util.ep();
+					unitBase.isComplete = false;
+					unitBase.isPending = true;
+					return Promise.all([
+						unitBase.setAppearance({classes: {remove: 'complete', add: 'pending'}}),
+						doneGlyph.setAppearance({classes: {add: 'hidden'}}),
+						pendingGlyph.setAppearance({classes: {remove: 'hidden'}}),
+					]);
 				}
 
 				return Promise.all([

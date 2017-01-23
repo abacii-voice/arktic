@@ -69,7 +69,6 @@ AccountComponents.counter = function (id, args) {
 		] = components;
 
 		// methods
-		base.limit = 20;
 		base.setup = function () {
 			return base.styles().then(function () {
 				if (counterWrapper.children.length === 0) {
@@ -86,33 +85,49 @@ AccountComponents.counter = function (id, args) {
 			});
 		}
 		base.styles = function () {
-			jss.set('#{id} .word'.format({id: base.id}), {
+			// blank
+			jss.set('#{id} .unit'.format({id: base.id}), {
+				'background-color': 'transparent',
+				'border': '1px solid #ddd',
+			});
+			jss.set('#{id} .unit.active'.format({id: base.id}), {
+				'border-width': '2px !important',
+			});
+
+			// pending
+			jss.set('#{id} .unit.pending'.format({id: base.id}), {
+				'border': '1px solid #888',
+			});
+			jss.set('#{id} .unit.pending:hover'.format({id: base.id}), {
+				'border': '1px solid #ddd',
+			});
+
+			// complete
+			jss.set('#{id} .unit.complete'.format({id: base.id}), {
 				'color': '#ccc',
 			});
-			jss.set('#{id} .word.active'.format({id: base.id}), {
+			jss.set('#{id} .unit.complete:hover'.format({id: base.id}), {
 				'color': '#ccc',
 			});
+
 			return Util.ep();
 		}
-		base.update = function (current) {
-			return base.setActive({index: current.index});
-		}
-		base.setActive = function (options) {
-			options = (options || {});
 
-			// changes
+		base.limit = 20;
+		base.setActive = function (current) {
 			var previousIndex = base.currentIndex;
-			base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (base.currentIndex !== undefined ? (options.increment || 0) : 0)));
-
-			// boundary conditions
-			base.currentIndex = base.currentIndex > counterWrapper.children.length - 1 ? counterWrapper.children.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
+			base.currentIndex = current.index % base.limit;
 
 			if (base.currentIndex !== previousIndex) {
 				return base.deactivate().then(function () {
-					base.active = counterWrapper.children.filter(function (unit) {
-						return unit.bufferIndex === base.currentIndex;
-					})[0];;
+					base.active = counterWrapper.children[base.currentIndex];
 					return base.active.activate();
+				}).then(function () {
+					if (!base.active.isPending && !base.active.isComplete) {
+						return base.active.setPending();
+					} else {
+						return Util.ep();
+					}
 				});
 			} else {
 				return Util.ep();

@@ -24,7 +24,7 @@ AccountComponents.transcriptionMasterController = function () {
 		base.buffer = {};
 		base.active = 0;
 		base.updateThreshold = 4; // default
-		base.releaseThreshold = 50; // if buffer expands beyond this, previous revisions will not be re-sent.
+		base.releaseThreshold = 20; // if buffer expands beyond this, previous revisions will not be re-sent. The counter will also reset.
 
 		// methods
 		base.countRemaining = function () {
@@ -129,6 +129,20 @@ AccountComponents.transcriptionMasterController = function () {
 					}
 				}));
 			},
+		}
+		base.setComplete = function () {
+			return base.current().then(function (current) {
+				current.isPending = true;
+				current.isComplete = false;
+				return Util.ep();
+			});
+		}
+		base.setPending = function () {
+			return base.current().then(function (current) {
+				current.isPending = false;
+				current.isComplete = true;
+				return Util.ep();
+			});
 		}
 		base.previous = function () {
 			return base.setActive({increment: -1});
