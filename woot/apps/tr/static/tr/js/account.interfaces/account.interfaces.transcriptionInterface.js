@@ -295,11 +295,15 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				audio.components.canvas.removeCut(),
 			]).then(function () {
 
+				var previousIndex = _this.active;
+
 				// change active
 				_this.active = (options.index !== undefined ? options.index : undefined || ((_this.active || 0) + (_this.active !== undefined ? (options.increment || 0) : 0)));
 
 				// boundary conditions
-				_this.active = (_this.active % _this.releaseThreshold === _this.releaseThreshold - 1 || _this.active === -1) ? _this.active + 1 : (_this.active > Object.keys(_this.buffer).length - 1 ? Object.keys(_this.buffer).length : _this.active);
+				_this.active = _this.active < 0 ? 0 : _this.active; // cannot be less than zero
+				_this.active = _this.active >= Object.keys(_this.buffer).length ? Object.keys(_this.buffer).length : _this.active; // cannot be past end
+				_this.active = (previousIndex > _this.active && previousIndex % _this.releaseThreshold === 0) ? previousIndex : _this.active; // cannot move back before threshold
 
 				return _this.update();
 			}).then(function () {
@@ -1062,19 +1066,17 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				return caption.active.isCaretInPosition('end').then(function (inPosition) {
 					if (inPosition) {
 						if (caption.active.isLastToken() && caption.active.isComplete) {
-							var phrase = caption.active.phrase;
 							return Promise.all([
 								// TODO: modify this behaviour to complete only and move to next when at the end of the transcription
 								transcriptionMasterController.setComplete(),
 								counter.active.setComplete(),
-								caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
-									return caption.next().then(function () {
-										return caption.active.setCaretPosition('start');
-									});
-								}).then(function () {
-									return caption.data.objects.phrase.split(phrase);
-								}),
-							]);
+							]).then(function () {
+								return caption.active.blur();
+							}).then(function () {
+								return transcriptionMasterController.behaviours.down();
+							}).then(function () {
+								return caption.focus();
+							});
 						} else if (caption.active.isLastQueryToken()) {
 							return caption.behaviours.right();
 						} else {
@@ -1096,7 +1098,14 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					if (inPosition && caption.active.isLastQueryToken()) {
 						var noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {return item.rule === 'phrase' && item.main !== caption.active.phrase.complete;}).length === 0;
 						if (noMorePhrases && caption.active.phrase.isComplete) {
-							return caption.behaviours.enter();
+							var phrase = caption.active.phrase;
+							return caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
+								return caption.next().then(function () {
+									return caption.active.setCaretPosition('start');
+								});
+							}).then(function () {
+								return caption.data.objects.phrase.split(phrase);
+							});
 						} else {
 							caption.active.phrase.spaceOverride = true;
 							autocomplete.target	= caption.active.phrase.id;
@@ -1262,6 +1271,15 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						unitBase.setAppearance({classes: {remove: 'complete', add: 'pending'}}),
 						doneGlyph.setAppearance({classes: {add: 'hidden'}}),
 						pendingGlyph.setAppearance({classes: {remove: 'hidden'}}),
+					]);
+				}
+				unitBase.setClear = function () {
+					unitBase.isComplete = false;
+					unitBase.isPending = false;
+					return Promise.all([
+						unitBase.setAppearance({classes: {remove: ['complete', 'pending']}}),
+						doneGlyph.setAppearance({classes: {add: 'hidden'}}),
+						pendingGlyph.setAppearance({classes: {add: 'hidden'}}),
 					]);
 				}
 

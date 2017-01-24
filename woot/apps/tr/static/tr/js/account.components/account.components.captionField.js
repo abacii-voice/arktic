@@ -376,6 +376,19 @@ AccountComponents.captionField = function (id, args) {
 		base.previous = function () {
 			return base.control.setActive({increment: -1});
 		}
+		base.focus = function () {
+			// construct array of active units
+			var visibleChildren = content.children.filter(function (unit) {
+				return !unit.isHidden;
+			});
+			var lastIndex = visibleChildren.length - 1;
+
+			// get new active
+			base.active = visibleChildren[lastIndex];
+			return base.active.activate().then(function () {
+				return base.active.focus('end');
+			});
+		}
 
 		// behaviours
 		base.behaviours = {
