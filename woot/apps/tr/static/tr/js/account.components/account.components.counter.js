@@ -119,7 +119,9 @@ AccountComponents.counter = function (id, args) {
 			base.currentIndex = current.index % base.limit;
 
 			if (base.currentIndex !== previousIndex) {
-				return base.deactivate().then(function () {
+				return base.clearAllIfReset(previousIndex).then(function () {
+					return base.deactivate()
+				}).then(function () {
 					base.active = counterWrapper.children[base.currentIndex];
 					return base.active.activate();
 				}).then(function () {
@@ -136,6 +138,15 @@ AccountComponents.counter = function (id, args) {
 		base.deactivate = function () {
 			if (base.active) {
 				return base.active.deactivate();
+			} else {
+				return Util.ep();
+			}
+		}
+		base.clearAllIfReset = function (previousIndex) {
+			if (base.currentIndex === 0 && previousIndex === base.limit - 1) {
+				return Promise.all(counterWrapper.children.map(function (child) {
+					return child.setClear();
+				}));
 			} else {
 				return Util.ep();
 			}
