@@ -315,7 +315,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 							var role = data[key];
 							return {
 								id: key,
-								main: role.type,
+								main: role.display,
 								rule: 'roles',
 							}
 						});

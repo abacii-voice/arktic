@@ -30,6 +30,8 @@ class TranscriptionToken(models.Model):
 				transcription = self.project.get_transcription()
 				if transcription is not None:
 					self.fragments.create(parent=transcription, session=self.role.user.active_session(), index=i)
+					transcription.is_available = False
+					transcription.save()
 
 	def update(self):
 		if self.fragments.filter(is_reconciled=True) == self.transcription_limit:
@@ -109,9 +111,6 @@ class Transcription(models.Model):
 
 		return data
 
-	def update_availability(self):
-		self.is_available = self.fragments.filter(is_reconciled=True).count() > 0
-
 class TranscriptionFragment(models.Model):
 
 	### Connections
@@ -142,8 +141,13 @@ class TranscriptionFragment(models.Model):
 
 		return data
 
-	def release(self):
-		pass
+	def release(self, by_session=False):
+		if not self.is_released:
+			self.is_released = True
+			self.was_released_by_session = by_session
+			self.parent.is_available = True
+			self.parent.save()
+			self.save()
 
 	def reconcile(self, revision):
 		pass
