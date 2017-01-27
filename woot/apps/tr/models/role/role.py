@@ -17,6 +17,7 @@ class Role(models.Model):
 	date_created = models.DateTimeField(auto_now_add=True)
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	type = models.CharField(max_length=255)
+	display = models.CharField(max_length=255)
 	status = models.CharField(max_length=255, default='pending') # shows the stage of becoming a full user.
 
 	# billing and activity
@@ -30,6 +31,7 @@ class Role(models.Model):
 			'user': self.user.id,
 			'date_created': str(self.date_created),
 			'type': self.type,
+			'display': self.display,
 			'status': self.status,
 		}
 

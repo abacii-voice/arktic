@@ -48,7 +48,7 @@ Components.actionMasterController = function (context) {
 			stop: function () {
 				var _this = base;
 				if (_this.action.id !== undefined) {
-					cancelInterval(_this.action.id);
+					clearInterval(_this.action.id);
 				}
 			},
 		}
