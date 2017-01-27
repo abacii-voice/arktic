@@ -6,7 +6,7 @@ AccountComponents.transcriptionMasterController = function () {
 
 	// components
 	return Promise.all([
-		UI.createComponent('', {}),
+		UI.createComponent('transcription-master-controller', {}),
 	]).then(function (components) {
 		// unpack components
 		var [
@@ -24,9 +24,14 @@ AccountComponents.transcriptionMasterController = function () {
 		base.buffer = {};
 		base.active = 0;
 		base.updateThreshold = 4; // default
-		base.releaseThreshold = 50; // if buffer expands beyond this, previous revisions will not be re-sent.
+		base.releaseThreshold = 20; // if buffer expands beyond this, previous revisions will not be re-sent. The counter will also reset.
 
 		// methods
+		base.enterCompletionState = function () {
+			// set project as completed
+			// return
+			return UI.changeState('-transcription-project-complete-state', base.id);
+		}
 		base.countRemaining = function () {
 			var _this = base;
 			return Util.ep(Object.keys(_this.buffer).filter(function (key) {
@@ -71,8 +76,8 @@ AccountComponents.transcriptionMasterController = function () {
 			// load more and process into buffer
 			return _this.path().then(function (tokenPath) {
 				return Context.get(tokenPath, {force: (options.force || false), overwrite: true});
-			}).then(_this.process).then(function () {
-				return Util.ep(_this.buffer);
+			}).then(_this.process).then(function (transcriptionsAvailable) {
+				return Util.ep(transcriptionsAvailable);
 			});
 		}
 		base.pre = {
@@ -123,12 +128,26 @@ AccountComponents.transcriptionMasterController = function () {
 					var removeBuffer = _this.buffer[key];
 					if (removeBuffer.source !== undefined) {
 						removeBuffer.source.disconnect();
-						removeBuffer.has_waveform = false;
+						removeBuffer.isLoaded = false;
 						delete removeBuffer.source;
 						delete removeBuffer.waveform;
 					}
 				}));
 			},
+		}
+		base.setComplete = function () {
+			return base.current().then(function (current) {
+				current.isPending = true;
+				current.isComplete = false;
+				return Util.ep();
+			});
+		}
+		base.setPending = function () {
+			return base.current().then(function (current) {
+				current.isPending = false;
+				current.isComplete = true;
+				return Util.ep();
+			});
 		}
 		base.previous = function () {
 			return base.setActive({increment: -1});
@@ -164,7 +183,8 @@ AccountComponents.transcriptionMasterController = function () {
 			stop: function () {
 				var _this = base;
 				if (_this.revision.id !== undefined) {
-					cancelInterval(_this.revision.id);
+					clearInterval(_this.revision.id);
+					_this.revision.id = undefined;
 				}
 			},
 		}

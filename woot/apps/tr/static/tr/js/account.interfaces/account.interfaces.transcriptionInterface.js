@@ -45,7 +45,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				style: {
 					'margin-top': '10px',
 					'height': '80px',
-					'width': '400px',
+					'width': '555px',
 				},
 			},
 		}),
@@ -56,7 +56,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				style: {
 					'margin-top': '10px',
 					'height': '60px',
-					'width': '400px',
+					'width': '555px',
 				},
 			},
 		}),
@@ -67,9 +67,11 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				style: {
 					'margin-top': '10px',
 					'height': '200px',
-					'width': '500px',
+					'width': '555px',
 					'border': '1px solid #888',
+					'padding': '10px',
 				},
+				classes: ['border-radius'],
 			},
 		}),
 
@@ -268,7 +270,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					}),
 				}
 				return Util.ep();
-			}));
+			})).then(function () {
+				return Util.ep(Object.keys(result).length !== 0);
+			});
 		}
 		transcriptionMasterController.pre.interface = function () {
 			var _this = transcriptionMasterController;
@@ -278,7 +282,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				return Promise.all([
 					audio.display(current),
 					caption.control.input.newCaption(current),
-					counter.update(transcriptionMasterController.buffer, current),
+					counter.setActive(current),
 				]);
 			});
 		}
@@ -286,18 +290,22 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			var _this = transcriptionMasterController;
 			options = (options || {});
 
-			audio.controller.has_waveform = false;
+			audio.controller.isLoaded = false;
 			return Promise.all([
 				caption.export(),
 				audio.stop(),
 				audio.components.canvas.removeCut(),
 			]).then(function () {
 
+				var previousIndex = _this.active;
+
 				// change active
 				_this.active = (options.index !== undefined ? options.index : undefined || ((_this.active || 0) + (_this.active !== undefined ? (options.increment || 0) : 0)));
 
 				// boundary conditions
-				_this.active = _this.active < 0 ? 0 : (_this.active > Object.keys(_this.buffer).length - 1 ? Object.keys(_this.buffer).length : _this.active);
+				_this.active = _this.active < 0 ? 0 : _this.active; // cannot be less than zero
+				_this.active = _this.active >= Object.keys(_this.buffer).length ? Object.keys(_this.buffer).length : _this.active; // cannot be past end
+				_this.active = (previousIndex > _this.active && previousIndex % _this.releaseThreshold === 0) ? previousIndex : _this.active; // cannot move back before threshold
 
 				return _this.update();
 			}).then(function () {
@@ -641,20 +649,14 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				_this.currentIndex = undefined;
 				return _this.search.setMetadata({query: query, complete: '', type: '', tokens: []});
 			} else {
-				// console.log(_this.active.datum.main, _this.currentIndex);
+				var complete = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
+				var type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
+				var tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
 				if (_this.currentIndex >= _this.data.storage.virtual.list.length) {
-					// console.log('here');
 					return _this.control.setActive.main({index: 0}).then(function () {
-						// console.log(_this.active.datum.main, _this.currentIndex);
-						var _this = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
-						var type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
-						var tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
 						return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
 					});
 				} else {
-					var complete = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
-					var type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
-					var tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
 					return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
 				}
 			}
@@ -916,7 +918,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					if (unitBase.isFocussed) {
 						return Promise.all([
 							unitBase.getContent().then(function (unitContent) {
-
 								// temporarily update metadata to prepare for completion, even though this might be overwritten by the subsequent search.setContent.
 								return unitBase.updateUnitMetadata({query: unitContent, complete: unitBase.metadata.complete}).then(function () {
 									return unitBase.phrase.updateQueryFromActive().then(function (updatedQuery) {
@@ -926,6 +927,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 								});
 							}),
 							counter.active.setPending(),
+							transcriptionMasterController.setPending(),
 						]);
 					} else {
 						return Util.ep();
@@ -1060,18 +1062,16 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				return caption.active.isCaretInPosition('end').then(function (inPosition) {
 					if (inPosition) {
 						if (caption.active.isLastToken() && caption.active.isComplete) {
-							var phrase = caption.active.phrase;
 							return Promise.all([
-								// TODO: modify this behaviour to complete only and move to next when at the end of the transcription
+								transcriptionMasterController.setComplete(),
 								counter.active.setComplete(),
-								caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
-									return caption.next().then(function () {
-										return caption.active.setCaretPosition('start');
-									});
-								}).then(function () {
-									return caption.data.objects.phrase.split(phrase);
-								}),
-							]);
+							]).then(function () {
+								return caption.active.blur();
+							}).then(function () {
+								return transcriptionMasterController.behaviours.down();
+							}).then(function () {
+								return caption.focus();
+							});
 						} else if (caption.active.isLastQueryToken()) {
 							return caption.behaviours.right();
 						} else {
@@ -1093,7 +1093,14 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					if (inPosition && caption.active.isLastQueryToken()) {
 						var noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {return item.rule === 'phrase' && item.main !== caption.active.phrase.complete;}).length === 0;
 						if (noMorePhrases && caption.active.phrase.isComplete) {
-							return caption.behaviours.enter();
+							var phrase = caption.active.phrase;
+							return caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
+								return caption.next().then(function () {
+									return caption.active.setCaretPosition('start');
+								});
+							}).then(function () {
+								return caption.data.objects.phrase.split(phrase);
+							});
 						} else {
 							caption.active.phrase.spaceOverride = true;
 							autocomplete.target	= caption.active.phrase.id;
@@ -1178,26 +1185,54 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			return Promise.all([
 				// base
 				UI.createComponent(unitId, {
-					template: UI.template('div', 'ie button border'),
+					template: UI.template('div', 'ie unit border border-radius'),
 					appearance: {
 						style: {
 							'height': '35px',
 							'width': '35px',
 							'float': 'left',
-							'margin-right': '5px',
-							'margin-bottom': '5px',
+							'margin-left': '10px',
+							'margin-bottom': '10px',
+							'box-sizing': 'border-box',
 						},
 					},
 				}),
 
 				// done glyph
 				UI.createComponent('{id}-done'.format({id: unitId}), {
-
+					template: UI.template('div', 'ie hidden'),
+					appearance: {
+						style: {
+							'height': '100%',
+							'width': '100%',
+							'background-color': '#5cb85c',
+						},
+					},
+					children: [
+						UI.createComponent('{id}-done-glyphicon'.format({id: unitId}), {
+							template: UI.template('span', 'glyphicon glyphicon-ok centred'),
+							appearance: {
+								style: {
+									'font-size': '15px',
+									'color': '#eee',
+									'top': '10px',
+									'left': '9px',
+								},
+							},
+						}),
+					],
 				}),
 
 				// pending glyph
 				UI.createComponent('{id}-pending'.format({id: unitId}), {
-
+					template: UI.template('div', 'ie hidden'),
+					appearance: {
+						style: {
+							'height': '100%',
+							'width': '100%',
+							'background-color': '#eee',
+						},
+					},
 				}),
 			]).then(function (components) {
 				var [
@@ -1207,17 +1242,40 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				] = components;
 
 				// methods
+				unitBase.isComplete = false;
+				unitBase.isPending = false;
 				unitBase.activate = function () {
-					return Util.ep();
+					return unitBase.setAppearance({classes: {add: 'active'}});
 				}
 				unitBase.deactivate = function () {
-					return Util.ep();
+					return unitBase.setAppearance({classes: {remove: 'active'}});
 				}
 				unitBase.setComplete = function () {
-					return Util.ep();
+					unitBase.isComplete = true;
+					unitBase.isPending = false;
+					return Promise.all([
+						unitBase.setAppearance({classes: {add: 'complete', remove: 'pending'}}),
+						doneGlyph.setAppearance({classes: {remove: 'hidden'}}),
+						pendingGlyph.setAppearance({classes: {add: 'hidden'}}),
+					]);
 				}
 				unitBase.setPending = function () {
-					return Util.ep();
+					unitBase.isComplete = false;
+					unitBase.isPending = true;
+					return Promise.all([
+						unitBase.setAppearance({classes: {remove: 'complete', add: 'pending'}}),
+						doneGlyph.setAppearance({classes: {add: 'hidden'}}),
+						pendingGlyph.setAppearance({classes: {remove: 'hidden'}}),
+					]);
+				}
+				unitBase.setClear = function () {
+					unitBase.isComplete = false;
+					unitBase.isPending = false;
+					return Promise.all([
+						unitBase.setAppearance({classes: {remove: ['complete', 'pending']}}),
+						doneGlyph.setAppearance({classes: {add: 'hidden'}}),
+						pendingGlyph.setAppearance({classes: {add: 'hidden'}}),
+					]);
 				}
 
 				return Promise.all([
@@ -1249,22 +1307,23 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					'client-state': 'default',
 					'role-state': 'default',
 					'control-state': 'default',
+					'-transcription-project-complete-state': 'default',
 				},
 			}),
 
 			// transcription master controller
 			transcriptionMasterController.setState({
 				states: {
-					'transcription-state': {
-						fn: function (_this) {
-							_this.revision.start();
-							return _this.update();
-						}
-					},
 					'control-state': {
 						fn: function (_this) {
 							_this.revision.stop();
 							return Util.ep();
+						}
+					},
+					'transcription-state': {
+						fn: function (_this) {
+							_this.revision.start();
+							return _this.update();
 						}
 					},
 				},
@@ -1272,17 +1331,19 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 			// action master controller
 			amc.setState({
-				defaultState: {
-					fn: function (_this) {
-						_this.action.start();
-						return Util.ep();
-					}
-				},
 				states: {
-					'client-state': 'default',
-					'role-state': 'default',
-					'control-state': 'default',
-					'transcription-state': 'default',
+					'control-state': {
+						fn: function (_this) {
+							_this.action.stop();
+							return Util.ep();
+						}
+					},
+					'transcription-state': {
+						fn: function (_this) {
+							_this.action.start();
+							return Util.ep();
+						}
+					},
 				},
 			}),
 
@@ -1368,8 +1429,12 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 			// counter
 			counter.setState({
-				'transcription-state': function (_this) {
-					return _this.styles();
+				states: {
+					'transcription-state': {
+						fn: function (_this) {
+							return _this.setup();
+						}
+					}
 				},
 			}),
 

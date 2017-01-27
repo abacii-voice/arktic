@@ -30,9 +30,8 @@ AccountComponents.counter = function (id, args) {
 			appearance: {
 				style: {
 					'height': '100%',
-					'width': style.width,
-					'border-bottom-left-radius': '0px',
-					'border-bottom-right-radius': '0px',
+					'width': '105px',
+					'float': 'left',
 				},
 			},
 		}),
@@ -49,13 +48,12 @@ AccountComponents.counter = function (id, args) {
 
 		// counter wrapper
 		UI.createComponent('{id}-counter-wrapper'.format({id: id}), {
-			template: UI.template('div', 'ie border'),
+			template: UI.template('div', 'ie'),
 			appearance: {
 				style: {
-					'height': 'calc(100% - {width}px)'.format({width: parseInt(style.width)}),
-					'width': style.width,
-					'border-bottom-left-radius': '5px',
-					'border-bottom-right-radius': '5px',
+					'height': style.height,
+					'width': 'calc(100% - 105px)',
+					'float': 'left',
 				},
 			},
 		}),
@@ -71,47 +69,67 @@ AccountComponents.counter = function (id, args) {
 		] = components;
 
 		// methods
+		base.setup = function () {
+			return base.styles().then(function () {
+				if (counterWrapper.children.length === 0) {
+					return Promise.ordered(Array.range(base.limit).map(function (index) {
+						return function () {
+							return base.unit().then(function (unit) {
+								return counterWrapper.setChildren([unit]);
+							});
+						}
+					}));
+				} else {
+					return Util.ep();
+				}
+			});
+		}
 		base.styles = function () {
+			// blank
+			jss.set('#{id} .unit'.format({id: base.id}), {
+				'background-color': 'transparent',
+				'border': '1px solid #ddd',
+			});
+			jss.set('#{id} .unit.active'.format({id: base.id}), {
+				'border-width': '2px !important',
+			});
+
+			// pending
+			jss.set('#{id} .unit.pending'.format({id: base.id}), {
+				'border': '1px solid #888',
+			});
+			jss.set('#{id} .unit.pending:hover'.format({id: base.id}), {
+				'border': '1px solid #ddd',
+			});
+
+			// complete
+			jss.set('#{id} .unit.complete'.format({id: base.id}), {
+				'color': '#ccc',
+			});
+			jss.set('#{id} .unit.complete:hover'.format({id: base.id}), {
+				'color': '#ccc',
+			});
 
 			return Util.ep();
 		}
-		base.update = function (buffer, current) {
-			// Display as many units as the length of the buffer filtered for is_available=false
-			// The done and current states can be set afterwards.
-			return Promise.ordered(Object.keys(buffer).map(function (key) {
-				return buffer[key];
-			}).filter(function (bufferItem) {
-				return !bufferItem.is_available && !bufferItem.hasCounter;
-			}).sort(function (bufferItem) {
-				return bufferItem.index;
-			}).map(function (bufferItem) {
-				return function () {
-					bufferItem.hasCounter = true;
-					return base.unit().then(function (unit) {
-						unit.bufferIndex = bufferItem.index;
-						return headerWrapper.setChildren([unit]);
-					});
-				}
-			})).then(function () {
-				return base.setActive({index: current.index});
-			});
-		}
-		base.setActive = function (options) {
-			options = (options || {});
 
-			// changes
+		base.limit = 20;
+		base.setActive = function (current) {
 			var previousIndex = base.currentIndex;
-			base.currentIndex = (options.index !== undefined ? options.index : undefined || ((base.currentIndex || 0) + (base.currentIndex !== undefined ? (options.increment || 0) : 0)));
-
-			// boundary conditions
-			base.currentIndex = base.currentIndex > counterWrapper.children.length - 1 ? counterWrapper.children.length - 1 : (base.currentIndex < 0 ? 0 : base.currentIndex);
+			base.currentIndex = current.index % base.limit;
 
 			if (base.currentIndex !== previousIndex) {
-				return base.deactivate().then(function () {
-					base.active = headerWrapper.children.filter(function (unit) {
-						return unit.bufferIndex === base.currentIndex;
-					})[0];;
+				return base.clearAllIfReset(previousIndex).then(function () {
+					return base.deactivate()
+				}).then(function () {
+					base.active = counterWrapper.children[base.currentIndex];
 					return base.active.activate();
+				}).then(function () {
+					if (!base.active.isPending && !base.active.isComplete) {
+						return base.active.setPending();
+					} else {
+						return Util.ep();
+					}
 				});
 			} else {
 				return Util.ep();
@@ -120,6 +138,15 @@ AccountComponents.counter = function (id, args) {
 		base.deactivate = function () {
 			if (base.active) {
 				return base.active.deactivate();
+			} else {
+				return Util.ep();
+			}
+		}
+		base.clearAllIfReset = function (previousIndex) {
+			if (base.currentIndex === 0 && previousIndex === base.limit - 1) {
+				return Promise.all(counterWrapper.children.map(function (child) {
+					return child.setClear();
+				}));
 			} else {
 				return Util.ep();
 			}
