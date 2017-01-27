@@ -27,6 +27,11 @@ AccountComponents.transcriptionMasterController = function () {
 		base.releaseThreshold = 20; // if buffer expands beyond this, previous revisions will not be re-sent. The counter will also reset.
 
 		// methods
+		base.enterCompletionState = function () {
+			// set project as completed
+			// return
+			return UI.changeState('-transcription-project-complete-state', base.id);
+		}
 		base.countRemaining = function () {
 			var _this = base;
 			return Util.ep(Object.keys(_this.buffer).filter(function (key) {
@@ -71,8 +76,8 @@ AccountComponents.transcriptionMasterController = function () {
 			// load more and process into buffer
 			return _this.path().then(function (tokenPath) {
 				return Context.get(tokenPath, {force: (options.force || false), overwrite: true});
-			}).then(_this.process).then(function () {
-				return Util.ep(_this.buffer);
+			}).then(_this.process).then(function (transcriptionsAvailable) {
+				return Util.ep(transcriptionsAvailable);
 			});
 		}
 		base.pre = {

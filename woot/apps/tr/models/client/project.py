@@ -20,6 +20,8 @@ class Project(models.Model):
 	combined_priority_index = models.PositiveIntegerField(default=0)
 
 	# Statistics
+	is_transcription_complete = models.BooleanField(default=False)
+	is_moderation_complete = models.BooleanField(default=False)
 	completion_percentage = models.FloatField(default=0.0)
 	redundancy_percentage = models.FloatField(default=0.0)
 
@@ -38,6 +40,8 @@ class Project(models.Model):
 				'name': self.name,
 				'description': self.description,
 				'combined_priority_index': str(self.combined_priority_index),
+				'is_transcription_complete': str(self.is_transcription_complete),
+				'is_moderation_complete': str(self.is_moderation_complete),
 				'completion_percentage': str(self.completion_percentage),
 				'redundancy_percentage': str(self.redundancy_percentage),
 			})
@@ -71,12 +75,10 @@ class Project(models.Model):
 		'''
 		transcriptions = self.transcriptions.filter(is_active=True, is_available=True).order_by('content__content', 'date_created')
 		if transcriptions.count() > 0:
-			transcription = transcriptions[0]
-			transcription.update_availability()
-			transcription.save()
-
-			return transcription
+			return transcriptions[0]
 		else:
+			self.is_transcription_complete = True
+			self.save()
 			return None
 
 	def get_moderation(self):
@@ -86,12 +88,10 @@ class Project(models.Model):
 		'''
 		moderations = self.moderations.filter(is_active=True, is_available=True).order_by('transcription__content__content', 'date_created')
 		if moderations.count() > 0:
-			moderation = moderations[0]
-			moderation.update_availability()
-			moderation.save()
-
-			return moderation
+			return moderations[0]
 		else:
+			self.is_moderation_complete = True
+			self.save()
 			return None
 
 class Batch(models.Model):

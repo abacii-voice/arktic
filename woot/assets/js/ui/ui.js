@@ -7,7 +7,9 @@ var UI = {
 
 	// changeState
 	changeState: function (stateName, trigger) {
-		UI.globalState = stateName;
+		if (!stateName.startsWith('-')) { // local states begin with '-'
+			UI.globalState = stateName;
+		}
 		return Promise.all(UI.states.filter(function (state) {
 			return state.name === stateName;
 		}).map(function (state) {
@@ -626,9 +628,7 @@ var UI = {
 
 		// change
 		this.change = function () {
-			if (this.name === UI.globalState) {
-				return this.component.changeState(this);
-			}
+			return this.component.changeState(this);
 		}
 	},
 

@@ -270,7 +270,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					}),
 				}
 				return Util.ep();
-			}));
+			})).then(function () {
+				return Util.ep(Object.keys(result).length !== 0);
+			});
 		}
 		transcriptionMasterController.pre.interface = function () {
 			var _this = transcriptionMasterController;
@@ -647,20 +649,14 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				_this.currentIndex = undefined;
 				return _this.search.setMetadata({query: query, complete: '', type: '', tokens: []});
 			} else {
-				// console.log(_this.active.datum.main, _this.currentIndex);
+				var complete = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
+				var type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
+				var tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
 				if (_this.currentIndex >= _this.data.storage.virtual.list.length) {
-					// console.log('here');
 					return _this.control.setActive.main({index: 0}).then(function () {
-						// console.log(_this.active.datum.main, _this.currentIndex);
-						var _this = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
-						var type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
-						var tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
 						return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
 					});
 				} else {
-					var complete = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
-					var type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
-					var tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
 					return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
 				}
 			}
@@ -1067,7 +1063,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					if (inPosition) {
 						if (caption.active.isLastToken() && caption.active.isComplete) {
 							return Promise.all([
-								// TODO: modify this behaviour to complete only and move to next when at the end of the transcription
 								transcriptionMasterController.setComplete(),
 								counter.active.setComplete(),
 							]).then(function () {
@@ -1312,6 +1307,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					'client-state': 'default',
 					'role-state': 'default',
 					'control-state': 'default',
+					'-transcription-project-complete-state': 'default',
 				},
 			}),
 
