@@ -331,7 +331,6 @@ Components.searchableList = function (id, args) {
 							base.currentIndex = undefined;
 							return base.search.setMetadata({query: query, complete: '', type: ''});
 						} else {
-
 							if (base.currentIndex >= base.data.storage.virtual.list.length) {
 								return base.control.setActive({index: 0}).then(function () {
 									var complete = (base.data.storage.virtual.list[base.currentIndex] || {}).main;

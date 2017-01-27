@@ -20,19 +20,22 @@ var AccountApplication = function (id, args) {
 			interface: args.interface,
 		}),
 
+		// project complete interface
+		AccountInterfaces.projectCompleteInterface('project-complete-interface', {
+			interface: args.interface,
+		})
+
 	]).then(function (components) {
 		// unpack components
 		var [
 			base,
 			controlInterface,
 			transcriptionInterface,
+			projectCompleteInterface,
 		] = components;
 
 		// ASSOCIATE
 		// key bindings and other
-		// TRANSCRIPTION INTERFACE
-		controlInterface.name = 'controlInterface';
-		transcriptionInterface.name = 'transcriptionInterface';
 
 		// complete promises
 		return Promise.all([
@@ -42,6 +45,7 @@ var AccountApplication = function (id, args) {
 			return base.setChildren([
 				controlInterface,
 				transcriptionInterface,
+				projectCompleteInterface,
 			]);
 		}).then(function () {
 			return base;
