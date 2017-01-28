@@ -152,9 +152,9 @@ class Session(models.Model):
 		# 1. release all active transcription fragments
 		if self.user.roles.filter(type='worker'):
 			for fragment in self.transcription_fragments.filter(is_reconciled=False):
-				fragment.release()
+				fragment.release(by_session=True)
 
 		# 2. release all active moderation fragments
 		if self.user.roles.filter(type='moderator'):
 			for fragment in self.moderation_fragments.filter(is_reconciled=False):
-				fragment.release()
+				fragment.release(by_session=True)

@@ -53,7 +53,7 @@ AccountComponents.transcriptionMasterController = function () {
 			return _this.countRemaining().then(function (remaining) {
 				if (remaining === 0) {
 					// this should force a load. If the result is negative, this should be displayed clearly in the interface
-					return _this.loadFromTranscriptionToken().then(function (transcriptionsAvailable) {
+					return _this.loadFromTranscriptionToken({force: true}).then(function (transcriptionsAvailable) {
 						if (transcriptionsAvailable) {
 							return _this.pre.main();
 						} else {
@@ -62,7 +62,11 @@ AccountComponents.transcriptionMasterController = function () {
 					})
 				} else if (remaining < _this.updateThreshold) {
 					return Promise.all([
-						_this.loadFromTranscriptionToken({force: true}),
+						_this.loadFromTranscriptionToken({force: true}).then(function (transcriptionsAvailable) {
+							if (!transcriptionsAvailable) {
+								return _this.enterCompletionState();
+							}
+						}),
 						_this.pre.main(),
 					]);
 				} else {
@@ -163,7 +167,7 @@ AccountComponents.transcriptionMasterController = function () {
 			main: function () {
 				var _this = base;
 
-				var i, j, transcriptions = [], bufferKeys = Object.keys(_this.buffer);
+				var i, transcriptions = [], bufferKeys = Object.keys(_this.buffer);
 				for (i=0; i<bufferKeys.length; i++) {
 					var bufferTranscription = _this.buffer[bufferKeys[i]];
 					var isBeforeThreshold = bufferTranscription.index < bufferKeys.length - _this.releaseThreshold;
