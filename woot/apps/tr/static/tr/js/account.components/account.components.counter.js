@@ -32,18 +32,28 @@ AccountComponents.counter = function (id, args) {
 					'height': '100%',
 					'width': '105px',
 					'float': 'left',
+					'text-align': 'center',
 				},
 			},
 		}),
 
-		// daily header
-		UI.createComponent('{id}-daily-header'.format({id: id}), {
-			template: UI.template('h2', 'ie'),
+		UI.createComponent('{id}-session-value'.format({id: id}), {
+			template: UI.template('h2'),
+			appearance: {
+				style: {
+					'margin-top': '24px',
+					'margin-bottom': '0px',
+				},
+			},
 		}),
 
-		// cycle header
-		UI.createComponent('{id}-cycle-header'.format({id: id}), {
-			template: UI.template('h3', 'ie'),
+		UI.createComponent('{id}-remaining-value'.format({id: id}), {
+			template: UI.template('h4'),
+			appearance: {
+				style: {
+					'margin-top': '3px',
+				},
+			},
 		}),
 
 		// counter wrapper
@@ -63,8 +73,8 @@ AccountComponents.counter = function (id, args) {
 		var [
 			base,
 			headerWrapper,
-			dailyHeader,
-			cycleHeader,
+			sessionValue,
+			remainingValue,
 			counterWrapper,
 		] = components;
 
@@ -82,6 +92,8 @@ AccountComponents.counter = function (id, args) {
 				} else {
 					return Util.ep();
 				}
+			}).then(function () {
+				return base.updateHeader();
 			});
 		}
 		base.styles = function () {
@@ -114,6 +126,7 @@ AccountComponents.counter = function (id, args) {
 		}
 
 		base.limit = 20;
+		base.count = 0;
 		base.setActive = function (current) {
 			var previousIndex = base.currentIndex;
 			base.currentIndex = current.index % base.limit;
@@ -151,9 +164,31 @@ AccountComponents.counter = function (id, args) {
 				return Util.ep();
 			}
 		}
+		base.updateHeader = function () {
+			console.log();
+			return base.headerPath().then(function (headerPath) {
+					return Context.get(headerPath);
+			}).then(function (remainingCount) {
+				return Promise.all([
+					sessionValue.setAppearance({html: base.count}),
+					remainingValue.setAppearance({html: (remainingCount - base.count)}),
+				]);
+			});
+		}
+		base.increment = function () {
+			base.count++;
+			return base.updateHeader();
+		}
+		base.decrement = function () {
+			base.count--;
+			return base.updateHeader();
+		}
 
 		return Promise.all([
-
+			headerWrapper.setChildren([
+				sessionValue,
+				remainingValue,
+			]),
 		]).then(function () {
 			return base.setChildren([
 				headerWrapper,

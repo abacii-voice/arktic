@@ -52,14 +52,12 @@ AccountComponents.captionField = function (id, args) {
 							metadata.completeTokens = metadata.complete.split(' ');
 							metadata.tokens = metadata.tokens || [];
 							metadata.tokens = metadata.completeTokens.map(function (completeToken, index) {
-								// console.log(metadata.tokens[index], metadata.type, 'word');
 								return {
 									complete: completeToken,
 									query: (metadata.queryTokens[index] || ''),
 									type: ((metadata.tokens[index] || {}).type || metadata.type || 'word'),
 								}
 							});
-							// console.log(metadata.tokens);
 
 							// update complete changed
 							var _this = this;
@@ -349,11 +347,16 @@ AccountComponents.captionField = function (id, args) {
 						return base.data.objects.phrase.remove(phrase);
 					})).then(function () {
 						base.data.storage.virtual = [];
-						return Promise.ordered(metadata.tokens.map(function (token, index) {
+						return Promise.ordered((metadata.latestRevision || metadata.tokens).map(function (token, index) {
 							return function () {
-								return base.data.objects.phrase.create(index, {query: token.content, complete: token.content, tokens: [token]});
+								return base.data.objects.phrase.create(index, {query: (token.content || token.query), complete: (token.content || token.complete), tokens: [token]});
 							}
-						}))
+						})).then(function () {
+							// if there is no caption, create an empty phrase.
+							if ((metadata.latestRevision || metadata.tokens || []).length === 0) {
+								return base.data.objects.phrase.create(0, {query: '', complete: ''});
+							}
+						});
 					}).then(function () {
 						base.showOverride = false;
 						return Promise.all(base.data.storage.virtual.map(function (phrase) {
@@ -390,41 +393,12 @@ AccountComponents.captionField = function (id, args) {
 			});
 		}
 
-		// behaviours
-		base.behaviours = {
-			right: function () {
-
-			},
-			left: function () {
-
-			},
-			up: function () {
-
-			},
-			down: function () {
-
-			},
-			shiftright: function () {
-
-			},
-			shiftleft: function () {
-
-			},
-			altright: function () {
-
-			},
-			altleft: function () {
-
-			},
-			enter: function () {
-
-			}
-		}
+		base.behaviours = {};
 
 		return Promise.all([
 			base.setBindings({
 				'click': function (_this) {
-					// return _this.data.objects.phrase.create();
+					return _this.focus();
 				},
 			}),
 		]).then(function () {

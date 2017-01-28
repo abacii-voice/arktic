@@ -173,6 +173,24 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				]);
 			}
 		});
+		Mousetrap.bind('alt+up', function (event) {
+			amc.addAction({type: 'key.alt+up'});
+			event.preventDefault();
+			caption.active.blur().then(function () {
+				return transcriptionMasterController.behaviours.up();
+			}).then(function () {
+				return caption.focus();
+			});
+		});
+		Mousetrap.bind('alt+down', function (event) {
+			event.preventDefault();
+			amc.addAction({type: 'key.alt+down'});
+			caption.active.blur().then(function () {
+				return transcriptionMasterController.behaviours.down();
+			}).then(function () {
+				return caption.focus();
+			});
+		});
 		Mousetrap.bind('left', function (event) {
 			amc.addAction({type: 'key.left'});
 			Promise.all([
@@ -233,6 +251,14 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			amc.addAction({type: 'key.alt+left'});
 			Promise.all([
 				caption.behaviours.altleft(event),
+			]);
+		});
+		Mousetrap.bind('tab', function (event) {
+			event.preventDefault();
+			amc.addAction({type: 'key.tab'});
+			Promise.all([
+				audio.play(),
+				caption.focus(),
 			]);
 		});
 
@@ -754,16 +780,17 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						time: new Date(),
 						tokens: tokens,
 					});
+					current.latestRevision = tokens;
 				}
 			});
 		}
 		caption.styles = function () {
 			// word
 			jss.set('#{id} .word'.format({id: caption.id}), {
-				'color': '#ccc',
+				'color': '#888',
 			});
 			jss.set('#{id} .word.active'.format({id: caption.id}), {
-				'color': '#ccc',
+				'color': '#aaa',
 			});
 
 			// tag
@@ -1093,14 +1120,21 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					if (inPosition && caption.active.isLastQueryToken()) {
 						var noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {return item.rule === 'phrase' && item.main !== caption.active.phrase.complete;}).length === 0;
 						if (noMorePhrases && caption.active.phrase.isComplete) {
-							var phrase = caption.active.phrase;
-							return caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
-								return caption.next().then(function () {
-									return caption.active.setCaretPosition('start');
-								});
-							}).then(function () {
-								return caption.data.objects.phrase.split(phrase);
-							});
+							if (caption.active.isLastToken() && caption.active.isComplete) {
+								var phrase = caption.active.phrase;
+								return Promise.all([
+									counter.active.setComplete(),
+									caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
+										return caption.next().then(function () {
+											return caption.active.setCaretPosition('start');
+										});
+									}).then(function () {
+										return caption.data.objects.phrase.split(phrase);
+									}),
+								]);
+							} else {
+								return Util.ep();
+							}
 						} else {
 							caption.active.phrase.spaceOverride = true;
 							autocomplete.target	= caption.active.phrase.id;
@@ -1180,6 +1214,15 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		}
 
 		// Counter
+		counter.headerPath = function () {
+			return Promise.all([
+				Active.get('client'),
+				Active.get('project'),
+			]).then(function (results) {
+				var [client, project] = results;
+				return Util.ep('clients.{client}.projects.{project}.transcriptions_remaining'.format({client: client, project: project}));
+			});
+		}
 		counter.unit = function () {
 			var unitId = '{counterId}-icon-{id}'.format({counterId: counter.id, id: Util.makeid()});
 			return Promise.all([
@@ -1257,16 +1300,25 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						unitBase.setAppearance({classes: {add: 'complete', remove: 'pending'}}),
 						doneGlyph.setAppearance({classes: {remove: 'hidden'}}),
 						pendingGlyph.setAppearance({classes: {add: 'hidden'}}),
+
+						// also increment the counter - must happen
+						counter.increment(),
 					]);
 				}
 				unitBase.setPending = function () {
+					var previousComplete = unitBase.isComplete;
 					unitBase.isComplete = false;
 					unitBase.isPending = true;
 					return Promise.all([
 						unitBase.setAppearance({classes: {remove: 'complete', add: 'pending'}}),
 						doneGlyph.setAppearance({classes: {add: 'hidden'}}),
 						pendingGlyph.setAppearance({classes: {remove: 'hidden'}}),
-					]);
+					]).then(function () {
+						if (previousComplete) {
+							// only if the unit was previously complete
+							return counter.decrement();
+						}
+					});
 				}
 				unitBase.setClear = function () {
 					unitBase.isComplete = false;
