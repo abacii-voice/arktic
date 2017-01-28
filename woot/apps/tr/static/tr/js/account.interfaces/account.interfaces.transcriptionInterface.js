@@ -773,12 +773,13 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			return transcriptionMasterController.current().then(function (current) {
 				current.revisions = (current.revisions || []);
 				var revisionAlreadyExists = current.revisions.filter(function (revision) {
-					return JSON.stringify(revision.tokens) === JSON.stringify(tokens);
+					return JSON.stringify(revision.tokens) === JSON.stringify(tokens) && revision.isComplete === current.isComplete;
 				}).length > 0;
-				if (!revisionAlreadyExists) {
+				if (!revisionAlreadyExists && !(tokens[0].complete === '')) {
 					current.revisions.push({
 						time: new Date(),
 						tokens: tokens,
+						isComplete: (current.isComplete || false),
 					});
 					current.latestRevision = tokens;
 				}
