@@ -150,10 +150,13 @@ class TranscriptionFragment(models.Model):
 			self.save()
 
 	def reconcile(self, revision):
-		if not self.is_reconciled:
-			self.is_reconciled = True
-			self.parent.is_available = False
-			self.parent.is_active = False
+		# {'time': '2017-01-28T14:53:20.486Z', 'tokens': [{'type': 'word', 'complete': 'booking', 'query': 'booking'}], 'isComplete': False}
+
+		if not (self.is_reconciled and revision['isComplete']):
+			self.transcriptions.get_or_create()
+			self.is_reconciled = revision['isComplete']
+			self.parent.is_available = not revision['isComplete']
+			self.parent.is_active = not revision['isComplete']
 			self.parent.save()
 			self.save()
 
@@ -161,7 +164,7 @@ class TranscriptionInstance(models.Model):
 
 	### Connections
 	parent = models.ForeignKey('tr.Transcription', related_name='instances')
-	fragment = models.OneToOneField('tr.TranscriptionFragment', related_name='transcription')
+	fragment = models.ForeignKey('tr.TranscriptionFragment', related_name='transcriptions')
 	token = models.ForeignKey('tr.TranscriptionToken', related_name='transcriptions')
 	phrase = models.OneToOneField('tr.PhraseInstance', related_name='transcription')
 
