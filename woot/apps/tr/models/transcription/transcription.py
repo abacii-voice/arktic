@@ -150,7 +150,12 @@ class TranscriptionFragment(models.Model):
 			self.save()
 
 	def reconcile(self, revision):
-		pass
+		if not self.is_reconciled:
+			self.is_reconciled = True
+			self.parent.is_available = False
+			self.parent.is_active = False
+			self.parent.save()
+			self.save()
 
 class TranscriptionInstance(models.Model):
 

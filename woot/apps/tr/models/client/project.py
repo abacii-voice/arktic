@@ -19,12 +19,6 @@ class Project(models.Model):
 	description = models.TextField(default='')
 	combined_priority_index = models.PositiveIntegerField(default=0)
 
-	# Statistics
-	is_transcription_complete = models.BooleanField(default=False)
-	is_moderation_complete = models.BooleanField(default=False)
-	completion_percentage = models.FloatField(default=0.0)
-	redundancy_percentage = models.FloatField(default=0.0)
-
 	class Meta():
 		get_latest_by = 'date_created'
 
@@ -36,14 +30,24 @@ class Project(models.Model):
 		if path.is_blank:
 			data.update({
 				'production_client': self.production_client.id,
-				'contract_client': self.contract_client.id,
 				'name': self.name,
 				'description': self.description,
+				'is_transcription_complete': str(self.is_transcription_complete()),
+				'transcriptions_remaining': str(self.transcriptions_remaining()),
+			})
+
+		if permission.is_productionadmin and permission.check_client(self.production_client):
+			data.update({
+				'contract_client': self.contract_client.id,
+			})
+
+		if permission.is_moderator or permission.is_productionadmin and permission.check_client(self.production_client):
+			data.update({
+				'completion_percentage': str(self.completion_percentage()),
 				'combined_priority_index': str(self.combined_priority_index),
-				'is_transcription_complete': str(self.is_transcription_complete),
-				'is_moderation_complete': str(self.is_moderation_complete),
-				'completion_percentage': str(self.completion_percentage),
-				'redundancy_percentage': str(self.redundancy_percentage),
+				'moderations_remaining': str(self.moderations_remaining()),
+				'redundancy_percentage': str(self.redundancy_percentage()),
+				'is_moderation_complete': str(self.is_moderation_complete()),
 			})
 
 		if path.check('assigned_users') and hasattr(self, 'assigned_users') and permission.is_productionadmin and permission.check_client(self.production_client):
@@ -93,6 +97,25 @@ class Project(models.Model):
 			self.is_moderation_complete = True
 			self.save()
 			return None
+
+	# stats
+	def is_transcription_complete(self):
+		return self.transcriptions.filter(is_active=True).count() == 0
+
+	def is_moderation_complete(self):
+		return self.moderations.filter(is_active=True).count() == 0
+
+	def transcriptions_remaining(self):
+		return self.transcriptions.filter(is_active=True).count()
+
+	def moderations_remaining(self):
+		return self.moderations.filter(is_active=True).count()
+
+	def completion_percentage(self):
+		return (self.transcriptions_remaining() + self.moderations_remaining()) / (self.transcriptions.count() + self.moderations.count())
+
+	def redundancy_percentage(self):
+		return self.moderations.count() / self.transcriptions.count()
 
 class Batch(models.Model):
 

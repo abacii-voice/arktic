@@ -106,12 +106,14 @@ AccountComponents.transcriptionMasterController = function () {
 					var transcriptionId = Object.keys(_this.buffer).filter(function (key) {
 						return _this.buffer[key].index === index;
 					})[0];
-					var storage = _this.buffer[transcriptionId];
-					if (storage.data === undefined) {
-						return AccountRequest.load_audio(storage.parent).then(function (audioData) {
-							storage.data = audioData;
-							return Util.ep();
-						});
+					if (transcriptionId) {
+						var storage = _this.buffer[transcriptionId];
+						if (storage.data === undefined) {
+							return AccountRequest.load_audio(storage.parent).then(function (audioData) {
+								storage.data = audioData;
+								return Util.ep();
+							});
+						}
 					}
 				}));
 			},
@@ -137,15 +139,15 @@ AccountComponents.transcriptionMasterController = function () {
 		}
 		base.setComplete = function () {
 			return base.current().then(function (current) {
-				current.isPending = true;
-				current.isComplete = false;
+				current.isPending = false;
+				current.isComplete = true;
 				return Util.ep();
 			});
 		}
 		base.setPending = function () {
 			return base.current().then(function (current) {
-				current.isPending = false;
-				current.isComplete = true;
+				current.isPending = true;
+				current.isComplete = false;
 				return Util.ep();
 			});
 		}
