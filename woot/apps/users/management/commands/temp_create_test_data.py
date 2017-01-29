@@ -69,8 +69,8 @@ class Command(BaseCommand):
 		dictionary.tokens.create(type='tag', content='breath-noise')
 
 		# create phrases
-		dictionary.create_phrase('luke i am you father :breath-noise')
-		dictionary.create_phrase('i want to speak to _')
+		dictionary.create_phrase(content='luke i am you father :breath-noise')
+		dictionary.create_phrase(content='i want to speak to _')
 
 		# fragment list
 		base = '/Users/nicholaspiano/code/abacii-voice/arktic/test/'
@@ -85,7 +85,7 @@ class Command(BaseCommand):
 
 			# 2. create caption
 			content = relfile_data[file_name] if relfile_data[file_name] else ''
-			phrase, phrase_created = dictionary.create_phrase(content)
+			phrase, phrase_created = dictionary.create_phrase(content=content)
 
 			# 2. create transcription
 			transcription = batch.transcriptions.create(project=project, grammar=grammar, filename=fragment.filename, content=phrase)

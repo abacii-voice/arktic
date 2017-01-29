@@ -3,6 +3,7 @@ from django.db import models
 
 # local
 from apps.tr.idgen import idgen
+from datetime import datetime
 
 ### Transcription classes
 class TranscriptionToken(models.Model):
@@ -150,10 +151,16 @@ class TranscriptionFragment(models.Model):
 			self.save()
 
 	def reconcile(self, revision):
-		# {'time': '2017-01-28T14:53:20.486Z', 'tokens': [{'type': 'word', 'complete': 'booking', 'query': 'booking'}], 'isComplete': False}
+		if self.transcriptions.filter(key=revision['key']).count() == 0:
+			# create components
+			date_created = datetime.strptime(revision['time'], '%a %b %d %Y %H:%M:%S %Z%z (GMT)')
+			phrase, phrase_created = self.parent.project.dictionary.create_phrase(tokens=revision['tokens'])
+			phrase_instance = phrase.instances.create(role=self.token.role)
 
-		if not (self.is_reconciled and revision['isComplete']):
-			self.transcriptions.get_or_create()
+			# get or create transcription
+			transcription, transcription_created = self.transcriptions.get_or_create(key=revision['key'], parent=self.parent, token=self.token, date_created=date_created, phrase=phrase_instance)
+
+			# set properties
 			self.is_reconciled = revision['isComplete']
 			self.parent.is_available = not revision['isComplete']
 			self.parent.is_active = not revision['isComplete']
@@ -170,6 +177,7 @@ class TranscriptionInstance(models.Model):
 
 	### Properties
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	key = models.CharField(max_length=8)
 	date_created = models.DateTimeField(auto_now_add=True)
 
 	# methods
