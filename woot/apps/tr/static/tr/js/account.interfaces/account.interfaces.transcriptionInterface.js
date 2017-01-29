@@ -777,9 +777,11 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				}).length > 0;
 				if (!revisionAlreadyExists && !(tokens[0].complete === '')) {
 					current.revisions.push({
-						time: new Date(),
+						time: new Date().toString(),
 						tokens: tokens,
 						isComplete: (current.isComplete || false),
+						content: current.complete,
+						key: Util.makeid(),
 					});
 					current.latestRevision = tokens;
 				}
