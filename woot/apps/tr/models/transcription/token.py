@@ -54,7 +54,7 @@ class TokenInstance(models.Model):
 
 class TokenShortcut(models.Model):
 	'''
-	Prevents a token from being displayed
+	Allows a keyboard shortcut to be assigned to a token
 
 	'''
 

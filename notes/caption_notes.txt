@@ -2,7 +2,7 @@ Global actions
 	Click
 
 Token actions
-	Focussed
+	Focused
 		Click
 		Blur
 		a char key
