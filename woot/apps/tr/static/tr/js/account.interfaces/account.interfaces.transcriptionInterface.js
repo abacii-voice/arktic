@@ -600,6 +600,19 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						html: datum.main,
 					},
 				}),
+				UI.createComponent('{base}-main-shortcut'.format({base: base}), {
+					template: UI.template('span', 'ie'),
+					appearance: {
+						style: {
+							'display': 'inline-block',
+							'left': '8px',
+							'opacity': '0.6',
+							'top': '-4px',
+						},
+						html: (datum.shortcut || ''),
+					},
+				}),
+
 
 				// index
 				UI.createComponent('{base}-index'.format({base: base}), {
@@ -621,6 +634,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					unitMainWrapper,
 					unitMainHead,
 					unitMainTail,
+					unitMainShortcut,
 					unitIndex,
 				] = unitComponents;
 
@@ -650,7 +664,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				unitBase.updateDatum = function (ndatum) {
 					return unitBase.setAppearance({classes: {add: ndatum.rule, remove: (unitBase.datum || datum).rule}}).then(function () {
 						unitBase.datum = ndatum;
-						return Util.ep();
+						return unitMainShortcut.setAppearance({html: (ndatum.shortcut || '')});
 					});
 				}
 				unitBase.updateQuery = function (query) {
@@ -668,7 +682,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						unitMainTail,
 					]),
 					unitMainContainer.setChildren([
-						unitMainWrapper
+						unitMainWrapper,
+						unitMainShortcut,
 					]),
 				]).then(function () {
 					return unitBase.setChildren([
