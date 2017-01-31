@@ -226,10 +226,10 @@ AccountComponents.captionField = function (id, args) {
 							var _this = this;
 							position = position || 'end';
 							if (position === 'end') {
-								// focus the end of the last focussable unit
+								// focus the end of the last Focusable unit
 								return _this.lastUnit().focus('end');
 							} else if (position === 'start') {
-								// focus the start of the first focussable unit
+								// focus the start of the first Focusable unit
 								return _this.firstUnit().focus('start');
 							} else {
 								return Util.ep();

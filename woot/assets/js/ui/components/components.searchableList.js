@@ -417,7 +417,7 @@ Components.searchableList = function (id, args) {
 									}).then(function () {
 										Mousetrap.bind(target.filter.char, function (event) {
 											event.preventDefault();
-											if (base.isFocussed) {
+											if (base.isFocused) {
 												if (base.data.filter === target.filter.rule) {
 													base.control.setFilter();
 												} else {
@@ -494,7 +494,7 @@ Components.searchableList = function (id, args) {
 					options = (options || {});
 
 					// if there are any results
-					if (base.data.storage.virtual.rendered.length && base.isFocussed) {
+					if (base.data.storage.virtual.rendered.length && base.isFocused) {
 
 						// changes
 						var previousIndex = base.currentIndex;
@@ -567,10 +567,10 @@ Components.searchableList = function (id, args) {
 			default: function (target) {
 				return function () {
 					jss.set('#{id} .{type}'.format({id: base.id, type: target.name}), {
-						'background-color': 'rgba(255,255,255,0.00)'
+						'background-color': 'transparent',
 					});
 					jss.set('#{id} .base.{type}.active'.format({id: base.id, type: target.name}), {
-						'background-color': 'rgba(255,255,255,0.1)'
+						'background-color': '#eee',
 					});
 					return Util.ep();
 				}
@@ -691,9 +691,9 @@ Components.searchableList = function (id, args) {
 
 		// search methods
 		search.focus = function (position) {
-			if (!search.isFocussed) {
-				search.isFocussed = true;
-				base.isFocussed = true;
+			if (!search.isFocused) {
+				search.isFocused = true;
+				base.isFocused = true;
 				return Promise.all([
 					search.setCaretPosition(position),
 					search.input(),
@@ -703,8 +703,8 @@ Components.searchableList = function (id, args) {
 			}
 		}
 		search.blur = function () {
-			search.isFocussed = false;
-			base.isFocussed = true;
+			search.isFocused = false;
+			base.isFocused = true;
 			return search.getContent().then(function (content) {
 				return search.components.tail.setAppearance({html: (content || search.placeholder)});
 			});

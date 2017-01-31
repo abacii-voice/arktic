@@ -66,11 +66,10 @@ class Command(BaseCommand):
 		dictionary.tokens.create(type='tag', content='unintelligible')
 		dictionary.tokens.create(type='tag', content='dtmf')
 		dictionary.tokens.create(type='tag', content='noise')
-		dictionary.tokens.create(type='tag', content='breath-noise')
+		test_tag = dictionary.tokens.create(type='tag', content='breath-noise')
 
-		# create phrases
-		dictionary.create_phrase(content='luke i am you father :breath-noise')
-		dictionary.create_phrase(content='i want to speak to _')
+		# create shortcuts
+		test_tag.shortcuts.create(role=worker_role, combo='ctrl+b')
 
 		# fragment list
 		base = '/Users/nicholaspiano/code/abacii-voice/arktic/test/'
