@@ -151,6 +151,7 @@ class TranscriptionFragment(models.Model):
 			self.save()
 
 	def reconcile(self, revision):
+		# filter by key to avoid creating another object when the same revision is sent again.
 		if self.transcriptions.filter(key=revision['key']).count() == 0:
 			# create components
 			date_created = datetime.strptime(revision['time'], '%a %b %d %Y %H:%M:%S %Z%z (GMT)')

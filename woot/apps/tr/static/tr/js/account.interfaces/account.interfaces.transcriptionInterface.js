@@ -150,7 +150,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		Mousetrap.bind('up', function (event) {
 			amc.addAction({type: 'key.up'});
 			event.preventDefault();
-			if (autocomplete.isFocussed && caption.isFocussed) {
+			if (autocomplete.isFocused && caption.isFocused) {
 				Promise.all([
 					autocomplete.behaviours.up(),
 				]);
@@ -163,7 +163,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		Mousetrap.bind('down', function (event) {
 			event.preventDefault();
 			amc.addAction({type: 'key.down'});
-			if (autocomplete.isFocussed && caption.isFocussed) {
+			if (autocomplete.isFocused && caption.isFocused) {
 				Promise.all([
 					autocomplete.behaviours.down(),
 				]);
@@ -234,7 +234,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		});
 		Mousetrap.bind('space', function (event) {
 			amc.addAction({type: 'key.space'});
-			if (caption.isFocussed) {
+			if (caption.isFocused) {
 				event.preventDefault();
 			}
 			Promise.all([
@@ -393,11 +393,27 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							return data[key].type === 'tag';
 						}).map(function (key) {
 							var tag = data[key];
-							return {
+							var tag_data = {
 								id: key,
 								main: tag.content,
 								rule: 'tag',
 							}
+
+							if (tag.shortcut) {
+								if (tag.shortcut.is_active) {
+									tag_data.shortcut = tag.shortcut.combo;
+									Mousetrap.unbind(tag.shortcut.combo);
+									Mousetrap.bind(tag.shortcut.combo, function (event) {
+										event.preventDefault();
+										amc.addAction({type: 'key.shortcut.{combo}'.format({combo: tag.shortcut.combo})});
+										Promise.all([
+											autocomplete.behaviours.shortcut(key),
+										]);
+									});
+								}
+							}
+
+							return tag_data;
 						});
 						resolve(results);
 					});
@@ -410,10 +426,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				setStyle: function () {
 					return new Promise(function(resolve, reject) {
 						jss.set('#{id} .tag'.format({id: autocomplete.id}), {
-							'background-color': 'rgba(255,255,0,0.05)'
+							'background-color': '#acff8e',
 						});
 						jss.set('#{id} .tag.active'.format({id: autocomplete.id}), {
-							'background-color': 'rgba(255,255,0,0.1)'
+							'background-color': '#8fef6b',
 						});
 						resolve();
 					});
@@ -473,10 +489,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				setStyle: function () {
 					return new Promise(function(resolve, reject) {
 						jss.set('#{id} .phrase'.format({id: autocomplete.id}), {
-							'background-color': 'rgba(255,100,255,0.05)'
+							'background-color': '#e9d9f1',
 						});
 						jss.set('#{id} .phrase.active'.format({id: autocomplete.id}), {
-							'background-color': 'rgba(255,100,255,0.4)'
+							'background-color': '#dcc3e9',
 						});
 						resolve();
 					});
@@ -502,9 +518,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					'padding-left': '10px',
 					'text-align': 'left',
 					'border-bottom': '1px solid #ccc',
-				});
-				jss.set('#{id} .base.active'.format({id: autocomplete.id}), {
-					'background-color': 'rgba(255,255,255,0.1)'
 				});
 				resolve();
 			});
@@ -704,7 +717,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 				// Should trigger caption set metadata to check for phrase and other expansions.
 				// return caption action
-				if (caption.isFocussed) {
+				if (caption.isFocused) {
 					_this.metadata.target = autocomplete.target;
 					return caption.control.input.editActive(_this.metadata);
 				} else {
@@ -719,7 +732,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			return _this.components.tail.setAppearance({html: _this.completeQuery}).then(function () {
 				return _this.components.head.setAppearance({html: _this.completeQuery});
 			}).then(function () {
-				if (!caption.isFocussed) {
+				if (!caption.isFocused) {
 					return _this.setCaretPosition('end');
 				} else {
 					return Util.ep();
@@ -743,10 +756,20 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			var index = parseInt(char);
 			if (index < autocomplete.data.storage.virtual.rendered.length) {
 				return autocomplete.control.setActive.main({index: index}).then(function () {
-					return autocomplete.behaviours.right().then(function () {
-						// return caption.behaviours.right();
+					return autocomplete.behaviours.right();
+				});
+			}
+		}
+		autocomplete.behaviours.shortcut = function (key) {
+			var shortcutDatum = autocomplete.data.storage.dataset[key];
+			if (caption.isFocused && !caption.active.query) {
+				return caption.active.setContent({query: shortcutDatum.main}).then(function () {
+					return caption.active.setCaretPosition('end').then(function () {
+						return caption.active.input();
 					});
 				});
+			} else {
+				return autocomplete.search.setContent({query: shortcutDatum.main, trigger: true});
 			}
 		}
 
@@ -754,12 +777,12 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		caption.checks = [
 			// check if tag unit matches a valid tag
 			function () {
-				return Util.ep();
+				return Util.ep(true);
 			},
 
 			// check capitals and make lower case
 			function () {
-				return Util.ep();
+				return Util.ep(true);
 			},
 		]
 		caption.export = function () {
@@ -798,24 +821,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 			// tag
 			jss.set('#{id} .tag'.format({id: caption.id}), {
-				'color': 'rgba(255,255,0,0.4)',
+				'color': '#0f7212',
 			});
 			jss.set('#{id} .tag.active'.format({id: caption.id}), {
-				'color': '05DA01',
-			});
-
-			// phrase
-			jss.set('#{id} .phrase'.format({id: caption.id}), {
-				'color': '#ccc',
-			});
-			jss.set('#{id} .phrase.active'.format({id: caption.id}), {
-				'color': '#ccc',
-			});
-
-			// ghost
-			jss.set('#{id} .ghost'.format({id: caption.id}), {
-				'opacity': '0.5',
-				'pointer-events': 'none', // It's not this, but find out what it is.
+				'color': '#16a81b',
 			});
 
 			return Util.ep();
@@ -892,7 +901,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					}
 				}
 				unitBase.setUnitContent = function (metadata) {
-					if (!unitBase.isFocussed) {
+					if (!unitBase.isFocused) {
 						return unitBase.setContent(metadata);
 					} else {
 						if (unitBase.completionOverride && !unitBase.isComplete) {
@@ -945,7 +954,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				}
 				unitBase.input = function () {
 					amc.addAction({type: 'caption.input'});
-					if (unitBase.isFocussed) {
+					if (unitBase.isFocused) {
 						return Promise.all([
 							unitBase.getContent().then(function (unitContent) {
 								// temporarily update metadata to prepare for completion, even though this might be overwritten by the subsequent search.setContent.
@@ -965,10 +974,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				}
 				unitBase.focus = function (position) {
 					amc.addAction({type: 'caption.focus'});
-					if (!unitBase.isFocussed) {
-						caption.isFocussed = true;
-						unitBase.isFocussed = true;
-						autocomplete.isFocussed = true;
+					if (!unitBase.isFocused) {
+						caption.isFocused = true;
+						unitBase.isFocused = true;
+						autocomplete.isFocused = true;
 						return caption.control.setActive({unit: unitBase}).then(function () {
 							return unitBase.setCaretPosition(position);
 						}).then(function () {
@@ -980,15 +989,15 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				}
 				unitBase.blur = function () {
 					amc.addAction({type: 'caption.blur'});
-					if (unitBase.isFocussed) {
-						unitBase.isFocussed = false;
+					if (unitBase.isFocused) {
+						unitBase.isFocused = false;
 						if (caption.active.id === unitBase.id) {
-							caption.isFocussed = false;
-							autocomplete.isFocussed = false;
+							caption.isFocused = false;
+							autocomplete.isFocused = false;
 						}
 						return Promise.all([
 							unitBase.deactivate(),
-							autocomplete.control.reset(),
+							// autocomplete.control.reset(),
 						]);
 					} else {
 						return Util.ep();
@@ -1009,7 +1018,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			});
 		}
 		caption.behaviours.right = function (event) {
-			if (caption.isFocussed) {
+			if (caption.isFocused) {
 				return caption.active.isCaretInPosition('end').then(function (inPosition) {
 					if (inPosition) {
 						if (event) {
@@ -1034,7 +1043,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			}
 		}
 		caption.behaviours.left = function (event) {
-			if (caption.isFocussed) {
+			if (caption.isFocused) {
 				return caption.active.isCaretInPosition('start').then(function (inPosition) {
 					if (inPosition) {
 						if (event) {
@@ -1052,7 +1061,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			}
 		}
 		caption.behaviours.backspace = function (event) {
-			if (caption.isFocussed) {
+			if (caption.isFocused) {
 				return caption.active.isCaretInPosition('start').then(function (inPosition) {
 					if (inPosition && caption.active.metadata.query === '') {
 						var noPhraseQuery = caption.active.phrase.query === '';
@@ -1088,10 +1097,12 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		caption.behaviours.enter = function () {
 			// confirms current phrase, but does not complete.
 			// splits phrase into sub-phrases, each containing a single token.
-			if (caption.isFocussed) {
+			if (caption.isFocused) {
 				return caption.active.isCaretInPosition('end').then(function (inPosition) {
+					// only if the caret is at the end
 					if (inPosition) {
-						if (caption.active.isLastToken() && caption.active.isComplete) {
+						// only if the last token is active, it is complete, and the query is not empty (must be empty complete as well)
+						if (caption.active.isLastToken() && caption.active.metadata.query !== '') {
 							return Promise.all([
 								transcriptionMasterController.setComplete(),
 								counter.active.setComplete(),
@@ -1102,23 +1113,30 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							}).then(function () {
 								return caption.focus();
 							});
-						} else if (caption.active.isLastQueryToken()) {
-							return caption.behaviours.right();
 						} else {
-							return Util.ep();
+							return Promise.all([
+								caption.focus(),
+								audio.play(),
+							]);
 						}
 					} else {
-						return Util.ep();
+						return Promise.all([
+							caption.focus(),
+							audio.play(),
+						]);
 					}
 				});
 			} else {
-				return Util.ep();
+				return Promise.all([
+					caption.focus(),
+					audio.play(),
+				]);
 			}
 		}
 		caption.behaviours.space = function () {
 			// skip to the next token in the phrase.
 			// if there is no next token, start a new phrase.
-			if (caption.isFocussed) {
+			if (caption.isFocused) {
 				return caption.active.isCaretInPosition('end').then(function (inPosition) {
 					if (inPosition && caption.active.isLastQueryToken()) {
 						var noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {return item.rule === 'phrase' && item.main !== caption.active.phrase.complete;}).length === 0;
@@ -1152,7 +1170,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			}
 		}
 		caption.behaviours.altright = function (event) {
-			if (caption.isFocussed) {
+			if (caption.isFocused) {
 				if (event) {
 					event.preventDefault();
 				}
@@ -1171,7 +1189,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			}
 		}
 		caption.behaviours.altleft = function (event) {
-			if (caption.isFocussed) {
+			if (caption.isFocused) {
 				if (event) {
 					event.preventDefault();
 				}
@@ -1187,7 +1205,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				// prevent the delete from happening after 'caption.previous'. It is only there to 'remove' the 'space'.
 				event.preventDefault();
 			}
-			if (caption.isFocussed && caption.active.isLastQueryToken()) {
+			if (caption.isFocused && caption.active.isLastQueryToken()) {
 				var isOnlyToken = caption.active.phrase.tokens.length === 1;
 				if (isOnlyToken) {
 					// remove phrase
