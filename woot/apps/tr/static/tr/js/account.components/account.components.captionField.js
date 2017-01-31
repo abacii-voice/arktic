@@ -340,6 +340,7 @@ AccountComponents.captionField = function (id, args) {
 			},
 			input: {
 				newCaption: function (metadata) {
+					metadata = (metadata || {});
 					base.data.currentId = metadata.parent;
 					base.showOverride = true;
 
@@ -347,7 +348,7 @@ AccountComponents.captionField = function (id, args) {
 						return base.data.objects.phrase.remove(phrase);
 					})).then(function () {
 						base.data.storage.virtual = [];
-						return Promise.ordered((metadata.latestRevision || metadata.tokens).map(function (token, index) {
+						return Promise.ordered((metadata.latestRevision || metadata.tokens || []).map(function (token, index) {
 							return function () {
 								return base.data.objects.phrase.create(index, {query: (token.content || token.query), complete: (token.content || token.complete), tokens: [token]});
 							}
