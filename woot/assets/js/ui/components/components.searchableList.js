@@ -214,17 +214,19 @@ Components.searchableList = function (id, args) {
 
 								(
 									(
+										// lower case query match at beginning
 										datum.main.toLowerCase().indexOf(base.data.query.toLowerCase()) === 0
 										&&
 										base.data.query.toLowerCase() !== ''
 									)
 									||
 									(
+										// allow autocomplete mode to display everything
 										(base.data.autocompleteOverride || !base.autocomplete || false)
 										&&
 										base.data.query === ''
 									)
-								), // lower case query match at beginning
+								),
 
 								// TODO: THESE CONDITIONS NEED TO BE OVERHAULED
 

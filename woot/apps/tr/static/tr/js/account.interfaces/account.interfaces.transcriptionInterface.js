@@ -232,13 +232,20 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				caption.behaviours.altbackspace(event),
 			]);
 		});
+		Mousetrap.bind('ctrl+backspace', function (event) {
+			event.preventDefault();
+			amc.addAction({type: 'key.ctrl+backspace'});
+			Promise.all([
+				caption.behaviours.ctrlbackspace(event),
+			]);
+		});
 		Mousetrap.bind('space', function (event) {
 			amc.addAction({type: 'key.space'});
 			if (caption.isFocused) {
 				event.preventDefault();
 			}
 			Promise.all([
-				caption.behaviours.space(),
+				caption.behaviours.space({checkNoMorePhrases: true}),
 			]);
 		});
 		Mousetrap.bind('alt+right', function (event) {
@@ -251,6 +258,20 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			amc.addAction({type: 'key.alt+left'});
 			Promise.all([
 				caption.behaviours.altleft(event),
+			]);
+		});
+		Mousetrap.bind('ctrl+space', function (event) {
+			event.preventDefault();
+			amc.addAction({type: 'key.ctrl+space'});
+			Promise.all([
+				caption.behaviours.space(),
+			]);
+		});
+		Mousetrap.bind('shift+space', function (event) {
+			event.preventDefault();
+			amc.addAction({type: 'key.shift+space'});
+			Promise.all([
+				autocomplete.behaviours.shiftspace(event),
 			]);
 		});
 		Mousetrap.bind('tab', function (event) {
@@ -769,7 +790,18 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		}
 		autocomplete.behaviours.number = function (char) {
 			var index = parseInt(char);
-			if (index < autocomplete.data.storage.virtual.rendered.length) {
+			if (autocomplete.data.storage.virtual.list.length === 0) {
+				var numbers = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+				if (caption.isFocused && !caption.active.query) {
+					return caption.active.setContent({query: numbers[index]}).then(function () {
+						return caption.active.setCaretPosition('end').then(function () {
+							return caption.active.input();
+						});
+					});
+				} else {
+					return autocomplete.search.setContent({query: numbers[index], trigger: true});
+				}
+			} else if (index < autocomplete.data.storage.virtual.rendered.length) {
 				return autocomplete.control.setActive.main({index: index}).then(function () {
 					return autocomplete.behaviours.right();
 				});
@@ -786,6 +818,12 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			} else {
 				return autocomplete.search.setContent({query: shortcutDatum.main, trigger: true});
 			}
+		}
+		autocomplete.behaviours.shiftspace = function (event) {
+			// 1. show the autocomplete search field
+			// 2. hide the search symbol
+			// 3. clear and focus the search field
+			
 		}
 
 		// Caption
@@ -1148,26 +1186,32 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				]);
 			}
 		}
-		caption.behaviours.space = function () {
+		caption.behaviours.space = function (options) {
+			options = (options || {});
 			// skip to the next token in the phrase.
 			// if there is no next token, start a new phrase.
 			if (caption.isFocused) {
 				return caption.active.isCaretInPosition('end').then(function (inPosition) {
 					if (inPosition && caption.active.isLastQueryToken()) {
-						var noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {return item.rule === 'phrase' && item.main !== caption.active.phrase.complete;}).length === 0;
+						var noMorePhrases = true; // true by default
+						if (options.checkNoMorePhrases) {
+							noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {return item.rule === 'phrase' && item.main !== caption.active.phrase.complete;}).length === 0;
+						}
 						if (noMorePhrases && caption.active.phrase.isComplete) {
 							if (caption.active.isLastToken() && caption.active.isComplete) {
 								var phrase = caption.active.phrase;
-								return Promise.all([
-									counter.active.setComplete(),
-									caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
-										return caption.next().then(function () {
-											return caption.active.setCaretPosition('start');
-										});
-									}).then(function () {
-										return caption.data.objects.phrase.split(phrase);
-									}),
-								]);
+								return autocomplete.control.setFilter().then(function () {
+									return Promise.all([
+										counter.active.setComplete(),
+										caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
+											return caption.next().then(function () {
+												return caption.active.setCaretPosition('start');
+											});
+										}).then(function () {
+											return caption.data.objects.phrase.split(phrase);
+										}),
+									]);
+								});
 							} else {
 								return Util.ep();
 							}
@@ -1247,6 +1291,12 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			} else {
 				return Util.ep();
 			}
+		}
+		caption.behaviours.ctrlbackspace = function (event) {
+			// remove entire caption
+			return caption.control.input.newCaption().then(function () {
+				return caption.focus();
+			});
 		}
 
 		// Counter
