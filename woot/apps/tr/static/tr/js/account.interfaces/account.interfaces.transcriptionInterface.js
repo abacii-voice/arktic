@@ -117,6 +117,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					'height': '100%',
 					'width': '100%',
 				},
+				classes: ['ie','abs'],
 			},
 		}),
 
@@ -141,6 +142,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			previousButton,
 			confirmButton,
 
+			// autocomplete
 			autocompletePanel,
 			autocomplete,
 			autocompleteControls,
@@ -724,6 +726,12 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			var _this = autocomplete;
 			var query = _this.data.query; // query is set no matter the status of virtual
 
+			// reset previous query and check for change
+			var changeQuery = false;
+			if (query !== _this.data.previousQuery) {
+				_this.data.previousQuery = query;
+				changeQuery = true;
+			}
 			if (!_this.data.storage.virtual.list.length) {
 				_this.currentIndex = undefined;
 				return _this.search.setMetadata({query: query, complete: '', type: '', tokens: []});
@@ -731,7 +739,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				var complete = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
 				var type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
 				var tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
-				if (_this.currentIndex >= _this.data.storage.virtual.list.length) {
+				if (_this.currentIndex >= _this.data.storage.virtual.list.length || changeQuery) {
 					return _this.control.setActive.main({index: 0}).then(function () {
 						return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
 					});
@@ -1205,16 +1213,13 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							if (caption.active.isLastToken() && caption.active.isComplete) {
 								var phrase = caption.active.phrase;
 								return autocomplete.control.setFilter().then(function () {
-									return Promise.all([
-										counter.active.setComplete(),
-										caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
-											return caption.next().then(function () {
-												return caption.active.setCaretPosition('start');
-											});
-										}).then(function () {
-											return caption.data.objects.phrase.split(phrase);
-										}),
-									]);
+									return caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
+										return caption.next().then(function () {
+											return caption.active.setCaretPosition('start');
+										});
+									}).then(function () {
+										return caption.data.objects.phrase.split(phrase);
+									});
 								});
 							} else {
 								return Util.ep();
@@ -1225,7 +1230,26 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							return autocomplete.search.setContent({query: caption.active.phrase.query + ' ', trigger: true});
 						}
 					} else {
-						return caption.active.setCaretPosition('end');
+						if (caption.active.index === 0) {
+							return caption.active.isCaretInPosition('start').then(function (inPosition) {
+								if (inPosition) {
+									var phrase = caption.active.phrase;
+									return autocomplete.control.setFilter().then(function () {
+										return caption.data.objects.phrase.create(0, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
+											// return caption.previous().then(function () {
+											// 	return caption.active.setCaretPosition('start');
+											// });
+										}).then(function () {
+											return caption.data.objects.phrase.split(phrase);
+										});
+									});
+								} else {
+									return caption.active.setCaretPosition('end');
+								}
+							});
+						} else {
+							return caption.active.setCaretPosition('end');
+						}
 					}
 				});
 			} else {
@@ -1510,6 +1534,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			// autocomplete panel
 			autocompletePanel.setChildren([
 				autocomplete,
+				autocompleteControls,
 			]),
 
 			// autocomplete
