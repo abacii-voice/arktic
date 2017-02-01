@@ -120,6 +120,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			},
 		}),
 
+		// autocomplete controls
+		AccountComponents.autocompleteControls('tb-2-ap-2-autocomplete-controls', {}),
+
 		// Non interface elements
 		// transcription master controller
 		AccountComponents.transcriptionMasterController(),
@@ -140,6 +143,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 			autocompletePanel,
 			autocomplete,
+			autocompleteControls,
 
 			// non interface elements
 			transcriptionMasterController,
@@ -823,7 +827,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			// 1. show the autocomplete search field
 			// 2. hide the search symbol
 			// 3. clear and focus the search field
-			
+
 		}
 
 		// Caption
