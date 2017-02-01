@@ -165,7 +165,8 @@ AccountComponents.captionField = function (id, args) {
 						this.newUnit = function (extraIndex, token) {
 							var _this = this;
 							var trueIndex = _this.renderedUnits.length + extraIndex;
-							var defaultAfter = _this.renderedUnits.length ? _this.renderedUnits[_this.renderedUnits.length-1].id : undefined; // not '' lol
+							var defaultAfter = base.firstTokenOverride ? '' : undefined;
+							console.log(base.globalAfter || _this.currentAfter || defaultAfter);
 							return base.unit().then(function (unit) {
 								unit.after = base.globalAfter || _this.currentAfter || defaultAfter;
 								unit.phrase = _this;
@@ -173,10 +174,10 @@ AccountComponents.captionField = function (id, args) {
 								_this.renderedUnits.push(unit);
 								return unit.updateUnitMetadata(token).then(function () {
 									return unit.hide().then(function () {
-
 										return content.setChildren([unit]);
 									});
 								}).then(function () {
+									console.log(content.children.length);
 									_this.currentAfter = unit.id;
 									base.globalAfter = undefined;
 									return Util.ep();
@@ -238,7 +239,8 @@ AccountComponents.captionField = function (id, args) {
 					},
 					create: function (index, metadata) {
 						var phrase = new base.data.objects.phrase.Phrase();
-						base.globalAfter = base.data.storage.virtual.length && base.data.storage.virtual[index] ? base.data.storage.virtual[index].lastUnit().id : undefined;
+						base.globalAfter = (base.data.storage.virtual.length && base.data.storage.virtual[index] && index) ? base.data.storage.virtual[index].lastUnit().id : undefined;
+						base.firstTokenOverride = (index === 0 && base.data.storage.virtual[index] !== undefined); // if something is trying to replace the first token
 						base.data.storage.virtual.splice(index, 0, phrase);
 						return phrase.update(metadata).then(function () {
 							return base.data.objects.phrase.renumber();

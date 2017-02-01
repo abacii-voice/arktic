@@ -21,7 +21,7 @@ Components.searchableList = function (id, args) {
 	// set up components
 	return Promise.all([
 		// base component
-		UI.createComponent('{id}'.format({id: id}), {
+		UI.createComponent(id, {
 			template: UI.template('div', 'ie'),
 			appearance: (args.appearance || defaultAppearance),
 		}),
@@ -102,6 +102,7 @@ Components.searchableList = function (id, args) {
 		base.data = {
 			// variables
 			limit: undefined,
+			previousQuery: '',
 			query: '',
 			filter: '',
 			lock: false,
