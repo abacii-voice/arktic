@@ -365,9 +365,9 @@ var UI = {
 					_this.components[child.name] = child;
 				}
 				child.isAddedToParent = true;
-				if (child.id.contains('tb-1-mp-3-caption-') && !child.id.contains('head') && !child.id.contains('tail') && !child.id.contains('space')) {
-					console.log(child.id, child.index, index, _this.children.length);
-				}
+				// if (child.id.contains('tb-1-mp-3-caption-') && !child.id.contains('head') && !child.id.contains('tail') && !child.id.contains('space')) {
+				// 	console.log(child.id, child.index, index, _this.children.length);
+				// }
 				_this.children.splice(child.index, 0, child);
 				resolve(child);
 			});
@@ -414,9 +414,6 @@ var UI = {
 							});
 						} else {
 							return child.childIndexFromAfter().then(function (component) {
-								if (child.id.contains('tb-1-mp-3-caption-') && !child.id.contains('head') && !child.id.contains('tail') && !child.id.contains('space')) {
-									console.log(child.id, child.after, child.index);
-								}
 								return _this.addChild(component);
 							}).then(function (final) {
 								if (_this.isRendered) {
