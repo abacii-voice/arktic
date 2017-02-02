@@ -1213,7 +1213,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							if (caption.active.isLastToken() && caption.active.isComplete) {
 								var phrase = caption.active.phrase;
 								return autocomplete.control.setFilter().then(function () {
-									return caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
+									return caption.data.objects.phrase.create(caption.active.phrase.index + 1, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
 										return caption.next().then(function () {
 											return caption.active.setCaretPosition('start');
 										});
