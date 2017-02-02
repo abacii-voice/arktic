@@ -166,8 +166,15 @@ AccountComponents.captionField = function (id, args) {
 						this.newUnit = function (extraIndex, token) {
 							var _this = this;
 							var trueIndex = _this.renderedUnits.length + extraIndex;
+							var defaultAfter = _this.renderedUnits.length ? _this.renderedUnits[_this.renderedUnits.length-1].id : (base.data.firstTokenOverride ? '' : undefined);
+							base.data.firstTokenOverride = false;
 							return base.unit().then(function (unit) {
-								unit.after = base.globalAfter || _this.currentAfter || undefined;
+								unit.after = base.globalAfter || _this.currentAfter || defaultAfter;
+								console.log(unit.after, content.children.map(function (c) {
+									return c.id;
+								}), content.children.map(function (c) {
+									return c.id;
+								}).indexOf(unit.after));
 								unit.phrase = _this;
 								unit.isReserved = token === undefined;
 								_this.renderedUnits.push(unit);
@@ -239,6 +246,7 @@ AccountComponents.captionField = function (id, args) {
 						var phrase = new base.data.objects.phrase.Phrase();
 						base.globalAfter = (base.data.storage.virtual.length && base.data.storage.virtual[index] && index) ? base.data.storage.virtual[index].lastUnit().id : undefined;
 						base.data.storage.virtual.splice(index, 0, phrase);
+						base.data.firstTokenOverride = index === 0 && base.data.storage.virtual[index];
 						return phrase.update(metadata).then(function () {
 							return base.data.objects.phrase.renumber();
 						}).then(function () {
@@ -317,6 +325,9 @@ AccountComponents.captionField = function (id, args) {
 					var visibleChildren = content.children.filter(function (unit) {
 						return !unit.isHidden;
 					});
+					console.log(content.children.length, visibleChildren.length, visibleChildren.map(function (v) {
+						return v.id;
+					}), base.data.storage.virtual);
 					var newIndex = visibleChildren.indexOf(base.active) + (options.increment || 0);
 
 					// boundary conditions

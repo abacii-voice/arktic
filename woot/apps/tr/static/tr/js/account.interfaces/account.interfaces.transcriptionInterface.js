@@ -1236,9 +1236,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 									var phrase = caption.active.phrase;
 									return autocomplete.control.setFilter().then(function () {
 										return caption.data.objects.phrase.create(0, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
-											// return caption.previous().then(function () {
-											// 	return caption.active.setCaretPosition('start');
-											// });
+											return caption.previous().then(function () {
+												return caption.active.setCaretPosition('start');
+											});
 										}).then(function () {
 											return caption.data.objects.phrase.split(phrase);
 										});
