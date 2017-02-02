@@ -1207,13 +1207,17 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					if (inPosition && caption.active.isLastQueryToken()) {
 						var noMorePhrases = true; // true by default
 						if (options.checkNoMorePhrases) {
-							noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {return item.rule === 'phrase' && item.main !== caption.active.phrase.complete;}).length === 0;
+							noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {
+								return item.rule === 'phrase' && item.main !== caption.active.phrase.complete;
+							}).length === 0;
 						}
 						if (noMorePhrases && caption.active.phrase.isComplete) {
 							if (caption.active.isLastToken() && caption.active.isComplete) {
 								var phrase = caption.active.phrase;
+
+								// OPTION 1: create a completely new phrase if there are no more phrases to complete.
 								return autocomplete.control.setFilter().then(function () {
-									return caption.data.objects.phrase.create(caption.active.phrase.index + 1, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
+									return caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
 										return caption.next().then(function () {
 											return caption.active.setCaretPosition('start');
 										});
@@ -1225,6 +1229,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 								return Util.ep();
 							}
 						} else {
+
+							// OPTION 2: just add a space to continue autocompleting an available phrase.
 							caption.active.phrase.spaceOverride = true;
 							autocomplete.target	= caption.active.phrase.id;
 							return autocomplete.search.setContent({query: caption.active.phrase.query + ' ', trigger: true});
@@ -1234,6 +1240,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							return caption.active.isCaretInPosition('start').then(function (inPosition) {
 								if (inPosition) {
 									var phrase = caption.active.phrase;
+
+									// OPTION 3: create a new phrase before the first phrase.
 									return autocomplete.control.setFilter().then(function () {
 										return caption.data.objects.phrase.create(0, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
 											return caption.previous().then(function () {
