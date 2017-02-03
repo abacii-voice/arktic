@@ -166,8 +166,10 @@ AccountComponents.captionField = function (id, args) {
 						this.newUnit = function (extraIndex, token) {
 							var _this = this;
 							var trueIndex = _this.renderedUnits.length + extraIndex;
+							var defaultAfter = _this.renderedUnits.length ? _this.renderedUnits[_this.renderedUnits.length-1].id : (base.data.firstTokenOverride ? '' : undefined);
+							base.data.firstTokenOverride = false;
 							return base.unit().then(function (unit) {
-								unit.after = base.globalAfter || _this.currentAfter || undefined;
+								unit.after = base.globalAfter || _this.currentAfter || defaultAfter;
 								unit.phrase = _this;
 								unit.isReserved = token === undefined;
 								_this.renderedUnits.push(unit);
@@ -239,16 +241,21 @@ AccountComponents.captionField = function (id, args) {
 						var phrase = new base.data.objects.phrase.Phrase();
 						base.globalAfter = (base.data.storage.virtual.length && base.data.storage.virtual[index] && index) ? base.data.storage.virtual[index].lastUnit().id : undefined;
 						base.data.storage.virtual.splice(index, 0, phrase);
+						base.data.virtual = (base.data.virtual || []);
+						base.data.firstTokenOverride = index === 0 && base.data.storage.virtual[index];
 						return phrase.update(metadata).then(function () {
 							return base.data.objects.phrase.renumber();
 						}).then(function () {
 							phrase.id = Util.makeid();
+							base.data.virtual.splice(index, 0, phrase.complete);
 							return Util.ep(phrase);
 						});
 					},
 					remove: function (phrase) {
-						return Promise.all(phrase.renderedUnits.map(function (renderedUnit) {
-							return content.removeChild(renderedUnit.id);
+						return Promise.ordered(phrase.renderedUnits.map(function (renderedUnit) {
+							return function () {
+								return content.removeChild(renderedUnit.id);
+							}
 						})).then(function () {
 							base.data.storage.virtual.splice(phrase.index, 1);
 							return Util.ep();
@@ -258,31 +265,34 @@ AccountComponents.captionField = function (id, args) {
 						var activeUnits = phrase.renderedUnits.filter(function (unit) {
 							return !unit.isHidden;
 						});
-						return Promise.all(phrase.renderedUnits.filter(function (unit) {
-							return unit.isHidden;
-						}).map(function (unit) {
-							return content.removeChild(unit.id);
-						})).then(function () {
-							base.data.storage.virtual.splice(phrase.index, 1);
+						if (phrase.tokens.length > 1) {
+							return Promise.all(phrase.renderedUnits.filter(function (unit) {
+								return unit.isHidden;
+							}).map(function (unit) {
+								return content.removeChild(unit.id);
+							})).then(function () {
+								base.data.storage.virtual.splice(phrase.index, 1);
+								return Util.ep();
+							}).then(function () {
+								return Promise.ordered(phrase.tokens.map(function (token, index) {
+									return function () {
+										var unit = activeUnits[index];
+										var newPhrase = new base.data.objects.phrase.Phrase();
+										newPhrase.renderedUnits = [unit];
+										unit.phrase = newPhrase;
+										base.data.storage.virtual.splice(phrase.index+index, 0, newPhrase);
+										return newPhrase.update(token).then(function () {
+											newPhrase.id = Util.makeid();
+											return Util.ep();
+										}).then(function () {
+											return base.data.objects.phrase.renumber();
+										});
+									}
+								}));
+							});
+						} else {
 							return Util.ep();
-						}).then(function () {
-							var position = phrase.index - 1;
-							return Promise.ordered(phrase.tokens.map(function (token, index) {
-								return function () {
-									var unit = activeUnits[index];
-									var newPhrase = new base.data.objects.phrase.Phrase();
-									newPhrase.renderedUnits = [unit];
-									unit.phrase = newPhrase;
-									base.data.storage.virtual.splice(position+index, 0, newPhrase);
-									return newPhrase.update(token).then(function () {
-										newPhrase.id = Util.makeid();
-										return Util.ep();
-									}).then(function () {
-										return base.data.objects.phrase.renumber();
-									});
-								}
-							}));
-						});
+						}
 					},
 					renumber: function () {
 						return Promise.all(base.data.storage.virtual.map(function (phrase, index) {
@@ -317,13 +327,14 @@ AccountComponents.captionField = function (id, args) {
 					var visibleChildren = content.children.filter(function (unit) {
 						return !unit.isHidden;
 					});
-					var newIndex = visibleChildren.indexOf(base.active) + (options.increment || 0);
+					var visibleIndex = visibleChildren.map(function (child) {return child.id;}).indexOf(base.active.id);
+					base.currentIndex = (visibleIndex === -1 ? (base.currentIndex || 0) : visibleIndex) + (options.increment || 0);
 
 					// boundary conditions
-					newIndex = newIndex > 0 ? (newIndex < visibleChildren.length - 1 ? newIndex : visibleChildren.length - 1) : 0;
+					base.currentIndex = base.currentIndex > 0 ? (base.currentIndex < visibleChildren.length - 1 ? base.currentIndex : visibleChildren.length - 1) : 0;
 
 					// get new active
-					base.active = visibleChildren[newIndex];
+					base.active = visibleChildren[base.currentIndex];
 				}
 
 				return base.control.deactivate(previousUnit).then(function () {
@@ -343,8 +354,10 @@ AccountComponents.captionField = function (id, args) {
 					base.data.currentId = metadata.parent;
 					base.showOverride = true;
 
-					return Promise.all(base.data.storage.virtual.map(function (phrase) {
-						return base.data.objects.phrase.remove(phrase);
+					return Promise.ordered(base.data.storage.virtual.reverse().map(function (phrase) {
+						return function () {
+							return base.data.objects.phrase.remove(phrase);
+						}
 					})).then(function () {
 						base.data.storage.virtual = [];
 						return Promise.ordered((metadata.latestRevision || metadata.tokens || []).map(function (token, index) {
