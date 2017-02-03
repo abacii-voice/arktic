@@ -359,11 +359,15 @@ var UI = {
 		this.addChild = function (child) {
 			var _this = this;
 			return new Promise(function(resolve, reject) {
-				child.index = (child.index || _this.children.length);
+				var index = child.index;
+				child.index = (child.index !== undefined ? child.index : _this.children.length);
 				if (child.name) {
 					_this.components[child.name] = child;
 				}
 				child.isAddedToParent = true;
+				// if (child.id.contains('tb-1-mp-3-caption-') && !child.id.contains('head') && !child.id.contains('tail') && !child.id.contains('space')) {
+				// 	console.log(child.id, child.index, index, _this.children.length);
+				// }
 				_this.children.splice(child.index, 0, child);
 				resolve(child);
 			});
@@ -439,7 +443,7 @@ var UI = {
 		this.childIndexFromAfter = function (placementIndex) {
 			// find index from after key
 			var _this = this;
-			if (_this.after !== undefined) {
+			if (_this.after) {
 				return UI.getComponent(_this.after).then(function (component) {
 					return new Promise(function(resolve, reject) {
 						_this.index = component !== undefined ? component.index + 1 : 0;
@@ -448,7 +452,7 @@ var UI = {
 				});
 			} else {
 				return new Promise(function(resolve, reject) {
-					_this.index = placementIndex;
+					_this.index = (placementIndex || (_this.after === '' ? 0 : undefined));
 					resolve(_this);
 				});
 			}
