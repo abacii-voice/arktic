@@ -77,23 +77,48 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 		// button panel
 		// contains:
-		// 1. previous button
-		// 2. next/confirm button
+		// 1. flag field
+		// 2. previous button
+		// 3. next/confirm button
 		UI.createComponent('tb-1-mp-4-button-panel', {
 			appearance: {
 				style: {
-					'height': '100%',
-					'width': '70px',
+					'margin-top': '10px',
+					'height': '60px',
+					'width': '555px',
 					'float': 'left',
 				},
 			},
 		}),
 
+		// flag field
+		AccountComponents.flagField('tb-1-mp-4-bp-1-flag-field'),
+
 		// previous button
-		UI.createComponent('tb-1-mp-4-bp-1-previous-button'),
+		UI.createComponent('tb-1-mp-4-bp-2-previous-button', {
+			template: UI.template('div', 'ie button border border-radius'),
+			appearance: {
+				style: {
+					'margin-left': '10px',
+					'height': '100%',
+					'width': '60px',
+					'float': 'left',
+				},
+			},
+		}),
 
 		// next/confirm button
-		UI.createComponent('tb-1-mp-4-bp-2-next-confirm-button'),
+		UI.createComponent('tb-1-mp-4-bp-3-next-confirm-button', {
+			template: UI.template('div', 'ie button border border-radius'),
+			appearance: {
+				style: {
+					'margin-left': '10px',
+					'height': '100%',
+					'width': '60px',
+					'float': 'left',
+				},
+			},
+		}),
 
 		// autocomplete panel
 		// contains:
@@ -139,6 +164,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			audio,
 			caption,
 			buttonPanel,
+			flags,
 			previousButton,
 			confirmButton,
 
@@ -472,6 +498,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					rule: 'tag',
 					limit: 10,
 					autocompleteOverride: true,
+					preventIncomplete: true,
 				},
 			},
 			{name: 'phrase',
@@ -1539,11 +1566,19 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				},
 			}),
 
+			// button panel
+			buttonPanel.setChildren([
+				flags,
+				previousButton,
+				confirmButton,
+			]),
+
 			// main panel
 			mainPanel.setChildren([
 				counter,
 				audio,
 				caption,
+				buttonPanel,
 			]),
 
 			// caption
