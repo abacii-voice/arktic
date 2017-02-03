@@ -252,8 +252,10 @@ AccountComponents.captionField = function (id, args) {
 						});
 					},
 					remove: function (phrase) {
-						return Promise.all(phrase.renderedUnits.map(function (renderedUnit) {
-							return content.removeChild(renderedUnit.id);
+						return Promise.ordered(phrase.renderedUnits.map(function (renderedUnit) {
+							return function () {
+								return content.removeChild(renderedUnit.id);
+							}
 						})).then(function () {
 							base.data.storage.virtual.splice(phrase.index, 1);
 							return Util.ep();
@@ -325,13 +327,14 @@ AccountComponents.captionField = function (id, args) {
 					var visibleChildren = content.children.filter(function (unit) {
 						return !unit.isHidden;
 					});
-					var newIndex = visibleChildren.indexOf(base.active) + (options.increment || 0);
+					var visibleIndex = visibleChildren.map(function (child) {return child.id;}).indexOf(base.active.id);
+					base.currentIndex = (visibleIndex === -1 ? (base.currentIndex || 0) : visibleIndex) + (options.increment || 0);
 
 					// boundary conditions
-					newIndex = newIndex > 0 ? (newIndex < visibleChildren.length - 1 ? newIndex : visibleChildren.length - 1) : 0;
+					base.currentIndex = base.currentIndex > 0 ? (base.currentIndex < visibleChildren.length - 1 ? base.currentIndex : visibleChildren.length - 1) : 0;
 
 					// get new active
-					base.active = visibleChildren[newIndex];
+					base.active = visibleChildren[base.currentIndex];
 				}
 
 				return base.control.deactivate(previousUnit).then(function () {
@@ -351,8 +354,10 @@ AccountComponents.captionField = function (id, args) {
 					base.data.currentId = metadata.parent;
 					base.showOverride = true;
 
-					return Promise.all(base.data.storage.virtual.map(function (phrase) {
-						return base.data.objects.phrase.remove(phrase);
+					return Promise.ordered(base.data.storage.virtual.reverse().map(function (phrase) {
+						return function () {
+							return base.data.objects.phrase.remove(phrase);
+						}
 					})).then(function () {
 						base.data.storage.virtual = [];
 						return Promise.ordered((metadata.latestRevision || metadata.tokens || []).map(function (token, index) {

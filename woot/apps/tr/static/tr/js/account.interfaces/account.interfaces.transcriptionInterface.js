@@ -1221,8 +1221,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 								noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {
 									return (
 										item.rule === 'phrase' && // is a phrase
-										item.main !== caption.active.phrase.complete && // is not the currently completed phrase
-										item.main.contains(caption.active.phrase.query + ' ') // does not actually match the current incomplete query + a space
+										(item.main !== caption.active.phrase.complete || !caption.active.phrase.isComplete) && // is not the currently completed phrase
+										item.main.contains(caption.active.phrase.query + ' ') // does actually match the current incomplete query + a space
 									);
 								}).length === 0;
 							}
