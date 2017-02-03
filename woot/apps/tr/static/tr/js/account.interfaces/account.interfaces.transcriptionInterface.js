@@ -372,12 +372,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			options = (options || {});
 
 			audio.controller.isLoaded = false;
-			return Promise.all([
-				caption.export(),
-				audio.stop(),
-				audio.components.canvas.removeCut(),
-			]).then(function () {
-
+			return _this.save().then(function () {
 				var previousIndex = _this.active;
 
 				// change active
@@ -388,9 +383,34 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				_this.active = _this.active >= Object.keys(_this.buffer).length ? Object.keys(_this.buffer).length : _this.active; // cannot be past end
 				_this.active = (previousIndex > _this.active && previousIndex % _this.releaseThreshold === 0) ? previousIndex : _this.active; // cannot move back before threshold
 
-				return _this.update();
+				return _this.update().then(function () {
+					return audio.play();
+				});
 			}).then(function () {
-				return audio.play();
+				return Promise.all([
+					audio.stop(),
+					audio.components.canvas.removeCut(),
+				]);
+			});
+		}
+		transcriptionMasterController.save = function () {
+			var tokens = caption.export();
+			var _this = transcriptionMasterController;
+			return _this.current().then(function (current) {
+				current.revisions = (current.revisions || []);
+				var revisionAlreadyExists = current.revisions.filter(function (revision) {
+					return JSON.stringify(revision.tokens) === JSON.stringify(tokens) && revision.isComplete === current.isComplete;
+				}).length > 0;
+				if (!revisionAlreadyExists && !(tokens[0].complete === '')) {
+					current.revisions.push({
+						time: new Date().toString(),
+						tokens: tokens,
+						isComplete: (current.isComplete || false),
+						content: current.complete,
+						key: Util.makeid(),
+					});
+					current.latestRevision = tokens;
+				}
 			});
 		}
 
@@ -866,17 +886,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		}
 
 		// Caption
-		caption.checks = [
-			// check if tag unit matches a valid tag
-			function () {
-				return Util.ep(true);
-			},
-
-			// check capitals and make lower case
-			function () {
-				return Util.ep(true);
-			},
-		]
 		caption.export = function () {
 			var i, j, tokens = [];
 			for (i=0; i<caption.data.storage.virtual.length; i++) {
@@ -885,22 +894,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					tokens.push(virtual.tokens[j]);
 				}
 			}
-			return transcriptionMasterController.current().then(function (current) {
-				current.revisions = (current.revisions || []);
-				var revisionAlreadyExists = current.revisions.filter(function (revision) {
-					return JSON.stringify(revision.tokens) === JSON.stringify(tokens) && revision.isComplete === current.isComplete;
-				}).length > 0;
-				if (!revisionAlreadyExists && !(tokens[0].complete === '')) {
-					current.revisions.push({
-						time: new Date().toString(),
-						tokens: tokens,
-						isComplete: (current.isComplete || false),
-						content: current.complete,
-						key: Util.makeid(),
-					});
-					current.latestRevision = tokens;
-				}
-			});
+			return tokens;
 		}
 		caption.styles = function () {
 			// word
