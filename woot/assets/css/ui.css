@@ -220,7 +220,7 @@ Common interface elements
 }
 
 .ie.button:hover {
-	border-color: #fff;
+	border-color: #aaa;
 	background-color: transparent;
 }
 

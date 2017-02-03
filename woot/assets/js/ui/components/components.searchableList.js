@@ -203,7 +203,7 @@ Components.searchableList = function (id, args) {
 
 							// 2. filter dataset to produce new subset
 							return base.data.display.filter.in();
-						})
+						});
 					},
 					condition: function (datum) {
 
@@ -255,11 +255,15 @@ Components.searchableList = function (id, args) {
 						}));
 					},
 					in: function () {
+						base.data.exactMatch = false;
 						return Promise.all(Object.keys(base.data.storage.dataset).map(function (key) {
 							var datum = base.data.storage.dataset[key];
 							return base.data.display.filter.condition(datum).then(function (condition) {
 								if (condition) {
 									base.data.storage.subset[key] = datum;
+									if (datum.main.toLowerCase() === base.data.query.toLowerCase() && base.data.query !== '') {
+										base.data.exactMatch = true; // in the event of an exact match, add a flag that prevents the item from being displayed twice.
+									}
 								}
 								return Util.ep();
 							});
@@ -321,6 +325,12 @@ Components.searchableList = function (id, args) {
 						base.data.storage.virtual.list = Object.keys(base.data.storage.subset).map(function (key) {
 							return base.data.storage.subset[key];
 						});
+						if (!base.data.preventIncomplete && base.data.query && !base.data.exactMatch) {
+							base.data.storage.virtual.list.unshift({
+								main: base.data.query.toLowerCase(),
+								rule: 'word',
+							});
+						}
 						return Util.ep();
 					},
 					sort: function () {
@@ -472,9 +482,11 @@ Components.searchableList = function (id, args) {
 				if (rule in base.data.storage.filters) {
 					base.data.limit = base.data.storage.filters[rule].limit !== 0 ? (base.data.storage.filters[rule].limit !== undefined ? base.data.storage.filters[rule].limit : base.data.limit) : undefined;
 					base.data.autocompleteOverride = base.data.storage.filters[rule].autocompleteOverride;
+					base.data.preventIncomplete = base.data.storage.filters[rule].preventIncomplete;
 				} else {
 					base.data.limit = base.defaultLimit;
 					base.data.autocompleteOverride = undefined;
+					base.data.preventIncomplete = false;
 				}
 
 				// 1. update search

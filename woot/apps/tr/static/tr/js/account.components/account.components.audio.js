@@ -269,7 +269,7 @@ AccountComponents.audio = function (id, args) {
 				if (_this.cut) {
 					if (i * _this.barWidth > _this.cutStart && i * _this.barWidth < _this.cutEnd) {
 						if (i * _this.barWidth < _this.nowCursorPosition) {
-							_this.context.fillStyle = '#fff';
+							_this.context.fillStyle = '#aaa';
 						} else {
 							_this.context.fillStyle = '#ccc';
 						}
@@ -280,7 +280,7 @@ AccountComponents.audio = function (id, args) {
 					if (i * _this.barWidth < _this.mousePosition) {
 						_this.context.fillStyle = '#ccc';
 					} else if (i * _this.barWidth < _this.nowCursorPosition && i * _this.barWidth > _this.cutStart) {
-						_this.context.fillStyle = '#fff';
+						_this.context.fillStyle = '#aaa';
 					} else {
 						_this.context.fillStyle = '#bbb';
 					}
