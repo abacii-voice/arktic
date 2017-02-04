@@ -625,10 +625,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						return {};
 					},
 					activate: function () {
-						return caption.active.forceBlur().then(function () {
-							return autocomplete.showSearch()
-						}).then(function () {
-							return autocomplete.search.focus();
+						return autocomplete.showSearch().then(function () {
+							return autocomplete.search.components.head.model().focus();
 						});;
 					},
 				},
@@ -1656,7 +1654,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			// autocomplete panel
 			autocompletePanel.setChildren([
 				autocomplete,
-				autocompleteControls,
+				// autocompleteControls,
 			]),
 
 			// autocomplete
@@ -1697,7 +1695,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			}),
 			autocomplete.components.searchFilterBar.setAppearance({
 				style: {
-					'display': 'none',
+					'display': 'block',
 				},
 			}),
 			autocomplete.unitStyle.apply(),

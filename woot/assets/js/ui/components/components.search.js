@@ -135,10 +135,6 @@ Components.search = function (id, args) {
 				return tail.setAppearance({html: (content || base.placeholder)});
 			});
 		}
-		base.forceBlur = function () {
-			head.model().blur();
-			return Util.ep();
-		}
 		base.clear = function () {
 			return head.setAppearance({html: ''}).then(function () {
 				return tail.setAppearance({html: base.placeholder});
