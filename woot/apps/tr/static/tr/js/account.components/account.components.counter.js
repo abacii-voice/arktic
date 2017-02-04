@@ -97,6 +97,8 @@ AccountComponents.counter = function (id, args) {
 			});
 		}
 		base.styles = function () {
+			// TODO: update styles
+
 			// blank
 			jss.set('#{id} .unit'.format({id: base.id}), {
 				'background-color': 'transparent',
