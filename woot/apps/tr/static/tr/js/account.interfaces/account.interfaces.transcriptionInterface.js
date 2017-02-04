@@ -440,9 +440,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						resolve(results);
 					});
 				},
-				filterRequest: function (query) {
-					return {tokens: {'content__startswith': query, 'type': 'word'}};
-				},
 				filter: {
 					default: true,
 					char: '/',
@@ -451,6 +448,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					display: 'Word',
 					rule: 'word',
 					limit: 10,
+					request: function (query) {
+						return {tokens: {'content__startswith': query, 'type': 'word'}};
+					},
 				},
 			},
 			{name: 'tag',
@@ -493,11 +493,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						resolve(results);
 					});
 				},
-				filterRequest: function (query) {
-					var dict = {};
-					dict['tokens'] = {'content__startswith': query, 'type': 'tag'};
-					return dict;
-				},
 				setStyle: function () {
 					return new Promise(function(resolve, reject) {
 						jss.set('#{id} .tag'.format({id: autocomplete.id}), {
@@ -519,6 +514,11 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					limit: 10,
 					autocompleteOverride: true,
 					preventIncomplete: true,
+					request: function (query) {
+						var dict = {};
+						dict['tokens'] = {'content__startswith': query, 'type': 'tag'};
+						return dict;
+					},
 				},
 			},
 			{name: 'phrase',
@@ -557,11 +557,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						resolve(results);
 					});
 				},
-				filterRequest: function (query) {
-					var dict = {};
-					dict['phrases'] = {'content__startswith': query, 'token_count__gt': '1'};
-					return dict;
-				},
 				setStyle: function () {
 					return new Promise(function(resolve, reject) {
 						jss.set('#{id} .phrase'.format({id: autocomplete.id}), {
@@ -581,6 +576,11 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					display: 'Phrase',
 					rule: 'phrase',
 					limit: 10,
+					request: function (query) {
+						var dict = {};
+						dict['phrases'] = {'content__startswith': query, 'token_count__gt': '1'};
+						return dict;
+					},
 				},
 			},
 			{name: 'flag',
@@ -600,12 +600,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					});
 					return Util.ep(results);
 				},
-				filterRequest: function () {
-					return {};
+				setStyle: function () {
+
 				},
-				// setStyle: function () {
-				//
-				// },
 				filter: {
 					default: false,
 					char: '>',
@@ -616,6 +613,13 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					limit: 10,
 					autocompleteOverride: true,
 					preventIncomplete: true,
+					request: function () {
+						return {};
+					},
+					activate: function () {
+						console.log('here');
+						return Util.ep();
+					},
 				},
 			}
 		]
