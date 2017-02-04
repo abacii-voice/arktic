@@ -625,8 +625,11 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						return {};
 					},
 					activate: function () {
-						console.log('here');
-						return Util.ep();
+						return caption.active.forceBlur().then(function () {
+							return autocomplete.showSearch()
+						}).then(function () {
+							return autocomplete.search.focus();
+						});;
 					},
 				},
 			}
