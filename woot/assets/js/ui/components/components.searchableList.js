@@ -498,11 +498,10 @@ Components.searchableList = function (id, args) {
 
 					// 4. search
 					search.setMetadata(),
-
-					// 5. filter activate
-					(filterActivate || Util.ep)(),
 				]).then(function () {
 					return base.control.start();
+				}).then(function () {
+					return (filterActivate || Util.ep)();
 				});
 			},
 			setActive: {
@@ -752,6 +751,12 @@ Components.searchableList = function (id, args) {
 					return Util.ep();
 				}
 			});
+		}
+		base.showSearch = function () {
+			return Util.ep();
+		}
+		base.hideSearch = function () {
+			return Util.ep();
 		}
 
 		// title methods
