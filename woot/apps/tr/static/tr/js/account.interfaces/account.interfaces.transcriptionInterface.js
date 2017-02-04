@@ -372,7 +372,12 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			options = (options || {});
 
 			audio.controller.isLoaded = false;
-			return _this.save().then(function () {
+			return Promise.all([
+				audio.stop(),
+				audio.components.canvas.removeCut(),
+			]).then(function () {
+				return _this.save()
+			}).then(function () {
 				var previousIndex = _this.active;
 
 				// change active
@@ -386,11 +391,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				return _this.update().then(function () {
 					return audio.play();
 				});
-			}).then(function () {
-				return Promise.all([
-					audio.stop(),
-					audio.components.canvas.removeCut(),
-				]);
 			});
 		}
 		transcriptionMasterController.save = function () {
