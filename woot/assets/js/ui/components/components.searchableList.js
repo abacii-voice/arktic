@@ -1,5 +1,3 @@
-// TODO
-// 1. set active is not called to reset to zero when a new query is entered.
 
 // initialise
 var Components = (Components || {});
@@ -35,7 +33,6 @@ Components.searchableList = function (id, args) {
 					'height': '32px',
 					'font-size': '18px',
 					'padding-top': '10px',
-					'text-align': 'center',
 				},
 			},
 		}),
@@ -155,8 +152,9 @@ Components.searchableList = function (id, args) {
 					// Load each target
 					return Promise.all(base.targets.map(function (target) {
 						target.queries = (target.queries || []);
+						var filterRequest = target.filter ? (target.filter.request ? target.filter.request(base.data.query) : {}) : {};
 						return Promise.all([
-							Context.get((target.resolvedPath || target.path), {options: {filter: target.filter.request(base.data.query)}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
+							Context.get((target.resolvedPath || target.path), {options: {filter: filterRequest}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
 
 							// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
 							// Also, only query if this query has never been queried before
@@ -169,7 +167,7 @@ Components.searchableList = function (id, args) {
 									}, 1000);
 								}).then(function (timeout) {
 									if (timeout) {
-										return Context.get((target.resolvedPath || target.path), {options: {filter: target.filter.request(base.data.query)}, force: true}).then(target.process).then(base.data.load.append).then(base.data.display.main);
+										return Context.get((target.resolvedPath || target.path), {options: {filter: filterRequest}, force: true}).then(target.process).then(base.data.load.append).then(base.data.display.main);
 									} else {
 										return Util.ep();
 									}
@@ -761,6 +759,8 @@ Components.searchableList = function (id, args) {
 			options = (options || {});
 			if (options.text) {
 				if (options.center) {
+					console.log(base.id);
+					title.appearance = (title.appearance || {});
 					title.appearance.style = (title.appearance.style || {});
 					title.appearance.style['text-align'] = 'center';
 					return title.setAppearance({
