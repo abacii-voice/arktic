@@ -583,6 +583,41 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					limit: 10,
 				},
 			},
+			{name: 'flag',
+				path: function () {
+					return Active.get('client').then(function (client) {
+						return 'clients.{client_id}.flags'.format({client_id: client});
+					});
+				},
+				process: function (data) {
+					var results = Object.keys(data).map(function (key) {
+						var flag = data[key];
+						return {
+							id: key,
+							main: flag.name,
+							rule: 'flag',
+						}
+					});
+					return Util.ep(results);
+				},
+				filterRequest: function () {
+					return {};
+				},
+				// setStyle: function () {
+				//
+				// },
+				filter: {
+					default: false,
+					char: '>',
+					key: 'right carrot',
+					input: 'Flags',
+					display: 'Flag',
+					rule: 'flag',
+					limit: 10,
+					autocompleteOverride: true,
+					preventIncomplete: true,
+				},
+			}
 		]
 		autocomplete.unitStyle.base = function () {
 			return new Promise(function(resolve, reject) {
@@ -688,7 +723,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						html: (datum.shortcut || ''),
 					},
 				}),
-
 
 				// index
 				UI.createComponent('{base}-index'.format({base: base}), {
@@ -1446,6 +1480,79 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				}).then(function () {
 					return unitBase;
 				})
+			});
+		}
+
+		// Flags
+		flags.unit = function (name) {
+			var unitId = '{base}-{id}'.format({base: base.id, id: Util.makeid()});
+
+			return Promise.all([
+				// unit base
+				UI.createComponent(unitId, {
+					template: UI.template('div', 'ie border border-radius'),
+					appearance: {
+						style: {
+							'height': '40px',
+							'margin-top': '10px',
+							'display': 'inline-block',
+						},
+					},
+				}),
+
+				// unit content
+				UI.createComponent('{id}-content'.format({id: unitId}), {
+					template: UI.template('span', 'ie'),
+					appearance: {
+						html: name,
+						style: {
+							'float': 'left',
+							'margin-top': '10px',
+							'margin-right': '5px',
+							'margin-left': '10px',
+						},
+					}
+				}),
+
+				// unit button
+				UI.createComponent('{id}-button'.format({id: unitId}), {
+					template: UI.template('div', 'ie button'),
+					appearance: {
+						style: {
+							'height': '40px',
+							'width': '30px',
+							'float': 'left',
+							'padding-top': '11px',
+						},
+					},
+				}),
+				UI.createComponent('{id}-glyph'.format({id: unitId}), {
+					template: UI.template('span', 'glyphicon glyphicon-remove'),
+				}),
+
+			]).then(function (unitComponents) {
+				var [
+					unitBase,
+					unitContent,
+					unitButton,
+					unitGlyph,
+				] = unitComponents;
+
+				return Promise.all([
+					unitButton.setChildren([unitGlyph]),
+					unitButton.setBindings({
+						'click': function (_this) {
+							return flags.data.remove(unitBase.index);
+						},
+					}),
+				]).then(function () {
+					return unitBase.setChildren([
+						unitContent,
+						unitButton,
+					]);
+				}).then(function () {
+					return unitBase;
+				});
 			});
 		}
 
