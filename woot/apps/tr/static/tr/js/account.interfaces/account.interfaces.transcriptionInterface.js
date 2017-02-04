@@ -496,10 +496,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				setStyle: function () {
 					return new Promise(function(resolve, reject) {
 						jss.set('#{id} .tag'.format({id: autocomplete.id}), {
-							'background-color': '#acff8e',
+							'background-color': Color.green.lightest,
 						});
 						jss.set('#{id} .tag.active'.format({id: autocomplete.id}), {
-							'background-color': '#8fef6b',
+							'background-color': Color.green.light,
 						});
 						resolve();
 					});
@@ -560,10 +560,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				setStyle: function () {
 					return new Promise(function(resolve, reject) {
 						jss.set('#{id} .phrase'.format({id: autocomplete.id}), {
-							'background-color': '#e9d9f1',
+							'background-color': Color.purple.uberlight,
 						});
 						jss.set('#{id} .phrase.active'.format({id: autocomplete.id}), {
-							'background-color': '#dcc3e9',
+							'background-color': Color.purple.lightest,
 						});
 						resolve();
 					});
@@ -601,7 +601,15 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					return Util.ep(results);
 				},
 				setStyle: function () {
-
+					return new Promise(function(resolve, reject) {
+						jss.set('#{id} .flag'.format({id: autocomplete.id}), {
+							'background-color': Color.red.light,
+						});
+						jss.set('#{id} .flag.active'.format({id: autocomplete.id}), {
+							'background-color': Color.red.normal,
+						});
+						resolve();
+					});
 				},
 				filter: {
 					default: false,
@@ -698,7 +706,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					template: UI.template('span', 'ie'),
 					appearance: {
 						style: {
-							'color': '#ccc',
+							'color': Color.grey.normal,
 							'display': 'inline-block',
 							'position': 'absolute',
 						},
@@ -937,18 +945,18 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		caption.styles = function () {
 			// word
 			jss.set('#{id} .word'.format({id: caption.id}), {
-				'color': '#888',
+				'color': Color.grey.normal,
 			});
 			jss.set('#{id} .word.active'.format({id: caption.id}), {
-				'color': '#aaa',
+				'color': Color.grey.light,
 			});
 
 			// tag
 			jss.set('#{id} .tag'.format({id: caption.id}), {
-				'color': '#0f7212',
+				'color': Color.green.darkest,
 			});
 			jss.set('#{id} .tag.active'.format({id: caption.id}), {
-				'color': '#16a81b',
+				'color': Color.green.dark,
 			});
 
 			return Util.ep();
@@ -1392,7 +1400,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						style: {
 							'height': '100%',
 							'width': '100%',
-							'background-color': '#5cb85c',
+							'background-color': Color.green.normal,
 						},
 					},
 					children: [
@@ -1401,7 +1409,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							appearance: {
 								style: {
 									'font-size': '15px',
-									'color': '#eee',
+									'color': Color.grey.uberlight,
 									'top': '10px',
 									'left': '9px',
 								},
@@ -1417,7 +1425,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						style: {
 							'height': '100%',
 							'width': '100%',
-							'background-color': '#eee',
+							'background-color': Color.grey.uberlight,
 						},
 					},
 				}),
