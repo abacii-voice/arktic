@@ -156,7 +156,7 @@ Components.searchableList = function (id, args) {
 					return Promise.all(base.targets.map(function (target) {
 						target.queries = (target.queries || []);
 						return Promise.all([
-							Context.get((target.resolvedPath || target.path), {options: {filter: target.filterRequest(base.data.query)}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
+							Context.get((target.resolvedPath || target.path), {options: {filter: target.filter.request(base.data.query)}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
 
 							// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
 							// Also, only query if this query has never been queried before
@@ -169,7 +169,7 @@ Components.searchableList = function (id, args) {
 									}, 1000);
 								}).then(function (timeout) {
 									if (timeout) {
-										return Context.get((target.resolvedPath || target.path), {options: {filter: target.filterRequest(base.data.query)}, force: true}).then(target.process).then(base.data.load.append).then(base.data.display.main);
+										return Context.get((target.resolvedPath || target.path), {options: {filter: target.filter.request(base.data.query)}, force: true}).then(target.process).then(base.data.load.append).then(base.data.display.main);
 									} else {
 										return Util.ep();
 									}
@@ -422,7 +422,7 @@ Components.searchableList = function (id, args) {
 										// bindings
 										return filterUnit.setBindings({
 											'click': function (_this) {
-												return base.control.setFilter(target.filter.rule);
+												return base.control.setFilter(target.filter.rule, target.filter.activate);
 											},
 										}).then(function () {
 											filter.setChildren([filterUnit]);
@@ -434,7 +434,7 @@ Components.searchableList = function (id, args) {
 												if (base.data.filter === target.filter.rule) {
 													base.control.setFilter();
 												} else {
-													base.control.setFilter(target.filter.rule);
+													base.control.setFilter(target.filter.rule, target.filter.activate);
 												}
 											}
 										});
@@ -476,7 +476,7 @@ Components.searchableList = function (id, args) {
 			},
 
 			// element control
-			setFilter: function (rule) {
+			setFilter: function (rule, filterActivate) {
 				// 0. update data filter
 				base.data.filter = rule;
 				if (rule in base.data.storage.filters) {
@@ -500,6 +500,9 @@ Components.searchableList = function (id, args) {
 
 					// 4. search
 					search.setMetadata(),
+
+					// 5. filter activate
+					(filterActivate || Util.ep)(),
 				]).then(function () {
 					return base.control.start();
 				});
