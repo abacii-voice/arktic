@@ -31,8 +31,10 @@ AccountInterfaces.controlInterface = function (id, args) {
 		}),
 		Components.searchableList('cs-client-list', {
 			appearance: {
-
-			},
+				style: {
+					'top': '2px',
+				},
+			}
 		}),
 		Components.sidebar('role-sidebar',{
 			position: {
@@ -53,7 +55,9 @@ AccountInterfaces.controlInterface = function (id, args) {
 		}),
 		Components.searchableList('cs-role-list', {
 			appearance: {
-
+				style: {
+					'top': '2px',
+				},
 			},
 		}),
 		Components.sidebar('control-sidebar', {
@@ -75,7 +79,9 @@ AccountInterfaces.controlInterface = function (id, args) {
 		}),
 		Components.searchableList('cs-control-list', {
 			appearance: {
-
+				style: {
+					'top': '2px',
+				},
 			},
 		}),
 		UI.createComponent('cs-cl-transcription-button', {
@@ -84,12 +90,11 @@ AccountInterfaces.controlInterface = function (id, args) {
 				style: {
 					'left': '0px',
 					'width': '100%',
-					'border': '0px',
 					'height': '60px',
 					'padding-top': '8px',
-					'background-color': 'rgba(255,255,255,0.1)',
+					'padding-left': '10px',
 					'border-radius': '0px',
-					'border-bottom': '1px solid #00869B',
+					'text-align': 'left',
 				},
 				html: 'Transcription',
 			},
@@ -103,12 +108,8 @@ AccountInterfaces.controlInterface = function (id, args) {
 				style: {
 					'left': '0px',
 					'width': '100%',
-					'border': '0px',
 					'height': '60px',
 					'padding-top': '8px',
-					'background-color': 'rgba(255,255,255,0.1)',
-					'border-radius': '0px',
-					'border-bottom': '1px solid #00869B',
 				},
 				html: 'Moderation',
 			},
@@ -119,12 +120,8 @@ AccountInterfaces.controlInterface = function (id, args) {
 				style: {
 					'left': '0px',
 					'width': '100%',
-					'border': '0px',
 					'height': '60px',
 					'padding-top': '8px',
-					'background-color': 'rgba(255,255,255,0.1)',
-					'border-radius': '0px',
-					'border-bottom': '1px solid #00869B',
 				},
 				html: 'Upload',
 			},
@@ -212,7 +209,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 					template: UI.template('span', 'ie'),
 					appearance: {
 						style: {
-							'color': '#ccc',
+							'color': Color.grey.normal,
 							'display': 'inline-block',
 							'position': 'absolute',
 						},
@@ -359,7 +356,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 					template: UI.template('span', 'ie'),
 					appearance: {
 						style: {
-							'color': '#ccc',
+							'color': Color.grey.normal,
 							'display': 'inline-block',
 							'position': 'absolute',
 						},
@@ -479,12 +476,17 @@ AccountInterfaces.controlInterface = function (id, args) {
 				style: {
 					'left': '0px',
 					'width': '100%',
-					'border': '0px',
 					'height': '30px',
 					'padding-top': '8px',
-					'background-color': 'rgba(255,255,255,0.1)',
-					'border-radius': '0px',
-					'border-bottom': '1px solid #00869B',
+				},
+			}),
+			clientList.components.title.setAppearance({
+				style: {
+					'width': '100%',
+					'height': '32px',
+					'font-size': '18px',
+					'padding-top': '10px',
+					'padding-left': '10px',
 				},
 			}),
 			clientSidebar.components.main.setChildren([
@@ -499,7 +501,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 					},
 				},
 			}),
-			clientList.setTitle({text: 'Clients', centre: true}),
+			clientList.setTitle({text: 'Clients', center: false}),
 			clientList.setSearch({mode: 'off', placeholder: 'Search clients...'}),
 
 			// ROLE SIDEBAR
@@ -508,12 +510,17 @@ AccountInterfaces.controlInterface = function (id, args) {
 				style: {
 					'left': '0px',
 					'width': '100%',
-					'border': '0px',
 					'height': '30px',
 					'padding-top': '8px',
-					'background-color': 'rgba(255,255,255,0.1)',
-					'border-radius': '0px',
-					'border-bottom': '1px solid #00869B',
+				},
+			}),
+			roleList.components.title.setAppearance({
+				style: {
+					'width': '100%',
+					'height': '32px',
+					'font-size': '18px',
+					'padding-top': '10px',
+					'padding-left': '10px',
 				},
 			}),
 			roleSidebar.components.main.setChildren([
@@ -528,7 +535,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 					},
 				}
 			}),
-			roleList.setTitle({text: 'Roles', centre: true}),
+			roleList.setTitle({text: 'Roles', center: false}),
 			roleList.setSearch({mode: 'off', placeholder: 'Search roles...'}),
 
 			// CONTROL SIDEBAR
@@ -544,8 +551,18 @@ AccountInterfaces.controlInterface = function (id, args) {
 			controlSidebar.components.main.setChildren([
 				controlList,
 			]),
-			controlList.setTitle({text: 'Menu', centre: true}),
+			controlList.setTitle({text: 'Menu', center: false}),
 			controlList.setSearch({mode: 'off', placeholder: ''}),
+			controlList.components.title.setAppearance({
+				style: {
+					'width': '100%',
+					'height': '32px',
+					'font-size': '18px',
+					'padding-top': '10px',
+					'padding-left': '10px',
+				},
+				html: 'Menu',
+			}),
 			controlList.setState({
 				states: {
 					'control-state': {

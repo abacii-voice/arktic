@@ -18,46 +18,6 @@ html {
 
 /*
 
-1. Navbar
-
-*/
-
-.navbar {
-	position: fixed;
-	width: 100%;
-	top: 0px;
-}
-
-.navbar .nav-link {
-
-}
-
-.navbar .navbar-left {
-	margin-left: 15px;
-	float: left;
-}
-
-.navbar .navbar-right {
-	margin-right: 15px;
-	float: right;
-}
-
-.navbar .nav-link {
-	margin-top: 10px;
-	color: #ccc;
-}
-
-.navbar .nav-link.header {
-	margin-top: 15px;
-	font-size: 22px;
-}
-
-.navbar .nav-link span {
-
-}
-
-/*
-
 Common interface elements
 
  */
@@ -127,35 +87,6 @@ Common interface elements
 	transform: translate(-50%, -50%);
 }
 
-/* borders */
-.ie.border-top {
-	border-top: 1px solid #888;
-}
-
-.ie.border-right {
-	border-right: 1px solid #888;
-}
-
-.ie.border-bottom {
-	border-bottom: 1px solid #888;
-}
-
-.ie.border-left {
-	border-left: 1px solid #888;
-}
-
-.ie.border {
-	border: 1px solid #888;
-}
-
-.ie.border.error {
-	border: 1px solid #c00;
-}
-
-.ie.border-radius {
-	border-radius: 4px;
-}
-
 /*
 
 2. Sidebars
@@ -220,7 +151,7 @@ Common interface elements
 }
 
 .ie.button:hover {
-	border-color: #fff;
+	border-color: #aaa;
 	background-color: transparent;
 }
 
