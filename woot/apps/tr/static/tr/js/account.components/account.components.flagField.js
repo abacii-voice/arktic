@@ -66,8 +66,28 @@ AccountComponents.flagField = function (id, args) {
 				base.data.list.splice(index, 1);
 				return content.removeChild(content.children[index].id);
 			},
-			reset: function () {
-
+			removeLast: function () {
+				if (base.data.list.length) {
+					var lastIndex = base.data.list.length - 1;
+					base.data.list.splice(lastIndex, 1);
+					return content.removeChild(content.children[lastIndex].id);
+				} else {
+					return Util.ep();
+				}
+			},
+			removeAll: function () {
+				if (base.data.list.length) {
+					var length = base.data.list.length;
+					return Promise.ordered(base.data.list.map(function (name, index) {
+						return function () {
+							var lastIndex = length - index - 1;
+							base.data.list.splice(lastIndex, 1);
+							return content.removeChild(content.children[lastIndex].id);
+						}
+					}));
+				} else {
+					return Util.ep();
+				}
 			},
 		}
 

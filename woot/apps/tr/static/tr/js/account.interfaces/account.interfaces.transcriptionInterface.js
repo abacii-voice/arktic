@@ -289,6 +289,19 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				caption.behaviours.ctrlbackspace(event),
 			]);
 		});
+		Mousetrap.bind('alt+shift+backspace', function (event) {
+			amc.addAction({type: 'key.alt+shift+backspace'});
+			Promise.all([
+				flags.data.removeLast(),
+			]);
+		});
+		Mousetrap.bind('ctrl+shift+backspace', function (event) {
+			event.preventDefault();
+			amc.addAction({type: 'key.ctrl+shift+backspace'});
+			Promise.all([
+				flags.data.removeAll(),
+			]);
+		});
 		Mousetrap.bind('space', function (event) {
 			amc.addAction({type: 'key.space'});
 			if (caption.isFocused) {
@@ -319,19 +332,19 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				caption.behaviours.space(),
 			]);
 		});
-		Mousetrap.bind('shift+space', function (event) {
-			event.preventDefault();
-			amc.addAction({type: 'key.shift+space'});
-			Promise.all([
-				autocomplete.behaviours.shiftspace(event),
-			]);
-		});
 		Mousetrap.bind('tab', function (event) {
 			event.preventDefault();
 			amc.addAction({type: 'key.tab'});
 			Promise.all([
 				audio.play(),
 				caption.focus(),
+			]);
+		});
+		Mousetrap.bind('alt+tab', function (event) {
+			event.preventDefault();
+			amc.addAction({type: 'key.ctrl+tab'});
+			Promise.all([
+				autocomplete.focus(),
 			]);
 		});
 
@@ -475,6 +488,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					input: 'Words',
 					display: 'Word',
 					rule: 'word',
+					blurb: 'Filter single words',
 					limit: 10,
 					request: function (query) {
 						return {tokens: {'content__startswith': query, 'type': 'word'}};
@@ -539,6 +553,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					input: 'Tags',
 					display: 'Tag',
 					rule: 'tag',
+					blurb: 'Filter semantic tags',
 					limit: 10,
 					autocompleteOverride: true,
 					preventIncomplete: true,
@@ -603,6 +618,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					input: 'Phrases',
 					display: 'Phrase',
 					rule: 'phrase',
+					blurb: 'Filter phrases',
 					limit: 10,
 					request: function (query) {
 						var dict = {};
@@ -646,6 +662,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					input: 'Flags',
 					display: 'Flag',
 					rule: 'flag',
+					blurb: 'Filter transcription flags',
 					limit: 10,
 					autocompleteOverride: true,
 					preventIncomplete: true,
@@ -953,9 +970,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			} else {
 				return autocomplete.search.setContent({query: shortcutDatum.main, trigger: true});
 			}
-		}
-		autocomplete.behaviours.ctrltab = function (event) {
-			// clear and focus autocomplete
 		}
 		autocomplete.behaviours.enter = function (event) {
 			// run confirm behaviour for current filter
