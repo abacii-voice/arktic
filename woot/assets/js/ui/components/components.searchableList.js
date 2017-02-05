@@ -420,7 +420,11 @@ Components.searchableList = function (id, args) {
 										// bindings
 										return filterUnit.setBindings({
 											'click': function (_this) {
-												return base.control.setFilter(target.filter.rule);
+												if (base.data.filter === target.filter.rule) {
+													base.control.setFilter();
+												} else {
+													base.control.setFilter(target.filter.rule);
+												}
 											},
 										}).then(function () {
 											filter.setChildren([filterUnit]);
@@ -597,14 +601,14 @@ Components.searchableList = function (id, args) {
 				}
 			},
 		}
-		base.defaultFilterUnit = function (id, args) {
+		base.defaultFilterUnit = function (id, filterArgs) {
 			return Promise.all([
 				// Base
 				UI.createComponent('{id}'.format({id: id}), {
 					template: UI.template('div', 'ie'),
 					appearance: {
 						style: {
-							'height': '80px',
+							'height': '60px',
 							'width': '100%',
 							'border-bottom': '1px solid #ccc',
 						},
@@ -631,6 +635,7 @@ Components.searchableList = function (id, args) {
 							'float': 'left',
 							'width': '100%',
 						},
+						html: filterArgs.input,
 					},
 				}),
 
@@ -642,6 +647,7 @@ Components.searchableList = function (id, args) {
 							'float': 'left',
 							'width': '100%',
 						},
+						html: filterArgs.blurb,
 					},
 				}),
 
@@ -664,7 +670,7 @@ Components.searchableList = function (id, args) {
 				UI.createComponent('{id}-button-content'.format({id: id}), {
 					template: UI.template('span', 'ie'),
 					appearance: {
-						html: args.char,
+						html: filterArgs.char,
 					},
 				}),
 
@@ -758,10 +764,8 @@ Components.searchableList = function (id, args) {
 				}
 			});
 		}
-		base.showSearch = function () {
-			return Util.ep();
-		}
-		base.hideSearch = function () {
+		base.focus = function () {
+			search.components.head.model().focus();
 			return Util.ep();
 		}
 
