@@ -706,32 +706,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				});
 			});
 		}
-		autocomplete.data.display.render.setMetadata = function () {
-			var _this = autocomplete;
-			var query = _this.data.query; // query is set no matter the status of virtual
-
-			// reset previous query and check for change
-			var changeQuery = false;
-			if (query !== _this.data.previousQuery) {
-				_this.data.previousQuery = query;
-				changeQuery = true;
-			}
-			if (!_this.data.storage.virtual.list.length) {
-				_this.currentIndex = undefined;
-				return _this.search.setMetadata({query: query, complete: '', type: '', tokens: []});
-			} else {
-				var complete = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
-				var type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
-				var tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
-				if (_this.currentIndex >= _this.data.storage.virtual.list.length || changeQuery) {
-					return _this.control.setActive.main({index: 0}).then(function () {
-						return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
-					});
-				} else {
-					return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
-				}
-			}
-		}
 		autocomplete.search.setMetadata = function (metadata) {
 			var _this = autocomplete.search;
 			metadata = (metadata || {});
