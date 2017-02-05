@@ -97,21 +97,23 @@ AccountComponents.counter = function (id, args) {
 			});
 		}
 		base.styles = function () {
+			// TODO: update styles
+
 			// blank
 			jss.set('#{id} .unit'.format({id: base.id}), {
 				'background-color': 'transparent',
-				'border': '1px solid #ddd',
+				'border': '1px solid {color}'.format({color: Color.grey.lightest}),
 			});
 			jss.set('#{id} .unit.active'.format({id: base.id}), {
-				'border-width': '2px !important',
+				'border': '1px solid {color} !important'.format({color: Color.grey.dark}),
 			});
 
 			// pending
 			jss.set('#{id} .unit.pending'.format({id: base.id}), {
-				'border': '1px solid #888',
+				'border': '1px solid {color}'.format({color: Color.grey.lightest}),
 			});
 			jss.set('#{id} .unit.pending:hover'.format({id: base.id}), {
-				'border': '1px solid #ddd',
+				'border': '1px solid {color}'.format({color: Color.grey.normal}),
 			});
 
 			// complete

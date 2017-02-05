@@ -23,6 +23,10 @@ class Command(BaseCommand):
 		production_client, production_client_created = Client.objects.get_or_create(name='TestProductionClient', is_production=True)
 		contract_client, contract_client_created = Client.objects.get_or_create(name='TestContractClient', is_production=False)
 
+		# flags
+		production_client.flags.create(name='unsure')
+		production_client.flags.create(name='no-speech')
+
 		# create user
 		user, user_created = User.objects.get_or_create(email='n@a.com', first_name='Nicholas', last_name='Piano')
 		user.set_password('mach')
