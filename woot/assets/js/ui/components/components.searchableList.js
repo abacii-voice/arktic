@@ -420,7 +420,7 @@ Components.searchableList = function (id, args) {
 										// bindings
 										return filterUnit.setBindings({
 											'click': function (_this) {
-												return base.control.setFilter(target.filter.rule, target.filter.activate);
+												return base.control.setFilter(target.filter.rule);
 											},
 										}).then(function () {
 											filter.setChildren([filterUnit]);
@@ -432,7 +432,7 @@ Components.searchableList = function (id, args) {
 												if (base.data.filter === target.filter.rule) {
 													base.control.setFilter();
 												} else {
-													base.control.setFilter(target.filter.rule, target.filter.activate);
+													base.control.setFilter(target.filter.rule);
 												}
 											}
 										});
@@ -474,7 +474,7 @@ Components.searchableList = function (id, args) {
 			},
 
 			// element control
-			setFilter: function (rule, filterActivate) {
+			setFilter: function (rule) {
 				// 0. update data filter
 				base.data.filter = rule;
 				if (rule in base.data.storage.filters) {
@@ -501,7 +501,13 @@ Components.searchableList = function (id, args) {
 				]).then(function () {
 					return base.control.start();
 				}).then(function () {
-					return (filterActivate || Util.ep)();
+					if (base.data.storage.filters[rule]) {
+						return (base.data.storage.filters[rule].activate || Util.ep)();
+					} else {
+						return Util.ep();
+					}
+				}).then(function () {
+					return base.control.setActive.main({index: 0});
 				});
 			},
 			setActive: {
