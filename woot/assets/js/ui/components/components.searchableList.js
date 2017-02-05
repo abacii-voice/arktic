@@ -336,25 +336,33 @@ Components.searchableList = function (id, args) {
 						return Util.ep();
 					},
 					setMetadata: function () {
-						var query = base.data.query; // query is set no matter the status of virtual
+						var _this = base;
+						var query = _this.data.query; // query is set no matter the status of virtual
 
-						if (!base.data.storage.virtual.list.length) {
-							base.currentIndex = undefined;
-							return base.search.setMetadata({query: query, complete: '', type: ''});
+						// reset previous query and check for change
+						var changeQuery = false;
+						if (query !== _this.data.previousQuery) {
+							_this.data.previousQuery = query;
+							changeQuery = true;
+						}
+						if (!_this.data.storage.virtual.list.length) {
+							_this.currentIndex = undefined;
+							return _this.search.setMetadata({query: query, complete: '', type: '', tokens: []});
 						} else {
-							if (base.currentIndex >= base.data.storage.virtual.list.length) {
-								return base.control.setActive({index: 0}).then(function () {
-									var complete = (base.data.storage.virtual.list[base.currentIndex] || {}).main;
-									var type = (base.data.storage.virtual.list[base.currentIndex] || {}).rule;
-									return base.search.setMetadata({query: query, complete: complete, type: type});
+							var complete = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
+							var type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
+							var tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
+							if (_this.currentIndex >= _this.data.storage.virtual.list.length || changeQuery) {
+								return _this.control.setActive.main({index: 0}).then(function () {
+									return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
 								});
 							} else {
-								var complete = (base.data.storage.virtual.list[base.currentIndex] || {}).main;
-								var type = (base.data.storage.virtual.list[base.currentIndex] || {}).rule;
-								return base.search.setMetadata({query: query, complete: complete, type: type});
+								return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
 							}
 						}
 					},
+
+
 				},
 			},
 		}
