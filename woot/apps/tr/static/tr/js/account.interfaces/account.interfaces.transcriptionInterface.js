@@ -1774,11 +1774,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							return _this.control.setup.main();
 						},
 					},
-					'control-state': {
-						fn: function (_this) {
-							return _this.control.reset();
-						}
-					}
 				},
 			}),
 
