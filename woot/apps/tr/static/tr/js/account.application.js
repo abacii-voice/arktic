@@ -23,7 +23,10 @@ var AccountApplication = function (id, args) {
 		// project complete interface
 		AccountInterfaces.projectCompleteInterface('project-complete-interface', {
 			interface: args.interface,
-		})
+		}),
+
+		// shortcuts interface
+		AccountInterfaces.shortcutInterface(),
 
 	]).then(function (components) {
 		// unpack components
@@ -32,6 +35,7 @@ var AccountApplication = function (id, args) {
 			controlInterface,
 			transcriptionInterface,
 			projectCompleteInterface,
+			shortcutInterface,
 		] = components;
 
 		// ASSOCIATE
@@ -46,6 +50,7 @@ var AccountApplication = function (id, args) {
 				controlInterface,
 				transcriptionInterface,
 				projectCompleteInterface,
+				shortcutInterface,
 			]);
 		}).then(function () {
 			return base;

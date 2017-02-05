@@ -11,7 +11,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 			},
 		}),
 
-		// sidebars
+		// clients
 		Components.sidebar('client-sidebar', {
 			position: {
 				main: {
@@ -36,6 +36,8 @@ AccountInterfaces.controlInterface = function (id, args) {
 				},
 			}
 		}),
+
+		// roles
 		Components.sidebar('role-sidebar',{
 			position: {
 				main: {
@@ -50,7 +52,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 			state: {
 				primary: 'role-state',
 				secondary: 'control-state',
-				deactivate: ['client-state', 'transcription-state'],
+				deactivate: ['client-state', 'transcription-state', 'settings-state'],
 			},
 		}),
 		Components.searchableList('cs-role-list', {
@@ -60,6 +62,8 @@ AccountInterfaces.controlInterface = function (id, args) {
 				},
 			},
 		}),
+
+		// control
 		Components.sidebar('control-sidebar', {
 			position: {
 				main: {
@@ -73,8 +77,8 @@ AccountInterfaces.controlInterface = function (id, args) {
 			},
 			state: {
 				primary: 'control-state',
-				secondary: ['transcription-state'],
-				deactivate: ['client-state', 'role-state'],
+				secondary: ['transcription-state', 'settings-state'],
+				deactivate: ['client-state', 'role-state', 'shortcut-state'],
 			},
 		}),
 		Components.searchableList('cs-control-list', {
@@ -90,7 +94,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 				style: {
 					'left': '0px',
 					'width': '100%',
-					'height': '60px',
+					'height': '30px',
 					'padding-top': '8px',
 					'padding-left': '10px',
 					'border-radius': '0px',
@@ -100,6 +104,24 @@ AccountInterfaces.controlInterface = function (id, args) {
 			},
 			state: {
 				stateMap: 'transcription-state',
+			},
+		}),
+		UI.createComponent('cs-cl-settings-button', {
+			template: UI.template('div', 'ie button'),
+			appearance: {
+				style: {
+					'left': '0px',
+					'width': '100%',
+					'height': '30px',
+					'padding-top': '8px',
+					'padding-left': '10px',
+					'border-radius': '0px',
+					'text-align': 'left',
+				},
+				html: 'Settings',
+			},
+			state: {
+				stateMap: 'settings-state',
 			},
 		}),
 		UI.createComponent('cs-cl-moderation-button', {
@@ -127,6 +149,50 @@ AccountInterfaces.controlInterface = function (id, args) {
 			},
 		}),
 
+		// settings
+		Components.sidebar('settings-sidebar', {
+			position: {
+				main: {
+					on: '50px',
+					off: '-300px',
+				},
+				back: {
+					on: '0px',
+					off: '-200px',
+				},
+			},
+			state: {
+				primary: 'settings-state',
+				secondary: ['shortcut-state'],
+				deactivate: ['control-state'],
+			},
+		}),
+		Components.searchableList('ss-settings-list', {
+			appearance: {
+				style: {
+					'top': '2px',
+				},
+			},
+		}),
+		UI.createComponent('ss-sl-shortcuts-button', {
+			template: UI.template('div', 'ie button'),
+			appearance: {
+				style: {
+					'left': '0px',
+					'width': '100%',
+					'height': '60px',
+					'padding-top': '8px',
+					'padding-left': '10px',
+					'border-radius': '0px',
+					'text-align': 'left',
+				},
+				html: 'Shortcuts',
+			},
+			state: {
+				stateMap: 'shortcut-state',
+			},
+		}),
+
 		// non-interface elements
 		Components.actionMasterController('control'),
 
@@ -134,15 +200,24 @@ AccountInterfaces.controlInterface = function (id, args) {
 		// unpack components
 		var [
 			base,
+
 			clientSidebar,
 			clientList,
+
 			roleSidebar,
 			roleList,
+
 			controlSidebar,
 			controlList,
 			transcriptionButton,
+			settingsButton,
 			moderationButton,
 			uploadButton,
+
+			settingsSidebar,
+			settingsList,
+			shortcutsButton,
+
 			amc,
 		] = components;
 
@@ -274,7 +349,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 				return Promise.all([
 					unitBase.setBindings({
 						'click': function (_this) {
-							amc.addAction({type: 'clientlist.click', metadata: {client: datum.id}});
+							amc.addAction({type: 'click.clientlist', metadata: {client: datum.id}});
 							Active.set('client', datum.id).then(function () {
 								return _this.triggerState();
 							});
@@ -424,7 +499,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 							return Active.get('client').then(function (client_id) {
 								return Context.get('user.clients.{client_id}.roles.{role_id}.project'.format({client_id: client_id, role_id: datum.id}));
 							}).then(function (project_id) {
-								amc.addAction({type: 'rolelist.click', metadata: {project: project_id, role: datum.id}});
+								amc.addAction({type: 'click.rolelist', metadata: {project: project_id, role: datum.id}});
 								return Promise.all([
 									Active.set('project', project_id),
 									Active.set('role', datum.id),
@@ -447,9 +522,6 @@ AccountInterfaces.controlInterface = function (id, args) {
 				});
 			});
 		}
-
-		// CONTROL SIDEBAR
-
 
 		// complete promises
 		return Promise.all([
@@ -541,7 +613,13 @@ AccountInterfaces.controlInterface = function (id, args) {
 			// CONTROL SIDEBAR
 			transcriptionButton.setBindings({
 				'click': function (_this) {
-					amc.addAction({type: 'transcription-button.click'});
+					amc.addAction({type: 'click.transcription-button'});
+					return _this.triggerState();
+				},
+			}),
+			settingsButton.setBindings({
+				'click': function (_this) {
+					amc.addAction({type: 'click.settings-button'});
 					return _this.triggerState();
 				},
 			}),
@@ -603,8 +681,35 @@ AccountInterfaces.controlInterface = function (id, args) {
 			}),
 			controlList.list.setChildren([
 				transcriptionButton,
+				settingsButton,
 				moderationButton,
 				uploadButton,
+			]),
+
+			// SETTINGS SIDEBAR
+			shortcutsButton.setBindings({
+				'click': function (_this) {
+					amc.addAction({type: 'click.shortcuts-button'});
+					return _this.triggerState();
+				},
+			}),
+
+			settingsSidebar.components.main.setChildren([
+				settingsList,
+			]),
+			settingsList.components.title.setAppearance({
+				style: {
+					'width': '100%',
+					'height': '32px',
+					'font-size': '18px',
+					'padding-top': '10px',
+					'padding-left': '10px',
+				},
+			}),
+			settingsList.setTitle({text: 'Settings', center: false}),
+			settingsList.setSearch({mode: 'off', placeholder: ''}),
+			settingsList.list.setChildren([
+				shortcutsButton,
 			]),
 
 		]).then(function () {
@@ -614,12 +719,14 @@ AccountInterfaces.controlInterface = function (id, args) {
 					client: clientSidebar,
 					role: roleSidebar,
 					control: controlSidebar,
+					settings: settingsSidebar,
 				},
 			}
 			return base.setChildren([
 				clientSidebar,
 				roleSidebar,
 				controlSidebar,
+				settingsSidebar,
 			]);
 		}).then(function () {
 			return base;
