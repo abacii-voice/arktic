@@ -84,7 +84,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			appearance: {
 				style: {
 					'margin-top': '10px',
-					'height': '60px',
+					'height': '40px',
 					'width': '555px',
 					'float': 'left',
 				},
@@ -101,10 +101,16 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				style: {
 					'margin-left': '10px',
 					'height': '100%',
-					'width': '60px',
+					'width': '40px',
 					'float': 'left',
+					'padding-top': '10px',
 				},
 			},
+			children: [
+				UI.createComponent('tb-1-mp-4-bp-2-pb-glyph', {
+					template: UI.template('span', 'glyphicon glyphicon-chevron-up'),
+				}),
+			],
 		}),
 
 		// next/confirm button
@@ -114,10 +120,16 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				style: {
 					'margin-left': '10px',
 					'height': '100%',
-					'width': '60px',
+					'width': '40px',
 					'float': 'left',
+					'padding-top': '10px',
 				},
 			},
+			children: [
+				UI.createComponent('tb-1-mp-4-bp-3-cb-glyph', {
+					template: UI.template('span', 'glyphicon glyphicon-ok'),
+				}),
+			],
 		}),
 
 		// autocomplete panel
@@ -182,7 +194,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		Mousetrap.bind('up', function (event) {
 			amc.addAction({type: 'key.up'});
 			event.preventDefault();
-			if (autocomplete.isFocused && caption.isFocused) {
+			if (autocomplete.isFocused || caption.isFocused) {
 				Promise.all([
 					autocomplete.behaviours.up(),
 				]);
@@ -195,7 +207,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		Mousetrap.bind('down', function (event) {
 			event.preventDefault();
 			amc.addAction({type: 'key.down'});
-			if (autocomplete.isFocused && caption.isFocused) {
+			if (autocomplete.isFocused || caption.isFocused) {
 				Promise.all([
 					autocomplete.behaviours.down(),
 				]);
@@ -247,9 +259,15 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		Mousetrap.bind('enter', function (event) {
 			amc.addAction({type: 'key.enter'});
 			event.preventDefault();
-			Promise.all([
-				caption.behaviours.enter(),
-			]);
+			if (caption.isFocused) {
+				Promise.all([
+					caption.behaviours.enter(),
+				]);
+			} else if (autocomplete.isFocused) {
+				Promise.all([
+					autocomplete.behaviours.enter(),
+				]);
+			}
 		});
 		Mousetrap.bind('backspace', function (event) {
 			amc.addAction({type: 'key.backspace'});
@@ -412,6 +430,16 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					current.latestRevision = tokens;
 				}
 			});
+		}
+		transcriptionMasterController.setComplete = function () {
+			return Promise.all([
+				counter.active.setComplete(),
+				transcriptionMasterController.current().then(function (transcriptionMasterControllerCurrent) {
+					transcriptionMasterControllerCurrent.isPending = false;
+					transcriptionMasterControllerCurrent.isComplete = true;
+					return Util.ep();
+				}),
+			]);
 		}
 
 		// Autocomplete
@@ -625,9 +653,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						return {};
 					},
 					activate: function () {
-						return autocomplete.showSearch().then(function () {
-							return autocomplete.search.components.head.model().focus();
-						});;
+						return autocomplete.search.components.head.model().focus();
+					},
+					confirm: function () {
+						return flags.data.add(autocomplete.data.storage.virtual.list[autocomplete.currentIndex].main);
 					},
 				},
 			}
@@ -925,11 +954,21 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				return autocomplete.search.setContent({query: shortcutDatum.main, trigger: true});
 			}
 		}
-		autocomplete.behaviours.shiftspace = function (event) {
-			// 1. show the autocomplete search field
-			// 2. hide the search symbol
-			// 3. clear and focus the search field
-
+		autocomplete.behaviours.ctrltab = function (event) {
+			// clear and focus autocomplete
+		}
+		autocomplete.behaviours.enter = function (event) {
+			// run confirm behaviour for current filter
+			var autocompleteFilter = autocomplete.data.storage.filters[autocomplete.data.filter];
+			if (autocompleteFilter) {
+				if (autocompleteFilter.confirm) {
+					return autocompleteFilter.confirm();
+				} else {
+					return Util.ep();
+				}
+			} else {
+				return Util.ep();
+			}
 		}
 
 		// Caption
@@ -1239,7 +1278,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					if (caption.active.isLastToken() && caption.active.metadata.query !== '') {
 						return Promise.all([
 							transcriptionMasterController.setComplete(),
-							counter.active.setComplete(),
 						]).then(function () {
 							return caption.active.blur();
 						}).then(function () {
@@ -1381,7 +1419,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			return Promise.all([
 				// base
 				UI.createComponent(unitId, {
-					template: UI.template('div', 'ie unit border border-radius'),
+					template: UI.template('div', 'ie unit border-radius'),
 					appearance: {
 						style: {
 							'height': '35px',
@@ -1498,7 +1536,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 		// Flags
 		flags.unit = function (name) {
-			var unitId = '{base}-{id}'.format({base: base.id, id: Util.makeid()});
+			var unitId = '{base}-{id}'.format({base: flags.id, id: Util.makeid()});
 
 			return Promise.all([
 				// unit base
@@ -1506,9 +1544,11 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					template: UI.template('div', 'ie border border-radius'),
 					appearance: {
 						style: {
-							'height': '40px',
-							'margin-top': '10px',
+							'height': '30px',
+							'margin-top': '4px',
 							'display': 'inline-block',
+							'margin-right': '5px',
+							'background-color': Color.red.light,
 						},
 					},
 				}),
@@ -1520,7 +1560,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						html: name,
 						style: {
 							'float': 'left',
-							'margin-top': '10px',
+							'margin-top': '5px',
 							'margin-right': '5px',
 							'margin-left': '10px',
 						},
@@ -1535,7 +1575,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							'height': '40px',
 							'width': '30px',
 							'float': 'left',
-							'padding-top': '11px',
+							'padding-top': '6px',
 						},
 					},
 				}),
@@ -1722,6 +1762,40 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							return _this.setup();
 						}
 					}
+				},
+			}),
+
+			// flags add button binding
+			flags.components.addButton.setBindings({
+				'click': function (_this) {
+					amc.addAction({type: 'click.flagAddButton'});
+					return autocomplete.control.setFilter('flag').then(function () {
+						return autocomplete.search.components.head.model().focus();
+					});
+				},
+			}),
+
+			// buttons
+			previousButton.setBindings({
+				'click': function (_this) {
+					amc.addAction({type: 'click.previousButton'});
+					return transcriptionMasterController.behaviours.up();
+				},
+			}),
+			confirmButton.setBindings({
+				'click': function (_this) {
+					amc.addAction({type: 'click.confirmButton'});
+					return transcriptionMasterController.setComplete().then(function () {
+						if (caption.isFocused) {
+							return caption.active.blur();
+						} else {
+							return Util.ep();
+						}
+					}).then(function () {
+						return transcriptionMasterController.behaviours.down();
+					}).then(function () {
+						return caption.focus();
+					});
 				},
 			}),
 
