@@ -162,7 +162,7 @@ Components.search = function (id, args) {
 		// behaviours
 		base.behaviours = {
 			right: function () {
-				if (inPosition && !base.isComplete && base.isCaretInPosition('end')) {
+				if (!base.isComplete && base.isCaretInPosition('end')) {
 					return base.complete().then(function () {
 						return base.input();
 					});
