@@ -8,7 +8,7 @@ AccountComponents.flagField = function (id, args) {
 			appearance: {
 				style: {
 					'height': '100%',
-					'width': 'calc(100% - 140px)',
+					'width': 'calc(100% - 100px)',
 					'float': 'left',
 				},
 			},
@@ -19,9 +19,9 @@ AccountComponents.flagField = function (id, args) {
 			template: UI.template('div', 'ie button'),
 			appearance: {
 				style: {
-					'height': '60px',
+					'height': '100%',
 					'width': '30px',
-					'padding-top': '20px',
+					'padding-top': '11px',
 					'float': 'left',
 				},
 			},
@@ -74,6 +74,9 @@ AccountComponents.flagField = function (id, args) {
 		return Promise.all([
 			addButton.setChildren([addGlyph]),
 		]).then(function () {
+			base.components = {
+				addButton: addButton,
+			}
 			return base.setChildren([
 				addButton,
 				content,
