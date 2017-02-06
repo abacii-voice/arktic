@@ -45,7 +45,7 @@ class FlagInstance(models.Model):
 	def data(self, path, permission):
 		data = self.parent.data(path, permission)
 		data.update({
-			'name': self.parent.name,
+			'transcription': str(self.transcription.id),
 		})
 
 		return data

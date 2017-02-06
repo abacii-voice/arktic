@@ -62,9 +62,9 @@ UI.app('hook', [
 			]);
 		}),
 	]).then(function () {
-		// return UI.changeState('client-state');
+		return UI.changeState('client-state');
 		// return UI.changeState('role-state');
-		return UI.changeState('transcription-state');
+		// return UI.changeState('transcription-state');
 		// return UI.changeState('shortcut-state');
 	});
 }).catch(function (error) {
