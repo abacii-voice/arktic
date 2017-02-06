@@ -55,6 +55,7 @@ AccountComponents.flagField = function (id, args) {
 			add: function (name) {
 				if (base.data.list.indexOf(name) === -1) {
 					base.data.list.push(name);
+					console.log(base.data.list);
 					return base.unit(name).then(function (unit) {
 						return content.setChildren([unit]);
 					});
@@ -89,6 +90,21 @@ AccountComponents.flagField = function (id, args) {
 					return Util.ep();
 				}
 			},
+			reset: function (metadata) {
+				return base.data.removeAll().then(function () {
+					console.log(metadata);
+					return Promise.ordered((metadata.latestFlags || []).map(function (flag) {
+						return function () {
+							return base.data.add(flag);
+						}
+					}));
+				});
+			},
+
+		}
+		base.export = function () {
+			console.log(base.data);
+			return base.data.list;
 		}
 
 		return Promise.all([
