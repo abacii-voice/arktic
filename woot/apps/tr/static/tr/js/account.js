@@ -5,11 +5,29 @@ UI.app('hook', [
 			margin: 10,
 			corner: 5,
 		},
-		colour: {
-
-		},
 	}),
 ]).then (function (app) {
+	// styles
+	jss.set('.ie.button', {
+		'padding-top': '1.0em',
+		'width': '100%',
+		'height': '50px',
+		'-webkit-box-shadow': 'none',
+		'box-shadow': 'none',
+		'text-shadow': 'none',
+		'color': Color.grey.normal,
+	});
+	jss.set('.ie.button:hover', {
+		'color': Color.grey.light,
+	});
+	jss.set('.ie.border', {
+		'border': '1px solid {color}'.format({color: Color.grey.normal}),
+	});
+	jss.set('.ie.border-radius', {
+		'border-radius': '4px',
+	});
+
+	// render
 	return app.render();
 }).then(function () {
 	return Promise.all([
@@ -47,6 +65,7 @@ UI.app('hook', [
 		return UI.changeState('client-state');
 		// return UI.changeState('role-state');
 		// return UI.changeState('transcription-state');
+		// return UI.changeState('shortcut-state');
 	});
 }).catch(function (error) {
 	console.log(error);

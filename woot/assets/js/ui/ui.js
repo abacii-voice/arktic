@@ -7,7 +7,9 @@ var UI = {
 
 	// changeState
 	changeState: function (stateName, trigger) {
-		UI.globalState = stateName;
+		if (!stateName.startsWith('-')) { // local states begin with '-'
+			UI.globalState = stateName;
+		}
 		return Promise.all(UI.states.filter(function (state) {
 			return state.name === stateName;
 		}).map(function (state) {
@@ -357,11 +359,15 @@ var UI = {
 		this.addChild = function (child) {
 			var _this = this;
 			return new Promise(function(resolve, reject) {
-				child.index = (child.index || _this.children.length);
+				var index = child.index;
+				child.index = (child.index !== undefined ? child.index : _this.children.length);
 				if (child.name) {
 					_this.components[child.name] = child;
 				}
 				child.isAddedToParent = true;
+				// if (child.id.contains('tb-1-mp-3-caption-') && !child.id.contains('head') && !child.id.contains('tail') && !child.id.contains('space')) {
+				// 	console.log(child.id, child.index, index, _this.children.length);
+				// }
 				_this.children.splice(child.index, 0, child);
 				resolve(child);
 			});
@@ -437,7 +443,7 @@ var UI = {
 		this.childIndexFromAfter = function (placementIndex) {
 			// find index from after key
 			var _this = this;
-			if (_this.after !== undefined) {
+			if (_this.after) {
 				return UI.getComponent(_this.after).then(function (component) {
 					return new Promise(function(resolve, reject) {
 						_this.index = component !== undefined ? component.index + 1 : 0;
@@ -446,7 +452,7 @@ var UI = {
 				});
 			} else {
 				return new Promise(function(resolve, reject) {
-					_this.index = placementIndex;
+					_this.index = (placementIndex || (_this.after === '' ? 0 : undefined));
 					resolve(_this);
 				});
 			}
@@ -626,9 +632,7 @@ var UI = {
 
 		// change
 		this.change = function () {
-			if (this.name === UI.globalState) {
-				return this.component.changeState(this);
-			}
+			return this.component.changeState(this);
 		}
 	},
 
@@ -874,30 +878,6 @@ var Permission = {
 			data = data !== undefined ? data : {};
 			data.permission = id;
 			return JSON.stringify(data);
-		});
-	},
-}
-
-// ACTION
-// Stores a record of the actions performed by the user and relays them to the server.
-var Action = {
-	actions: {},
-}
-
-var Request = {
-	load_audio: function (transcriptionId) {
-		return Permission.permit({id: transcriptionId}).then(function (data) {
-			return new Promise(function(resolve, reject) {
-				request = new XMLHttpRequest();
-				request.open('POST', '/command/load_audio/', true);
-				request.responseType = 'arraybuffer';
-				request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-				request.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-				request.addEventListener('load', function (event) {
-					resolve(event.target.response);
-				}, false);
-				request.send(data);
-			});
 		});
 	},
 }

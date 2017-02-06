@@ -23,6 +23,10 @@ class Command(BaseCommand):
 		production_client, production_client_created = Client.objects.get_or_create(name='TestProductionClient', is_production=True)
 		contract_client, contract_client_created = Client.objects.get_or_create(name='TestContractClient', is_production=False)
 
+		# flags
+		production_client.flags.create(name='unsure')
+		production_client.flags.create(name='no-speech')
+
 		# create user
 		user, user_created = User.objects.get_or_create(email='n@a.com', first_name='Nicholas', last_name='Piano')
 		user.set_password('mach')
@@ -66,11 +70,10 @@ class Command(BaseCommand):
 		dictionary.tokens.create(type='tag', content='unintelligible')
 		dictionary.tokens.create(type='tag', content='dtmf')
 		dictionary.tokens.create(type='tag', content='noise')
-		dictionary.tokens.create(type='tag', content='breath-noise')
+		test_tag = dictionary.tokens.create(type='tag', content='breath-noise')
 
-		# create phrases
-		dictionary.create_phrase('luke i am you father :breath-noise')
-		dictionary.create_phrase('i want to speak to _')
+		# create shortcuts
+		test_tag.shortcuts.create(role=worker_role, combo='ctrl+b')
 
 		# fragment list
 		base = '/Users/nicholaspiano/code/abacii-voice/arktic/test/'
@@ -85,7 +88,7 @@ class Command(BaseCommand):
 
 			# 2. create caption
 			content = relfile_data[file_name] if relfile_data[file_name] else ''
-			phrase, phrase_created = dictionary.create_phrase(content)
+			phrase, phrase_created = dictionary.create_phrase(content=content)
 
 			# 2. create transcription
 			transcription = batch.transcriptions.create(project=project, grammar=grammar, filename=fragment.filename, content=phrase)

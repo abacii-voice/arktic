@@ -1,6 +1,5 @@
 # django
 from django.db import models
-from django.db import transaction
 
 # local
 from apps.tr.idgen import idgen
@@ -48,21 +47,25 @@ class Dictionary(models.Model):
 		limit = 100
 		return {token.id: token.data(path, permission) for token in self.tokens.filter(**fltr)[0:limit]}
 
-	def create_phrase(self, content):
-		# create phrases
-		phrase, phrase_created = self.phrases.get_or_create(content=content)
+	def create_phrase(self, content=None, tokens=None):
+		if content is not None or tokens is not None:
+			if content is None:
+				content = ' '.join(['{type}{content}'.format(type=token['type'], content=token['complete']) for token in tokens])
 
-		# create tokens
-		if phrase_created:
-			token_primitives = content.rstrip().split(' ')
-			for index, token_primitive in enumerate(token_primitives):
-				type = 'word'
-				if token_primitive and token_primitive[0] in token_types:
-					type = token_types[token_primitive[0]]
-					token_primitive = token_primitive[1:]
+			if tokens is None:
+				if content:
+					tokens = [{'type': (primitive[0] if primitive[0] in token_types else 'word'), 'complete': (primitive if primitive[0] not in token_types else (primitive[1:] if len(primitive)>1 else ''))} for primitive in content.rstrip().split(' ')]
+				else:
+					tokens = [{'type': 'word', 'complete': ''}]
 
-				if token_primitive != '':
-					token, token_created = self.tokens.get_or_create(type=type, content=token_primitive)
-					token_instance, token_instance_created = token.instances.get_or_create(phrase=phrase, index=index)
+			# create phrase
+			phrase, phrase_created = self.phrases.get_or_create(content=content)
 
-		return phrase, phrase_created
+			# create tokens
+			if phrase_created:
+				for index, token_primitive in enumerate(tokens):
+					if token_primitive['complete'] != '':
+						token, token_created = self.tokens.get_or_create(type=token_primitive['type'], content=token_primitive['complete'])
+						token_instance, token_instance_created = token.instances.get_or_create(phrase=phrase, index=index)
+
+			return phrase, phrase_created

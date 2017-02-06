@@ -17,6 +17,7 @@ class Role(models.Model):
 	date_created = models.DateTimeField(auto_now_add=True)
 	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
 	type = models.CharField(max_length=255)
+	display = models.CharField(max_length=255)
 	status = models.CharField(max_length=255, default='pending') # shows the stage of becoming a full user.
 
 	# billing and activity
@@ -30,6 +31,7 @@ class Role(models.Model):
 			'user': self.user.id,
 			'date_created': str(self.date_created),
 			'type': self.type,
+			'display': self.display,
 			'status': self.status,
 		}
 
@@ -85,38 +87,22 @@ class Role(models.Model):
 
 	# tokens
 	def active_transcription_token(self, force=False):
-		if not force:
-			if self.transcription_tokens.filter(project=self.project, is_active=True).count():
-				return self.transcription_tokens.get(project=self.project, is_active=True)
-			else:
-				token = self.transcription_tokens.create(project=self.project)
-				token.get_transcriptions()
-				return token
-		else:
-			for token in self.transcription_tokens.filter(project=self.project, is_active=True):
-				token.is_active = False
-				token.save()
+		for token in self.transcription_tokens.filter(project=self.project, is_active=True):
+			token.is_active = False
+			token.save()
 
-			new_token = self.transcription_tokens.create(project=self.project)
-			new_token.get_transcriptions()
-			return new_token
+		new_token = self.transcription_tokens.create(project=self.project)
+		new_token.get_transcriptions()
+		return new_token
 
 	def active_moderation_token(self, force=False):
-		if not force:
-			if self.transcription_tokens.filter(project=self.project, is_active=True).count():
-				return self.moderation_tokens.get(project=self.project, is_active=True)
-			else:
-				token = self.moderation_tokens.create(project=self.project)
-				token.get_moderations()
-				return token
-		else:
-			for token in self.transcription_tokens.filter(project=self.project, is_active=True):
-				token.is_active = False
-				token.save()
+		for token in self.transcription_tokens.filter(project=self.project, is_active=True):
+			token.is_active = False
+			token.save()
 
-			new_token = self.moderation_tokens.create(project=self.project)
-			new_token.get_moderations()
-			return new_token
+		new_token = self.moderation_tokens.create(project=self.project)
+		new_token.get_moderations()
+		return new_token
 
 	def active_cycle(self):
 		return self.cycles.filter(is_active=True)[0] if self.cycles.filter(is_active=True).count() > 0 else self.cycles.create()
