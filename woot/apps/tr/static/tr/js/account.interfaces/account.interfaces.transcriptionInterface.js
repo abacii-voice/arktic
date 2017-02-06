@@ -237,6 +237,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					audio.display(current),
 					caption.control.input.newCaption(current),
 					counter.setActive(current),
+					flags.data.reset(current),
 				]);
 			});
 		}
@@ -268,21 +269,24 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		}
 		transcriptionMasterController.save = function () {
 			var tokens = caption.export();
+			var flagList = flags.export();
 			var _this = transcriptionMasterController;
 			return _this.current().then(function (current) {
 				current.revisions = (current.revisions || []);
 				var revisionAlreadyExists = current.revisions.filter(function (revision) {
 					return JSON.stringify(revision.tokens) === JSON.stringify(tokens) && revision.isComplete === current.isComplete;
 				}).length > 0;
-				if (!revisionAlreadyExists && !(tokens[0].complete === '')) {
+				if (!revisionAlreadyExists && (!(tokens[0].complete === '') || flagList.length)) {
 					current.revisions.push({
 						time: new Date().toString(),
 						tokens: tokens,
 						isComplete: (current.isComplete || false),
 						content: current.complete,
 						key: Util.makeid(),
+						flags: flagList,
 					});
 					current.latestRevision = tokens;
+					current.latestFlags = flagList;
 				}
 			});
 		}
