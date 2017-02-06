@@ -160,6 +160,9 @@ class TranscriptionFragment(models.Model):
 
 			# get or create transcription
 			transcription, transcription_created = self.transcriptions.get_or_create(key=revision['key'], parent=self.parent, token=self.token, date_created=date_created, phrase=phrase_instance)
+			if transcription_created:
+				for flag_name in revision['flags']:
+					transcription.flags.create(parent=self.parent.project.production_client.flags.get(name=flag_name), role=self.token.role)
 
 			# set properties
 			self.is_reconciled = revision['isComplete']
@@ -191,6 +194,11 @@ class TranscriptionInstance(models.Model):
 		if True:
 			data.update({
 				'phrase': self.phrase.data(path, permission),
+			})
+
+		if path.check('flags') and (permission.is_moderator or permission.is_productionadmin):
+			data.update({
+				'flags': {flag.id: flag.data(path.down('flags'), permission) for flag in self.flags.filter(**path.get_filter('flags'))},
 			})
 
 		return data
