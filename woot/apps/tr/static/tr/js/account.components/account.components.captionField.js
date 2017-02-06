@@ -36,7 +36,6 @@ AccountComponents.captionField = function (id, args) {
 
 			// datasets
 			storage: {
-				buffer: {}, // stores all sets that have been entered this session when confirmed. Key is transcription id.
 				virtual: [], // stores data in order
 			},
 
@@ -53,14 +52,12 @@ AccountComponents.captionField = function (id, args) {
 							metadata.completeTokens = metadata.complete.split(' ');
 							metadata.tokens = metadata.tokens || [];
 							metadata.tokens = metadata.completeTokens.map(function (completeToken, index) {
-								// console.log(metadata.tokens[index], metadata.type, 'word');
 								return {
 									complete: completeToken,
 									query: (metadata.queryTokens[index] || ''),
 									type: ((metadata.tokens[index] || {}).type || metadata.type || 'word'),
 								}
 							});
-							// console.log(metadata.tokens);
 
 							// update complete changed
 							var _this = this;
@@ -94,6 +91,7 @@ AccountComponents.captionField = function (id, args) {
 								return Promise.all(_this.renderedUnits.map(function (renderedUnit, index) {
 									var token = _this.tokens[index];
 									renderedUnit.isReserved = token === undefined;
+
 									return renderedUnit.updateUnitMetadata(token).then(function () {
 										if (renderedUnit.isReserved) {
 											return renderedUnit.hide();
@@ -168,7 +166,8 @@ AccountComponents.captionField = function (id, args) {
 						this.newUnit = function (extraIndex, token) {
 							var _this = this;
 							var trueIndex = _this.renderedUnits.length + extraIndex;
-							var defaultAfter = _this.renderedUnits.length ? _this.renderedUnits[_this.renderedUnits.length-1].id : undefined; // not '' lol
+							var defaultAfter = _this.renderedUnits.length ? _this.renderedUnits[_this.renderedUnits.length-1].id : (base.data.firstTokenOverride ? '' : undefined);
+							base.data.firstTokenOverride = false;
 							return base.unit().then(function (unit) {
 								unit.after = base.globalAfter || _this.currentAfter || defaultAfter;
 								unit.phrase = _this;
@@ -176,7 +175,6 @@ AccountComponents.captionField = function (id, args) {
 								_this.renderedUnits.push(unit);
 								return unit.updateUnitMetadata(token).then(function () {
 									return unit.hide().then(function () {
-
 										return content.setChildren([unit]);
 									});
 								}).then(function () {
@@ -229,10 +227,10 @@ AccountComponents.captionField = function (id, args) {
 							var _this = this;
 							position = position || 'end';
 							if (position === 'end') {
-								// focus the end of the last focussable unit
+								// focus the end of the last Focusable unit
 								return _this.lastUnit().focus('end');
 							} else if (position === 'start') {
-								// focus the start of the first focussable unit
+								// focus the start of the first Focusable unit
 								return _this.firstUnit().focus('start');
 							} else {
 								return Util.ep();
@@ -241,18 +239,23 @@ AccountComponents.captionField = function (id, args) {
 					},
 					create: function (index, metadata) {
 						var phrase = new base.data.objects.phrase.Phrase();
-						base.globalAfter = base.data.storage.virtual.length && base.data.storage.virtual[index] ? base.data.storage.virtual[index].lastUnit().id : undefined;
+						base.globalAfter = (base.data.storage.virtual.length && base.data.storage.virtual[index] && index) ? base.data.storage.virtual[index].lastUnit().id : undefined;
 						base.data.storage.virtual.splice(index, 0, phrase);
+						base.data.virtual = (base.data.virtual || []);
+						base.data.firstTokenOverride = index === 0 && base.data.storage.virtual[index];
 						return phrase.update(metadata).then(function () {
 							return base.data.objects.phrase.renumber();
 						}).then(function () {
 							phrase.id = Util.makeid();
+							base.data.virtual.splice(index, 0, phrase.complete);
 							return Util.ep(phrase);
 						});
 					},
 					remove: function (phrase) {
-						return Promise.all(phrase.renderedUnits.map(function (renderedUnit) {
-							return content.removeChild(renderedUnit.id);
+						return Promise.ordered(phrase.renderedUnits.map(function (renderedUnit) {
+							return function () {
+								return content.removeChild(renderedUnit.id);
+							}
 						})).then(function () {
 							base.data.storage.virtual.splice(phrase.index, 1);
 							return Util.ep();
@@ -262,31 +265,34 @@ AccountComponents.captionField = function (id, args) {
 						var activeUnits = phrase.renderedUnits.filter(function (unit) {
 							return !unit.isHidden;
 						});
-						return Promise.all(phrase.renderedUnits.filter(function (unit) {
-							return unit.isHidden;
-						}).map(function (unit) {
-							return content.removeChild(unit.id);
-						})).then(function () {
-							base.data.storage.virtual.splice(phrase.index, 1);
+						if (phrase.tokens.length > 1) {
+							return Promise.all(phrase.renderedUnits.filter(function (unit) {
+								return unit.isHidden;
+							}).map(function (unit) {
+								return content.removeChild(unit.id);
+							})).then(function () {
+								base.data.storage.virtual.splice(phrase.index, 1);
+								return Util.ep();
+							}).then(function () {
+								return Promise.ordered(phrase.tokens.map(function (token, index) {
+									return function () {
+										var unit = activeUnits[index];
+										var newPhrase = new base.data.objects.phrase.Phrase();
+										newPhrase.renderedUnits = [unit];
+										unit.phrase = newPhrase;
+										base.data.storage.virtual.splice(phrase.index+index, 0, newPhrase);
+										return newPhrase.update(token).then(function () {
+											newPhrase.id = Util.makeid();
+											return Util.ep();
+										}).then(function () {
+											return base.data.objects.phrase.renumber();
+										});
+									}
+								}));
+							});
+						} else {
 							return Util.ep();
-						}).then(function () {
-							var position = phrase.index - 1;
-							return Promise.ordered(phrase.tokens.map(function (token, index) {
-								return function () {
-									var unit = activeUnits[index];
-									var newPhrase = new base.data.objects.phrase.Phrase();
-									newPhrase.renderedUnits = [unit];
-									unit.phrase = newPhrase;
-									base.data.storage.virtual.splice(position+index, 0, newPhrase);
-									return newPhrase.update(token).then(function () {
-										newPhrase.id = Util.makeid();
-										return Util.ep();
-									}).then(function () {
-										return base.data.objects.phrase.renumber();
-									});
-								}
-							}));
-						});
+						}
 					},
 					renumber: function () {
 						return Promise.all(base.data.storage.virtual.map(function (phrase, index) {
@@ -321,13 +327,14 @@ AccountComponents.captionField = function (id, args) {
 					var visibleChildren = content.children.filter(function (unit) {
 						return !unit.isHidden;
 					});
-					var newIndex = visibleChildren.indexOf(base.active) + (options.increment || 0);
+					var visibleIndex = visibleChildren.map(function (child) {return child.id;}).indexOf(base.active.id);
+					base.currentIndex = (visibleIndex === -1 ? (base.currentIndex || 0) : visibleIndex) + (options.increment || 0);
 
 					// boundary conditions
-					newIndex = newIndex > 0 ? (newIndex < visibleChildren.length - 1 ? newIndex : visibleChildren.length - 1) : 0;
+					base.currentIndex = base.currentIndex > 0 ? (base.currentIndex < visibleChildren.length - 1 ? base.currentIndex : visibleChildren.length - 1) : 0;
 
 					// get new active
-					base.active = visibleChildren[newIndex];
+					base.active = visibleChildren[base.currentIndex];
 				}
 
 				return base.control.deactivate(previousUnit).then(function () {
@@ -343,18 +350,26 @@ AccountComponents.captionField = function (id, args) {
 			},
 			input: {
 				newCaption: function (metadata) {
+					metadata = (metadata || {});
 					base.data.currentId = metadata.parent;
 					base.showOverride = true;
 
-					return Promise.all(base.data.storage.virtual.map(function (phrase) {
-						return base.data.objects.phrase.remove(phrase);
+					return Promise.ordered(base.data.storage.virtual.reverse().map(function (phrase) {
+						return function () {
+							return base.data.objects.phrase.remove(phrase);
+						}
 					})).then(function () {
 						base.data.storage.virtual = [];
-						return Promise.ordered(metadata.tokens.map(function (token, index) {
+						return Promise.ordered((metadata.latestRevision || metadata.tokens || []).map(function (token, index) {
 							return function () {
-								return base.data.objects.phrase.create(index, {query: token.content, complete: token.content, tokens: [token]});
+								return base.data.objects.phrase.create(index, {query: (token.content || token.query), complete: (token.content || token.complete), tokens: [token]});
 							}
-						}))
+						})).then(function () {
+							// if there is no caption, create an empty phrase.
+							if ((metadata.latestRevision || metadata.tokens || []).length === 0) {
+								return base.data.objects.phrase.create(0, {query: '', complete: ''});
+							}
+						});
 					}).then(function () {
 						base.showOverride = false;
 						return Promise.all(base.data.storage.virtual.map(function (phrase) {
@@ -365,15 +380,6 @@ AccountComponents.captionField = function (id, args) {
 				editActive: function (metadata) {
 					return base.active.phrase.update(metadata);
 				},
-				addPhrase: function () {
-
-				},
-				removePhrase: function () {
-
-				},
-			},
-			updateBuffer: function () {
-				return Util.ep();
 			},
 			runChecks: function () {
 
@@ -386,42 +392,26 @@ AccountComponents.captionField = function (id, args) {
 		base.previous = function () {
 			return base.control.setActive({increment: -1});
 		}
+		base.focus = function () {
+			// construct array of active units
+			var visibleChildren = content.children.filter(function (unit) {
+				return !unit.isHidden;
+			});
+			var lastIndex = visibleChildren.length - 1;
 
-		// behaviours
-		base.behaviours = {
-			right: function () {
-
-			},
-			left: function () {
-
-			},
-			up: function () {
-
-			},
-			down: function () {
-
-			},
-			shiftright: function () {
-
-			},
-			shiftleft: function () {
-
-			},
-			altright: function () {
-
-			},
-			altleft: function () {
-
-			},
-			enter: function () {
-
-			}
+			// get new active
+			base.active = visibleChildren[lastIndex];
+			return base.active.activate().then(function () {
+				return base.active.focus('end');
+			});
 		}
+
+		base.behaviours = {};
 
 		return Promise.all([
 			base.setBindings({
 				'click': function (_this) {
-					// return _this.data.objects.phrase.create();
+					return _this.focus();
 				},
 			}),
 		]).then(function () {

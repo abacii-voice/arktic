@@ -9,8 +9,12 @@ AccountComponents.counter = function (id, args) {
 	// 1. Large number counter with date stamp
 	// 2. Counter field
 	// 3. Counters
-	
+
 	// styling
+	var style = (((args || {}).appearance || {}).style || {
+		'height': '100%',
+		'width': '100%',
+	});
 
 	// components
 	return Promise.all([
@@ -25,57 +29,40 @@ AccountComponents.counter = function (id, args) {
 			template: UI.template('div', 'ie border border-radius'),
 			appearance: {
 				style: {
-					'height': args.appearance.style.width,
-					'width': args.appearance.style.width,
-					'border-bottom-left-radius': '0px',
-					'border-bottom-right-radius': '0px',
-					'border-bottom': '0px',
+					'height': '100%',
+					'width': '105px',
+					'float': 'left',
+					'text-align': 'center',
 				},
 			},
 		}),
 
-		// daily header
-		UI.createComponent('{id}-daily-header'.format({id: id}), {
-			template: UI.template('h2', 'ie'),
+		UI.createComponent('{id}-session-value'.format({id: id}), {
+			template: UI.template('h2'),
+			appearance: {
+				style: {
+					'margin-top': '24px',
+					'margin-bottom': '0px',
+				},
+			},
 		}),
 
-		// cycle header
-		UI.createComponent('{id}-cycle-header'.format({id: id}), {
-			template: UI.template('h3', 'ie'),
+		UI.createComponent('{id}-remaining-value'.format({id: id}), {
+			template: UI.template('h4'),
+			appearance: {
+				style: {
+					'margin-top': '3px',
+				},
+			},
 		}),
 
 		// counter wrapper
 		UI.createComponent('{id}-counter-wrapper'.format({id: id}), {
-			template: UI.template('div', 'ie border'),
-			appearance: {
-				style: {
-					'height': 'calc(100% - {width}px)'.format({width: parseInt(args.appearance.style.width)}),
-					'width': args.appearance.style.width,
-					'border-bottom-left-radius': '5px',
-					'border-bottom-right-radius': '5px',
-				},
-			},
-		}),
-
-		// left column
-		UI.createComponent('{id}-left-column'.format({id: id}), {
 			template: UI.template('div', 'ie'),
 			appearance: {
 				style: {
-					'height': '100%',
-					'width': '50%',
-					'float': 'left',
-				},
-			},
-		}),
-
-		// right column
-		UI.createComponent('{id}-right-column'.format({id: id}), {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '50%',
+					'height': style.height,
+					'width': 'calc(100% - 105px)',
 					'float': 'left',
 				},
 			},
@@ -86,127 +73,131 @@ AccountComponents.counter = function (id, args) {
 		var [
 			base,
 			headerWrapper,
-			dailyHeader,
-			cycleHeader,
+			sessionValue,
+			remainingValue,
 			counterWrapper,
-			leftColumn,
-			rightColumn,
 		] = components;
 
-		// COMBINE
-
-		// header properties
-		headerWrapper.counter = counterWrapper;
-		headerWrapper.dailyCount = 0;
-		headerWrapper.cycleCount = 0;
-		headerWrapper.increment = function () {
-			// add one to the daily and cycle counts and increment counter wrapper
-			var _this = headerWrapper;
-			// counterWrapper.increment();
-			return Promise.all([
-				new Promise(function(resolve, reject) {
-					_this.dailyCount += 1;
-					_this.cycleCount += 1;
-					resolve();
-				}),
-				counterWrapper.increment(),
-			]).then(function () {
-				return _this.set();
-			});
-		}
-		headerWrapper.set = function () {
-			var _this = headerWrapper;
-			return new Promise(function(resolve, reject) {
-				dailyHeader.model().html(_this.dailyCount);
-				cycleHeader.model().html(_this.cycleCount);
-				resolve();
-			});
-		}
-		headerWrapper.load = function () {
-			// set value and is_loaded, display value
-			var _this = headerWrapper;
-			return Promise.all([
-				args.options.source.daily(),
-				args.options.source.cycle(),
-			]).then(function (paths) {
-				return Promise.all([
-					Context.get(paths[0]),
-					Context.get(paths[1]),
-				]);
-			}).then(function (values) {
-				return new Promise(function(resolve, reject) {
-					_this.dailyCount = values[0];
-					_this.cycleCount = values[1];
-					resolve();
-				});
-			}).then(function () {
-				return _this.set();
-			});
-		}
-		headerWrapper.setChildren([
-			dailyHeader,
-			cycleHeader,
-		]);
-
-		// counter properties
-		counterWrapper.columnMax = 15; // calculate based on height
-		counterWrapper.leftColumnCount = 0;
-		counterWrapper.rightColumnCount = 0;
-		counterWrapper.increment = function () {
-			var _this = counterWrapper;
-			// if within limit, add another token
-			// else reset and clear all tokens and add a new one
-			return UI.createComponent('completion-token-{index}'.format({index: (_this.leftColumnCount + _this.rightColumnCount)}), {
-				template: UI.template('div', 'ie border'),
-				appearance: {
-					style: {
-						'margin-left': '5px',
-						'margin-top': '5px',
-						'height': '10px',
-						'width': '10px',
-					},
-				},
-			}).then(function (newCompletionToken) {
-				if (_this.leftColumnCount == _this.columnMax) {
-					if (_this.rightColumnCount == _this.columnMax) {
-						// reset both and add to left column
-						_this.leftColumnCount = 0;
-						_this.rightColumnCount = 0;
-						return leftColumn.removeChildren().then(function () {
-							return rightColumn.removeChildren();
-						}).then(function () {
-							_this.leftColumnCount++;
-							return leftColumn.setChildren([
-								newCompletionToken,
-							]);
-						});
-					} else {
-						// add to right column
-						_this.rightColumnCount++;
-						return rightColumn.setChildren([
-							newCompletionToken,
-						]);
-					}
+		// methods
+		base.setup = function () {
+			return base.styles().then(function () {
+				if (counterWrapper.children.length === 0) {
+					return Promise.ordered(Array.range(base.limit).map(function (index) {
+						return function () {
+							return base.unit().then(function (unit) {
+								return counterWrapper.setChildren([unit]);
+							});
+						}
+					}));
 				} else {
-					// add to left column
-					_this.leftColumnCount++;
-					return leftColumn.setChildren([
-						newCompletionToken,
-					]);
+					return Util.ep();
 				}
-			})
+			}).then(function () {
+				return base.updateHeader();
+			});
 		}
-		counterWrapper.setChildren([
-			leftColumn,
-			rightColumn,
-		]);
+		base.styles = function () {
+			// TODO: update styles
 
-		base.head = headerWrapper;
-		base.setChildren([
-			headerWrapper,
-			counterWrapper,
-		]);
+			// blank
+			jss.set('#{id} .unit'.format({id: base.id}), {
+				'background-color': 'transparent',
+				'border': '1px solid {color}'.format({color: Color.grey.lightest}),
+			});
+			jss.set('#{id} .unit.active'.format({id: base.id}), {
+				'border': '1px solid {color} !important'.format({color: Color.grey.dark}),
+			});
 
-		return base;
+			// pending
+			jss.set('#{id} .unit.pending'.format({id: base.id}), {
+				'border': '1px solid {color}'.format({color: Color.grey.lightest}),
+			});
+			jss.set('#{id} .unit.pending:hover'.format({id: base.id}), {
+				'border': '1px solid {color}'.format({color: Color.grey.normal}),
+			});
+
+			// complete
+			jss.set('#{id} .unit.complete'.format({id: base.id}), {
+				'color': '#ccc',
+			});
+			jss.set('#{id} .unit.complete:hover'.format({id: base.id}), {
+				'color': '#ccc',
+			});
+
+			return Util.ep();
+		}
+
+		base.limit = 20;
+		base.count = 0;
+		base.setActive = function (current) {
+			var previousIndex = base.currentIndex;
+			base.currentIndex = current.index % base.limit;
+
+			if (base.currentIndex !== previousIndex) {
+				return base.clearAllIfReset(previousIndex).then(function () {
+					return base.deactivate()
+				}).then(function () {
+					base.active = counterWrapper.children[base.currentIndex];
+					return base.active.activate();
+				}).then(function () {
+					if (!base.active.isPending && !base.active.isComplete) {
+						return base.active.setPending();
+					} else {
+						return Util.ep();
+					}
+				});
+			} else {
+				return Util.ep();
+			}
+		}
+		base.deactivate = function () {
+			if (base.active) {
+				return base.active.deactivate();
+			} else {
+				return Util.ep();
+			}
+		}
+		base.clearAllIfReset = function (previousIndex) {
+			if (base.currentIndex === 0 && previousIndex === base.limit - 1) {
+				return Promise.all(counterWrapper.children.map(function (child) {
+					return child.setClear();
+				}));
+			} else {
+				return Util.ep();
+			}
+		}
+		base.updateHeader = function () {
+			console.log();
+			return base.headerPath().then(function (headerPath) {
+					return Context.get(headerPath);
+			}).then(function (remainingCount) {
+				return Promise.all([
+					sessionValue.setAppearance({html: base.count}),
+					remainingValue.setAppearance({html: (remainingCount - base.count)}),
+				]);
+			});
+		}
+		base.increment = function () {
+			base.count++;
+			return base.updateHeader();
+		}
+		base.decrement = function () {
+			base.count--;
+			return base.updateHeader();
+		}
+
+		return Promise.all([
+			headerWrapper.setChildren([
+				sessionValue,
+				remainingValue,
+			]),
+		]).then(function () {
+			return base.setChildren([
+				headerWrapper,
+				counterWrapper,
+			]);
+		}).then(function () {
+			return base;
+		})
 	});
 }

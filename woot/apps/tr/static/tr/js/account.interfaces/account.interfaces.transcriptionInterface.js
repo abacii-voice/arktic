@@ -1,182 +1,198 @@
 var AccountInterfaces = (AccountInterfaces || {});
 AccountInterfaces.transcriptionInterface = function (id, args) {
+
+	var autocompleteWidth = '300px';
 	return Promise.all([
+
 		// base
+		// contains:
+		// 1. main panel
+		// 2. autocomplete panel
 		UI.createComponent('transcription-base', {
 			template: UI.template('div', 'ie abs'),
 			appearance: {
 				style: {
-					'height': '70%',
+					'height': '100%',
 					'left': '60px',
-					'width': 'calc(100% - 70px)',
+					'width': 'calc(100% - 60px)',
 				},
 				classes: ['centred-vertically'],
 			},
 		}),
 
-		// control panel
-		UI.createComponent('tb-button-panel', {
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '70px',
-					'float': 'left',
-				},
-			},
-		}),
-		UI.createComponent('tb-bp-confirm-button'),
-		UI.createComponent('tb-bp-previous-button'),
-		UI.createComponent('tb-bp-next-button'),
-
-		// audio caption panel
-		UI.createComponent('tb-audio-caption-panel', {
+		// main panel
+		// contains:
+		// 1. counter
+		// 2. audio
+		// 3. caption
+		// 4. flags
+		// 5. button panel
+		UI.createComponent('tb-1-main-panel', {
 			template: UI.template('div', 'ie'),
 			appearance: {
 				style: {
-					'width': '400px',
 					'height': '100%',
+					'left': '0px',
+					'width': 'calc(100% - {width})'.format({width: autocompleteWidth}),
 					'float': 'left',
-					'margin-right': '{}px'.format(args.interface.margin),
-				},
-			},
-		}),
-		AccountComponents.audio('tb-cp-audio', {
-			appearance: {
-				style: {
-					'height': '60px',
 				},
 			},
 		}),
 
-		AccountComponents.captionField('tb-cp-caption', {
+		// counter
+		AccountComponents.counter('tb-1-mp-1-counter', {
 			appearance: {
 				style: {
-					'height': '400px',
-					'width': '100%',
-					'border': '1px solid #ccc',
+					'margin-top': '10px',
+					'height': '80px',
+					'width': '555px',
 				},
 			},
+		}),
+
+		// audio
+		AccountComponents.audio('tb-1-mp-2-audio', {
+			appearance: {
+				style: {
+					'margin-top': '10px',
+					'height': '60px',
+					'width': '555px',
+				},
+			},
+		}),
+
+		// caption
+		AccountComponents.captionField('tb-1-mp-3-caption', {
+			appearance: {
+				style: {
+					'margin-top': '10px',
+					'height': '200px',
+					'width': '555px',
+					'border': '1px solid #888',
+					'padding': '10px',
+				},
+				classes: ['border-radius'],
+			},
+		}),
+
+		// button panel
+		// contains:
+		// 1. flag field
+		// 2. previous button
+		// 3. next/confirm button
+		UI.createComponent('tb-1-mp-4-button-panel', {
+			appearance: {
+				style: {
+					'margin-top': '10px',
+					'height': '40px',
+					'width': '555px',
+					'float': 'left',
+				},
+			},
+		}),
+
+		// flag field
+		AccountComponents.flagField('tb-1-mp-4-bp-1-flag-field'),
+
+		// previous button
+		UI.createComponent('tb-1-mp-4-bp-2-previous-button', {
+			template: UI.template('div', 'ie button border border-radius'),
+			appearance: {
+				style: {
+					'margin-left': '10px',
+					'height': '100%',
+					'width': '40px',
+					'float': 'left',
+					'padding-top': '10px',
+				},
+			},
+			children: [
+				UI.createComponent('tb-1-mp-4-bp-2-pb-glyph', {
+					template: UI.template('span', 'glyphicon glyphicon-chevron-up'),
+				}),
+			],
+		}),
+
+		// next/confirm button
+		UI.createComponent('tb-1-mp-4-bp-3-next-confirm-button', {
+			template: UI.template('div', 'ie button border border-radius'),
+			appearance: {
+				style: {
+					'margin-left': '10px',
+					'height': '100%',
+					'width': '40px',
+					'float': 'left',
+					'padding-top': '10px',
+				},
+			},
+			children: [
+				UI.createComponent('tb-1-mp-4-bp-3-cb-glyph', {
+					template: UI.template('span', 'glyphicon glyphicon-ok'),
+				}),
+			],
 		}),
 
 		// autocomplete panel
-		UI.createComponent('tb-autocomplete-panel', {
+		// contains:
+		// 1. autocomplete
+		UI.createComponent('tb-2-autocomplete-panel', {
 			template: UI.template('div', 'ie'),
 			appearance: {
 				style: {
-					'width': '400px',
 					'height': '100%',
+					'width': autocompleteWidth,
 					'float': 'left',
-					'margin-right': '{}px'.format(args.interface.margin),
 				},
+				classes: ['centred-vertically'],
 			},
 		}),
-		Components.searchableList('tb-ap-autocomplete', {
+
+		// autocomplete
+		Components.searchableList('tb-2-ap-1-autocomplete', {
 			appearance: {
 				style: {
 					'height': '100%',
 					'width': '100%',
 				},
+				classes: ['ie','abs'],
 			},
 		}),
+
+		// autocomplete controls
+		AccountComponents.autocompleteControls('tb-2-ap-2-autocomplete-controls', {}),
+
+		// Non interface elements
+		// transcription master controller
+		AccountComponents.transcriptionMasterController(),
+		Components.actionMasterController('transcription'),
 
 	]).then(function (components) {
 
 		// unpack components
 		var [
 			base,
-			buttonPanel,
-			confirmButton,
-			previousButton,
-			nextButton,
-			audioCaptionPanel,
+			mainPanel,
+			counter,
 			audio,
 			caption,
+			buttonPanel,
+			flags,
+			previousButton,
+			confirmButton,
+
+			// autocomplete
 			autocompletePanel,
 			autocomplete,
+			autocompleteControls,
+
+			// non interface elements
+			transcriptionMasterController,
+			amc,
 		] = components;
 
-		// KEYBINDINGS
-		Mousetrap.bind('up', function (event) {
-			event.preventDefault();
-			Promise.all([
-				autocomplete.behaviours.up(),
-
-			]);
-		});
-
-		Mousetrap.bind('down', function (event) {
-			event.preventDefault();
-			Promise.all([
-				autocomplete.behaviours.down(),
-
-			]);
-		});
-
-		Mousetrap.bind('left', function (event) {
-			Promise.all([
-				autocomplete.behaviours.left(),
-				caption.behaviours.left(event),
-			]);
-		});
-
-		Mousetrap.bind('right', function (event) {
-			Promise.all([
-				caption.behaviours.right(event),
-			]);
-		});
-
-		Mousetrap.bind(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], function (event) {
-			event.preventDefault();
-			var char = String.fromCharCode(event.which);
-			Promise.all([
-				autocomplete.behaviours.number(char),
-			]);
-		});
-
-		Mousetrap.bind('enter', function (event) {
-			event.preventDefault();
-			Promise.all([
-				caption.behaviours.enter(),
-			]);
-		});
-
-		Mousetrap.bind('backspace', function (event) {
-			Promise.all([
-				autocomplete.behaviours.backspace(),
-				caption.behaviours.backspace(event),
-			]);
-		});
-
-		Mousetrap.bind('alt+backspace', function (event) {
-			Promise.all([
-				caption.behaviours.altbackspace(event),
-			]);
-		});
-
-		Mousetrap.bind('space', function (event) {
-			if (caption.isFocussed) {
-				event.preventDefault();
-			}
-			Promise.all([
-				caption.behaviours.space(),
-			]);
-		});
-
-		Mousetrap.bind('alt+right', function (event) {
-			Promise.all([
-				caption.behaviours.altright(event),
-			]);
-		});
-
-		Mousetrap.bind('alt+left', function (event) {
-			Promise.all([
-				caption.behaviours.altleft(event),
-			]);
-		});
-
-		// Audio
-		audio.threshold = 4;
-		audio.path = function () {
+		// Transcription Master Controller
+		transcriptionMasterController.updateThreshold = 4;
+		transcriptionMasterController.path = function () {
 			return Promise.all([
 				Active.get('client'),
 				Active.get('role'),
@@ -188,14 +204,15 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				return 'user.clients.{client_id}.roles.{role_id}.active_transcription_token.fragments'.format({client_id: client_id, role_id: role_id});
 			});
 		}
-		audio.process = function (result) {
+		transcriptionMasterController.process = function (result) {
+			var _this = transcriptionMasterController;
 			return Promise.all(Object.keys(result).sort(function (a,b) {
 				return result[a].index > result[b].index ? 1 : -1;
 			}).map(function (key) {
-				audio.components.track.buffer[key] = {
+				_this.buffer[key] = {
 					content: result[key].phrase.content,
 					is_available: true,
-					index: Object.keys(audio.components.track.buffer).length,
+					index: Object.keys(_this.buffer).length,
 					parent: result[key].parent,
 					tokens: Object.keys(result[key].phrase.token_instances).sort(function (a,b) {
 						return result[key].phrase.token_instances[a].index > result[key].phrase.token_instances[b].index ? 1 : -1;
@@ -207,27 +224,84 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					}),
 				}
 				return Util.ep();
-			}));
+			})).then(function () {
+				return Util.ep(Object.keys(result).length !== 0);
+			});
 		}
-		audio.components.track.pre.current = function () {
-			var _this = audio.components.track;
-			var canvas = audio.components.canvas;
-			// get current operation
+		transcriptionMasterController.pre.interface = function () {
+			var _this = transcriptionMasterController;
 			return _this.current().then(function (current) {
-				canvas.data = current.data;
-				canvas.duration = current.data.duration;
+				current.is_available = false;
 
-				// draw data
-				return canvas.start().then(function () {
-					return canvas.stop();
-				}).then(function () {
-					return caption.control.input.newCaption(current);
+				return Promise.all([
+					audio.display(current),
+					caption.control.input.newCaption(current),
+					counter.setActive(current),
+					flags.data.reset(current),
+				]);
+			});
+		}
+		transcriptionMasterController.setActive = function (options) {
+			var _this = transcriptionMasterController;
+			options = (options || {});
+
+			audio.controller.isLoaded = false;
+			return Promise.all([
+				audio.stop(),
+				audio.components.canvas.removeCut(),
+			]).then(function () {
+				return _this.save()
+			}).then(function () {
+				var previousIndex = _this.active;
+
+				// change active
+				_this.active = (options.index !== undefined ? options.index : undefined || ((_this.active || 0) + (_this.active !== undefined ? (options.increment || 0) : 0)));
+
+				// boundary conditions
+				_this.active = _this.active < 0 ? 0 : _this.active; // cannot be less than zero
+				_this.active = _this.active >= Object.keys(_this.buffer).length ? Object.keys(_this.buffer).length : _this.active; // cannot be past end
+				_this.active = (previousIndex > _this.active && previousIndex % _this.releaseThreshold === 0) ? previousIndex : _this.active; // cannot move back before threshold
+
+				return _this.update().then(function () {
+					return audio.play();
 				});
 			});
 		}
+		transcriptionMasterController.save = function () {
+			var tokens = caption.export();
+			var flagList = flags.export();
+			var _this = transcriptionMasterController;
+			return _this.current().then(function (current) {
+				current.revisions = (current.revisions || []);
+				var revisionAlreadyExists = current.revisions.filter(function (revision) {
+					return JSON.stringify(revision.tokens) === JSON.stringify(tokens) && revision.isComplete === current.isComplete;
+				}).length > 0;
+				if (!revisionAlreadyExists && (!(tokens[0].complete === '') || flagList.length)) {
+					current.revisions.push({
+						time: new Date().toString(),
+						tokens: tokens,
+						isComplete: (current.isComplete || false),
+						content: current.complete,
+						key: Util.makeid(),
+						flags: flagList,
+					});
+					current.latestRevision = tokens;
+					current.latestFlags = flagList;
+				}
+			});
+		}
+		transcriptionMasterController.setComplete = function () {
+			return Promise.all([
+				counter.active.setComplete(),
+				transcriptionMasterController.current().then(function (transcriptionMasterControllerCurrent) {
+					transcriptionMasterControllerCurrent.isPending = false;
+					transcriptionMasterControllerCurrent.isComplete = true;
+					return Util.ep();
+				}),
+			]);
+		}
 
 		// Autocomplete
-		// LIST
 		autocomplete.targets = [
 			{name: 'word',
 				path: function () {
@@ -253,9 +327,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						resolve(results);
 					});
 				},
-				filterRequest: function (query) {
-					return {tokens: {'content__startswith': query, 'type': 'word'}};
-				},
 				filter: {
 					default: true,
 					char: '/',
@@ -263,7 +334,11 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					input: 'Words',
 					display: 'Word',
 					rule: 'word',
+					blurb: 'Filter single words',
 					limit: 10,
+					request: function (query) {
+						return {tokens: {'content__startswith': query, 'type': 'word'}};
+					},
 				},
 			},
 			{name: 'tag',
@@ -281,27 +356,38 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							return data[key].type === 'tag';
 						}).map(function (key) {
 							var tag = data[key];
-							return {
+							var tag_data = {
 								id: key,
 								main: tag.content,
 								rule: 'tag',
 							}
+
+							if (tag.shortcut) {
+								if (tag.shortcut.is_active) {
+									tag_data.shortcut = tag.shortcut.combo;
+									Mousetrap.unbind(tag.shortcut.combo);
+									Mousetrap.bind(tag.shortcut.combo, function (event) {
+										event.preventDefault();
+										amc.addAction({type: 'key.shortcut.{combo}'.format({combo: tag.shortcut.combo})});
+										Promise.all([
+											autocomplete.behaviours.shortcut(key),
+										]);
+									});
+								}
+							}
+
+							return tag_data;
 						});
 						resolve(results);
 					});
 				},
-				filterRequest: function (query) {
-					var dict = {};
-					dict['tokens'] = {'content__startswith': query, 'type': 'tag'};
-					return dict;
-				},
 				setStyle: function () {
 					return new Promise(function(resolve, reject) {
 						jss.set('#{id} .tag'.format({id: autocomplete.id}), {
-							'background-color': 'rgba(255,255,0,0.05)'
+							'background-color': Color.green.lightest,
 						});
 						jss.set('#{id} .tag.active'.format({id: autocomplete.id}), {
-							'background-color': 'rgba(255,255,0,0.1)'
+							'background-color': Color.green.light,
 						});
 						resolve();
 					});
@@ -313,8 +399,15 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					input: 'Tags',
 					display: 'Tag',
 					rule: 'tag',
+					blurb: 'Filter semantic tags',
 					limit: 10,
 					autocompleteOverride: true,
+					preventIncomplete: true,
+					request: function (query) {
+						var dict = {};
+						dict['tokens'] = {'content__startswith': query, 'type': 'tag'};
+						return dict;
+					},
 				},
 			},
 			{name: 'phrase',
@@ -353,18 +446,13 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						resolve(results);
 					});
 				},
-				filterRequest: function (query) {
-					var dict = {};
-					dict['phrases'] = {'content__startswith': query, 'token_count__gt': '1'};
-					return dict;
-				},
 				setStyle: function () {
 					return new Promise(function(resolve, reject) {
 						jss.set('#{id} .phrase'.format({id: autocomplete.id}), {
-							'background-color': 'rgba(255,100,255,0.05)'
+							'background-color': Color.purple.uberlight,
 						});
 						jss.set('#{id} .phrase.active'.format({id: autocomplete.id}), {
-							'background-color': 'rgba(255,100,255,0.4)'
+							'background-color': Color.purple.lightest,
 						});
 						resolve();
 					});
@@ -376,23 +464,76 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					input: 'Phrases',
 					display: 'Phrase',
 					rule: 'phrase',
+					blurb: 'Filter phrases',
 					limit: 10,
+					request: function (query) {
+						var dict = {};
+						dict['phrases'] = {'content__startswith': query, 'token_count__gt': '1'};
+						return dict;
+					},
 				},
 			},
+			{name: 'flag',
+				path: function () {
+					return Active.get('client').then(function (client) {
+						return 'clients.{client_id}.flags'.format({client_id: client});
+					});
+				},
+				process: function (data) {
+					var results = Object.keys(data).map(function (key) {
+						var flag = data[key];
+						return {
+							id: key,
+							main: flag.name,
+							rule: 'flag',
+						}
+					});
+					return Util.ep(results);
+				},
+				setStyle: function () {
+					return new Promise(function(resolve, reject) {
+						jss.set('#{id} .flag'.format({id: autocomplete.id}), {
+							'background-color': Color.red.light,
+						});
+						jss.set('#{id} .flag.active'.format({id: autocomplete.id}), {
+							'background-color': Color.red.normal,
+						});
+						resolve();
+					});
+				},
+				filter: {
+					default: false,
+					char: '>',
+					key: 'right carrot',
+					input: 'Flags',
+					display: 'Flag',
+					rule: 'flag',
+					blurb: 'Filter transcription flags',
+					limit: 10,
+					autocompleteOverride: true,
+					preventIncomplete: true,
+					request: function () {
+						return {};
+					},
+					activate: function () {
+						return autocomplete.search.components.head.model().focus();
+					},
+					confirm: function () {
+						return flags.data.add(autocomplete.data.storage.virtual.list[autocomplete.currentIndex].main);
+					},
+				},
+			}
 		]
 		autocomplete.unitStyle.base = function () {
 			return new Promise(function(resolve, reject) {
 				// base class
 				jss.set('#{id} .base'.format({id: autocomplete.id}), {
-					'height': '30px',
+					'min-height': '30px',
 					'width': '100%',
 					'padding': '0px',
 					'padding-left': '10px',
 					'text-align': 'left',
 					'border-bottom': '1px solid #ccc',
-				});
-				jss.set('#{id} .base.active'.format({id: autocomplete.id}), {
-					'background-color': 'rgba(255,255,255,0.1)'
 				});
 				resolve();
 			});
@@ -423,15 +564,32 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					template: UI.template('div', 'ie button base'),
 					appearance: {
 						classes: [datum.rule],
+						style: {
+							'height': 'auto',
+						},
 					}
+				}),
+
+				// main container
+				UI.createComponent('{base}-main-container'.format({base: base}), {
+					template: UI.template('div', 'ie'),
+					appearance: {
+						style: {
+							'left': '0px',
+							'padding-top': '11px',
+							'padding-bottom': '5px',
+							'width': 'calc(100% - 15px)'
+						},
+					},
 				}),
 
 				// main wrapper
 				UI.createComponent('{base}-main-wrapper'.format({base: base}), {
-					template: UI.template('div', 'ie centred-vertically'),
+					template: UI.template('div', 'ie'),
 					appearance: {
 						style: {
 							'left': '0px',
+							'display': 'inline-block',
 						},
 					},
 				}),
@@ -441,7 +599,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					template: UI.template('span', 'ie'),
 					appearance: {
 						style: {
-							'color': '#ccc',
+							'color': Color.grey.normal,
 							'display': 'inline-block',
 							'position': 'absolute',
 						},
@@ -453,17 +611,32 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					appearance: {
 						style: {
 							'display': 'inline-block',
+							'max-width': '100%',
 						},
 						html: datum.main,
+					},
+				}),
+				UI.createComponent('{base}-main-shortcut'.format({base: base}), {
+					template: UI.template('span', 'ie'),
+					appearance: {
+						style: {
+							'display': 'inline-block',
+							'left': '8px',
+							'opacity': '0.6',
+							'top': '-4px',
+						},
+						html: (datum.shortcut || ''),
 					},
 				}),
 
 				// index
 				UI.createComponent('{base}-index'.format({base: base}), {
-					template: UI.template('div', 'ie abs centred-vertically'),
+					template: UI.template('div', 'ie abs'),
 					appearance: {
 						style: {
+							'width': '10px',
 							'right': '5px',
+							'top': '11px',
 						},
 						html: index,
 					},
@@ -472,9 +645,11 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			]).then(function (unitComponents) {
 				var [
 					unitBase,
+					unitMainContainer,
 					unitMainWrapper,
 					unitMainHead,
 					unitMainTail,
+					unitMainShortcut,
 					unitIndex,
 				] = unitComponents;
 
@@ -504,7 +679,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				unitBase.updateDatum = function (ndatum) {
 					return unitBase.setAppearance({classes: {add: ndatum.rule, remove: (unitBase.datum || datum).rule}}).then(function () {
 						unitBase.datum = ndatum;
-						return Util.ep();
+						return unitMainShortcut.setAppearance({html: (ndatum.shortcut || '')});
 					});
 				}
 				unitBase.updateQuery = function (query) {
@@ -521,41 +696,19 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						unitMainHead,
 						unitMainTail,
 					]),
+					unitMainContainer.setChildren([
+						unitMainWrapper,
+						unitMainShortcut,
+					]),
 				]).then(function () {
 					return unitBase.setChildren([
-						unitMainWrapper,
+						unitMainContainer,
 						unitIndex,
 					]);
 				}).then(function () {
 					return unitBase;
 				});
 			});
-		}
-		autocomplete.data.display.render.setMetadata = function () {
-			var _this = autocomplete;
-			var query = _this.data.query; // query is set no matter the status of virtual
-
-			if (!_this.data.storage.virtual.list.length) {
-				_this.currentIndex = undefined;
-				return _this.search.setMetadata({query: query, complete: '', type: '', tokens: []});
-			} else {
-				// console.log(_this.active.datum.main, _this.currentIndex);
-				if (_this.currentIndex >= _this.data.storage.virtual.list.length) {
-					// console.log('here');
-					return _this.control.setActive.main({index: 0}).then(function () {
-						// console.log(_this.active.datum.main, _this.currentIndex);
-						var _this = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
-						var type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
-						var tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
-						return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
-					});
-				} else {
-					var complete = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
-					var type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
-					var tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
-					return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
-				}
-			}
 		}
 		autocomplete.search.setMetadata = function (metadata) {
 			var _this = autocomplete.search;
@@ -574,7 +727,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 				// Should trigger caption set metadata to check for phrase and other expansions.
 				// return caption action
-				if (caption.isFocussed) {
+				if (caption.isFocused) {
 					_this.metadata.target = autocomplete.target;
 					return caption.control.input.editActive(_this.metadata);
 				} else {
@@ -589,7 +742,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			return _this.components.tail.setAppearance({html: _this.completeQuery}).then(function () {
 				return _this.components.head.setAppearance({html: _this.completeQuery});
 			}).then(function () {
-				if (!caption.isFocussed) {
+				if (!caption.isFocused) {
 					return _this.setCaretPosition('end');
 				} else {
 					return Util.ep();
@@ -597,73 +750,87 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			});
 		}
 		autocomplete.search.behaviours.right = function () {
-			return autocomplete.search.isCaretInPosition('end').then(function (inPosition) {
-				if ((inPosition && !autocomplete.search.isComplete) || caption.completionOverride) {
-					autocomplete.currentIndex = 0;
-					caption.completionOverride = false;
-					return autocomplete.search.complete().then(function () {
-						return autocomplete.search.input();
-					});
-				} else {
-					return Util.ep();
-				}
-			});
+			if ((autocomplete.search.isCaretInPosition('end') && !autocomplete.search.isComplete) || caption.completionOverride) {
+				autocomplete.currentIndex = 0;
+				caption.completionOverride = false;
+				return autocomplete.search.complete().then(function () {
+					return autocomplete.search.input();
+				});
+			} else {
+				return Util.ep();
+			}
 		}
 		autocomplete.behaviours.number = function (char) {
 			var index = parseInt(char);
-			if (index < autocomplete.data.storage.virtual.rendered.length) {
-				return autocomplete.control.setActive.main({index: index}).then(function () {
-					return autocomplete.behaviours.right().then(function () {
-						// return caption.behaviours.right();
+			if (autocomplete.data.storage.virtual.list.length === 0) {
+				var numbers = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+				if (caption.isFocused && !caption.active.query) {
+					return caption.active.setContent({query: numbers[index]}).then(function () {
+						return caption.active.setCaretPosition('end').then(function () {
+							return caption.active.input();
+						});
 					});
+				} else {
+					return autocomplete.search.setContent({query: numbers[index], trigger: true});
+				}
+			} else if (index < autocomplete.data.storage.virtual.rendered.length) {
+				return autocomplete.control.setActive.main({index: index}).then(function () {
+					return autocomplete.behaviours.right();
 				});
 			}
 		}
-
-		// CAPTION
-		caption.checks = [
-			// check if tag unit matches a valid tag
-			function () {
+		autocomplete.behaviours.shortcut = function (key) {
+			var shortcutDatum = autocomplete.data.storage.dataset[key];
+			if (caption.isFocused && !caption.active.query) {
+				return caption.active.setContent({query: shortcutDatum.main}).then(function () {
+					return caption.active.setCaretPosition('end').then(function () {
+						return caption.active.input();
+					});
+				});
+			} else {
+				return autocomplete.search.setContent({query: shortcutDatum.main, trigger: true});
+			}
+		}
+		autocomplete.behaviours.enter = function (event) {
+			// run confirm behaviour for current filter
+			var autocompleteFilter = autocomplete.data.storage.filters[autocomplete.data.filter];
+			if (autocompleteFilter) {
+				if (autocompleteFilter.confirm) {
+					return autocompleteFilter.confirm();
+				} else {
+					return Util.ep();
+				}
+			} else {
 				return Util.ep();
-			},
+			}
+		}
 
-			// check capitals and make lower case
-			function () {
-				return Util.ep();
-			},
-		]
+		// Caption
 		caption.export = function () {
-			//
+			var i, j, tokens = [];
+			for (i=0; i<caption.data.storage.virtual.length; i++) {
+				var virtual = caption.data.storage.virtual[i];
+				for (j=0; j<virtual.tokens.length; j++) {
+					tokens.push(virtual.tokens[j]);
+				}
+			}
+			return tokens;
 		}
 		caption.styles = function () {
 			// word
 			jss.set('#{id} .word'.format({id: caption.id}), {
-				'color': '#ccc',
+				'color': Color.grey.normal,
 			});
 			jss.set('#{id} .word.active'.format({id: caption.id}), {
-				'color': '#ccc',
+				'color': Color.grey.light,
 			});
 
 			// tag
 			jss.set('#{id} .tag'.format({id: caption.id}), {
-				'color': 'rgba(255,255,0,0.4)',
+				'color': Color.green.darkest,
 			});
 			jss.set('#{id} .tag.active'.format({id: caption.id}), {
-				'color': '05DA01',
-			});
-
-			// phrase
-			jss.set('#{id} .phrase'.format({id: caption.id}), {
-				'color': '#ccc',
-			});
-			jss.set('#{id} .phrase.active'.format({id: caption.id}), {
-				'color': '#ccc',
-			});
-
-			// ghost
-			jss.set('#{id} .ghost'.format({id: caption.id}), {
-				'opacity': '0.5',
-				'pointer-events': 'none', // It's not this, but find out what it is.
+				'color': Color.green.dark,
 			});
 
 			return Util.ep();
@@ -696,12 +863,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				}
 				unitBase.deactivate = function () {
 					return unitBase.setAppearance({classes: {remove: 'active'}});
-				}
-				unitBase.select = function () {
-
-				}
-				unitBase.unselect = function () {
-
 				}
 				unitBase.show = function () {
 					unitBase.isHidden = false;
@@ -740,7 +901,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					}
 				}
 				unitBase.setUnitContent = function (metadata) {
-					if (!unitBase.isFocussed) {
+					if (!unitBase.isFocused) {
 						return unitBase.setContent(metadata);
 					} else {
 						if (unitBase.completionOverride && !unitBase.isComplete) {
@@ -777,6 +938,11 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				}
 
 				// search bar mods
+				unitBase.reset = function () {
+					unitBase.getContent().then(function (unitContent) {
+						return unitBase.updateUnitMetadata({query: unitContent, complete: unitContent});
+					});
+				}
 				unitBase.setMetadata = function (metadata) {
 					metadata = (metadata || {});
 					unitBase.metadata = (unitBase.metadata || {});
@@ -792,26 +958,31 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					});
 				}
 				unitBase.input = function () {
-					if (unitBase.isFocussed) {
-						return unitBase.getContent().then(function (unitContent) {
-
-							// temporarily update metadata to prepare for completion, even though this might be overwritten by the subsequent search.setContent.
-							return unitBase.updateUnitMetadata({query: unitContent, complete: unitBase.metadata.complete}).then(function () {
-								return unitBase.phrase.updateQueryFromActive().then(function (updatedQuery) {
-									autocomplete.target = unitBase.phrase.id;
-									return autocomplete.search.setContent({query: updatedQuery, trigger: true});
+					amc.addAction({type: 'caption.input'});
+					if (unitBase.isFocused) {
+						return Promise.all([
+							unitBase.getContent().then(function (unitContent) {
+								// temporarily update metadata to prepare for completion, even though this might be overwritten by the subsequent search.setContent.
+								return unitBase.updateUnitMetadata({query: unitContent, complete: unitBase.metadata.complete}).then(function () {
+									return unitBase.phrase.updateQueryFromActive().then(function (updatedQuery) {
+										autocomplete.target = unitBase.phrase.id;
+										return autocomplete.search.setContent({query: updatedQuery, trigger: true});
+									});
 								});
-							});
-						});
+							}),
+							counter.active.setPending(),
+							transcriptionMasterController.setPending(),
+						]);
 					} else {
 						return Util.ep();
 					}
 				}
 				unitBase.focus = function (position) {
-					if (!unitBase.isFocussed) {
-						caption.isFocussed = true;
-						unitBase.isFocussed = true;
-						autocomplete.isFocussed = true;
+					amc.addAction({type: 'caption.focus'});
+					if (!unitBase.isFocused) {
+						caption.isFocused = true;
+						unitBase.isFocused = true;
+						autocomplete.isFocused = true;
 						return caption.control.setActive({unit: unitBase}).then(function () {
 							return unitBase.setCaretPosition(position);
 						}).then(function () {
@@ -822,14 +993,16 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					}
 				}
 				unitBase.blur = function () {
-					if (unitBase.isFocussed) {
-						unitBase.isFocussed = false;
+					amc.addAction({type: 'caption.blur'});
+					if (unitBase.isFocused) {
+						unitBase.isFocused = false;
 						if (caption.active.id === unitBase.id) {
-							caption.isFocussed = false;
-							autocomplete.isFocussed = false;
+							caption.isFocused = false;
+							autocomplete.isFocused = false;
 						}
 						return Promise.all([
 							unitBase.deactivate(),
+							unitBase.reset(),
 							autocomplete.control.reset(),
 						]);
 					} else {
@@ -851,62 +1024,64 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			});
 		}
 		caption.behaviours.right = function (event) {
-			if (caption.isFocussed) {
-				return caption.active.isCaretInPosition('end').then(function (inPosition) {
-					if (inPosition) {
-						if (event) {
-							event.preventDefault();
-						}
-						if (caption.active.phrase.isComplete) {
-							return caption.next().then(function () {
-								return caption.active.focus('start');
-							});
-						} else {
-							caption.completionOverride = true;
-							caption.active.completionOverride = true;
-							caption.active.phrase.completionOverride = true;
-							return autocomplete.behaviours.right();
-						}
+			if (caption.isFocused) {
+				if (caption.active.isCaretInPosition('end')) {
+					if (event) {
+						event.preventDefault();
+					}
+					if (caption.active.phrase.isComplete) {
+						return caption.next().then(function () {
+							return caption.active.focus('start');
+						});
 					} else {
+						caption.completionOverride = true;
+						caption.active.completionOverride = true;
+						caption.active.phrase.completionOverride = true;
 						return autocomplete.behaviours.right();
 					}
-				});
+				} else {
+					return autocomplete.behaviours.right();
+				}
 			} else {
 				return autocomplete.behaviours.right();
 			}
 		}
 		caption.behaviours.left = function (event) {
-			if (caption.isFocussed) {
-				return caption.active.isCaretInPosition('start').then(function (inPosition) {
-					if (inPosition) {
-						if (event) {
-							event.preventDefault();
-						}
-						return caption.previous().then(function () {
-							return caption.active.focus('end');
-						});
-					} else {
-						return Util.ep();
+			if (caption.isFocused) {
+				if (caption.active.isCaretInPosition('start')) {
+					if (event) {
+						event.preventDefault();
 					}
-				});
+					return caption.previous().then(function () {
+						return caption.active.focus('end');
+					});
+				} else {
+					return Util.ep();
+				}
 			} else {
 				return Util.ep();
 			}
 		}
 		caption.behaviours.backspace = function (event) {
-			if (caption.isFocussed) {
-				return caption.active.isCaretInPosition('start').then(function (inPosition) {
-					if (inPosition && caption.active.metadata.query === '') {
-						var noPhraseQuery = caption.active.phrase.query === '';
-						if (event) {
-							// prevent the delete from happening after 'caption.previous'. It is only there to 'remove' the 'space'.
-							event.preventDefault();
-						}
-						if (noPhraseQuery) {
-							// remove phrase
-							var phrase = caption.active.phrase;
-							if (phrase.index > 0) {
-								return caption.previous().then(function () {
+			if (caption.isFocused) {
+				if (caption.active.isCaretInPosition('start') && caption.active.metadata.query === '') {
+					var noPhraseQuery = caption.active.phrase.query === '';
+					if (event) {
+						// prevent the delete from happening after 'caption.previous'. It is only there to 'remove' the 'space'.
+						event.preventDefault();
+					}
+					if (noPhraseQuery) {
+						// remove phrase
+						var phrase = caption.active.phrase;
+						if (phrase.index > 0) {
+							return caption.previous().then(function () {
+								return caption.active.setCaretPosition('end').then(function () {
+									return caption.data.objects.phrase.remove(phrase);
+								});
+							});
+						} else {
+							if (caption.data.storage.virtual.length > 1) {
+								return caption.next().then(function () {
 									return caption.active.setCaretPosition('end').then(function () {
 										return caption.data.objects.phrase.remove(phrase);
 									});
@@ -914,15 +1089,15 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							} else {
 								return Util.ep();
 							}
-						} else {
-							caption.active.phrase.backspaceOverride = true;
-							autocomplete.target = caption.active.phrase.id;
-							return autocomplete.search.setContent({query: caption.active.phrase.query.trim(), trigger: true});
 						}
 					} else {
-						return Util.ep();
+						caption.active.phrase.backspaceOverride = true;
+						autocomplete.target = caption.active.phrase.id;
+						return autocomplete.search.setContent({query: caption.active.phrase.query.trim(), trigger: true});
 					}
-				});
+				} else {
+					return Util.ep();
+				}
 			} else {
 				return Util.ep();
 			}
@@ -930,55 +1105,70 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		caption.behaviours.enter = function () {
 			// confirms current phrase, but does not complete.
 			// splits phrase into sub-phrases, each containing a single token.
-			if (caption.isFocussed) {
-				return caption.active.isCaretInPosition('end').then(function (inPosition) {
-					if (inPosition) {
-						if (caption.active.isLastToken() && caption.active.isComplete) {
-							var phrase = caption.active.phrase;
-							return caption.data.objects.phrase.create(caption.active.phrase.index, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
-								return caption.next().then(function () {
-									return caption.active.setCaretPosition('start');
-								});
-							}).then(function () {
-								return caption.data.objects.phrase.split(phrase);
-							});
-						} else if (caption.active.isLastQueryToken()) {
-							return caption.behaviours.right();
-						} else {
-							return Util.ep();
-						}
+			if (caption.isFocused) {
+				// only if the caret is at the end
+				if (caption.active.isCaretInPosition('end')) {
+					// only if the last token is active, it is complete, and the query is not empty (must be empty complete as well)
+					if (caption.active.isLastToken() && caption.active.metadata.query !== '') {
+						return Promise.all([
+							transcriptionMasterController.setComplete(),
+						]).then(function () {
+							return caption.active.blur();
+						}).then(function () {
+							return transcriptionMasterController.behaviours.down();
+						}).then(function () {
+							return caption.focus();
+						});
 					} else {
-						return Util.ep();
+						return Promise.all([
+							caption.focus(),
+							audio.play(),
+						]);
 					}
-				});
+				} else {
+					return Promise.all([
+						caption.focus(),
+						audio.play(),
+					]);
+				}
 			} else {
-				return Util.ep();
+				return Promise.all([
+					caption.focus(),
+					audio.play(),
+				]);
 			}
 		}
-		caption.behaviours.space = function () {
+		caption.behaviours.space = function (options) {
+			options = (options || {});
 			// skip to the next token in the phrase.
 			// if there is no next token, start a new phrase.
-			if (caption.isFocussed) {
-				return caption.active.isCaretInPosition('end').then(function (inPosition) {
-					if (inPosition && caption.active.isLastQueryToken()) {
-						var noMorePhrases = autocomplete.data.storage.virtual.list.filter(function (item) {return item.rule === 'phrase' && item.main !== caption.active.phrase.complete;}).length === 0;
-						if (noMorePhrases && caption.active.phrase.isComplete) {
-							return caption.behaviours.enter();
-						} else {
-							caption.active.phrase.spaceOverride = true;
-							autocomplete.target	= caption.active.phrase.id;
-							return autocomplete.search.setContent({query: caption.active.phrase.query + ' ', trigger: true});
-						}
-					} else {
-						return caption.active.setCaretPosition('end');
-					}
-				});
+			if (caption.isFocused) {
+				var newForward = (caption.active.isCaretInPosition('end') && caption.active.isLastQueryToken())
+				var newBackward = (caption.active.isCaretInPosition('start') && caption.active.index === 0)
+
+				if (newForward || newBackward) {
+					var newIndex = newForward ? caption.active.phrase.index + 1 : 0;
+					var moveMethod = newForward ? caption.next : caption.previous;
+
+					var phrase = caption.active.phrase;
+					return autocomplete.control.setFilter().then(function () {
+						return caption.data.objects.phrase.create(newIndex, {query: '', complete: '', tokens: [{content: '', type: 'word'}]}).then(function () {
+							return moveMethod().then(function () {
+								return caption.active.setCaretPosition('start');
+							});
+						}).then(function () {
+							return caption.data.objects.phrase.split(phrase);
+						});
+					});
+				} else {
+					return caption.active.setCaretPosition('end')
+				}
 			} else {
 				return Util.ep();
 			}
 		}
 		caption.behaviours.altright = function (event) {
-			if (caption.isFocussed) {
+			if (caption.isFocused) {
 				if (event) {
 					event.preventDefault();
 				}
@@ -997,7 +1187,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			}
 		}
 		caption.behaviours.altleft = function (event) {
-			if (caption.isFocussed) {
+			if (caption.isFocused) {
 				if (event) {
 					event.preventDefault();
 				}
@@ -1013,7 +1203,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				// prevent the delete from happening after 'caption.previous'. It is only there to 'remove' the 'space'.
 				event.preventDefault();
 			}
-			if (caption.isFocussed && caption.active.isLastQueryToken()) {
+			if (caption.isFocused && caption.active.isLastQueryToken()) {
 				var isOnlyToken = caption.active.phrase.tokens.length === 1;
 				if (isOnlyToken) {
 					// remove phrase
@@ -1041,44 +1231,502 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				return Util.ep();
 			}
 		}
+		caption.behaviours.ctrlbackspace = function (event) {
+			// remove entire caption
+			return caption.control.input.newCaption().then(function () {
+				return caption.focus();
+			});
+		}
+
+		// Counter
+		counter.headerPath = function () {
+			return Promise.all([
+				Active.get('client'),
+				Active.get('project'),
+			]).then(function (results) {
+				var [client, project] = results;
+				return Util.ep('clients.{client}.projects.{project}.transcriptions_remaining'.format({client: client, project: project}));
+			});
+		}
+		counter.unit = function () {
+			var unitId = '{counterId}-icon-{id}'.format({counterId: counter.id, id: Util.makeid()});
+			return Promise.all([
+				// base
+				UI.createComponent(unitId, {
+					template: UI.template('div', 'ie unit border-radius'),
+					appearance: {
+						style: {
+							'height': '35px',
+							'width': '35px',
+							'float': 'left',
+							'margin-left': '10px',
+							'margin-bottom': '10px',
+							'box-sizing': 'border-box',
+						},
+					},
+				}),
+
+				// done glyph
+				UI.createComponent('{id}-done'.format({id: unitId}), {
+					template: UI.template('div', 'ie hidden'),
+					appearance: {
+						style: {
+							'height': '100%',
+							'width': '100%',
+							'background-color': Color.green.normal,
+						},
+					},
+					children: [
+						UI.createComponent('{id}-done-glyphicon'.format({id: unitId}), {
+							template: UI.template('span', 'glyphicon glyphicon-ok centred'),
+							appearance: {
+								style: {
+									'font-size': '15px',
+									'color': Color.grey.uberlight,
+									'top': '10px',
+									'left': '9px',
+								},
+							},
+						}),
+					],
+				}),
+
+				// pending glyph
+				UI.createComponent('{id}-pending'.format({id: unitId}), {
+					template: UI.template('div', 'ie hidden'),
+					appearance: {
+						style: {
+							'height': '100%',
+							'width': '100%',
+							'background-color': Color.grey.uberlight,
+						},
+					},
+				}),
+			]).then(function (components) {
+				var [
+					unitBase,
+					doneGlyph,
+					pendingGlyph,
+				] = components;
+
+				// methods
+				unitBase.isComplete = false;
+				unitBase.isPending = false;
+				unitBase.activate = function () {
+					return unitBase.setAppearance({classes: {add: 'active'}});
+				}
+				unitBase.deactivate = function () {
+					return unitBase.setAppearance({classes: {remove: 'active'}});
+				}
+				unitBase.setComplete = function () {
+					unitBase.isComplete = true;
+					unitBase.isPending = false;
+					return Promise.all([
+						unitBase.setAppearance({classes: {add: 'complete', remove: 'pending'}}),
+						doneGlyph.setAppearance({classes: {remove: 'hidden'}}),
+						pendingGlyph.setAppearance({classes: {add: 'hidden'}}),
+
+						// also increment the counter - must happen
+						counter.increment(),
+					]);
+				}
+				unitBase.setPending = function () {
+					var previousComplete = unitBase.isComplete;
+					unitBase.isComplete = false;
+					unitBase.isPending = true;
+					return Promise.all([
+						unitBase.setAppearance({classes: {remove: 'complete', add: 'pending'}}),
+						doneGlyph.setAppearance({classes: {add: 'hidden'}}),
+						pendingGlyph.setAppearance({classes: {remove: 'hidden'}}),
+					]).then(function () {
+						if (previousComplete) {
+							// only if the unit was previously complete
+							return counter.decrement();
+						}
+					});
+				}
+				unitBase.setClear = function () {
+					unitBase.isComplete = false;
+					unitBase.isPending = false;
+					return Promise.all([
+						unitBase.setAppearance({classes: {remove: ['complete', 'pending']}}),
+						doneGlyph.setAppearance({classes: {add: 'hidden'}}),
+						pendingGlyph.setAppearance({classes: {add: 'hidden'}}),
+					]);
+				}
+
+				return Promise.all([
+
+				]).then(function () {
+					return unitBase.setChildren([
+						doneGlyph,
+						pendingGlyph,
+					]);
+				}).then(function () {
+					return unitBase;
+				})
+			});
+		}
+
+		// Flags
+		flags.unit = function (name) {
+			var unitId = '{base}-{id}'.format({base: flags.id, id: Util.makeid()});
+
+			return Promise.all([
+				// unit base
+				UI.createComponent(unitId, {
+					template: UI.template('div', 'ie border border-radius'),
+					appearance: {
+						style: {
+							'height': '30px',
+							'margin-top': '4px',
+							'display': 'inline-block',
+							'margin-right': '5px',
+							'background-color': Color.red.light,
+						},
+					},
+				}),
+
+				// unit content
+				UI.createComponent('{id}-content'.format({id: unitId}), {
+					template: UI.template('span', 'ie'),
+					appearance: {
+						html: name,
+						style: {
+							'float': 'left',
+							'margin-top': '5px',
+							'margin-right': '5px',
+							'margin-left': '10px',
+						},
+					}
+				}),
+
+				// unit button
+				UI.createComponent('{id}-button'.format({id: unitId}), {
+					template: UI.template('div', 'ie button'),
+					appearance: {
+						style: {
+							'height': '40px',
+							'width': '30px',
+							'float': 'left',
+							'padding-top': '6px',
+						},
+					},
+				}),
+				UI.createComponent('{id}-glyph'.format({id: unitId}), {
+					template: UI.template('span', 'glyphicon glyphicon-remove'),
+				}),
+
+			]).then(function (unitComponents) {
+				var [
+					unitBase,
+					unitContent,
+					unitButton,
+					unitGlyph,
+				] = unitComponents;
+
+				return Promise.all([
+					unitButton.setChildren([unitGlyph]),
+					unitButton.setBindings({
+						'click': function (_this) {
+							return flags.data.remove(unitBase.index);
+						},
+					}),
+				]).then(function () {
+					return unitBase.setChildren([
+						unitContent,
+						unitButton,
+					]);
+				}).then(function () {
+					return unitBase;
+				});
+			});
+		}
 
 		// connect
 		return Promise.all([
+
+			// base
 			base.setAppearance({
 				classes: ['hidden'],
 			}),
 			base.setState({
-				defaultState: {fn: UI.functions.hide},
+				defaultState: {preFn: UI.functions.hide},
 				states: {
 					'transcription-state': {
+						preFn: function () {
+							// KEYBINDINGS
+							Mousetrap.bind('up', function (event) {
+								if (UI.globalState.contains('transcription')) {
+									event.preventDefault();
+									amc.addAction({type: 'key.up'});
+									if (autocomplete.isFocused || caption.isFocused) {
+										Promise.all([
+											autocomplete.behaviours.up(),
+										]);
+									} else {
+										Promise.all([
+											transcriptionMasterController.behaviours.up(),
+										]);
+									}
+								}
+							});
+							Mousetrap.bind('down', function (event) {
+								if (UI.globalState.contains('transcription')) {
+									event.preventDefault();
+									amc.addAction({type: 'key.down'});
+									if (autocomplete.isFocused || caption.isFocused) {
+										Promise.all([
+											autocomplete.behaviours.down(),
+										]);
+									} else {
+										Promise.all([
+											transcriptionMasterController.behaviours.down(),
+										]);
+									}
+								}
+							});
+							Mousetrap.bind('alt+up', function (event) {
+								if (UI.globalState.contains('transcription')) {
+									event.preventDefault();
+									amc.addAction({type: 'key.alt+up'});
+									caption.active.blur().then(function () {
+										return transcriptionMasterController.behaviours.up();
+									}).then(function () {
+										return caption.focus();
+									});
+								}
+							});
+							Mousetrap.bind('alt+down', function (event) {
+								if (UI.globalState.contains('transcription')) {
+									event.preventDefault();
+									amc.addAction({type: 'key.alt+down'});
+									caption.active.blur().then(function () {
+										return transcriptionMasterController.behaviours.down();
+									}).then(function () {
+										return caption.focus();
+									});
+								}
+							});
+							Mousetrap.bind('left', function (event) {
+								if (UI.globalState.contains('transcription')) {
+									amc.addAction({type: 'key.left'});
+									Promise.all([
+										autocomplete.behaviours.left(),
+										caption.behaviours.left(event),
+									]);
+								}
+							});
+							Mousetrap.bind('right', function (event) {
+								if (UI.globalState.contains('transcription')) {
+									amc.addAction({type: 'key.right'});
+									Promise.all([
+										caption.behaviours.right(event),
+									]);
+								}
+							});
+							Mousetrap.bind(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], function (event) {
+								if (UI.globalState.contains('transcription')) {
+									event.preventDefault();
+									var char = String.fromCharCode(event.which);
+									amc.addAction({type: 'key.number', metadata: {'value': char}});
+									Promise.all([
+										autocomplete.behaviours.number(char),
+									]);
+								}
+							});
+							Mousetrap.bind('enter', function (event) {
+								if (UI.globalState.contains('transcription')) {
+									event.preventDefault();
+									amc.addAction({type: 'key.enter'});
+									if (caption.isFocused) {
+										Promise.all([
+											caption.behaviours.enter(),
+										]);
+									} else if (autocomplete.isFocused) {
+										Promise.all([
+											autocomplete.behaviours.enter(),
+										]);
+									}
+								}
+							});
+							Mousetrap.bind('backspace', function (event) {
+								if (UI.globalState.contains('transcription')) {
+									amc.addAction({type: 'key.backspace'});
+									Promise.all([
+										autocomplete.behaviours.backspace(),
+										caption.behaviours.backspace(event),
+									]);
+								}
+							});
+							Mousetrap.bind('alt+backspace', function (event) {
+								if (UI.globalState.contains('transcription')) {
+									amc.addAction({type: 'key.alt+backspace'});
+									Promise.all([
+										caption.behaviours.altbackspace(event),
+									]);
+								}
+							});
+							Mousetrap.bind('ctrl+backspace', function (event) {
+								if (UI.globalState.contains('transcription')) {
+									event.preventDefault();
+									amc.addAction({type: 'key.ctrl+backspace'});
+									Promise.all([
+										caption.behaviours.ctrlbackspace(event),
+									]);
+								}
+							});
+							Mousetrap.bind('alt+shift+backspace', function (event) {
+								if (UI.globalState.contains('transcription')) {
+									amc.addAction({type: 'key.alt+shift+backspace'});
+									Promise.all([
+										flags.data.removeLast(),
+									]);
+								}
+							});
+							Mousetrap.bind('ctrl+shift+backspace', function (event) {
+								if (UI.globalState.contains('transcription')) {
+									event.preventDefault();
+									amc.addAction({type: 'key.ctrl+shift+backspace'});
+									Promise.all([
+										flags.data.removeAll(),
+									]);
+								}
+							});
+							Mousetrap.bind('space', function (event) {
+								if (UI.globalState.contains('transcription')) {
+									amc.addAction({type: 'key.space'});
+									if (caption.isFocused) {
+										event.preventDefault();
+									}
+									Promise.all([
+										caption.behaviours.space({checkNoMorePhrases: true}),
+									]);
+								}
+							});
+							Mousetrap.bind('alt+right', function (event) {
+								if (UI.globalState.contains('transcription')) {
+									amc.addAction({type: 'key.alt+right'});
+									Promise.all([
+										caption.behaviours.altright(event),
+									]);
+								}
+							});
+							Mousetrap.bind('alt+left', function (event) {
+								if (UI.globalState.contains('transcription')) {
+									amc.addAction({type: 'key.alt+left'});
+									Promise.all([
+										caption.behaviours.altleft(event),
+									]);
+								}
+							});
+							Mousetrap.bind('ctrl+space', function (event) {
+								if (UI.globalState.contains('transcription')) {
+									if (caption.isFocused) {
+										event.preventDefault();
+									}
+									amc.addAction({type: 'key.ctrl+space'});
+									Promise.all([
+										caption.behaviours.space(),
+									]);
+								}
+							});
+							Mousetrap.bind('tab', function (event) {
+								if (UI.globalState.contains('transcription')) {
+									event.preventDefault();
+									amc.addAction({type: 'key.tab'});
+									Promise.all([
+										audio.play(),
+										caption.focus(),
+									]);
+								}
+							});
+							Mousetrap.bind('alt+tab', function (event) {
+								if (UI.globalState.contains('transcription')) {
+									event.preventDefault();
+									amc.addAction({type: 'key.alt+tab'});
+									Promise.all([
+										autocomplete.focus(),
+									]);
+								}
+							});
+							return Util.ep();
+						},
 						fn: UI.functions.show,
 					},
 					'client-state': 'default',
 					'role-state': 'default',
 					'control-state': 'default',
+					'-transcription-project-complete-state': 'default',
 				},
 			}),
 
-			// buttonPanel
+			// transcription master controller
+			transcriptionMasterController.setState({
+				states: {
+					'control-state': {
+						fn: function (_this) {
+							_this.revision.stop();
+							return Util.ep();
+						}
+					},
+					'transcription-state': {
+						fn: function (_this) {
+							_this.revision.start();
+							return _this.update();
+						}
+					},
+				},
+			}),
 
-			// audioCaptionPanel
-			audio.components.track.setState({
+			// action master controller
+			amc.setState({
+				states: {
+					'control-state': {
+						fn: function (_this) {
+							_this.action.stop();
+							return Util.ep();
+						}
+					},
+					'transcription-state': {
+						fn: function (_this) {
+							_this.action.start();
+							return Util.ep();
+						}
+					},
+				},
+			}),
+
+			// button panel
+			buttonPanel.setChildren([
+				flags,
+				previousButton,
+				confirmButton,
+			]),
+
+			// main panel
+			mainPanel.setChildren([
+				counter,
+				audio,
+				caption,
+				buttonPanel,
+			]),
+
+			// caption
+			caption.setState({
 				states: {
 					'transcription-state': {
 						fn: function (_this) {
-							return _this.update();
+							return _this.control.setup();
 						},
 					},
 				},
 			}),
-			audioCaptionPanel.setChildren([
-				audio,
-				caption,
-			]),
 
-			// autocompletePanel
+			// autocomplete panel
 			autocompletePanel.setChildren([
 				autocomplete,
+				// autocompleteControls,
 			]),
 
 			// autocomplete
@@ -1108,7 +1756,20 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					},
 				},
 			}),
+			autocomplete.setTitle(),
 			autocomplete.setSearch({mode: 'on', limit: 10, autocomplete: true}),
+			autocomplete.components.search.setAppearance({
+				style: {
+					'border': '0px solid #fff',
+					'border-bottom': '1px solid #888',
+					'border-radius': '0px',
+				},
+			}),
+			autocomplete.components.searchFilterBar.setAppearance({
+				style: {
+					'display': 'block',
+				},
+			}),
 			autocomplete.unitStyle.apply(),
 			autocomplete.setState({
 				states: {
@@ -1117,30 +1778,58 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							return _this.control.setup.main();
 						},
 					},
-					'control-state': {
+				},
+			}),
+
+			// counter
+			counter.setState({
+				states: {
+					'transcription-state': {
 						fn: function (_this) {
-							return _this.control.reset();
+							return _this.setup();
 						}
 					}
 				},
 			}),
 
-			// Caption initialisation
-			caption.setState({
-				states: {
-					'transcription-state': {
-						fn: function (_this) {
-							return _this.control.setup();
-						},
-					},
+			// flags add button binding
+			flags.components.addButton.setBindings({
+				'click': function (_this) {
+					amc.addAction({type: 'click.flagAddButton'});
+					return autocomplete.control.setFilter('flag').then(function () {
+						return autocomplete.search.components.head.model().focus();
+					});
+				},
+			}),
+
+			// buttons
+			previousButton.setBindings({
+				'click': function (_this) {
+					amc.addAction({type: 'click.previousButton'});
+					return transcriptionMasterController.behaviours.up();
+				},
+			}),
+			confirmButton.setBindings({
+				'click': function (_this) {
+					amc.addAction({type: 'click.confirmButton'});
+					return transcriptionMasterController.setComplete().then(function () {
+						if (caption.isFocused) {
+							return caption.active.blur();
+						} else {
+							return Util.ep();
+						}
+					}).then(function () {
+						return transcriptionMasterController.behaviours.down();
+					}).then(function () {
+						return caption.focus();
+					});
 				},
 			}),
 
 		]).then(function () {
 			return base.setChildren([
-				// buttonPanel,
-				// audioCaptionPanel,
-				// autocompletePanel,
+				mainPanel,
+				autocompletePanel,
 			]);
 		}).then(function () {
 			return base;

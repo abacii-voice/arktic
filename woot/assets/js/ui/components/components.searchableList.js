@@ -1,5 +1,3 @@
-// TODO
-// 1. set active is not called to reset to zero when a new query is entered.
 
 // initialise
 var Components = (Components || {});
@@ -21,7 +19,7 @@ Components.searchableList = function (id, args) {
 	// set up components
 	return Promise.all([
 		// base component
-		UI.createComponent('{id}'.format({id: id}), {
+		UI.createComponent(id, {
 			template: UI.template('div', 'ie'),
 			appearance: (args.appearance || defaultAppearance),
 		}),
@@ -32,9 +30,9 @@ Components.searchableList = function (id, args) {
 			appearance: {
 				style: {
 					'width': '100%',
-					'height': '22px',
+					'height': '32px',
 					'font-size': '18px',
-					'display': 'none',
+					'padding-top': '10px',
 				},
 			},
 		}),
@@ -101,6 +99,7 @@ Components.searchableList = function (id, args) {
 		base.data = {
 			// variables
 			limit: undefined,
+			previousQuery: '',
 			query: '',
 			filter: '',
 			lock: false,
@@ -153,8 +152,9 @@ Components.searchableList = function (id, args) {
 					// Load each target
 					return Promise.all(base.targets.map(function (target) {
 						target.queries = (target.queries || []);
+						var filterRequest = target.filter ? (target.filter.request ? target.filter.request(base.data.query) : {}) : {};
 						return Promise.all([
-							Context.get((target.resolvedPath || target.path), {options: {filter: target.filterRequest(base.data.query)}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
+							Context.get((target.resolvedPath || target.path), {options: {filter: filterRequest}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
 
 							// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
 							// Also, only query if this query has never been queried before
@@ -167,7 +167,7 @@ Components.searchableList = function (id, args) {
 									}, 1000);
 								}).then(function (timeout) {
 									if (timeout) {
-										return Context.get((target.resolvedPath || target.path), {options: {filter: target.filterRequest(base.data.query)}, force: true}).then(target.process).then(base.data.load.append).then(base.data.display.main);
+										return Context.get((target.resolvedPath || target.path), {options: {filter: filterRequest}, force: true}).then(target.process).then(base.data.load.append).then(base.data.display.main);
 									} else {
 										return Util.ep();
 									}
@@ -201,7 +201,7 @@ Components.searchableList = function (id, args) {
 
 							// 2. filter dataset to produce new subset
 							return base.data.display.filter.in();
-						})
+						});
 					},
 					condition: function (datum) {
 
@@ -213,17 +213,19 @@ Components.searchableList = function (id, args) {
 
 								(
 									(
+										// lower case query match at beginning
 										datum.main.toLowerCase().indexOf(base.data.query.toLowerCase()) === 0
 										&&
 										base.data.query.toLowerCase() !== ''
 									)
 									||
 									(
+										// allow autocomplete mode to display everything
 										(base.data.autocompleteOverride || !base.autocomplete || false)
 										&&
 										base.data.query === ''
 									)
-								), // lower case query match at beginning
+								),
 
 								// TODO: THESE CONDITIONS NEED TO BE OVERHAULED
 
@@ -251,11 +253,15 @@ Components.searchableList = function (id, args) {
 						}));
 					},
 					in: function () {
+						base.data.exactMatch = false;
 						return Promise.all(Object.keys(base.data.storage.dataset).map(function (key) {
 							var datum = base.data.storage.dataset[key];
 							return base.data.display.filter.condition(datum).then(function (condition) {
 								if (condition) {
 									base.data.storage.subset[key] = datum;
+									if (datum.main.toLowerCase() === base.data.query.toLowerCase() && base.data.query !== '') {
+										base.data.exactMatch = true; // in the event of an exact match, add a flag that prevents the item from being displayed twice.
+									}
 								}
 								return Util.ep();
 							});
@@ -317,6 +323,12 @@ Components.searchableList = function (id, args) {
 						base.data.storage.virtual.list = Object.keys(base.data.storage.subset).map(function (key) {
 							return base.data.storage.subset[key];
 						});
+						if (!base.data.preventIncomplete && base.data.query && !base.data.exactMatch) {
+							base.data.storage.virtual.list.unshift({
+								main: base.data.query.toLowerCase(),
+								rule: 'word',
+							});
+						}
 						return Util.ep();
 					},
 					sort: function () {
@@ -324,26 +336,33 @@ Components.searchableList = function (id, args) {
 						return Util.ep();
 					},
 					setMetadata: function () {
-						var query = base.data.query; // query is set no matter the status of virtual
+						var _this = base;
+						var query = _this.data.query; // query is set no matter the status of virtual
 
-						if (!base.data.storage.virtual.list.length) {
-							base.currentIndex = undefined;
-							return base.search.setMetadata({query: query, complete: '', type: ''});
+						// reset previous query and check for change
+						var changeQuery = false;
+						if (query !== _this.data.previousQuery) {
+							_this.data.previousQuery = query;
+							changeQuery = true;
+						}
+						if (!_this.data.storage.virtual.list.length) {
+							_this.currentIndex = undefined;
+							return _this.search.setMetadata({query: query, complete: '', type: '', tokens: []});
 						} else {
-
-							if (base.currentIndex >= base.data.storage.virtual.list.length) {
-								return base.control.setActive({index: 0}).then(function () {
-									var complete = (base.data.storage.virtual.list[base.currentIndex] || {}).main;
-									var type = (base.data.storage.virtual.list[base.currentIndex] || {}).rule;
-									return base.search.setMetadata({query: query, complete: complete, type: type});
+							var complete = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
+							var type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
+							var tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
+							if (_this.currentIndex >= _this.data.storage.virtual.list.length || changeQuery) {
+								return _this.control.setActive.main({index: 0}).then(function () {
+									return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
 								});
 							} else {
-								var complete = (base.data.storage.virtual.list[base.currentIndex] || {}).main;
-								var type = (base.data.storage.virtual.list[base.currentIndex] || {}).rule;
-								return base.search.setMetadata({query: query, complete: complete, type: type});
+								return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
 							}
 						}
 					},
+
+
 				},
 			},
 		}
@@ -409,7 +428,11 @@ Components.searchableList = function (id, args) {
 										// bindings
 										return filterUnit.setBindings({
 											'click': function (_this) {
-												return base.control.setFilter(target.filter.rule);
+												if (base.data.filter === target.filter.rule) {
+													base.control.setFilter();
+												} else {
+													base.control.setFilter(target.filter.rule);
+												}
 											},
 										}).then(function () {
 											filter.setChildren([filterUnit]);
@@ -417,7 +440,7 @@ Components.searchableList = function (id, args) {
 									}).then(function () {
 										Mousetrap.bind(target.filter.char, function (event) {
 											event.preventDefault();
-											if (base.isFocussed) {
+											if (base.isFocused) {
 												if (base.data.filter === target.filter.rule) {
 													base.control.setFilter();
 												} else {
@@ -469,9 +492,11 @@ Components.searchableList = function (id, args) {
 				if (rule in base.data.storage.filters) {
 					base.data.limit = base.data.storage.filters[rule].limit !== 0 ? (base.data.storage.filters[rule].limit !== undefined ? base.data.storage.filters[rule].limit : base.data.limit) : undefined;
 					base.data.autocompleteOverride = base.data.storage.filters[rule].autocompleteOverride;
+					base.data.preventIncomplete = base.data.storage.filters[rule].preventIncomplete;
 				} else {
 					base.data.limit = base.defaultLimit;
 					base.data.autocompleteOverride = undefined;
+					base.data.preventIncomplete = false;
 				}
 
 				// 1. update search
@@ -487,6 +512,14 @@ Components.searchableList = function (id, args) {
 					search.setMetadata(),
 				]).then(function () {
 					return base.control.start();
+				}).then(function () {
+					if (base.data.storage.filters[rule]) {
+						return (base.data.storage.filters[rule].activate || Util.ep)();
+					} else {
+						return Util.ep();
+					}
+				}).then(function () {
+					return base.control.setActive.main({index: 0});
 				});
 			},
 			setActive: {
@@ -494,7 +527,7 @@ Components.searchableList = function (id, args) {
 					options = (options || {});
 
 					// if there are any results
-					if (base.data.storage.virtual.rendered.length && base.isFocussed) {
+					if (base.data.storage.virtual.rendered.length && base.isFocused) {
 
 						// changes
 						var previousIndex = base.currentIndex;
@@ -517,9 +550,13 @@ Components.searchableList = function (id, args) {
 					return base.control.deactivate().then(function () {
 						return UI.getComponent(base.data.storage.virtual.rendered[base.currentIndex]).then(function (activeListItem) {
 							base.active = activeListItem;
-							return base.active.activate().then(function () {
-								return base.data.display.render.setMetadata();
-							});
+							if (base.active) {
+								return base.active.activate().then(function () {
+									return base.data.display.render.setMetadata();
+								});
+							} else {
+								return Util.ep();
+							}
 						})
 					});
 				},
@@ -563,23 +600,23 @@ Components.searchableList = function (id, args) {
 			default: function (target) {
 				return function () {
 					jss.set('#{id} .{type}'.format({id: base.id, type: target.name}), {
-						'background-color': 'rgba(255,255,255,0.00)'
+						'background-color': 'transparent',
 					});
 					jss.set('#{id} .base.{type}.active'.format({id: base.id, type: target.name}), {
-						'background-color': 'rgba(255,255,255,0.1)'
+						'background-color': '#eee',
 					});
 					return Util.ep();
 				}
 			},
 		}
-		base.defaultFilterUnit = function (id, args) {
+		base.defaultFilterUnit = function (id, filterArgs) {
 			return Promise.all([
 				// Base
 				UI.createComponent('{id}'.format({id: id}), {
 					template: UI.template('div', 'ie'),
 					appearance: {
 						style: {
-							'height': '80px',
+							'height': '60px',
 							'width': '100%',
 							'border-bottom': '1px solid #ccc',
 						},
@@ -606,6 +643,7 @@ Components.searchableList = function (id, args) {
 							'float': 'left',
 							'width': '100%',
 						},
+						html: filterArgs.input,
 					},
 				}),
 
@@ -617,6 +655,7 @@ Components.searchableList = function (id, args) {
 							'float': 'left',
 							'width': '100%',
 						},
+						html: filterArgs.blurb,
 					},
 				}),
 
@@ -639,7 +678,7 @@ Components.searchableList = function (id, args) {
 				UI.createComponent('{id}-button-content'.format({id: id}), {
 					template: UI.template('span', 'ie'),
 					appearance: {
-						html: args.char,
+						html: filterArgs.char,
 					},
 				}),
 
@@ -687,9 +726,9 @@ Components.searchableList = function (id, args) {
 
 		// search methods
 		search.focus = function (position) {
-			if (!search.isFocussed) {
-				search.isFocussed = true;
-				base.isFocussed = true;
+			if (!search.isFocused) {
+				search.isFocused = true;
+				base.isFocused = true;
 				return Promise.all([
 					search.setCaretPosition(position),
 					search.input(),
@@ -699,8 +738,8 @@ Components.searchableList = function (id, args) {
 			}
 		}
 		search.blur = function () {
-			search.isFocussed = false;
-			base.isFocussed = true;
+			search.isFocused = false;
+			base.isFocused = true;
 			return search.getContent().then(function (content) {
 				return search.components.tail.setAppearance({html: (content || search.placeholder)});
 			});
@@ -733,16 +772,27 @@ Components.searchableList = function (id, args) {
 				}
 			});
 		}
+		base.focus = function () {
+			search.components.head.model().focus();
+			return Util.ep();
+		}
 
 		// title methods
 		base.setTitle = function (options) {
+			options = (options || {});
 			if (options.text) {
-				return title.setAppearance({
-					html: options.text,
-					style: {
-						'text-align': (options.centre ? 'center': 'left'),
-					},
-				});
+				if (options.center) {
+					console.log(base.id);
+					title.appearance = (title.appearance || {});
+					title.appearance.style = (title.appearance.style || {});
+					title.appearance.style['text-align'] = 'center';
+					return title.setAppearance({
+						html: options.text,
+						style: title.appearance.style,
+					});
+				} else {
+					return title.setAppearance({html: options.text});
+				}
 			} else {
 				return title.setAppearance({
 					style: {
@@ -811,6 +861,7 @@ Components.searchableList = function (id, args) {
 				list: list,
 				filter: filter,
 				filterButton: filterButton,
+				searchFilterBar: searchFilterBar,
 			}
 			return base.setChildren([
 				title,

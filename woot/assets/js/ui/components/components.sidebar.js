@@ -20,11 +20,11 @@ Components.sidebar = function (id, args) {
 
 		// main
 		UI.createComponent('{id}-main'.format({id: id}), {
-			template: UI.template('div', 'ie abs border-right centred-vertically'),
+			template: UI.template('div', 'ie abs centred-vertically'),
 			appearance: {
 				style: {
 					'left': '-500px',
-					'height': '90%',
+					'height': '100%',
 					'width': '200px',
 				},
 			},
@@ -33,11 +33,11 @@ Components.sidebar = function (id, args) {
 
 		// back
 		UI.createComponent('{id}-back'.format({id: id}), {
-			template: UI.template('div', 'ie abs border-right centred-vertically'),
+			template: UI.template('div', 'ie abs centred-vertically'),
 			appearance: {
 				style: {
 					'left': '-500px',
-					'height': '90%',
+					'height': '100%',
 					'width': '50px',
 				},
 			},
