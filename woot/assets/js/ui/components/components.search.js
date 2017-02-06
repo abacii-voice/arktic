@@ -55,7 +55,7 @@ Components.search = function (id, args) {
 		] = components;
 
 		// variables
-		base.isFocussed = false;
+		base.isFocused = false;
 
 		// logic, bindings, etc.
 		base.setMetadata = function (metadata) {
@@ -70,24 +70,21 @@ Components.search = function (id, args) {
 			});
 		}
 		base.isCaretInPosition = function (mode) {
-			// console.log('{} search isCaretInPosition'.format(base.id));
-			return new Promise(function(resolve, reject) {
-				mode = (mode || 'end');
-				// determine caret position after an action. Only important thing is whether or not it is at the end.
-				var selection = window.getSelection();
-				var caretInPosition = false;
-				if (base.isFocussed && head.element() === selection.focusNode.parentNode) { // is the selection inside
-					var range = selection.getRangeAt(0); // get the only range
-					if (mode === 'end') {
-						caretInPosition = range.endOffset === selection.focusNode.length; // check the offset == the node value length
-					} else if (mode === 'start') {
-						caretInPosition = range.endOffset === 0; // or 0
-					}
-				} else if (head.element() === selection.focusNode) {
-					caretInPosition = true;
+			mode = (mode || 'end');
+			// determine caret position after an action. Only important thing is whether or not it is at the end.
+			var selection = window.getSelection();
+			var caretInPosition = false;
+			if (base.isFocused && head.element() === selection.focusNode.parentNode) { // is the selection inside
+				var range = selection.getRangeAt(0); // get the only range
+				if (mode === 'end') {
+					caretInPosition = range.endOffset === selection.focusNode.length; // check the offset == the node value length
+				} else if (mode === 'start') {
+					caretInPosition = range.endOffset === 0; // or 0
 				}
-				resolve(caretInPosition);
-			});
+			} else if (head.element() === selection.focusNode) {
+				caretInPosition = true;
+			}
+			return caretInPosition;
 		}
 		base.setCaretPosition = function (position) {
 			// set position
@@ -125,15 +122,15 @@ Components.search = function (id, args) {
 			}
 		}
 		base.focus = function (position) {
-			if (!base.isFocussed) {
-				base.isFocussed = true;
+			if (!base.isFocused) {
+				base.isFocused = true;
 				return base.setCaretPosition(position);
 			} else {
 				return Util.ep();
 			}
 		}
 		base.blur = function () {
-			base.isFocussed = false;
+			base.isFocused = false;
 			return base.getContent().then(function (content) {
 				return tail.setAppearance({html: (content || base.placeholder)});
 			});
@@ -165,15 +162,13 @@ Components.search = function (id, args) {
 		// behaviours
 		base.behaviours = {
 			right: function () {
-				return base.isCaretInPosition('end').then(function (inPosition) {
-					if (inPosition && !base.isComplete) {
-						return base.complete().then(function () {
-							return base.input();
-						});
-					} else {
-						return Util.ep();
-					}
-				});
+				if (!base.isComplete && base.isCaretInPosition('end')) {
+					return base.complete().then(function () {
+						return base.input();
+					});
+				} else {
+					return Util.ep();
+				}
 			},
 			left: function () {
 

@@ -78,7 +78,7 @@ class Client(models.Model):
 	def add_admin(self, user):
 		if not self.users.filter(id=user.id).exists():
 			self.users.add(user)
-		role, role_created = self.roles.get_or_create(user=user, type='admin')
+		role, role_created = self.roles.get_or_create(user=user, type='admin', display='Admin')
 		role.status = 'enabled'
 		role.save()
 		return role
@@ -87,7 +87,7 @@ class Client(models.Model):
 		if self.is_production:
 			if not self.users.filter(id=user.id).exists():
 				self.users.add(user)
-			role, role_created = self.roles.get_or_create(user=user, type='moderator')
+			role, role_created = self.roles.get_or_create(user=user, type='moderator', display='Moderator')
 			role.status = 'enabled'
 			role.save()
 			return role
@@ -96,7 +96,7 @@ class Client(models.Model):
 		if self.is_production and moderator.type == 'moderator':
 			if not self.users.filter(id=user.id).exists():
 				self.users.add(user)
-			role, role_created = self.roles.get_or_create(user=user, type='worker', supervisor=moderator)
+			role, role_created = self.roles.get_or_create(user=user, type='worker', display='Transcriber', supervisor=moderator)
 			role.status = 'enabled'
 			role.save()
 			return role

@@ -1,4 +1,4 @@
-Things you can do while any word in the caption is focussed:
+Things you can do while any word in the caption is Focused:
 
 1. Click
 	a. another token?
@@ -25,9 +25,9 @@ Things you can do while any word in the caption is focussed:
 	a. end of token? - goes to next token
 	b. not? - normal right arrow
 
-8. alt+Right arrow - does not check end of token: focusses end of next token
+8. alt+Right arrow - does not check end of token: Focuses end of next token
 9. Left arrow
-	a. beginning of token? - focusses end of next token
+	a. beginning of token? - Focuses end of next token
 	b. not? - normal left arrow
 
-10. alt+Left arrow - does not check beginning of token: focusses end of previous token
+10. alt+Left arrow - does not check beginning of token: Focuses end of previous token

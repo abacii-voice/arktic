@@ -76,19 +76,36 @@ class ModerationFragment(models.Model):
 	### Connections
 	parent = models.ForeignKey('tr.Moderation', related_name='fragments')
 	token = models.ForeignKey('tr.ModerationToken', related_name='fragments')
+	session = models.ForeignKey('users.Session', related_name='moderation_fragments')
 
 	### Properties
+	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	index = models.PositiveIntegerField(default=0)
 	date_created = models.DateTimeField(auto_now_add=True)
+	date_reconciled = models.DateTimeField(auto_now_add=True)
 	is_reconciled = models.BooleanField(default=False)
+	is_released = models.BooleanField(default=False)
+	was_released_by_session = models.BooleanField(default=False)
 
 	# methods
 	def data(self, path, permission):
 		data = {
 			'date_created': str(self.date_created),
 			'is_reconciled': str(self.is_reconciled),
+			'is_released': str(self.is_reconciled),
+			'was_released_by_session': str(self.was_released_by_session),
+			'phrase': self.parent.content.data(path, permission),
+			'index': str(self.index),
+			'parent': self.parent.id,
 		}
 
 		return data
+
+	def release(self):
+		pass
+
+	def reconcile(self, revision):
+		pass
 
 class ModerationInstance(models.Model):
 
