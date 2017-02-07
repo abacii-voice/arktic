@@ -43,8 +43,10 @@ class TranscriptionToken(models.Model):
 		data = {}
 		if permission.check_user(self.role.user):
 			data.update({
+				'id': str(self.id),
 				'date_created': str(self.date_created),
 				'transcriptions': {transcription.id: transcription.data(path, permission) for transcription in self.transcriptions.filter(**path.get_filter('transcriptions'))},
+				'remaining': self.project.transcriptions.filter(is_active=True).count(),
 			})
 
 			if path.check('fragments'):

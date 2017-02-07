@@ -23,66 +23,65 @@ AccountComponents.transcriptionMasterController = function () {
 		// data
 		base.buffer = {};
 		base.active = 0;
-		base.updateThreshold = 4; // default
-		base.releaseThreshold = 20; // if buffer expands beyond this, previous revisions will not be re-sent. The counter will also reset.
+
 
 		// methods
-		base.enterCompletionState = function () {
-			// set project as completed
-			// return
-			return UI.changeState('-transcription-project-complete-state', base.id);
-		}
-		base.countRemaining = function () {
-			var _this = base;
-			return Util.ep(Object.keys(_this.buffer).filter(function (key) {
-				return _this.buffer[key].is_available;
-			}).length);
-		}
-		base.current = function () {
-			var _this = base;
-			var storageId = Object.keys(_this.buffer).filter(function (key) {
-				return _this.buffer[key].index === _this.active;
-			})[0];
-			return Util.ep(_this.buffer[storageId]);
-		}
-		base.update = function () {
-			var _this = base;
-			// 1. if the buffer is completely empty, the audio element must wait before attempting to load the audio.
-			// 2. active_transcription_token is not "active". It should change each time it is requested, unless the page is reloaded.
+		base.data = {
+			updateThreshold: 4, // default
+			releaseThreshold: 20, // if buffer expands beyond this, previous revisions will not be re-sent. The counter will also reset.
+			buffer: {},
+			countRemaining: function () {
+				var _this = base;
+				return Util.ep(Object.keys(_this.data.buffer).filter(function (key) {
+					return _this.data.buffer[key].is_available;
+				}).length);
+			},
+			current: function () {
+				var _this = base;
+				var storageId = Object.keys(_this.data.buffer).filter(function (key) {
+					return _this.data.buffer[key].index === _this.active;
+				})[0];
+				return Util.ep(_this.data.buffer[storageId]);
+			},
+			update: function () {
+				var _this = base;
+				// 1. if the buffer is completely empty, the audio element must wait before attempting to load the audio.
+				// 2. active_transcription_token is not "active". It should change each time it is requested, unless the page is reloaded.
 
-			return _this.countRemaining().then(function (remaining) {
-				if (remaining === 0) {
-					// this should force a load. If the result is negative, this should be displayed clearly in the interface
-					return _this.loadFromTranscriptionToken({force: true}).then(function (transcriptionsAvailable) {
-						if (transcriptionsAvailable) {
-							return _this.pre.main();
-						} else {
-							return _this.enterCompletionState();
-						}
-					})
-				} else if (remaining < _this.updateThreshold) {
-					return Promise.all([
-						_this.loadFromTranscriptionToken({force: true}).then(function (transcriptionsAvailable) {
-							if (!transcriptionsAvailable) {
+				return _this.data.countRemaining().then(function (remaining) {
+					if (remaining === 0) {
+						// this should force a load. If the result is negative, this should be displayed clearly in the interface
+						return _this.data.loadFromTranscriptionToken({force: true}).then(function (transcriptionsAvailable) {
+							if (transcriptionsAvailable) {
+								return _this.pre.main();
+							} else {
 								return _this.enterCompletionState();
 							}
-						}),
-						_this.pre.main(),
-					]);
-				} else {
-					return _this.pre.main();
-				}
-			});
-		}
-		base.loadFromTranscriptionToken = function (options) {
-			options = (options || {});
-			var _this = base;
-			// load more and process into buffer
-			return _this.path().then(function (tokenPath) {
-				return Context.get(tokenPath, {force: (options.force || false), overwrite: true});
-			}).then(_this.process).then(function (transcriptionsAvailable) {
-				return Util.ep(transcriptionsAvailable);
-			});
+						})
+					} else if (remaining < _this.data.updateThreshold) {
+						return Promise.all([
+							_this.data.loadFromTranscriptionToken({force: true}).then(function (transcriptionsAvailable) {
+								if (!transcriptionsAvailable) {
+									return _this.enterCompletionState();
+								}
+							}),
+							_this.pre.main(),
+						]);
+					} else {
+						return _this.pre.main();
+					}
+				});
+			},
+			loadFromTranscriptionToken: function (options) {
+				options = (options || {});
+				var _this = base;
+				// load more and process into buffer
+				return _this.path().then(function (tokenPath) {
+					return Context.get(tokenPath, {force: (options.force || false), overwrite: true});
+				}).then(_this.process).then(function (transcriptionsAvailable) {
+					return Util.ep(transcriptionsAvailable);
+				});
+			},
 		}
 		base.pre = {
 			main: function () {
@@ -98,8 +97,8 @@ AccountComponents.transcriptionMasterController = function () {
 				var _this = base;
 				// determine which audio elements to load
 				// load n either side of active index.
-				var lower = _this.active > 1 ? _this.active - _this.updateThreshold + 2 : 0;
-				var upper = _this.active > 1 ? _this.active + _this.updateThreshold - 1 : _this.updateThreshold + 1;
+				var lower = _this.active > 1 ? _this.active - _this.data.updateThreshold + 2 : 0;
+				var upper = _this.active > 1 ? _this.active + _this.data.updateThreshold - 1 : _this.data.updateThreshold + 1;
 				_this.indices = [];
 				for (i=lower; i<upper; i++) {
 					_this.indices.push(i);
@@ -107,11 +106,11 @@ AccountComponents.transcriptionMasterController = function () {
 
 				// once the indices have been chosen, load the audio file for each one.
 				return Promise.all(_this.indices.map(function (index) {
-					var transcriptionId = Object.keys(_this.buffer).filter(function (key) {
-						return _this.buffer[key].index === index;
+					var transcriptionId = Object.keys(_this.data.buffer).filter(function (key) {
+						return _this.data.buffer[key].index === index;
 					})[0];
 					if (transcriptionId) {
-						var storage = _this.buffer[transcriptionId];
+						var storage = _this.data.buffer[transcriptionId];
 						if (storage.data === undefined) {
 							return AccountRequest.load_audio(storage.parent).then(function (audioData) {
 								storage.data = audioData;
@@ -161,6 +160,10 @@ AccountComponents.transcriptionMasterController = function () {
 		base.next = function () {
 			return base.setActive({increment: 1});
 		}
+		base.enterCompletionState = function () {
+			// set project as completed
+			return UI.changeState('-transcription-project-complete-state', base.id);
+		}
 		base.revision = {
 			period: 5000,
 			id: undefined,
@@ -170,7 +173,7 @@ AccountComponents.transcriptionMasterController = function () {
 				var i, transcriptions = [], bufferKeys = Object.keys(_this.buffer);
 				for (i=0; i<bufferKeys.length; i++) {
 					var bufferTranscription = _this.buffer[bufferKeys[i]];
-					var isBeforeThreshold = bufferTranscription.index < bufferKeys.length - _this.releaseThreshold;
+					var isBeforeThreshold = bufferTranscription.index < bufferKeys.length - _this.data.releaseThreshold;
 					transcriptions.push({
 						parent: bufferTranscription.parent,
 						id: bufferKeys[i],
