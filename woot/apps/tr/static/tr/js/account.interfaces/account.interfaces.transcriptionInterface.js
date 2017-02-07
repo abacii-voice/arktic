@@ -1637,7 +1637,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 									amc.addAction({type: 'key.tab'});
 									Promise.all([
 										audio.play(),
-										caption.focus(),
+										autocomplete.control.setFilter().then(function () {
+											return caption.focus();
+										}),
 									]);
 								}
 							});
