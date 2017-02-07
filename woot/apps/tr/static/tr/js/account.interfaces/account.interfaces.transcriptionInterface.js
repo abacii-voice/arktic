@@ -191,7 +191,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		] = components;
 
 		// Transcription Master Controller
-		transcriptionMasterController.updateThreshold = 4;
+		transcriptionMasterController.data.updateThreshold = 4;
 		transcriptionMasterController.path = function () {
 			return Promise.all([
 				Active.get('client'),
@@ -209,10 +209,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			return Promise.all(Object.keys(result).sort(function (a,b) {
 				return result[a].index > result[b].index ? 1 : -1;
 			}).map(function (key) {
-				_this.buffer[key] = {
+				_this.data.buffer[key] = {
 					content: result[key].phrase.content,
 					is_available: true,
-					index: Object.keys(_this.buffer).length,
+					index: Object.keys(_this.data.buffer).length,
 					parent: result[key].parent,
 					tokens: Object.keys(result[key].phrase.token_instances).sort(function (a,b) {
 						return result[key].phrase.token_instances[a].index > result[key].phrase.token_instances[b].index ? 1 : -1;
@@ -230,7 +230,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		}
 		transcriptionMasterController.pre.interface = function () {
 			var _this = transcriptionMasterController;
-			return _this.current().then(function (current) {
+			return _this.data.current().then(function (current) {
 				current.is_available = false;
 
 				return Promise.all([
@@ -259,10 +259,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 				// boundary conditions
 				_this.active = _this.active < 0 ? 0 : _this.active; // cannot be less than zero
-				_this.active = _this.active >= Object.keys(_this.buffer).length ? Object.keys(_this.buffer).length : _this.active; // cannot be past end
-				_this.active = (previousIndex > _this.active && previousIndex % _this.releaseThreshold === 0) ? previousIndex : _this.active; // cannot move back before threshold
+				_this.active = _this.active >= Object.keys(_this.data.buffer).length ? Object.keys(_this.data.buffer).length : _this.active; // cannot be past end
+				_this.active = (previousIndex > _this.active && previousIndex % _this.data.releaseThreshold === 0) ? previousIndex : _this.active; // cannot move back before threshold
 
-				return _this.update().then(function () {
+				return _this.data.update().then(function () {
 					return audio.play();
 				});
 			});
@@ -271,7 +271,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			var tokens = caption.export();
 			var flagList = flags.export();
 			var _this = transcriptionMasterController;
-			return _this.current().then(function (current) {
+			return _this.data.current().then(function (current) {
 				current.revisions = (current.revisions || []);
 				var revisionAlreadyExists = current.revisions.filter(function (revision) {
 					return JSON.stringify(revision.tokens) === JSON.stringify(tokens) && revision.isComplete === current.isComplete;
@@ -293,9 +293,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		transcriptionMasterController.setComplete = function () {
 			return Promise.all([
 				counter.active.setComplete(),
-				transcriptionMasterController.current().then(function (transcriptionMasterControllerCurrent) {
-					transcriptionMasterControllerCurrent.isPending = false;
-					transcriptionMasterControllerCurrent.isComplete = true;
+				transcriptionMasterController.data.current().then(function (current) {
+					current.isPending = false;
+					current.isComplete = true;
 					return Util.ep();
 				}),
 			]);
@@ -1675,7 +1675,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					'transcription-state': {
 						fn: function (_this) {
 							_this.revision.start();
-							return _this.update();
+							return _this.data.update();
 						}
 					},
 				},
