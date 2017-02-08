@@ -145,6 +145,8 @@ AccountComponents.counter = function (id, args) {
 					} else {
 						return Util.ep();
 					}
+				}).then(function () {
+					return base.updateHeader();
 				});
 			} else {
 				return Util.ep();
@@ -166,17 +168,6 @@ AccountComponents.counter = function (id, args) {
 				return Util.ep();
 			}
 		}
-		base.updateHeader = function () {
-			console.log();
-			return base.headerPath().then(function (headerPath) {
-					return Context.get(headerPath);
-			}).then(function (remainingCount) {
-				return Promise.all([
-					sessionValue.setAppearance({html: base.count}),
-					remainingValue.setAppearance({html: (remainingCount - base.count)}),
-				]);
-			});
-		}
 		base.increment = function () {
 			base.count++;
 			return base.updateHeader();
@@ -192,6 +183,10 @@ AccountComponents.counter = function (id, args) {
 				remainingValue,
 			]),
 		]).then(function () {
+			base.components = {
+				sessionValue: sessionValue,
+				remainingValue: remainingValue,
+			}
 			return base.setChildren([
 				headerWrapper,
 				counterWrapper,
