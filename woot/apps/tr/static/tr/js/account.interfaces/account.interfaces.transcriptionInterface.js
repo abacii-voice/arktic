@@ -201,31 +201,34 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				var [client_id, role_id] = results;
 
 				// return path
-				return 'user.clients.{client_id}.roles.{role_id}.active_transcription_token.fragments'.format({client_id: client_id, role_id: role_id});
+				return 'user.clients.{client_id}.roles.{role_id}.active_transcription_token'.format({client_id: client_id, role_id: role_id});
 			});
 		}
 		transcriptionMasterController.process = function (result) {
 			var _this = transcriptionMasterController;
-			return Promise.all(Object.keys(result).sort(function (a,b) {
-				return result[a].index > result[b].index ? 1 : -1;
+			var fragments = result.fragments;
+			_this.data.totalRemaining = result.remaining;
+			_this.data.tokenSize = Object.keys(fragments).length;
+			return Promise.all(Object.keys(fragments).sort(function (a,b) {
+				return fragments[a].index > fragments[b].index ? 1 : -1;
 			}).map(function (key) {
 				_this.data.buffer[key] = {
-					content: result[key].phrase.content,
+					content: fragments[key].phrase.content,
 					is_available: true,
 					index: Object.keys(_this.data.buffer).length,
-					parent: result[key].parent,
-					tokens: Object.keys(result[key].phrase.token_instances).sort(function (a,b) {
-						return result[key].phrase.token_instances[a].index > result[key].phrase.token_instances[b].index ? 1 : -1;
+					parent: fragments[key].parent,
+					tokens: Object.keys(fragments[key].phrase.token_instances).sort(function (a,b) {
+						return fragments[key].phrase.token_instances[a].index > fragments[key].phrase.token_instances[b].index ? 1 : -1;
 					}).map(function (tokenKey) {
 						return {
-							'content': result[key].phrase.token_instances[tokenKey].content,
-							'type': result[key].phrase.token_instances[tokenKey].type,
+							'content': fragments[key].phrase.token_instances[tokenKey].content,
+							'type': fragments[key].phrase.token_instances[tokenKey].type,
 						}
 					}),
 				}
 				return Util.ep();
 			})).then(function () {
-				return Util.ep(Object.keys(result).length !== 0);
+				return Util.ep(Object.keys(fragments).length !== 0);
 			});
 		}
 		transcriptionMasterController.pre.interface = function () {
@@ -1239,14 +1242,12 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		}
 
 		// Counter
-		counter.headerPath = function () {
+		counter.updateHeader = function () {
+			var _this = counter;
 			return Promise.all([
-				Active.get('client'),
-				Active.get('project'),
-			]).then(function (results) {
-				var [client, project] = results;
-				return Util.ep('clients.{client}.projects.{project}.transcriptions_remaining'.format({client: client, project: project}));
-			});
+				_this.components.sessionValue.setAppearance({html: _this.count}),
+				_this.components.remainingValue.setAppearance({html: transcriptionMasterController.data.totalRemaining}),
+			]);
 		}
 		counter.unit = function () {
 			var unitId = '{counterId}-icon-{id}'.format({counterId: counter.id, id: Util.makeid()});

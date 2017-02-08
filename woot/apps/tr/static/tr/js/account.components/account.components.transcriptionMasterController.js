@@ -20,15 +20,13 @@ AccountComponents.transcriptionMasterController = function () {
 		// transcriptions from the server.
 		// The problem is, who decides how to load the audio files. Currently, the audio element does it by keeping a buffer in memory.
 
-		// data
-		base.buffer = {};
 		base.active = 0;
-
-
 		// methods
 		base.data = {
+			tokenSize: 0, // number of fragments in a transcription token
 			updateThreshold: 4, // default
 			releaseThreshold: 20, // if buffer expands beyond this, previous revisions will not be re-sent. The counter will also reset.
+			totalRemaining: 0, // number of avaiable transcriptions in the project as of the loading of the latest transcription token.
 			buffer: {},
 			countRemaining: function () {
 				var _this = base;
@@ -51,7 +49,7 @@ AccountComponents.transcriptionMasterController = function () {
 				return _this.data.countRemaining().then(function (remaining) {
 					if (remaining === 0) {
 						// this should force a load. If the result is negative, this should be displayed clearly in the interface
-						return _this.data.loadFromTranscriptionToken({force: true}).then(function (transcriptionsAvailable) {
+						return _this.data.loadFromTranscriptionToken().then(function (transcriptionsAvailable) {
 							if (transcriptionsAvailable) {
 								return _this.pre.main();
 							} else {
@@ -60,7 +58,7 @@ AccountComponents.transcriptionMasterController = function () {
 						})
 					} else if (remaining < _this.data.updateThreshold) {
 						return Promise.all([
-							_this.data.loadFromTranscriptionToken({force: true}).then(function (transcriptionsAvailable) {
+							_this.data.loadFromTranscriptionToken().then(function (transcriptionsAvailable) {
 								if (!transcriptionsAvailable) {
 									return _this.enterCompletionState();
 								}
@@ -72,12 +70,11 @@ AccountComponents.transcriptionMasterController = function () {
 					}
 				});
 			},
-			loadFromTranscriptionToken: function (options) {
-				options = (options || {});
+			loadFromTranscriptionToken: function () {
 				var _this = base;
 				// load more and process into buffer
 				return _this.path().then(function (tokenPath) {
-					return Context.get(tokenPath, {force: (options.force || false), overwrite: true});
+					return Context.get(tokenPath, {force: true, overwrite: true});
 				}).then(_this.process).then(function (transcriptionsAvailable) {
 					return Util.ep(transcriptionsAvailable);
 				});
@@ -127,10 +124,10 @@ AccountComponents.transcriptionMasterController = function () {
 			garbageCollect: function () {
 				var _this = base;
 				// remove data from all indices not in the chosen array.
-				return Promise.all(Object.keys(_this.buffer).filter(function (key) {
-					return _this.indices.indexOf(_this.buffer[key].index) === -1;
+				return Promise.all(Object.keys(_this.data.buffer).filter(function (key) {
+					return _this.indices.indexOf(_this.data.buffer[key].index) === -1;
 				}).map(function (key) {
-					var removeBuffer = _this.buffer[key];
+					var removeBuffer = _this.data.buffer[key];
 					if (removeBuffer.source !== undefined) {
 						removeBuffer.source.disconnect();
 						removeBuffer.isLoaded = false;
@@ -141,14 +138,14 @@ AccountComponents.transcriptionMasterController = function () {
 			},
 		}
 		base.setComplete = function () {
-			return base.current().then(function (current) {
+			return base.data.current().then(function (current) {
 				current.isPending = false;
 				current.isComplete = true;
 				return Util.ep();
 			});
 		}
 		base.setPending = function () {
-			return base.current().then(function (current) {
+			return base.data.current().then(function (current) {
 				current.isPending = true;
 				current.isComplete = false;
 				return Util.ep();
@@ -170,9 +167,9 @@ AccountComponents.transcriptionMasterController = function () {
 			main: function () {
 				var _this = base;
 
-				var i, transcriptions = [], bufferKeys = Object.keys(_this.buffer);
+				var i, transcriptions = [], bufferKeys = Object.keys(_this.data.buffer);
 				for (i=0; i<bufferKeys.length; i++) {
-					var bufferTranscription = _this.buffer[bufferKeys[i]];
+					var bufferTranscription = _this.data.buffer[bufferKeys[i]];
 					var isBeforeThreshold = bufferTranscription.index < bufferKeys.length - _this.data.releaseThreshold;
 					transcriptions.push({
 						parent: bufferTranscription.parent,
