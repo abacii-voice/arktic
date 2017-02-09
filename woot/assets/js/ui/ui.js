@@ -7,7 +7,7 @@ var UI = {
 
 	// changeState
 	changeState: function (stateName, trigger) {
-		if (!stateName.startsWith('-')) { // local states begin with '-'
+		if (!stateName.startsWith('-')) {
 			UI.globalState = stateName;
 		}
 		return Promise.all(UI.states.filter(function (state) {
@@ -330,7 +330,8 @@ var UI = {
 			}
 		}
 		this.triggerState = function () {
-			return UI.changeState(this.mapState(UI.globalState), this.id);
+			this.state = this.mapState(this.state || UI.globalState);
+			return UI.changeState(this.state, this.id);
 		}
 
 		// DOM
@@ -538,12 +539,7 @@ var UI = {
 		}
 		this.changeState = function (state) {
 			var _this = this;
-			if (state.name.startsWith('-')) {
-				// local state
-
-			} else {
-
-			}
+			_this.state = state.name;
 
 			// run fn
 			setTimeout(function () {
@@ -564,10 +560,7 @@ var UI = {
 		// initialise
 		this.id = id;
 		this.isRendered = false; // establish whether or not the component has been rendered to the DOM.
-		this.state = {
-			global: '',
-			local: '',
-		}
+		this.state = undefined;
 	},
 
 	// createComponent
