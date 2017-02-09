@@ -129,6 +129,9 @@ AccountComponents.counter = function (id, args) {
 
 		base.limit = 20;
 		base.count = 0;
+		base.serverRemaining = 0;
+		base.remaining = 0;
+		base.offset = 0;
 		base.setActive = function (current) {
 			var previousIndex = base.currentIndex;
 			base.currentIndex = current.index % base.limit;
@@ -170,10 +173,12 @@ AccountComponents.counter = function (id, args) {
 		}
 		base.increment = function () {
 			base.count++;
+			base.offset--;
 			return base.updateHeader();
 		}
 		base.decrement = function () {
 			base.count--;
+			base.offset++;
 			return base.updateHeader();
 		}
 

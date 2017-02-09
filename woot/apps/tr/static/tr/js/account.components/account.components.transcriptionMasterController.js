@@ -58,11 +58,7 @@ AccountComponents.transcriptionMasterController = function () {
 						})
 					} else if (remaining < _this.data.updateThreshold) {
 						return Promise.all([
-							_this.data.loadFromTranscriptionToken().then(function (transcriptionsAvailable) {
-								if (!transcriptionsAvailable) {
-									return _this.enterCompletionState();
-								}
-							}),
+							_this.data.loadFromTranscriptionToken(),
 							_this.pre.main(),
 						]);
 					} else {

@@ -485,11 +485,27 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				process: function (data) {
 					var results = Object.keys(data).map(function (key) {
 						var flag = data[key];
-						return {
+						var flag_data = {
 							id: key,
 							main: flag.name,
 							rule: 'flag',
 						}
+
+						if (flag.shortcut) {
+							if (flag.shortcut.is_active) {
+								flag_data.shortcut = flag.shortcut.combo;
+								Mousetrap.unbind(flag.shortcut.combo);
+								Mousetrap.bind(flag.shortcut.combo, function (event) {
+									event.preventDefault();
+									amc.addAction({type: 'key.shortcut.{combo}'.format({combo: flag.shortcut.combo})});
+									Promise.all([
+										flags.behaviours.shortcut(flag.name),
+									]);
+								});
+							}
+						}
+
+						return flag_data;
 					});
 					return Util.ep(results);
 				},
@@ -1112,7 +1128,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				// only if the caret is at the end
 				if (caption.active.isCaretInPosition('end')) {
 					// only if the last token is active, it is complete, and the query is not empty (must be empty complete as well)
-					if (caption.active.isLastToken() && caption.active.metadata.query !== '') {
+					if (caption.active.isLastToken() && (caption.active.metadata.query !== '' || flags.data.list.length > 0)) {
 						return Promise.all([
 							transcriptionMasterController.setComplete(),
 						]).then(function () {
@@ -1244,9 +1260,20 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		// Counter
 		counter.updateHeader = function () {
 			var _this = counter;
+
+			// update remaining
+			if (_this.serverRemaining !== transcriptionMasterController.data.totalRemaining) {
+				if (_this.offset !== 0) {
+					_this.offset = transcriptionMasterController.data.updateThreshold - 2;
+				}
+				_this.serverRemaining = transcriptionMasterController.data.totalRemaining;
+			}
+			_this.remaining = _this.serverRemaining + _this.offset + transcriptionMasterController.data.tokenSize;
+
+			var _this = counter;
 			return Promise.all([
 				_this.components.sessionValue.setAppearance({html: _this.count}),
-				_this.components.remainingValue.setAppearance({html: transcriptionMasterController.data.totalRemaining}),
+				_this.components.remainingValue.setAppearance({html: _this.remaining}),
 			]);
 		}
 		counter.unit = function () {
@@ -1370,6 +1397,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		}
 
 		// Flags
+		flags.behaviours.shortcut = function (name) {
+			return flags.data.add(name);
+		}
 		flags.unit = function (name) {
 			var unitId = '{base}-{id}'.format({base: flags.id, id: Util.makeid()});
 
