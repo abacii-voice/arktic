@@ -23,10 +23,6 @@ class Command(BaseCommand):
 		production_client, production_client_created = Client.objects.get_or_create(name='TestProductionClient', is_production=True)
 		contract_client, contract_client_created = Client.objects.get_or_create(name='TestContractClient', is_production=False)
 
-		# flags
-		production_client.flags.create(name='unsure')
-		production_client.flags.create(name='no-speech')
-
 		# create user
 		user, user_created = User.objects.get_or_create(email='n@a.com', first_name='Nicholas', last_name='Piano')
 		user.set_password('mach')
@@ -74,6 +70,11 @@ class Command(BaseCommand):
 
 		# create shortcuts
 		test_tag.shortcuts.create(role=worker_role, combo='ctrl+b')
+
+		# flags
+		production_client.flags.create(name='unsure')
+		test_flag = production_client.flags.create(name='no-speech')
+		test_flag.shortcuts.create(role=worker_role, combo='ctrl+n')
 
 		# fragment list
 		base = '/Users/nicholaspiano/code/abacii-voice/arktic/test/'

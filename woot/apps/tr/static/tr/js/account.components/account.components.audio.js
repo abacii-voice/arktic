@@ -206,7 +206,7 @@ AccountComponents.audio = function (id, args) {
 
 		//// CANVAS
 		audioTrackCanvas.isRunning = false;
-		audioTrackCanvas.barWidth = 2;
+		audioTrackCanvas.barWidth = 0.5;
 		audioTrackCanvas.nowCursorPosition = 0;
 		audioTrackCanvas.time = 0;
 		audioTrackCanvas.cutStart = 0;

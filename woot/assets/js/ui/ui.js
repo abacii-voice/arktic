@@ -538,6 +538,12 @@ var UI = {
 		}
 		this.changeState = function (state) {
 			var _this = this;
+			if (state.name.startsWith('-')) {
+				// local state
+
+			} else {
+
+			}
 
 			// run fn
 			setTimeout(function () {
@@ -558,6 +564,10 @@ var UI = {
 		// initialise
 		this.id = id;
 		this.isRendered = false; // establish whether or not the component has been rendered to the DOM.
+		this.state = {
+			global: '',
+			local: '',
+		}
 	},
 
 	// createComponent
