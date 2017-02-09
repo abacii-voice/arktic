@@ -1488,200 +1488,162 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						preFn: function () {
 							// KEYBINDINGS
 							Mousetrap.bind('up', function (event) {
-								if (UI.globalState.contains('transcription')) {
-									event.preventDefault();
-									amc.addAction({type: 'key.up'});
-									if (autocomplete.isFocused || caption.isFocused) {
-										Promise.all([
-											autocomplete.behaviours.up(),
-										]);
-									} else {
-										Promise.all([
-											transcriptionMasterController.behaviours.up(),
-										]);
-									}
+								event.preventDefault();
+								amc.addAction({type: 'key.up'});
+								if (autocomplete.isFocused || caption.isFocused) {
+									Promise.all([
+										autocomplete.behaviours.up(),
+									]);
+								} else {
+									Promise.all([
+										transcriptionMasterController.behaviours.up(),
+									]);
 								}
 							});
 							Mousetrap.bind('down', function (event) {
-								if (UI.globalState.contains('transcription')) {
-									event.preventDefault();
-									amc.addAction({type: 'key.down'});
-									if (autocomplete.isFocused || caption.isFocused) {
-										Promise.all([
-											autocomplete.behaviours.down(),
-										]);
-									} else {
-										Promise.all([
-											transcriptionMasterController.behaviours.down(),
-										]);
-									}
+								event.preventDefault();
+								amc.addAction({type: 'key.down'});
+								if (autocomplete.isFocused || caption.isFocused) {
+									Promise.all([
+										autocomplete.behaviours.down(),
+									]);
+								} else {
+									Promise.all([
+										transcriptionMasterController.behaviours.down(),
+									]);
 								}
 							});
 							Mousetrap.bind('alt+up', function (event) {
-								if (UI.globalState.contains('transcription')) {
-									event.preventDefault();
-									amc.addAction({type: 'key.alt+up'});
-									caption.active.blur().then(function () {
-										return transcriptionMasterController.behaviours.up();
-									}).then(function () {
-										return caption.focus();
-									});
-								}
+								event.preventDefault();
+								amc.addAction({type: 'key.alt+up'});
+								caption.active.blur().then(function () {
+									return transcriptionMasterController.behaviours.up();
+								}).then(function () {
+									return caption.focus();
+								});
 							});
 							Mousetrap.bind('alt+down', function (event) {
-								if (UI.globalState.contains('transcription')) {
-									event.preventDefault();
-									amc.addAction({type: 'key.alt+down'});
-									caption.active.blur().then(function () {
-										return transcriptionMasterController.behaviours.down();
-									}).then(function () {
-										return caption.focus();
-									});
-								}
+								event.preventDefault();
+								amc.addAction({type: 'key.alt+down'});
+								caption.active.blur().then(function () {
+									return transcriptionMasterController.behaviours.down();
+								}).then(function () {
+									return caption.focus();
+								});
 							});
 							Mousetrap.bind('left', function (event) {
-								if (UI.globalState.contains('transcription')) {
-									amc.addAction({type: 'key.left'});
-									Promise.all([
-										autocomplete.behaviours.left(),
-										caption.behaviours.left(event),
-									]);
-								}
+								amc.addAction({type: 'key.left'});
+								Promise.all([
+									autocomplete.behaviours.left(),
+									caption.behaviours.left(event),
+								]);
 							});
 							Mousetrap.bind('right', function (event) {
-								if (UI.globalState.contains('transcription')) {
-									amc.addAction({type: 'key.right'});
-									Promise.all([
-										caption.behaviours.right(event),
-									]);
-								}
+								amc.addAction({type: 'key.right'});
+								Promise.all([
+									caption.behaviours.right(event),
+								]);
 							});
 							Mousetrap.bind(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], function (event) {
-								if (UI.globalState.contains('transcription')) {
-									event.preventDefault();
-									var char = String.fromCharCode(event.which);
-									amc.addAction({type: 'key.number', metadata: {'value': char}});
-									Promise.all([
-										autocomplete.behaviours.number(char),
-									]);
-								}
+								event.preventDefault();
+								var char = String.fromCharCode(event.which);
+								amc.addAction({type: 'key.number', metadata: {'value': char}});
+								Promise.all([
+									autocomplete.behaviours.number(char),
+								]);
 							});
 							Mousetrap.bind('enter', function (event) {
-								if (UI.globalState.contains('transcription')) {
-									event.preventDefault();
-									amc.addAction({type: 'key.enter'});
-									if (caption.isFocused) {
-										Promise.all([
-											caption.behaviours.enter(),
-										]);
-									} else if (autocomplete.isFocused) {
-										Promise.all([
-											autocomplete.behaviours.enter(),
-										]);
-									}
+								event.preventDefault();
+								amc.addAction({type: 'key.enter'});
+								if (caption.isFocused) {
+									Promise.all([
+										caption.behaviours.enter(),
+									]);
+								} else if (autocomplete.isFocused) {
+									Promise.all([
+										autocomplete.behaviours.enter(),
+									]);
 								}
 							});
 							Mousetrap.bind('backspace', function (event) {
-								if (UI.globalState.contains('transcription')) {
-									amc.addAction({type: 'key.backspace'});
-									Promise.all([
-										autocomplete.behaviours.backspace(),
-										caption.behaviours.backspace(event),
-									]);
-								}
+								amc.addAction({type: 'key.backspace'});
+								Promise.all([
+									autocomplete.behaviours.backspace(),
+									caption.behaviours.backspace(event),
+								]);
 							});
 							Mousetrap.bind('alt+backspace', function (event) {
-								if (UI.globalState.contains('transcription')) {
-									amc.addAction({type: 'key.alt+backspace'});
-									Promise.all([
-										caption.behaviours.altbackspace(event),
-									]);
-								}
+								amc.addAction({type: 'key.alt+backspace'});
+								Promise.all([
+									caption.behaviours.altbackspace(event),
+								]);
 							});
 							Mousetrap.bind('ctrl+backspace', function (event) {
-								if (UI.globalState.contains('transcription')) {
-									event.preventDefault();
-									amc.addAction({type: 'key.ctrl+backspace'});
-									Promise.all([
-										caption.behaviours.ctrlbackspace(event),
-									]);
-								}
+								event.preventDefault();
+								amc.addAction({type: 'key.ctrl+backspace'});
+								Promise.all([
+									caption.behaviours.ctrlbackspace(event),
+								]);
 							});
 							Mousetrap.bind('alt+shift+backspace', function (event) {
-								if (UI.globalState.contains('transcription')) {
-									amc.addAction({type: 'key.alt+shift+backspace'});
-									Promise.all([
-										flags.data.removeLast(),
-									]);
-								}
+								amc.addAction({type: 'key.alt+shift+backspace'});
+								Promise.all([
+									flags.data.removeLast(),
+								]);
 							});
 							Mousetrap.bind('ctrl+shift+backspace', function (event) {
-								if (UI.globalState.contains('transcription')) {
-									event.preventDefault();
-									amc.addAction({type: 'key.ctrl+shift+backspace'});
-									Promise.all([
-										flags.data.removeAll(),
-									]);
-								}
+								event.preventDefault();
+								amc.addAction({type: 'key.ctrl+shift+backspace'});
+								Promise.all([
+									flags.data.removeAll(),
+								]);
 							});
 							Mousetrap.bind('space', function (event) {
-								if (UI.globalState.contains('transcription')) {
-									amc.addAction({type: 'key.space'});
-									if (caption.isFocused) {
-										event.preventDefault();
-									}
-									Promise.all([
-										caption.behaviours.space({checkNoMorePhrases: true}),
-									]);
+								amc.addAction({type: 'key.space'});
+								if (caption.isFocused) {
+									event.preventDefault();
 								}
+								Promise.all([
+									caption.behaviours.space({checkNoMorePhrases: true}),
+								]);
 							});
 							Mousetrap.bind('alt+right', function (event) {
-								if (UI.globalState.contains('transcription')) {
-									amc.addAction({type: 'key.alt+right'});
-									Promise.all([
-										caption.behaviours.altright(event),
-									]);
-								}
+								amc.addAction({type: 'key.alt+right'});
+								Promise.all([
+									caption.behaviours.altright(event),
+								]);
 							});
 							Mousetrap.bind('alt+left', function (event) {
-								if (UI.globalState.contains('transcription')) {
-									amc.addAction({type: 'key.alt+left'});
-									Promise.all([
-										caption.behaviours.altleft(event),
-									]);
-								}
+								amc.addAction({type: 'key.alt+left'});
+								Promise.all([
+									caption.behaviours.altleft(event),
+								]);
 							});
 							Mousetrap.bind('ctrl+space', function (event) {
-								if (UI.globalState.contains('transcription')) {
-									if (caption.isFocused) {
-										event.preventDefault();
-									}
-									amc.addAction({type: 'key.ctrl+space'});
-									Promise.all([
-										caption.behaviours.space(),
-									]);
+								if (caption.isFocused) {
+									event.preventDefault();
 								}
+								amc.addAction({type: 'key.ctrl+space'});
+								Promise.all([
+									caption.behaviours.space(),
+								]);
 							});
 							Mousetrap.bind('tab', function (event) {
-								if (UI.globalState.contains('transcription')) {
-									event.preventDefault();
-									amc.addAction({type: 'key.tab'});
-									Promise.all([
-										audio.play(),
-										autocomplete.control.setFilter().then(function () {
-											return caption.focus();
-										}),
-									]);
-								}
+								event.preventDefault();
+								amc.addAction({type: 'key.tab'});
+								Promise.all([
+									audio.play(),
+									autocomplete.control.setFilter().then(function () {
+										return caption.focus();
+									}),
+								]);
 							});
 							Mousetrap.bind('alt+tab', function (event) {
-								if (UI.globalState.contains('transcription')) {
-									event.preventDefault();
-									amc.addAction({type: 'key.alt+tab'});
-									Promise.all([
-										autocomplete.focus(),
-									]);
-								}
+								event.preventDefault();
+								amc.addAction({type: 'key.alt+tab'});
+								Promise.all([
+									autocomplete.focus(),
+								]);
 							});
 							return Util.ep();
 						},
@@ -1765,16 +1727,23 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			// autocomplete
 			autocomplete.components.filterButton.setState({
 				stateMap: {
-					'transcription-state': 'transcription-state-filter',
-					'transcription-state-filter': 'transcription-state',
+					'transcription-state': '-transcription-state-filter',
+					'-transcription-state': '-transcription-state-filter',
+					'-transcription-state-filter': '-transcription-state',
 				},
+				states: {
+					'transcription-state': {},
+				}
 			}),
 			autocomplete.list.setState({
 				states: {
 					'transcription-state': {
 						classes: {remove: 'hidden'},
 					},
-					'transcription-state-filter': {
+					'-transcription-state': {
+						classes: {remove: 'hidden'},
+					},
+					'-transcription-state-filter': {
 						classes: {add: 'hidden'},
 					},
 				},
@@ -1784,7 +1753,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					'transcription-state': {
 						classes: {add: 'hidden'},
 					},
-					'transcription-state-filter': {
+					'-transcription-state': {
+						classes: {add: 'hidden'},
+					},
+					'-transcription-state-filter': {
 						classes: {remove: 'hidden'},
 					},
 				},
