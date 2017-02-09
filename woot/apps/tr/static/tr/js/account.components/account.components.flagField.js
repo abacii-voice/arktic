@@ -101,6 +101,7 @@ AccountComponents.flagField = function (id, args) {
 		base.export = function () {
 			return base.data.list.slice();
 		}
+		base.behaviours = {};
 
 		return Promise.all([
 			addButton.setChildren([addGlyph]),
