@@ -72,6 +72,23 @@ class Project(models.Model):
 
 		return data
 
+	def contract_client_data(self, path, permission):
+		data = {}
+		if permission.is_productionadmin and permission.check_client(self.production_client):
+			data.update({
+				'name': self.name,
+				'description': self.description,
+				'is_transcription_complete': str(self.is_transcription_complete()),
+				'transcriptions_remaining': str(self.transcriptions_remaining()),
+				'completion_percentage': str(self.completion_percentage()),
+				'combined_priority_index': str(self.combined_priority_index),
+				'is_moderation_complete': str(self.is_moderation_complete()),
+				'moderations_remaining': str(self.moderations_remaining()),
+				'redundancy_percentage': str(self.redundancy_percentage()),
+			})
+
+		return data
+
 	def get_transcription(self):
 		'''
 		Select a single transcription based on several criteria.
@@ -112,7 +129,7 @@ class Project(models.Model):
 		return self.moderations.filter(is_active=True).count()
 
 	def completion_percentage(self):
-		return (self.transcriptions_remaining() + self.moderations_remaining()) / (self.transcriptions.count() + self.moderations.count())
+		return ((self.transcriptions.count() + self.moderations.count()) - (self.transcriptions_remaining() + self.moderations_remaining())) / (self.transcriptions.count() + self.moderations.count()) * 100.0
 
 	def redundancy_percentage(self):
 		return self.moderations.count() / self.transcriptions.count()

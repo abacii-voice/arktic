@@ -1482,7 +1482,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				classes: ['hidden'],
 			}),
 			base.setState({
-				defaultState: {preFn: UI.functions.hide},
+				defaultState: {preFn: UI.functions.hide()},
 				states: {
 					'transcription-state': {
 						preFn: function () {
@@ -1647,7 +1647,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							});
 							return Util.ep();
 						},
-						fn: UI.functions.show,
+						fn: UI.functions.show(),
 					},
 					'client-state': 'default',
 					'role-state': 'default',
