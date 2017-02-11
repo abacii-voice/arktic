@@ -3,7 +3,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 	return Promise.all([
 		// base
 		UI.createComponent('{id}-base'.format({id: id}), {
-			template: UI.template('div', 'ie'),
+			template: UI.template('div', 'ie abstract'),
 			appearance: {
 				style: {
 					'height': '100%',
@@ -52,7 +52,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 			state: {
 				primary: 'role-state',
 				secondary: 'control-state',
-				deactivate: ['client-state', 'transcription-state', 'settings-state'],
+				deactivate: ['client-state', 'transcription-state', 'settings-state', 'project-state'],
 			},
 		}),
 		Components.searchableList('cs-role-list', {
@@ -77,8 +77,8 @@ AccountInterfaces.controlInterface = function (id, args) {
 			},
 			state: {
 				primary: 'control-state',
-				secondary: ['transcription-state', 'settings-state'],
-				deactivate: ['client-state', 'role-state', 'shortcut-state'],
+				secondary: ['transcription-state', 'settings-state', 'project-state', '-project-state-project'],
+				deactivate: ['client-state', 'role-state', '-settings-state-shortcuts', '-project-state-focus'],
 			},
 		}),
 		Components.searchableList('cs-control-list', {
@@ -130,22 +130,31 @@ AccountInterfaces.controlInterface = function (id, args) {
 				style: {
 					'left': '0px',
 					'width': '100%',
-					'height': '60px',
+					'height': '30px',
 					'padding-top': '8px',
+					'padding-left': '10px',
+					'border-radius': '0px',
+					'text-align': 'left',
 				},
 				html: 'Moderation',
 			},
 		}),
-		UI.createComponent('cs-cl-upload-button', {
+		UI.createComponent('cs-cl-project-button', {
 			template: UI.template('div', 'ie button'),
 			appearance: {
 				style: {
 					'left': '0px',
 					'width': '100%',
-					'height': '60px',
+					'height': '30px',
 					'padding-top': '8px',
+					'padding-left': '10px',
+					'border-radius': '0px',
+					'text-align': 'left',
 				},
-				html: 'Upload',
+				html: 'Projects',
+			},
+			state: {
+				stateMap: 'project-state',
 			},
 		}),
 
@@ -212,7 +221,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 			transcriptionButton,
 			settingsButton,
 			moderationButton,
-			uploadButton,
+			projectButton,
 
 			settingsSidebar,
 			settingsList,
@@ -624,7 +633,12 @@ AccountInterfaces.controlInterface = function (id, args) {
 				},
 			}),
 			moderationButton.setBindings({}),
-			uploadButton.setBindings({}),
+			projectButton.setBindings({
+				'click': function (_this) {
+					amc.addAction({type: 'click.project-button'});
+					return _this.triggerState();
+				},
+			}),
 
 			controlSidebar.components.main.setChildren([
 				controlList,
@@ -657,21 +671,21 @@ AccountInterfaces.controlInterface = function (id, args) {
 									return Promise.all([
 										transcriptionButton.setAppearance({classes: {remove: 'hidden'}}),
 										moderationButton.setAppearance({classes: {add: 'hidden'}}),
-										uploadButton.setAppearance({classes: {add: 'hidden'}}),
+										projectButton.setAppearance({classes: {add: 'hidden'}}),
 									]);
 								} else if (role.type === 'moderator') {
 									// moderator
 									return Promise.all([
 										transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
 										moderationButton.setAppearance({classes: {remove: 'hidden'}}),
-										uploadButton.setAppearance({classes: {add: 'hidden'}}),
+										projectButton.setAppearance({classes: {add: 'hidden'}}),
 									]);
 								} else if (role.type === 'admin') {
 									// admin
 									return Promise.all([
 										transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
 										moderationButton.setAppearance({classes: {add: 'hidden'}}),
-										uploadButton.setAppearance({classes: {remove: 'hidden'}}),
+										projectButton.setAppearance({classes: {remove: 'hidden'}}),
 									]);
 								}
 							});
@@ -681,9 +695,9 @@ AccountInterfaces.controlInterface = function (id, args) {
 			}),
 			controlList.list.setChildren([
 				transcriptionButton,
-				settingsButton,
 				moderationButton,
-				uploadButton,
+				projectButton,
+				settingsButton,
 			]),
 
 			// SETTINGS SIDEBAR
