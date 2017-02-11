@@ -347,12 +347,12 @@ AccountInterfaces.shortcutInterface = function (id, args) {
 				classes: ['hidden'],
 			}),
 			base.setState({
-				defaultState: {preFn: UI.functions.hide},
+				defaultState: {preFn: UI.functions.hide()},
 				states: {
 					'role-state': 'default',
 					'control-state': 'default',
 					'settings-state': 'default',
-					'shortcut-state': {
+					'-settings-state-shortcuts': {
 						preFn: function () {
 							// KEYBINDINGS
 							Mousetrap.bind('up', function (event) {
@@ -386,7 +386,7 @@ AccountInterfaces.shortcutInterface = function (id, args) {
 							});
 							return Util.ep();
 						},
-						fn: UI.functions.show,
+						fn: UI.functions.show(),
 					},
 				},
 			}),
@@ -399,26 +399,26 @@ AccountInterfaces.shortcutInterface = function (id, args) {
 			// autocomplete
 			autocomplete.components.filterButton.setState({
 				stateMap: {
-					'shortcut-state': 'shortcut-state-filter',
-					'shortcut-state-filter': 'shortcut-state',
+					'-settings-state-shortcuts': '-settings-state-shortcuts-filter',
+					'-settings-state-shortcuts-filter': '-settings-state-shortcuts',
 				},
 			}),
 			autocomplete.list.setState({
 				states: {
-					'shortcut-state': {
+					'-settings-state-shortcuts': {
 						classes: {remove: 'hidden'},
 					},
-					'shortcut-state-filter': {
+					'-settings-state-shortcuts-filter': {
 						classes: {add: 'hidden'},
 					},
 				},
 			}),
 			autocomplete.components.filter.setState({
 				states: {
-					'shortcut-state': {
+					'-settings-state-shortcuts': {
 						classes: {add: 'hidden'},
 					},
-					'shortcut-state-filter': {
+					'-settings-state-shortcuts-filter': {
 						classes: {remove: 'hidden'},
 					},
 				},
@@ -440,7 +440,7 @@ AccountInterfaces.shortcutInterface = function (id, args) {
 			autocomplete.unitStyle.apply(),
 			autocomplete.setState({
 				states: {
-					'shortcut-state': {
+					'-settings-state-shortcuts': {
 						preFn: function (_this) {
 							return _this.control.setup.main();
 						},

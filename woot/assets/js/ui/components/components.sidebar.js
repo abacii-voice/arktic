@@ -23,9 +23,10 @@ Components.sidebar = function (id, args) {
 			template: UI.template('div', 'ie abs centred-vertically'),
 			appearance: {
 				style: {
-					'left': '-500px',
+					'left': args.position.main.off,
 					'height': '100%',
 					'width': '200px',
+					'opacity': (args.fade ? '0.0' : '1.0')
 				},
 			},
 			children: args.children,
@@ -86,14 +87,22 @@ Components.sidebar = function (id, args) {
 				return Promise.all(stateSet.map(function (stateName) {
 					return Promise.all([
 						main.addState(stateName, {
-							style: {
-								'left': category === 'primary' ? args.position.main.on : args.position.main.off,
-							},
+							preFn: category === 'primary' ? (args.fade ? UI.functions.show({
+								'left': args.position.main.on,
+							}) : undefined) : undefined,
+							style: (args.fade ? undefined : {'left': (category === 'primary' ? args.position.main.on : args.position.main.off)}),
+							fn: category === 'primary' ? undefined : (args.fade ? UI.functions.hide({
+								'left': args.position.main.off,
+							}) : undefined),
 						}),
 						back.addState(stateName, {
-							style: {
-								'left': category === 'secondary' ? args.position.back.on : args.position.back.off,
-							},
+							preFn: category === 'secondary' ? (args.fade ? UI.functions.show({
+								'left': args.position.back.on,
+							}) : undefined) : undefined,
+							style: {'left': (category === 'secondary' ? args.position.back.on : args.position.back.off)},
+							fn: category === 'secondary' ? undefined : (args.fade ? UI.functions.hide({
+								'left': args.position.back.off,
+							}) : undefined),
 						}),
 					]);
 				}));

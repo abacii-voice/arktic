@@ -679,19 +679,24 @@ var UI = {
 
 	// FUNCTIONS
 	functions: {
-		show: function (_this) {
-			return _this.setAppearance({classes: {remove: ['hidden']}}).then(function () {
-				return _this.setAppearance({style: {opacity: 1}});
-			});
+		show: function (style) {
+			style = (style || {});
+			style['opacity'] = '1.0';
+			return function (_this) {
+				return _this.setAppearance({classes: {remove: ['hidden']}}).then(function () {
+					return _this.setAppearance({style: style});
+				});
+			}
 		},
-		hide: function (_this) {
-			return _this.setAppearance({style: {opacity: 0}}).then(function () {
-				return _this.setAppearance({classes: {add: ['hidden']}});
-			});
-		},
-		triggerState: function (_this) {
-			_this.triggerState();
-		},
+		hide: function (style) {
+			style = (style || {});
+			style['opacity'] = '0.0';
+			return function (_this) {
+				return _this.setAppearance({style: style}).then(function () {
+					return _this.setAppearance({classes: {add: ['hidden']}});
+				});
+			}
+		}
 	},
 }
 

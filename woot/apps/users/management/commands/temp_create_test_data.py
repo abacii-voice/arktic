@@ -49,6 +49,7 @@ class Command(BaseCommand):
 		### UPLOADS AND TRANSCRIPTIONS
 
 		# basic upload
+		production_client.contract_clients.add(contract_client)
 		project = production_client.production_projects.create(name='TestProject', contract_client=contract_client)
 		grammar = contract_client.grammars.create(name='TestGrammar')
 		batch = project.batches.create(name='TestBatch')

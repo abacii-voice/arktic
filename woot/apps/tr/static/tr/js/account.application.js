@@ -28,6 +28,9 @@ var AccountApplication = function (id, args) {
 		// shortcuts interface
 		AccountInterfaces.shortcutInterface(),
 
+		// project interface
+		AccountInterfaces.projectInterface(),
+
 	]).then(function (components) {
 		// unpack components
 		var [
@@ -36,10 +39,8 @@ var AccountApplication = function (id, args) {
 			transcriptionInterface,
 			projectCompleteInterface,
 			shortcutInterface,
+			projectInterface,
 		] = components;
-
-		// ASSOCIATE
-		// key bindings and other
 
 		// complete promises
 		return Promise.all([
@@ -51,6 +52,7 @@ var AccountApplication = function (id, args) {
 				transcriptionInterface,
 				projectCompleteInterface,
 				shortcutInterface,
+				projectInterface,
 			]);
 		}).then(function () {
 			return base;

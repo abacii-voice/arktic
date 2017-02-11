@@ -46,10 +46,10 @@ AccountInterfaces.projectCompleteInterface = function () {
 
 		return Promise.all([
 			base.setState({
-				defaultState: {preFn: UI.functions.hide},
+				defaultState: {preFn: UI.functions.hide()},
 				states: {
 					'-transcription-project-complete-state': {
-						fn: UI.functions.show,
+						fn: UI.functions.show(),
 					},
 					'client-state': 'default',
 					'role-state': 'default',
