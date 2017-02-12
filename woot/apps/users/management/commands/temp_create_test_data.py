@@ -31,7 +31,7 @@ class Command(BaseCommand):
 		production_admin_role = production_client.add_admin(user)
 		contract_admin_role = contract_client.add_admin(user)
 		moderator_role = production_client.add_moderator(user)
-		worker_role = production_client.add_worker(user, moderator_role)
+		worker_role = production_client.add_worker(user)
 
 		# save
 		user.save()
@@ -41,7 +41,7 @@ class Command(BaseCommand):
 		user2.set_password('mach')
 
 		# create roles
-		worker_role2 = production_client.add_worker(user2, moderator_role)
+		worker_role2 = production_client.add_worker(user2)
 
 		# save
 		user2.save()

@@ -112,11 +112,11 @@ class Client(models.Model):
 			role.save()
 			return role
 
-	def add_worker(self, user, moderator):
-		if self.is_production and moderator.type == 'moderator':
+	def add_worker(self, user):
+		if self.is_production:
 			if not self.users.filter(id=user.id).exists():
 				self.users.add(user)
-			role, role_created = self.roles.get_or_create(user=user, type='worker', display='Transcriber', supervisor=moderator)
+			role, role_created = self.roles.get_or_create(user=user, type='worker', display='Transcriber')
 			role.status = 'enabled'
 			role.save()
 			return role

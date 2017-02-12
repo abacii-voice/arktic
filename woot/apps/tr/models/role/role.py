@@ -10,7 +10,6 @@ class Role(models.Model):
 	### Connections
 	client = models.ForeignKey('tr.Client', related_name='roles')
 	project = models.ForeignKey('tr.Project', related_name='assigned', null=True)
-	supervisor = models.ForeignKey('tr.Role', related_name='subordinates', null=True)
 	user = models.ForeignKey('users.User', related_name='roles')
 
 	### Properties
@@ -34,11 +33,6 @@ class Role(models.Model):
 			'display': self.display,
 			'status': self.status,
 		}
-
-		if self.supervisor is not None and (permission.is_moderator or permission.is_productionadmin or permission.check_user(self.user)):
-			data.update({
-				'supervisor': self.supervisor.id,
-			})
 
 		if (permission.is_moderator or permission.is_productionadmin or permission.check_user(self.user)) and (self.type == 'worker' or self.type == 'moderator'):
 			data.update({
