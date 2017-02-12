@@ -117,22 +117,123 @@ AccountInterfaces.projectInterface = function () {
 				html: '',
 			},
 		}),
+
+		// 3.3 Transcriptions button
 		UI.createComponent('{id}-3-fs-3-transcriptions'.format({id: id}), {
 			template: UI.template('div', 'ie border border-radius'),
 			appearance: {
 				style: {
 					'width': '100%',
-					'height': '80px',
+					'height': '120px',
 					'margin-bottom': '10px',
 				},
 			},
 		}),
-		UI.createComponent('{id}-3-fs-3-t-1-percentage-completion'.format({id: id}), {}),
-		UI.createComponent('{id}-3-fs-3-t-2-transcriptions'.format({id: id}), {}),
-		UI.createComponent('{id}-3-fs-3-t-3-count'.format({id: id}), {}),
-		UI.createComponent('{id}-3-fs-3-t-4-transcriber-number'.format({id: id}), {}),
-		UI.createComponent('{id}-3-fs-3-t-5-transcribers'.format({id: id}), {}),
-		UI.createComponent('{id}-3-fs-3-t-6-redundancy'.format({id: id}), {}),
+		UI.createComponent('{id}-3-fs-3-t-2-transcription'.format({id: id}), {
+			template: UI.template('span', 'ie'),
+			appearance: {
+				style: {
+					'font-size': '15px',
+					'padding-top': '10px',
+					'padding-left': '12px',
+					'float': 'left',
+					'display': 'inline-block',
+				},
+				html: 'Transcription',
+			},
+		}),
+		UI.createComponent('{id}-3-fs-3-t-4-transcriber-number'.format({id: id}), {
+			template: UI.template('span', 'ie'),
+			appearance: {
+				style: {
+					'font-size': '15px',
+					'padding-top': '10px',
+					'padding-left': '12px',
+					'float': 'left',
+					'clear': 'left',
+					'display': 'inline-block',
+					'color': Color.grey.normal,
+				},
+				html: '4 Transcribers',
+			},
+		}),
+		UI.createComponent('{id}-3-fs-3-t-6-average-length'.format({id: id}), {
+			template: UI.template('span', 'ie'),
+			appearance: {
+				style: {
+					'font-size': '15px',
+					'padding-top': '10px',
+					'padding-left': '12px',
+					'float': 'left',
+					'clear': 'left',
+					'display': 'inline-block',
+					'color': Color.grey.normal,
+				},
+				html: '00:15 Average length',
+			},
+		}),
+		UI.createComponent('{id}-3-fs-3-t-1-percentage-completion'.format({id: id}), {
+			template: UI.template('span', 'ie abs'),
+			appearance: {
+				style: {
+					'right': '0px',
+					'font-size': '15px',
+					'padding-top': '10px',
+					'padding-right': '12px',
+					'display': 'inline-block',
+					'color': Color.green.normal,
+				},
+				html: '34%',
+			},
+		}),
+		UI.createComponent('{id}-3-fs-3-t-3-count-done'.format({id: id}), {
+			template: UI.template('span', 'ie abs'),
+			appearance: {
+				style: {
+					'right': '0px',
+					'font-size': '15px',
+					'padding-top': '10px',
+					'padding-right': '12px',
+					'float': 'right',
+					'clear': 'right',
+					'display': 'inline-block',
+					'color': Color.green.normal,
+				},
+				html: '3400',
+			},
+		}),
+		UI.createComponent('{id}-3-fs-3-t-3-count-remaining'.format({id: id}), {
+			template: UI.template('span', 'ie'),
+			appearance: {
+				style: {
+					'font-size': '15px',
+					'padding-top': '10px',
+					'padding-right': '12px',
+					'float': 'right',
+					'clear': 'right',
+					'display': 'inline-block',
+					'color': Color.red.normal,
+				},
+				html: '6600',
+			},
+		}),
+		UI.createComponent('{id}-3-fs-3-t-3-count-total'.format({id: id}), {
+			template: UI.template('span', 'ie'),
+			appearance: {
+				style: {
+					'font-size': '15px',
+					'padding-top': '10px',
+					'padding-right': '12px',
+					'float': 'right',
+					'clear': 'right',
+					'display': 'inline-block',
+					'color': Color.grey.normal,
+				},
+				html: '10000',
+			},
+		}),
+
+		// 3.4 Moderations
 		UI.createComponent('{id}-3-fs-4-moderations'.format({id: id}), {
 			template: UI.template('div', 'ie border border-radius'),
 			appearance: {
@@ -149,6 +250,8 @@ AccountInterfaces.projectInterface = function () {
 		UI.createComponent('{id}-3-fs-4-m-4-moderator-number'.format({id: id}), {}),
 		UI.createComponent('{id}-3-fs-4-m-5-moderators'.format({id: id}), {}),
 		UI.createComponent('{id}-3-fs-4-m-6-per-transcriber'.format({id: id}), {}),
+
+		// 3.5 Export
 		UI.createComponent('{id}-3-fs-5-export'.format({id: id}), {
 			template: UI.template('div', 'ie border border-radius'),
 			appearance: {
@@ -159,6 +262,8 @@ AccountInterfaces.projectInterface = function () {
 				},
 			},
 		}),
+
+		// 3.6 Upload
 		UI.createComponent('{id}-3-fs-6-upload'.format({id: id}), {
 			template: UI.template('div', 'ie border border-radius'),
 			appearance: {
@@ -199,9 +304,30 @@ AccountInterfaces.projectInterface = function () {
 			focusSidebar,
 			focusSidebarTitle,
 			focusSidebarSubtitle,
+
+			// 3.3
 			focusSidebarTranscriptionButton,
+			focusSidebarTranscriptionButtonTranscription,
+			focusSidebarTranscriptionButtonTranscriberNumber,
+			focusSidebarTranscriptionButtonRedundancy,
+			focusSidebarTranscriptionButtonPercentageCompletion,
+			focusSidebarTranscriptionButtonCountDone,
+			focusSidebarTranscriptionButtonCountRemaining,
+			focusSidebarTranscriptionButtonCountTotal,
+
+			// 3.4
 			focusSidebarModerationButton,
+			focusSidebarModerationButtonPercentageCompletion,
+			focusSidebarModerationButtonModerations,
+			focusSidebarModerationButtonCount,
+			focusSidebarModerationButtonModeratorNumber,
+			focusSidebarModerationButtonModerators,
+			focusSidebarModerationButtonPerTranscriber,
+
+			// 3.5
 			focusSidebarExportButton,
+
+			// 3.6
 			focusSidebarUploadButton,
 
 			// 4. users panel
@@ -623,7 +749,7 @@ AccountInterfaces.projectInterface = function () {
 				focusSidebarTitle,
 				focusSidebarSubtitle,
 				focusSidebarTranscriptionButton,
-				focusSidebarModerationButton,
+				// focusSidebarModerationButton,
 				focusSidebarExportButton,
 				focusSidebarUploadButton,
 			]),
@@ -653,6 +779,31 @@ AccountInterfaces.projectInterface = function () {
 					});
 				},
 			}),
+
+			// 3.3
+			focusSidebarTranscriptionButton.setChildren([
+				focusSidebarTranscriptionButtonTranscription,
+				focusSidebarTranscriptionButtonTranscriberNumber,
+				focusSidebarTranscriptionButtonRedundancy,
+				focusSidebarTranscriptionButtonPercentageCompletion,
+				focusSidebarTranscriptionButtonCountDone,
+				focusSidebarTranscriptionButtonCountRemaining,
+				focusSidebarTranscriptionButtonCountTotal,
+			]),
+
+			// 3.4
+			focusSidebarModerationButton.setChildren([
+				focusSidebarModerationButtonPercentageCompletion,
+				focusSidebarModerationButtonModerations,
+				focusSidebarModerationButtonCount,
+				focusSidebarModerationButtonModeratorNumber,
+				focusSidebarModerationButtonModerators,
+				focusSidebarModerationButtonPerTranscriber,
+			]),
+
+			// 3.5
+
+			// 3.6
 
 		]).then(function () {
 			return base.setChildren([
