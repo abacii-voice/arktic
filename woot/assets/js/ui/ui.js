@@ -242,7 +242,11 @@ var UI = {
 					return removeClasses.indexOf(cls) === -1;
 				});
 
-				_this.style = (appearance.style || _this.style);
+				_this.style = (_this.style || {});
+				appearance.style = (appearance.style || {});
+				Object.keys(appearance.style).forEach(function (key) {
+					_this.style[key] = appearance.style[key];
+				});
 
 				if (_this.isRendered) {
 					// model
@@ -837,6 +841,7 @@ var Active = {
 			for (i=0; i<context_path.length; i++) {
 				if (i+1 === context_path.length) {
 					sub[context_path[i]] = value;
+					break;
 				} else {
 					if (sub[context_path[i]] === undefined) {
 						sub[context_path[i]] = {};
