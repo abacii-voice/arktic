@@ -124,13 +124,13 @@ AccountInterfaces.projectInterface = function () {
 			appearance: {
 				style: {
 					'width': '100%',
-					'height': '120px',
+					'height': '70px',
 					'margin-bottom': '10px',
 				},
 			},
 		}),
 		UI.createComponent('{id}-3-fs-3-t-2-transcription'.format({id: id}), {
-			template: UI.template('span', 'ie'),
+			template: UI.template('h1', 'ie'),
 			appearance: {
 				style: {
 					'font-size': '15px',
@@ -157,21 +157,6 @@ AccountInterfaces.projectInterface = function () {
 				html: '4 Transcribers',
 			},
 		}),
-		UI.createComponent('{id}-3-fs-3-t-6-average-length'.format({id: id}), {
-			template: UI.template('span', 'ie'),
-			appearance: {
-				style: {
-					'font-size': '15px',
-					'padding-top': '10px',
-					'padding-left': '12px',
-					'float': 'left',
-					'clear': 'left',
-					'display': 'inline-block',
-					'color': Color.grey.normal,
-				},
-				html: '00:15 Average length',
-			},
-		}),
 		UI.createComponent('{id}-3-fs-3-t-1-percentage-completion'.format({id: id}), {
 			template: UI.template('span', 'ie abs'),
 			appearance: {
@@ -184,22 +169,6 @@ AccountInterfaces.projectInterface = function () {
 					'color': Color.green.normal,
 				},
 				html: '34%',
-			},
-		}),
-		UI.createComponent('{id}-3-fs-3-t-3-count-done'.format({id: id}), {
-			template: UI.template('span', 'ie abs'),
-			appearance: {
-				style: {
-					'right': '0px',
-					'font-size': '15px',
-					'padding-top': '10px',
-					'padding-right': '12px',
-					'float': 'right',
-					'clear': 'right',
-					'display': 'inline-block',
-					'color': Color.green.normal,
-				},
-				html: '3400',
 			},
 		}),
 		UI.createComponent('{id}-3-fs-3-t-3-count-remaining'.format({id: id}), {
@@ -217,7 +186,32 @@ AccountInterfaces.projectInterface = function () {
 				html: '6600',
 			},
 		}),
-		UI.createComponent('{id}-3-fs-3-t-3-count-total'.format({id: id}), {
+
+		// 3.4 Export
+		UI.createComponent('{id}-3-fs-4-export'.format({id: id}), {
+			template: UI.template('div', 'ie border border-radius'),
+			appearance: {
+				style: {
+					'width': '100%',
+					'height': '40px',
+					'margin-bottom': '10px',
+				},
+			},
+		}),
+		UI.createComponent('{id}-3-fs-4-t-1-export'.format({id: id}), {
+			template: UI.template('h1', 'ie'),
+			appearance: {
+				style: {
+					'font-size': '15px',
+					'padding-top': '10px',
+					'padding-left': '12px',
+					'float': 'left',
+					'display': 'inline-block',
+				},
+				html: 'Export',
+			},
+		}),
+		UI.createComponent('{id}-3-fs-4-t-2-completed'.format({id: id}), {
 			template: UI.template('span', 'ie'),
 			appearance: {
 				style: {
@@ -225,54 +219,33 @@ AccountInterfaces.projectInterface = function () {
 					'padding-top': '10px',
 					'padding-right': '12px',
 					'float': 'right',
-					'clear': 'right',
 					'display': 'inline-block',
-					'color': Color.grey.normal,
+					'color': Color.green.normal,
 				},
-				html: '10000',
+				html: '3400',
 			},
 		}),
 
-		// 3.4 Moderations
-		UI.createComponent('{id}-3-fs-4-moderations'.format({id: id}), {
-			template: UI.template('div', 'ie border border-radius'),
-			appearance: {
-				style: {
-					'width': '100%',
-					'height': '80px',
-					'margin-bottom': '10px',
-				},
-			},
-		}),
-		UI.createComponent('{id}-3-fs-4-m-1-percentage-completion'.format({id: id}), {}),
-		UI.createComponent('{id}-3-fs-4-m-2-moderations'.format({id: id}), {}),
-		UI.createComponent('{id}-3-fs-4-m-3-count'.format({id: id}), {}),
-		UI.createComponent('{id}-3-fs-4-m-4-moderator-number'.format({id: id}), {}),
-		UI.createComponent('{id}-3-fs-4-m-5-moderators'.format({id: id}), {}),
-		UI.createComponent('{id}-3-fs-4-m-6-per-transcriber'.format({id: id}), {}),
-
-		// 3.5 Export
-		UI.createComponent('{id}-3-fs-5-export'.format({id: id}), {
-			template: UI.template('div', 'ie border border-radius'),
-			appearance: {
-				style: {
-					'width': '100%',
-					'height': '80px',
-					'margin-bottom': '10px',
-				},
-			},
-		}),
-
-		// 3.6 Upload
-		UI.createComponent('{id}-3-fs-6-upload'.format({id: id}), {
+		// 3.5 Upload
+		UI.createComponent('{id}-3-fs-5-upload'.format({id: id}), {
 			template: UI.template('div', 'ie border border-radius'),
 			appearance: {
 				style: {
 					'width': '100%',
 					'height': '200px',
 					'margin-bottom': '10px',
-					'border-style': 'dotted',
+					'border-style': 'dashed',
 				},
+			},
+		}),
+		UI.createComponent('{id}-3-fs-5-t-1-upload'.format({id: id}), {
+			template: UI.template('span', 'ie abs centred'),
+			appearance: {
+				style: {
+					'font-size': '15px',
+					'color': Color.grey.normal,
+				},
+				html: 'Upload',
 			},
 		}),
 
@@ -309,26 +282,17 @@ AccountInterfaces.projectInterface = function () {
 			focusSidebarTranscriptionButton,
 			focusSidebarTranscriptionButtonTranscription,
 			focusSidebarTranscriptionButtonTranscriberNumber,
-			focusSidebarTranscriptionButtonRedundancy,
 			focusSidebarTranscriptionButtonPercentageCompletion,
-			focusSidebarTranscriptionButtonCountDone,
 			focusSidebarTranscriptionButtonCountRemaining,
-			focusSidebarTranscriptionButtonCountTotal,
 
 			// 3.4
-			focusSidebarModerationButton,
-			focusSidebarModerationButtonPercentageCompletion,
-			focusSidebarModerationButtonModerations,
-			focusSidebarModerationButtonCount,
-			focusSidebarModerationButtonModeratorNumber,
-			focusSidebarModerationButtonModerators,
-			focusSidebarModerationButtonPerTranscriber,
+			focusSidebarExportButton,
+			focusSidebarExportButtonExport,
+			focusSidebarExportButtonCompleted,
 
 			// 3.5
-			focusSidebarExportButton,
-
-			// 3.6
 			focusSidebarUploadButton,
+			focusSidebarUploadButtonUpload,
 
 			// 4. users panel
 			// 5. export panel
@@ -741,7 +705,7 @@ AccountInterfaces.projectInterface = function () {
 			// FOCUS SIDEBAR
 			focusSidebar.components.main.setAppearance({
 				style: {
-					'width': '300px',
+					'width': '250px',
 					'height': '100%',
 				},
 			}),
@@ -784,26 +748,21 @@ AccountInterfaces.projectInterface = function () {
 			focusSidebarTranscriptionButton.setChildren([
 				focusSidebarTranscriptionButtonTranscription,
 				focusSidebarTranscriptionButtonTranscriberNumber,
-				focusSidebarTranscriptionButtonRedundancy,
 				focusSidebarTranscriptionButtonPercentageCompletion,
-				focusSidebarTranscriptionButtonCountDone,
 				focusSidebarTranscriptionButtonCountRemaining,
-				focusSidebarTranscriptionButtonCountTotal,
 			]),
 
 			// 3.4
-			focusSidebarModerationButton.setChildren([
-				focusSidebarModerationButtonPercentageCompletion,
-				focusSidebarModerationButtonModerations,
-				focusSidebarModerationButtonCount,
-				focusSidebarModerationButtonModeratorNumber,
-				focusSidebarModerationButtonModerators,
-				focusSidebarModerationButtonPerTranscriber,
+			focusSidebarExportButton.setChildren([
+				focusSidebarExportButtonExport,
+				focusSidebarExportButtonCompleted,
 			]),
 
 			// 3.5
+			focusSidebarUploadButton.setChildren([
+				focusSidebarUploadButtonUpload,
+			]),
 
-			// 3.6
 
 		]).then(function () {
 			return base.setChildren([
