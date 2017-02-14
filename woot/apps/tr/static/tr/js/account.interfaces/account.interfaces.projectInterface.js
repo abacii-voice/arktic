@@ -266,24 +266,62 @@ AccountInterfaces.projectInterface = function () {
 		// 4. transcription panel
 		// -project-state-transcription
 		UI.createComponent('{id}-4-transcription-panel'.format({id: id}), {
-			template: UI.template('div', 'ie abs centred-vertically'),
+			template: UI.template('div', 'ie abs centred-vertically border'),
 			appearance: {
 				style: {
 					'height': '100%',
-					'width': 'calc(100% - 300px)',
-					'left': '300px',
+					'width': '714px',
+					'left': '310px',
+				},
+			},
+		}),
+		UI.createComponent('{id}-4-tp-1-title'.format({id: id}), {
+
+		}),
+		UI.createComponent('{id}-4-tp-2-statistics'.format({id: id}), {
+
+		}),
+		UI.createComponent('{id}-4-tp-3-progress'.format({id: id}), {
+
+		}),
+		UI.createComponent('{id}-4-tp-4-user-lists'.format({id: id}), {
+
+		}),
+		UI.createComponent('{id}-4-tp-5-ul-1-lists-title'.format({id: id}), {
+
+		}),
+		Components.searchableList('{id}-5-tp-3-ul-2-assigned-list'.format({id: id}), {
+
+		}),
+		Components.searchableList('{id}-5-tp-3-ul-3-all-list'.format({id: id}), {
+
+		}),
+
+		// 5. export panel
+		// -project-state-export
+		UI.createComponent('{id}-5-export-panel'.format({id: id}), {
+			template: UI.template('div', 'ie abs centred-vertically border'),
+			appearance: {
+				style: {
+					'height': '100%',
+					'width': '714px',
+					'left': '310px',
 				},
 			},
 		}),
 
-		// 5. moderators panel
-		// -project-state-moderators
-
-		// 6. export panel
-		// -project-state-export
-
-		// 7. upload panel
+		// 6. upload panel
 		// -project-state-upload
+		UI.createComponent('{id}-6-upload-panel'.format({id: id}), {
+			template: UI.template('div', 'ie abs centred-vertically border'),
+			appearance: {
+				style: {
+					'height': '100%',
+					'width': '714px',
+					'left': '310px',
+				},
+			},
+		}),
 
 	]).then(function (components) {
 		var [
@@ -321,8 +359,17 @@ AccountInterfaces.projectInterface = function () {
 
 			// 4. transcription panel
 			transcriptionPanel,
+			transcriptionPanelTitle,
+			transcriptionPanelStatistics,
+			transcriptionPanelProgress,
+			transcriptionPanelUserLists,
+			transcriptionPanelUserListsListsTitle,
+			transcriptionPanelAssignedList,
+			transcriptionPanelAllList,
 
 			// 5. export panel
+			exportPanel,
+
 			// 6. upload panel
 
 		] = components;
@@ -735,7 +782,7 @@ AccountInterfaces.projectInterface = function () {
 				},
 			}),
 
-			// FOCUS SIDEBAR
+			// 3. FOCUS SIDEBAR
 			focusSidebar.components.main.setAppearance({
 				style: {
 					'width': '250px',
@@ -787,18 +834,73 @@ AccountInterfaces.projectInterface = function () {
 				focusSidebarTranscriptionButtonPercentageCompletion,
 				focusSidebarTranscriptionButtonCountRemaining,
 			]),
+			focusSidebarTranscriptionButton.setState({
+				stateMap: '-project-state-transcription',
+			}),
+			focusSidebarTranscriptionButton.setBindings({
+				'click': function (_this) {
+					return _this.triggerState();
+				},
+			}),
 
 			// 3.4
 			focusSidebarExportButton.setChildren([
 				focusSidebarExportButtonExport,
 				focusSidebarExportButtonCompleted,
 			]),
+			focusSidebarExportButton.setState({
+				stateMap: '-project-state-export',
+			}),
+			focusSidebarExportButton.setBindings({
+				'click': function (_this) {
+					return _this.triggerState();
+				},
+			}),
 
 			// 3.5
 			focusSidebarUploadButton.setChildren([
 				focusSidebarUploadButtonUpload,
 			]),
 
+			// 4. TRANSCRIPTION PANEL
+			transcriptionPanel.setState({
+				defaultState: {
+					preFn: UI.functions.hide(),
+				},
+				states: {
+					'project-state': 'default',
+					'-project-state-project': 'default',
+					'-project-state-transcription': {
+						preFn: function (_this) {
+							// load data
+							return Util.ep();
+						},
+						fn: UI.functions.show(),
+					},
+					'-project-state-export': 'default',
+					'-project-state-upload': 'default',
+				},
+			}),
+
+			// 5. EXPORT PANEL
+			exportPanel.setState({
+				defaultState: {
+					preFn: UI.functions.hide(),
+				},
+				states: {
+					'project-state': 'default',
+					'-project-state-project': 'default',
+					'-project-state-transcription': 'default',
+					'-project-state-export': {
+						preFn: function (_this) {
+							// load data
+							return Util.ep();
+						},
+						fn: UI.functions.show(),
+					},
+					'-project-state-upload': 'default',
+				},
+			}),
 
 		]).then(function () {
 			return base.setChildren([
@@ -806,6 +908,7 @@ AccountInterfaces.projectInterface = function () {
 				projectSidebar,
 				focusSidebar,
 				transcriptionPanel,
+				exportPanel,
 			]);
 		}).then(function () {
 			return base;

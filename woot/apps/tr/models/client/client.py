@@ -128,3 +128,7 @@ class Client(models.Model):
 
 	def create_flag(self, name, project=None):
 		flag, flag_created = self.flags.get_or_create(project=project, name=name)
+
+	# projects
+	def oldest_active_project(self):
+		return self.projects.filter(is_active=True).earliest()
