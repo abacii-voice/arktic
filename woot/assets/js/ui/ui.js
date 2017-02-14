@@ -253,6 +253,14 @@ var UI = {
 					var model = _this.model();
 					return model.animate(appearance.style, 300).promise().then(function () {
 
+						// set colors
+						if ('color' in appearance.style || 'background-color' in appearance.style) {
+							model.css({
+								'color': appearance.style['color'],
+								'background-color': appearance.style['background-color'],
+							});
+						}
+
 						// html - this will erase children of the current model
 						if (appearance.html !== undefined) {
 							model.html(_this.html);

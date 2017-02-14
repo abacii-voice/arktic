@@ -32,8 +32,8 @@ class Project(models.Model):
 				'production_client': self.production_client.id,
 				'name': self.name,
 				'description': self.description,
-				'is_transcription_complete': str(self.is_transcription_complete()),
-				'transcriptions_remaining': str(self.transcriptions_remaining()),
+				'is_transcription_complete': self.is_transcription_complete(),
+				'transcriptions_remaining': self.transcriptions_remaining(),
 			})
 
 		if permission.is_productionadmin and permission.check_client(self.production_client):
@@ -43,11 +43,11 @@ class Project(models.Model):
 
 		if permission.is_moderator or permission.is_productionadmin and permission.check_client(self.production_client):
 			data.update({
-				'completion_percentage': str(self.completion_percentage()),
-				'combined_priority_index': str(self.combined_priority_index),
-				'moderations_remaining': str(self.moderations_remaining()),
-				'redundancy_percentage': str(self.redundancy_percentage()),
-				'is_moderation_complete': str(self.is_moderation_complete()),
+				'completion_percentage': self.completion_percentage(),
+				'combined_priority_index': self.combined_priority_index,
+				'is_moderation_complete': self.is_moderation_complete(),
+				'moderations_remaining': self.moderations_remaining(),
+				'redundancy_percentage': self.redundancy_percentage(),
 			})
 
 		if path.check('assigned_users') and hasattr(self, 'assigned_users') and permission.is_productionadmin and permission.check_client(self.production_client):
@@ -78,13 +78,16 @@ class Project(models.Model):
 			data.update({
 				'name': self.name,
 				'description': self.description,
-				'is_transcription_complete': str(self.is_transcription_complete()),
-				'transcriptions_remaining': str(self.transcriptions_remaining()),
-				'completion_percentage': str(self.completion_percentage()),
-				'combined_priority_index': str(self.combined_priority_index),
-				'is_moderation_complete': str(self.is_moderation_complete()),
-				'moderations_remaining': str(self.moderations_remaining()),
-				'redundancy_percentage': str(self.redundancy_percentage()),
+				'is_transcription_complete': self.is_transcription_complete(),
+				'transcriptions_remaining': self.transcriptions_remaining(),
+				'transcriptions_completed': self.transcriptions_completed(),
+				'completion_percentage': self.completion_percentage(),
+				'combined_priority_index': self.combined_priority_index,
+				'is_moderation_complete': self.is_moderation_complete(),
+				'moderations_remaining': self.moderations_remaining(),
+				'redundancy_percentage': self.redundancy_percentage(),
+				'workers_assigned': self.assigned.filter(type='worker').count(),
+				'total_transcriptions': self.transcriptions.count(),
 			})
 
 		return data
@@ -124,6 +127,9 @@ class Project(models.Model):
 
 	def transcriptions_remaining(self):
 		return self.transcriptions.filter(is_active=True).count()
+
+	def transcriptions_completed(self):
+		return self.transcriptions.filter(is_active=False).count()
 
 	def moderations_remaining(self):
 		return self.moderations.filter(is_active=True).count()

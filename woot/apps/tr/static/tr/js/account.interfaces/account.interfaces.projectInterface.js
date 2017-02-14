@@ -107,20 +107,34 @@ AccountInterfaces.projectInterface = function () {
 			template: UI.template('h4', 'ie'),
 			appearance: {
 				style: {
-					'width': '100%',
 					'height': '40px',
 					'font-size': '14px',
 					'padding-top': '5px',
 					'padding-left': '0px',
+					'float': 'left',
 					'color': Color.grey.light,
 				},
 				html: '',
 			},
 		}),
+		UI.createComponent('{id}-3-fs-2-1-status'.format({id: id}), {
+			template: UI.template('h4', 'ie'),
+			appearance: {
+				style: {
+					'height': '40px',
+					'font-size': '14px',
+					'padding-top': '5px',
+					'padding-left': '8px',
+					'float': 'left',
+					'color': Color.red.normal,
+				},
+				html: 'incomplete',
+			},
+		}),
 
 		// 3.3 Transcriptions button
 		UI.createComponent('{id}-3-fs-3-transcriptions'.format({id: id}), {
-			template: UI.template('div', 'ie border border-radius'),
+			template: UI.template('div', 'ie border border-radius menu-button'),
 			appearance: {
 				style: {
 					'width': '100%',
@@ -189,7 +203,7 @@ AccountInterfaces.projectInterface = function () {
 
 		// 3.4 Export
 		UI.createComponent('{id}-3-fs-4-export'.format({id: id}), {
-			template: UI.template('div', 'ie border border-radius'),
+			template: UI.template('div', 'ie border border-radius menu-button'),
 			appearance: {
 				style: {
 					'width': '100%',
@@ -249,8 +263,18 @@ AccountInterfaces.projectInterface = function () {
 			},
 		}),
 
-		// 4. transcribers panel
-		// -project-state-transcribers
+		// 4. transcription panel
+		// -project-state-transcription
+		UI.createComponent('{id}-4-transcription-panel'.format({id: id}), {
+			template: UI.template('div', 'ie abs centred-vertically'),
+			appearance: {
+				style: {
+					'height': '100%',
+					'width': 'calc(100% - 300px)',
+					'left': '300px',
+				},
+			},
+		}),
 
 		// 5. moderators panel
 		// -project-state-moderators
@@ -277,6 +301,7 @@ AccountInterfaces.projectInterface = function () {
 			focusSidebar,
 			focusSidebarTitle,
 			focusSidebarSubtitle,
+			focusSidebarStatus,
 
 			// 3.3
 			focusSidebarTranscriptionButton,
@@ -294,7 +319,9 @@ AccountInterfaces.projectInterface = function () {
 			focusSidebarUploadButton,
 			focusSidebarUploadButtonUpload,
 
-			// 4. users panel
+			// 4. transcription panel
+			transcriptionPanel,
+
 			// 5. export panel
 			// 6. upload panel
 
@@ -597,6 +624,12 @@ AccountInterfaces.projectInterface = function () {
 			});
 		}
 
+		// focus sidebar
+		jss.set('#{id} .menu-button:hover'.format({id: id}), {
+			'border-color': Color.grey.light,
+			'cursor': 'pointer',
+		})
+
 		return Promise.all([
 
 			// base
@@ -712,34 +745,37 @@ AccountInterfaces.projectInterface = function () {
 			focusSidebar.components.main.setChildren([
 				focusSidebarTitle,
 				focusSidebarSubtitle,
+				focusSidebarStatus,
 				focusSidebarTranscriptionButton,
-				// focusSidebarModerationButton,
 				focusSidebarExportButton,
 				focusSidebarUploadButton,
 			]),
-			focusSidebarTitle.addState('-project-state-focus', {
+			focusSidebar.components.main.addState('-project-state-focus', {
 				preFn: function (_this) {
 					return Promise.all([
-						Active.get('client'),
-						Active.get('contract_client.id'),
-					]).then(function (results) {
-						var [client, contract_client] = results;
-						return Context.get('clients.{client}.contract_clients.{contract_client}.name'.format({client: client, contract_client: contract_client}));
-					}).then(function (contract_client) {
-						return _this.setAppearance({html: '{contract_client}'.format({contract_client: contract_client})});
-					});
-				},
-			}),
-			focusSidebarSubtitle.addState('-project-state-focus', {
-				preFn: function (_this) {
-					return Promise.all([
+						// Active
 						Active.get('client'),
 						Active.get('contract_client'),
 					]).then(function (results) {
-						var [client, contract_client] = results;
-						return Context.get('clients.{client}.contract_clients.{contract_client}.projects.{contract_client_project}.name'.format({client: client, contract_client: contract_client.id, contract_client_project: contract_client.project}));
-					}).then(function (contract_client_project) {
-						return _this.setAppearance({html: '{contract_client_project}'.format({contract_client_project: contract_client_project})});
+						var [client_id, contract_client] = results;
+						// Context
+						return Context.get('clients.{client_id}.contract_clients.{contract_client_id}'.format({client_id: client_id, contract_client_id: contract_client.id})).then(function (contract_client_data) {
+							var project = contract_client_data.projects[contract_client.project];
+							return Promise.all([
+								focusSidebarTitle.setAppearance({html: '{contract_client}'.format({contract_client: contract_client_data.name})}),
+								focusSidebarSubtitle.setAppearance({html: '{contract_client_project}'.format({contract_client_project: project.name})}),
+								focusSidebarStatus.setAppearance({
+									html: (project.is_transcription_complete ? 'complete' : 'incomplete'),
+									style: {
+										'color': (project.is_transcription_complete ? Color.green.normal : Color.red.normal),
+									},
+								}),
+								focusSidebarTranscriptionButtonTranscriberNumber.setAppearance({html: '{transcribers} Transcribers'.format({transcribers: project.workers_assigned})}),
+								focusSidebarTranscriptionButtonPercentageCompletion.setAppearance({html: '{completion}%'.format({completion: project.completion_percentage})}),
+								focusSidebarTranscriptionButtonCountRemaining.setAppearance({html: '{remaining}'.format({remaining: project.transcriptions_remaining})}),
+								focusSidebarExportButtonCompleted.setAppearance({html: '{done}'.format({done: project.transcriptions_completed})}),
+							]);
+						});
 					});
 				},
 			}),
@@ -769,6 +805,7 @@ AccountInterfaces.projectInterface = function () {
 				clientSidebar,
 				projectSidebar,
 				focusSidebar,
+				transcriptionPanel,
 			]);
 		}).then(function () {
 			return base;
