@@ -34,6 +34,11 @@ class TranscriptionToken(models.Model):
 					transcription.is_available = False
 					transcription.save()
 
+			# change projects if no transcriptions have been added
+			if self.fragments.count() == 0:
+				self.project = self.project.production_client.oldest_active_project()
+				self.get_transcriptions()
+
 	def update(self):
 		if self.fragments.filter(is_reconciled=True) == self.transcription_limit:
 			self.is_active = False

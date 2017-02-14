@@ -18,6 +18,7 @@ class Project(models.Model):
 	date_created = models.DateTimeField(auto_now_add=True)
 	description = models.TextField(default='')
 	combined_priority_index = models.PositiveIntegerField(default=0)
+	is_active = models.BooleanField(default=False)
 
 	class Meta():
 		get_latest_by = 'date_created'
@@ -120,7 +121,9 @@ class Project(models.Model):
 
 	# stats
 	def is_transcription_complete(self):
-		return self.transcriptions.filter(is_active=True).count() == 0
+		self.is_active = self.transcriptions.filter(is_active=True).count() == 0
+		self.save()
+		return self.is_active
 
 	def is_moderation_complete(self):
 		return self.moderations.filter(is_active=True).count() == 0
