@@ -4,7 +4,7 @@ AccountComponents.uploadController = function () {
 	return UI.createComponent('upload-controller-{}'.format({id: id})).then(function (base) {
 
 		// controller logic
-		base.unpackZip = function (file, done) {
+		base.unpackZip = function (file) {
 			// try reading file
 			var reader = new FileReader();
 			var zip = new JSZip();
@@ -12,18 +12,18 @@ AccountComponents.uploadController = function () {
 				var contents = e.target.result;
 				zip.load(contents);
 
-				// extract list of files and cut off directory name
-				var filenames = Object.keys(zip.files).filter(function (key) {
-					console.log(zip.files[key]);
-					return !zip.files[key].dir;
-				}).map(function (key) {
-					return Util.basename(key);
-				});
-
-				//
+				// 1. get relfile from zip
+				// 2. open and get list of filenames and their captions
+				// 3. place files to be uploaded in Active under contract_client.uploads.{random key} - store key and path
+				// 4. display list of files in a list in the upload panel by fetching from active
 			}
 
 			reader.readAsBinaryString(file);
+		}
+		base.upload = {
+			start: function () {
+
+			},
 		}
 
 		return Promise.all([
