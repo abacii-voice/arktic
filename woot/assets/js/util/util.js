@@ -1,4 +1,3 @@
-
 var Util = {
 
 	// String formatting

@@ -252,7 +252,7 @@ AccountInterfaces.projectInterface = function () {
 				},
 			},
 		}),
-		UI.createComponent('{id}-3-fs-5-t-1-upload'.format({id: id}), {
+		UI.createComponent('{id}-3-fs-5-u-1-upload'.format({id: id}), {
 			template: UI.template('span', 'ie abs centred'),
 			appearance: {
 				style: {
@@ -260,6 +260,15 @@ AccountInterfaces.projectInterface = function () {
 					'color': Color.grey.normal,
 				},
 				html: 'Upload',
+			},
+		}),
+		UI.createComponent('{id}-3-fs-5-u-2-dropzone'.format({id: id}), {
+			template: UI.template('div', 'ie abs centred'),
+			appearance: {
+				style: {
+					'height': '100%',
+					'width': '100%',
+				},
 			},
 		}),
 
@@ -323,6 +332,9 @@ AccountInterfaces.projectInterface = function () {
 			},
 		}),
 
+		// non-interface elements
+		AccountComponents.uploadController(),
+
 	]).then(function (components) {
 		var [
 			base,
@@ -356,6 +368,7 @@ AccountInterfaces.projectInterface = function () {
 			// 3.5
 			focusSidebarUploadButton,
 			focusSidebarUploadButtonUpload,
+			focusSidebarUploadButtonDropzone,
 
 			// 4. transcription panel
 			transcriptionPanel,
@@ -371,6 +384,10 @@ AccountInterfaces.projectInterface = function () {
 			exportPanel,
 
 			// 6. upload panel
+			uploadPanel,
+
+			// non-interface elements
+			uploadController,
 
 		] = components;
 
@@ -677,6 +694,11 @@ AccountInterfaces.projectInterface = function () {
 			'cursor': 'pointer',
 		})
 
+		// upload controller interface
+		uploadController.interface = function () {
+			// connect the uploadController to the upload panel once information has been extracted.
+		}
+
 		return Promise.all([
 
 			// base
@@ -860,7 +882,26 @@ AccountInterfaces.projectInterface = function () {
 			// 3.5
 			focusSidebarUploadButton.setChildren([
 				focusSidebarUploadButtonUpload,
+				focusSidebarUploadButtonDropzone,
 			]),
+			focusSidebarUploadButtonDropzone.setState({
+				states: {
+					'project-state': {
+						preFn: function (_this) {
+							if (!_this.isDropzoneSetup) {
+								_this.isDropzoneSetup = true;
+								_this.model().dropzone({
+									url: '#', // not needed
+									maxFiles: 1,
+									acceptedFiles: '.zip',
+									accept: uploadController.unpackZip,
+								});
+								return Util.ep();
+							}
+						},
+					},
+				},
+			}),
 
 			// 4. TRANSCRIPTION PANEL
 			transcriptionPanel.setState({
@@ -901,6 +942,8 @@ AccountInterfaces.projectInterface = function () {
 					'-project-state-upload': 'default',
 				},
 			}),
+
+			// 6. UPLOAD PANEL
 
 		]).then(function () {
 			return base.setChildren([
