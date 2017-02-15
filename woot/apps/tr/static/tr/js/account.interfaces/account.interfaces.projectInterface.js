@@ -309,7 +309,7 @@ AccountInterfaces.projectInterface = function () {
 		// 5. export panel
 		// -project-state-export
 		UI.createComponent('{id}-5-export-panel'.format({id: id}), {
-			template: UI.template('div', 'ie abs centred-vertically border'),
+			template: UI.template('div', 'ie abs centred-vertically border hidden'),
 			appearance: {
 				style: {
 					'height': '100%',
@@ -322,7 +322,7 @@ AccountInterfaces.projectInterface = function () {
 		// 6. upload panel
 		// -project-state-upload
 		UI.createComponent('{id}-6-upload-panel'.format({id: id}), {
-			template: UI.template('div', 'ie abs centred-vertically border'),
+			template: UI.template('div', 'ie abs centred-vertically border hidden'),
 			appearance: {
 				style: {
 					'height': '100%',
