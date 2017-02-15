@@ -140,6 +140,9 @@ Components.searchableList = function (id, args) {
 				}
 			},
 			load: {
+				source: function (path, options) {
+					return Context.get(path, options);
+				},
 				get: function () {
 					// this looks at the Context.get and Context.get:force, separately.
 					if (base.data.reset) {
@@ -154,7 +157,7 @@ Components.searchableList = function (id, args) {
 						target.queries = (target.queries || []);
 						var filterRequest = target.filter ? (target.filter.request ? target.filter.request(base.data.query) : {}) : {};
 						return Promise.all([
-							Context.get((target.resolvedPath || target.path), {options: {filter: filterRequest}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
+							base.data.load.source((target.resolvedPath || target.path), {options: {filter: filterRequest}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
 
 							// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
 							// Also, only query if this query has never been queried before
@@ -167,7 +170,7 @@ Components.searchableList = function (id, args) {
 									}, 1000);
 								}).then(function (timeout) {
 									if (timeout) {
-										return Context.get((target.resolvedPath || target.path), {options: {filter: filterRequest}, force: true}).then(target.process).then(base.data.load.append).then(base.data.display.main);
+										return base.data.load.source((target.resolvedPath || target.path), {options: {filter: filterRequest}, force: true}).then(target.process).then(base.data.load.append).then(base.data.display.main);
 									} else {
 										return Util.ep();
 									}
