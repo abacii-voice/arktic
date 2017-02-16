@@ -322,7 +322,7 @@ AccountInterfaces.projectInterface = function () {
 		// 6. upload panel
 		// -project-state-upload
 		UI.createComponent('{id}-6-upload-panel'.format({id: id}), {
-			template: UI.template('div', 'ie abs centred-vertically border hidden'),
+			template: UI.template('div', 'ie abs centred-vertically hidden'),
 			appearance: {
 				style: {
 					'height': '100%',
@@ -331,6 +331,14 @@ AccountInterfaces.projectInterface = function () {
 				},
 			},
 		}),
+		// Components.searchableList('{id}-6-up-1-file-list'.format({id: id}), {
+		// 	appearance: {
+		// 		style: {
+		// 			'height': '100%',
+		// 			'width': '100%',
+		// 		},
+		// 	},
+		// }),
 
 		// non-interface elements
 		AccountComponents.uploadController(),
@@ -694,9 +702,9 @@ AccountInterfaces.projectInterface = function () {
 			'cursor': 'pointer',
 		})
 
-		// upload controller interface
-		uploadController.interface = function () {
-			// connect the uploadController to the upload panel once information has been extracted.
+		// upload controller
+		uploadController.triggerState = function () {
+			return UI.changeState('-project-state-upload');
 		}
 
 		return Promise.all([
@@ -893,8 +901,8 @@ AccountInterfaces.projectInterface = function () {
 								_this.model().dropzone({
 									url: '#', // not needed
 									maxFiles: 1,
-									acceptedFiles: '.zip',
-									accept: uploadController.unpackZip,
+									// acceptedFiles: '.zip',
+									accept: uploadController.upload.unpack,
 								});
 								return Util.ep();
 							}
@@ -944,6 +952,24 @@ AccountInterfaces.projectInterface = function () {
 			}),
 
 			// 6. UPLOAD PANEL
+			uploadPanel.setState({
+				defaultState: {
+					preFn: UI.functions.hide(),
+				},
+				states: {
+					'project-state': 'default',
+					'-project-state-project': 'default',
+					'-project-state-transcription': 'default',
+					'-project-state-export': 'default',
+					'-project-state-upload': {
+						preFn: function (_this) {
+							// load data
+							return Util.ep();
+						},
+						fn: UI.functions.show(),
+					},
+				},
+			}),
 
 		]).then(function () {
 			return base.setChildren([
@@ -952,6 +978,7 @@ AccountInterfaces.projectInterface = function () {
 				focusSidebar,
 				transcriptionPanel,
 				exportPanel,
+				uploadPanel,
 			]);
 		}).then(function () {
 			return base;
