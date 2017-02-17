@@ -7,13 +7,36 @@ AccountComponents.uploadController = function () {
 		base.upload = {
 			error: {
 				any: function () {
-					return base.upload.error.no_zip_or_folder || base.upload.error.no_relfile || base.upload.error.relfile_duplicates || base.upload.error.no_caption || base.error.upload.server_duplicates;
+					return base.upload.error.initial() || base.upload.error.buffered() || base.upload.error.final();
 				},
-				noZipOrFolder: false,
-				noRelfile: false,
-				relfileDuplicates: false,
-				noCaption: false,
-				serverDuplicatesWithinBatch: false,
+				initial: function () {
+					return Object.keys(base.upload.error.categories.initial).reduce(function (condition, error) {
+						return condition || base.upload.error.categories.initial[error];
+					}, false);
+				},
+				buffered: function () {
+					return Object.keys(base.upload.error.categories.buffered).reduce(function (condition, error) {
+						return condition || base.upload.error.categories.buffered[error];
+					}, false);
+				},
+				final: function () {
+					return Object.keys(base.upload.error.categories.final).reduce(function (condition, error) {
+						return condition || base.upload.error.categories.final[error];
+					}, false);
+				},
+				categories: {
+					initial: {
+						relfileDuplicates: false,
+					},
+					buffered: {
+						noRelfile: false,
+						noCaption: false,
+						notEnoughRelfileEntries: false,
+					},
+					final: {
+						serverDuplicates: false,
+					},
+				},
 			},
 			buffer: {
 				id: undefined,
@@ -27,7 +50,7 @@ AccountComponents.uploadController = function () {
 						audioFile.caption = base.upload.buffer.relfile.entries[filename].caption;
 					}
 					base.upload.buffer.audio[filename] = audioFile;
-					base.upload.buffer.check();
+					return base.upload.buffer.update();
 				},
 				addRelfile: function (relfileContent) {
 					relfileContent.split('\n').forEach(function (line) {
@@ -36,15 +59,20 @@ AccountComponents.uploadController = function () {
 						if (filename.contains('.wav')) {
 							if (filename in base.upload.buffer.relfile.entries) {
 								base.upload.buffer.relfile.entries[filename].isDuplicate = true;
+								base.upload.error.relfileDuplicates = true;
 							} else {
 								base.upload.buffer.relfile.entries[filename] = {caption: caption};
 							}
 						}
 					});
-					base.upload.buffer.check();
+					return base.upload.buffer.update();
+				},
+				update: function () {
+					return base.triggerState();
 				},
 				check: function () {
 					// check for errors and accept or reject, then push
+
 				},
 				push: function () {
 					// reset buffer
@@ -52,7 +80,7 @@ AccountComponents.uploadController = function () {
 					// reset errors
 				},
 			},
-			unpack: function (file) {
+			accept: function (file) {
 				// sort by file type
 				if (file.type === 'audio/wav') {
 					// 1. add to buffer.audio
@@ -89,16 +117,9 @@ AccountComponents.uploadController = function () {
 						}).forEach(function (key) {
 							base.upload.buffer.addAudio(zip.file(key));
 						});
-
-						console.log(Object.keys(base.upload.buffer.audio).length);
 					}
-				} else {
-					console.log('no');
+					zipReader.readAsBinaryString(file);
 				}
-
-				// check for complete
-
-
 				// get relevant data
 				// return Promise.all([
 				// 	Active.get('client'),
