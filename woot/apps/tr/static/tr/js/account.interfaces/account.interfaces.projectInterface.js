@@ -898,10 +898,8 @@ AccountInterfaces.projectInterface = function () {
 						preFn: function (_this) {
 							if (!_this.isDropzoneSetup) {
 								_this.isDropzoneSetup = true;
-								_this.model().dropzone({
-									url: '#', // not needed
-									maxFiles: 1,
-									// acceptedFiles: '.zip',
+								_this.dropzone = new Dropzone('#{id}'.format({id: _this.id}), {
+									url: '#',
 									accept: uploadController.upload.unpack,
 								});
 								return Util.ep();
