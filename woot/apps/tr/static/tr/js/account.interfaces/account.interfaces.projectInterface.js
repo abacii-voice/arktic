@@ -331,14 +331,44 @@ AccountInterfaces.projectInterface = function () {
 				},
 			},
 		}),
-		// Components.searchableList('{id}-6-up-1-file-list'.format({id: id}), {
-		// 	appearance: {
-		// 		style: {
-		// 			'height': '100%',
-		// 			'width': '100%',
-		// 		},
-		// 	},
-		// }),
+		UI.createComponent('{id}-6-up-1-upload-check'.format({id: id}), {
+			template: UI.template('div', 'ie'),
+			appearance: {
+				style: {
+					'height': '100%',
+					'width': '100%',
+				},
+			},
+		}),
+		UI.createComponent('{id}-6-up-1-uc-1-relfile-display'.format({id: id}), {
+			template: UI.template('div', 'ie border border-radius'),
+			appearance: {
+				style: {
+					'height': '200px',
+					'width': '500px',
+					'margin-top': '20px',
+				},
+			},
+		}),
+		UI.createComponent('{id}-6-up-1-uc-2-audio-display'.format({id: id}), {
+			template: UI.template('div', 'ie border border-radius'),
+			appearance: {
+				style: {
+					'height': '300px',
+					'width': '500px',
+					'margin-top': '10px',
+				},
+			},
+		}),
+		UI.createComponent('{id}-6-up-2-previous-uploads'.format({id: id}), {
+			template: UI.template('div', 'ie hidden'),
+			appearance: {
+				style: {
+					'height': '100%',
+					'width': '100%',
+				},
+			},
+		}),
 
 		// non-interface elements
 		AccountComponents.uploadController(),
@@ -393,6 +423,10 @@ AccountInterfaces.projectInterface = function () {
 
 			// 6. upload panel
 			uploadPanel,
+			uploadPanelUploadCheck,
+			uploadPanelUploadCheckRelfileDisplay,
+			uploadPanelUploadCheckAudioDisplay,
+			uploadPanelPreviousUploads,
 
 			// non-interface elements
 			uploadController,
@@ -704,7 +738,7 @@ AccountInterfaces.projectInterface = function () {
 
 		// upload controller
 		uploadController.triggerState = function () {
-			return UI.changeState('-project-state-upload');
+			return UI.changeState('-project-state-upload-check');
 		}
 
 		return Promise.all([
@@ -900,7 +934,7 @@ AccountInterfaces.projectInterface = function () {
 								_this.isDropzoneSetup = true;
 								_this.dropzone = new Dropzone('#{id}'.format({id: _this.id}), {
 									url: '#',
-									accept: uploadController.upload.unpack,
+									accept: uploadController.upload.accept,
 								});
 								return Util.ep();
 							}
@@ -925,6 +959,7 @@ AccountInterfaces.projectInterface = function () {
 						fn: UI.functions.show(),
 					},
 					'-project-state-export': 'default',
+					'-project-state-upload-check': 'default',
 					'-project-state-upload': 'default',
 				},
 			}),
@@ -945,6 +980,7 @@ AccountInterfaces.projectInterface = function () {
 						},
 						fn: UI.functions.show(),
 					},
+					'-project-state-upload-check': 'default',
 					'-project-state-upload': 'default',
 				},
 			}),
@@ -959,15 +995,43 @@ AccountInterfaces.projectInterface = function () {
 					'-project-state-project': 'default',
 					'-project-state-transcription': 'default',
 					'-project-state-export': 'default',
-					'-project-state-upload': {
+					'-project-state-upload-check': {
 						preFn: function (_this) {
 							// load data
 							return Util.ep();
 						},
 						fn: UI.functions.show(),
 					},
+					'-project-state-upload': 'default',
 				},
 			}),
+			uploadPanel.setChildren([
+				uploadPanelUploadCheck,
+				uploadPanelPreviousUploads,
+			]),
+			uploadPanelUploadCheck.setState({
+				defaultState: {
+					preFn: UI.functions.hide(),
+					fn: function (_this) {
+						// return uploadPanelUploadCheck.reset();
+						return Util.ep();
+					},
+				},
+				states: {
+					'-project-state-upload-check': {
+						preFn: function (_this) {
+							// load data
+							return Util.ep();
+						},
+						fn: UI.functions.show(),
+					},
+					'-project-state-upload': 'default',
+				},
+			}),
+			uploadPanelUploadCheck.setChildren([
+				uploadPanelUploadCheckRelfileDisplay,
+				uploadPanelUploadCheckAudioDisplay,
+			]),
 
 		]).then(function () {
 			return base.setChildren([
