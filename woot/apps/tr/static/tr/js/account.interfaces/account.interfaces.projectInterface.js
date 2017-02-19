@@ -350,6 +350,31 @@ AccountInterfaces.projectInterface = function () {
 				},
 			},
 		}),
+		UI.createComponent('{id}-6-up-1-uc-1-rd-1-title'.format({id: id}), {
+			template: UI.template('h3', 'ie'),
+			appearance: {
+				style: {
+
+				},
+				html: 'Relfile',
+			},
+		}),
+		UI.createComponent('{id}-6-up-1-uc-1-rd-2-entries'.format({id: id}), {
+			template: UI.template('h3', 'ie'),
+			appearance: {
+				style: {
+
+				},
+				html: '100 entries',
+			},
+		}),
+		Components.searchableList('{id}-6-up-1-uc-1-rd-3-duplicates'.format({id: id}), {
+			appearance: {
+				style: {
+
+				},
+			},
+		}),
 		UI.createComponent('{id}-6-up-1-uc-2-audio-display'.format({id: id}), {
 			template: UI.template('div', 'ie border border-radius'),
 			appearance: {
@@ -360,7 +385,55 @@ AccountInterfaces.projectInterface = function () {
 				},
 			},
 		}),
-		UI.createComponent('{id}-6-up-2-previous-uploads'.format({id: id}), {
+		UI.createComponent('{id}-6-up-1-uc-2-ad-1-title'.format({id: id}), {
+			template: UI.template('h3', 'ie'),
+			appearance: {
+				style: {
+
+				},
+			},
+		}),
+		UI.createComponent('{id}-6-up-1-uc-2-ad-2-entries'.format({id: id}), {
+			template: UI.template('h3', 'ie'),
+			appearance: {
+				style: {
+
+				},
+			},
+		}),
+		Components.searchableList('{id}-6-up-1-uc-2-ad-3-no-caption-list'.format({id: id}), {
+			appearance: {
+				style: {
+
+				},
+			},
+		}),
+		UI.createComponent('{id}-6-up-1-uc-2-ad-4-no-caption-error'.format({id: id}), {
+			template: UI.template('div', 'ie border border-radius'),
+			appearance: {
+				style: {
+
+				},
+			},
+		}),
+		UI.createComponent('{id}-6-up-1-uc-2-ad-5-too-many-files-error'.format({id: id}), {
+			template: UI.template('div', 'ie border border-radius'),
+			appearance: {
+				style: {
+
+				},
+			},
+		}),
+		UI.createComponent('{id}-6-up-2-confirm-upload-button'.format({id: id}), {
+			template: UI.template('div', 'ie hidden'),
+			appearance: {
+				style: {
+					'height': '100%',
+					'width': '100%',
+				},
+			},
+		}),
+		UI.createComponent('{id}-6-up-3-previous-uploads'.format({id: id}), {
 			template: UI.template('div', 'ie hidden'),
 			appearance: {
 				style: {
@@ -425,7 +498,16 @@ AccountInterfaces.projectInterface = function () {
 			uploadPanel,
 			uploadPanelUploadCheck,
 			uploadPanelUploadCheckRelfileDisplay,
+			uploadPanelUploadCheckRelfileDisplayTitle,
+			uploadPanelUploadCheckRelfileDisplayEntries,
+			uploadPanelUploadCheckRelfileDisplayDuplicates,
 			uploadPanelUploadCheckAudioDisplay,
+			uploadPanelUploadCheckAudioDisplayTitle,
+			uploadPanelUploadCheckAudioDisplayEntries,
+			uploadPanelUploadCheckAudioDisplayNoCaptionList,
+			uploadPanelUploadCheckAudioDisplayNoCaptionError,
+			uploadPanelUploadCheckAudioDisplayTooManyFilesError,
+			uploadPanelConfirmUploadButton,
 			uploadPanelPreviousUploads,
 
 			// non-interface elements
@@ -1031,6 +1113,12 @@ AccountInterfaces.projectInterface = function () {
 			uploadPanelUploadCheck.setChildren([
 				uploadPanelUploadCheckRelfileDisplay,
 				uploadPanelUploadCheckAudioDisplay,
+			]),
+			uploadPanelUploadCheckRelfileDisplay.setChildren([
+
+			]),
+			uploadPanelUploadCheckAudioDisplay.setChildren([
+
 			]),
 
 		]).then(function () {
