@@ -340,52 +340,91 @@ AccountInterfaces.projectInterface = function () {
 				},
 			},
 		}),
-		UI.createComponent('{id}-6-up-1-uc-1-relfile-display'.format({id: id}), {
+
+		// relfile display
+		UI.createComponent('{id}-6-up-1-uc-1-relfile-display-container'.format({id: id}), {
+			template: UI.template('div', 'ie'),
+			appearance: {
+				style: {
+					'height': '45px',
+					'width': '500px',
+					'overflow': 'visible',
+				},
+			},
+		}),
+		UI.createComponent('{id}-6-up-1-uc-1-rdc-1-relfile-display'.format({id: id}), {
 			template: UI.template('div', 'ie border border-radius'),
 			appearance: {
 				style: {
-					'height': '200px',
-					'width': '500px',
+					'height': '100%',
+					'width': '50%',
 					'margin-top': '20px',
 				},
 			},
 		}),
-		UI.createComponent('{id}-6-up-1-uc-1-rd-1-title'.format({id: id}), {
+		UI.createComponent('{id}-6-up-1-uc-1-rdc-1-rd-1-title'.format({id: id}), {
 			template: UI.template('h3', 'ie'),
 			appearance: {
 				style: {
-
+					'font-size': '18px',
+					'margin-top': '10px',
+					'margin-left': '10px',
 				},
 				html: 'Relfile',
 			},
 		}),
-		UI.createComponent('{id}-6-up-1-uc-1-rd-2-entries'.format({id: id}), {
-			template: UI.template('h3', 'ie'),
+		UI.createComponent('{id}-6-up-1-uc-1-rdc-1-rd-2-entries'.format({id: id}), {
+			template: UI.template('span', 'ie'),
 			appearance: {
 				style: {
-
-				},
-				html: '100 entries',
-			},
-		}),
-		Components.searchableList('{id}-6-up-1-uc-1-rd-3-duplicates'.format({id: id}), {
-			appearance: {
-				style: {
-
+					'margin-left': '10px',
 				},
 			},
 		}),
-		UI.createComponent('{id}-6-up-1-uc-2-audio-display'.format({id: id}), {
+		Components.searchableList('{id}-6-up-1-uc-1-rdc-1-rd-3-duplicates'.format({id: id}), {
+			appearance: {
+				style: {
+					'width': 'calc(100% - 20px)',
+					'height': '200px',
+					'left': '10px',
+				},
+				classes: ['hidden'],
+			},
+		}),
+
+		// audio display
+		UI.createComponent('{id}-6-up-1-uc-2-audio-display-container'.format({id: id}), {
+			template: UI.template('div', 'ie'),
+			appearance: {
+				style: {
+					'height': '45px',
+					'width': '500px',
+					'overflow': 'visible',
+				},
+			},
+		}),
+		UI.createComponent('{id}-6-up-1-uc-2-adc-1-audio-display'.format({id: id}), {
 			template: UI.template('div', 'ie border border-radius'),
 			appearance: {
 				style: {
-					'height': '300px',
-					'width': '500px',
+					'height': '100%',
+					'width': '50%',
 					'margin-top': '10px',
 				},
 			},
 		}),
-		UI.createComponent('{id}-6-up-1-uc-2-ad-1-title'.format({id: id}), {
+		UI.createComponent('{id}-6-up-1-uc-2-adc-1-ad-1-title'.format({id: id}), {
+			template: UI.template('h3', 'ie'),
+			appearance: {
+				style: {
+					'font-size': '18px',
+					'margin-top': '10px',
+					'margin-left': '10px',
+				},
+				html: 'Audio',
+			},
+		}),
+		UI.createComponent('{id}-6-up-1-uc-2-adc-1-ad-2-entries'.format({id: id}), {
 			template: UI.template('h3', 'ie'),
 			appearance: {
 				style: {
@@ -393,22 +432,14 @@ AccountInterfaces.projectInterface = function () {
 				},
 			},
 		}),
-		UI.createComponent('{id}-6-up-1-uc-2-ad-2-entries'.format({id: id}), {
-			template: UI.template('h3', 'ie'),
+		Components.searchableList('{id}-6-up-1-uc-2-adc-1-ad-3-no-caption-list'.format({id: id}), {
 			appearance: {
 				style: {
 
 				},
 			},
 		}),
-		Components.searchableList('{id}-6-up-1-uc-2-ad-3-no-caption-list'.format({id: id}), {
-			appearance: {
-				style: {
-
-				},
-			},
-		}),
-		UI.createComponent('{id}-6-up-1-uc-2-ad-4-no-caption-error'.format({id: id}), {
+		UI.createComponent('{id}-6-up-1-uc-2-adc-1-ad-4-no-caption-error'.format({id: id}), {
 			template: UI.template('div', 'ie border border-radius'),
 			appearance: {
 				style: {
@@ -416,7 +447,7 @@ AccountInterfaces.projectInterface = function () {
 				},
 			},
 		}),
-		UI.createComponent('{id}-6-up-1-uc-2-ad-5-too-many-files-error'.format({id: id}), {
+		UI.createComponent('{id}-6-up-1-uc-2-adc-1-ad-5-too-many-files-error'.format({id: id}), {
 			template: UI.template('div', 'ie border border-radius'),
 			appearance: {
 				style: {
@@ -424,7 +455,9 @@ AccountInterfaces.projectInterface = function () {
 				},
 			},
 		}),
-		UI.createComponent('{id}-6-up-2-confirm-upload-button'.format({id: id}), {
+
+		// confirm button
+		UI.createComponent('{id}-6-up-1-uc-3--confirm-upload-button'.format({id: id}), {
 			template: UI.template('div', 'ie hidden'),
 			appearance: {
 				style: {
@@ -433,7 +466,9 @@ AccountInterfaces.projectInterface = function () {
 				},
 			},
 		}),
-		UI.createComponent('{id}-6-up-3-previous-uploads'.format({id: id}), {
+
+		// 6.2 previous uploads
+		UI.createComponent('{id}-6-up-2-previous-uploads'.format({id: id}), {
 			template: UI.template('div', 'ie hidden'),
 			appearance: {
 				style: {
@@ -497,17 +532,27 @@ AccountInterfaces.projectInterface = function () {
 			// 6. upload panel
 			uploadPanel,
 			uploadPanelUploadCheck,
+
+			// relfile display
+			uploadPanelUploadCheckRelfileDisplayContainer,
 			uploadPanelUploadCheckRelfileDisplay,
 			uploadPanelUploadCheckRelfileDisplayTitle,
 			uploadPanelUploadCheckRelfileDisplayEntries,
 			uploadPanelUploadCheckRelfileDisplayDuplicates,
+
+			// audio display
+			uploadPanelUploadCheckAudioDisplayContainer,
 			uploadPanelUploadCheckAudioDisplay,
 			uploadPanelUploadCheckAudioDisplayTitle,
 			uploadPanelUploadCheckAudioDisplayEntries,
 			uploadPanelUploadCheckAudioDisplayNoCaptionList,
 			uploadPanelUploadCheckAudioDisplayNoCaptionError,
 			uploadPanelUploadCheckAudioDisplayTooManyFilesError,
+
+			// confirm button
 			uploadPanelConfirmUploadButton,
+
+			// 6.2 previous uploads
 			uploadPanelPreviousUploads,
 
 			// non-interface elements
@@ -818,6 +863,9 @@ AccountInterfaces.projectInterface = function () {
 			'cursor': 'pointer',
 		})
 
+		// upload panel
+
+
 		// upload controller
 		uploadController.triggerState = function () {
 			return UI.changeState('-project-state-upload-check');
@@ -1111,14 +1159,24 @@ AccountInterfaces.projectInterface = function () {
 				},
 			}),
 			uploadPanelUploadCheck.setChildren([
+				uploadPanelUploadCheckRelfileDisplayContainer,
+				uploadPanelUploadCheckAudioDisplayContainer,
+			]),
+			uploadPanelUploadCheckRelfileDisplayContainer.setChildren([
 				uploadPanelUploadCheckRelfileDisplay,
-				uploadPanelUploadCheckAudioDisplay,
 			]),
 			uploadPanelUploadCheckRelfileDisplay.setChildren([
-
+				uploadPanelUploadCheckRelfileDisplayTitle,
+				uploadPanelUploadCheckRelfileDisplayEntries,
+				uploadPanelUploadCheckRelfileDisplayDuplicates,
+			]),
+			uploadPanelUploadCheckAudioDisplayContainer.setChildren([
+				uploadPanelUploadCheckAudioDisplay,
 			]),
 			uploadPanelUploadCheckAudioDisplay.setChildren([
-
+				uploadPanelUploadCheckAudioDisplayTitle,
+				uploadPanelUploadCheckAudioDisplayEntries,
+				uploadPanelUploadCheckAudioDisplayNoCaptionList,
 			]),
 
 		]).then(function () {
