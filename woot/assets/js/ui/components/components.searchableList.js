@@ -285,7 +285,6 @@ Components.searchableList = function (id, args) {
 										// element already exists. Update using info in datum.
 										// NO RETURN: releases promise immediately. No need to wait for order if one exists.
 										UI.getComponent(base.data.storage.virtual.rendered[index]).then(function (existingListItem) {
-											// console.log(datum);
 											return existingListItem.updateMetadata(datum, base.data.query.toLowerCase());
 										}).then(function () {
 											if (base.currentIndex === undefined) {
@@ -784,18 +783,14 @@ Components.searchableList = function (id, args) {
 		base.setTitle = function (options) {
 			options = (options || {});
 			if (options.text) {
+				options.style = (options.style || {});
 				if (options.center) {
-					console.log(base.id);
-					title.appearance = (title.appearance || {});
-					title.appearance.style = (title.appearance.style || {});
-					title.appearance.style['text-align'] = 'center';
-					return title.setAppearance({
-						html: options.text,
-						style: title.appearance.style,
-					});
-				} else {
-					return title.setAppearance({html: options.text});
+					options.style['text-align'] = 'center';
 				}
+				return title.setAppearance({
+					html: options.text,
+					style: options.style,
+				});
 			} else {
 				return title.setAppearance({
 					style: {
