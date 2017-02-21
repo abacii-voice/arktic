@@ -418,21 +418,23 @@ AccountInterfaces.projectInterface = function () {
 					'margin-top': '10px',
 					'margin-left': '10px',
 				},
-				html: 'Audio',
+				html: 'No audio',
 			},
 		}),
 		UI.createComponent('{id}-6-up-1-uc-2-adc-1-ad-2-entries'.format({id: id}), {
-			template: UI.template('h3', 'ie'),
+			template: UI.template('span', 'ie'),
 			appearance: {
 				style: {
-
+					'margin-left': '10px',
 				},
 			},
 		}),
 		Components.searchableList('{id}-6-up-1-uc-2-adc-1-ad-3-no-caption-list'.format({id: id}), {
 			appearance: {
 				style: {
-
+					'width': 'calc(100% - 20px)',
+					'height': '200px',
+					'left': '10px',
 				},
 			},
 		}),
@@ -994,6 +996,138 @@ AccountInterfaces.projectInterface = function () {
 			});
 		}
 
+		uploadPanelUploadCheckAudioDisplayNoCaptionList.data.load.source = function (path, options) {
+			return Util.ep(uploadController.upload.buffer.audio);
+		}
+		uploadPanelUploadCheckAudioDisplayNoCaptionList.autocomplete = false;
+		uploadPanelUploadCheckAudioDisplayNoCaptionList.targets = [
+			{
+				name: 'noCaption',
+				path: function () {
+					return Util.ep();
+				},
+				process: function (data) {
+					var results = Object.keys(data).filter(function (key) {
+						return data[key].noCaption;
+					}).map(function (key) {
+						var noCaption = data[key];
+						return {
+							id: key,
+							main: key,
+							rule: 'noCaption',
+						}
+					});
+					return Util.ep(results);
+				},
+			}
+		]
+		uploadPanelUploadCheckAudioDisplayNoCaptionList.unit = function (datum, query, index) {
+			query = (query || '');
+			var base = uploadPanelUploadCheckAudioDisplayNoCaptionList.data.idgen(index);
+			return Promise.all([
+				// base component
+				UI.createComponent(base, {
+					template: UI.template('div', 'ie base'),
+					appearance: {
+						style: {
+							'height': '20px',
+						},
+						classes: [datum.rule],
+					},
+				}),
+
+				// main wrapper
+				UI.createComponent('{base}-main-wrapper'.format({base: base}), {
+					template: UI.template('div', 'ie centred-vertically'),
+					appearance: {
+						style: {
+							'display': 'inline-block',
+						},
+					},
+				}),
+
+				// main
+				UI.createComponent('{base}-main-head'.format({base: base}), {
+					template: UI.template('span', 'ie'),
+					appearance: {
+						style: {
+							'color': Color.grey.normal,
+							'display': 'inline-block',
+							'position': 'absolute',
+						},
+						html: datum.main.substring(0, query.length),
+					},
+				}),
+				UI.createComponent('{base}-main-tail'.format({base: base}), {
+					template: UI.template('span', 'ie'),
+					appearance: {
+						style: {
+							'display': 'inline-block',
+						},
+						html: datum.main,
+					},
+				}),
+
+			]).then(function (unitComponents) {
+				var [
+					unitBase,
+					unitMainWrapper,
+					unitMainHead,
+					unitMainTail,
+				] = unitComponents;
+
+				unitBase.activate = function () {
+					return unitBase.setAppearance({classes: {add: ['active']}});
+				}
+				unitBase.deactivate = function () {
+					return unitBase.setAppearance({classes: {remove: ['active']}});
+				}
+				unitBase.hide = function () {
+					unitBase.isHidden = true;
+					return unitBase.setAppearance({classes: {add: 'hidden'}});
+				}
+				unitBase.show = function () {
+					unitBase.isHidden = false;
+					return unitBase.setAppearance({classes: {remove: 'hidden'}});
+				}
+				unitBase.updateMetadata = function (ndatum, query) {
+					// if there are changes, do stuff.
+					return ((!unitBase.datum || ndatum.id !== unitBase.datum.id) ? unitBase.updateDatum : Util.ep)(ndatum).then(function () {
+						return (query !== unitBase.query ? unitBase.updateQuery : Util.ep)(query);
+					}).then(function () {
+						return (unitBase.isHidden ? unitBase.show : Util.ep)();
+					});
+				}
+				unitBase.updateDatum = function (ndatum) {
+					return unitBase.setAppearance({classes: {add: ndatum.rule, remove: (unitBase.datum || datum).rule}}).then(function () {
+						unitBase.datum = ndatum;
+						return Util.ep();
+					});
+				}
+				unitBase.updateQuery = function (query) {
+					unitBase.query = query;
+					return Promise.all([
+						unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+						unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
+					]);
+				}
+
+				// complete promises.
+				return Promise.all([
+					unitMainWrapper.setChildren([
+						unitMainHead,
+						unitMainTail,
+					]),
+				]).then(function () {
+					return unitBase.setChildren([
+						unitMainWrapper,
+					]);
+				}).then(function () {
+					return unitBase;
+				});
+			});
+		}
+
 		// upload controller
 		uploadController.triggerState = function () {
 			return UI.changeState('-project-state-upload-check');
@@ -1281,7 +1415,7 @@ AccountInterfaces.projectInterface = function () {
 							// load data
 							return Promise.all([
 
-								// decide how big to make relfile display container
+								// adjust relfile display container
 								Util.ep(Object.keys(uploadController.upload.buffer.relfile.entries).length).then(function (numberOfEntries) {
 									if (uploadController.upload.addingRelfile) {
 										uploadController.upload.addingRelfile = false;
@@ -1292,7 +1426,7 @@ AccountInterfaces.projectInterface = function () {
 												return uploadController.upload.buffer.relfile.entries[key].isDuplicate;
 											}).length;
 											if (numberOfDuplicates) {
-												uploadPanelUploadCheckRelfileDisplayDuplicates.setTitle('{duplicates} Duplicates'.format({duplicates: numberOfDuplicates}), {center: false}),
+												uploadPanelUploadCheckRelfileDisplayDuplicates.setTitle({text: '{duplicates} duplicates'.format({duplicates: numberOfDuplicates}), center: false}),
 												uploadPanelUploadCheckRelfileDisplayContainer.setAppearance({style: {'height': '250px'}});
 											} else {
 												uploadPanelUploadCheckRelfileDisplayContainer.setAppearance({style: {'height': '60px'}});
@@ -1306,6 +1440,32 @@ AccountInterfaces.projectInterface = function () {
 
 								// display relfile duplicates
 								uploadPanelUploadCheckRelfileDisplayDuplicates.control.setup.main(),
+
+								// adjust audio display container
+								Util.ep(Object.keys(uploadController.upload.buffer.audio).length).then(function (numberOfEntries) {
+									if (uploadController.upload.addingAudio) {
+										uploadController.upload.addingAudio = false;
+										if (numberOfEntries) {
+											uploadPanelUploadCheckAudioDisplayTitle.setAppearance({html: 'Audio'});
+											uploadPanelUploadCheckAudioDisplayEntries.setAppearance({html: '{entries} entries'.format({entries: numberOfEntries})});
+											var numberOfNoCaption = Object.keys(uploadController.upload.buffer.audio).filter(function (key) {
+												return uploadController.upload.buffer.audio[key].noCaption;
+											}).length;
+											if (numberOfNoCaption) {
+												uploadPanelUploadCheckAudioDisplayNoCaptionList.setTitle({text: '{nocaption} without captions'.format({nocaption: numberOfNoCaption}), center: false}),
+												uploadPanelUploadCheckAudioDisplayContainer.setAppearance({style: {'height': '250px'}});
+											} else {
+												uploadPanelUploadCheckAudioDisplayContainer.setAppearance({style: {'height': '60px'}});
+											}
+										} else {
+											uploadPanelUploadCheckAudioDisplayTitle.setAppearance({html: 'No audio'});
+											uploadPanelUploadCheckAudioDisplayContainer.setAppearance({style: {'height': '45px'}});
+										}
+									}
+								}),
+
+								// display audio no caption
+								uploadPanelUploadCheckAudioDisplayNoCaptionList.control.setup.main(),
 							]);
 						},
 						preFn: UI.functions.show(),
@@ -1336,6 +1496,13 @@ AccountInterfaces.projectInterface = function () {
 			]),
 
 			// audio display
+			uploadPanelUploadCheckAudioDisplayNoCaptionList.setTitle({text: 'Without captions', center: false, style: {'font-size': '14px', 'margin-bottom': '0px'}}),
+			uploadPanelUploadCheckAudioDisplayNoCaptionList.setSearch({mode: 'off', placeholder: ''}),
+			uploadPanelUploadCheckAudioDisplayNoCaptionList.components.list.setAppearance({
+				style: {
+					'height': '158px',
+				},
+			}),
 			uploadPanelUploadCheckAudioDisplayContainer.setChildren([
 				uploadPanelUploadCheckAudioDisplay,
 			]),
