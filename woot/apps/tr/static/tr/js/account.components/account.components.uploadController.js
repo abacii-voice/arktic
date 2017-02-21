@@ -45,32 +45,47 @@ AccountComponents.uploadController = function () {
 					entries: {},
 				},
 				addAudio: function (audioFile) {
+					console.log('here');
 					let filename = Util.basename(audioFile.name);
 					if (filename in base.upload.buffer.relfile.entries) {
 						audioFile.caption = base.upload.buffer.relfile.entries[filename].caption;
+					} else if (Object.keys(base.upload.buffer.relfile.entries).length !== 0) {
+						audioFile.caption = ''
+						audioFile.noCaption = true;
 					}
-					base.upload.buffer.audio[filename] = audioFile;
 					base.upload.addingAudio = true;
+					base.upload.buffer.audio[filename] = audioFile;
 					return base.upload.buffer.update();
 				},
 				addRelfile: function (relfileContent) {
-					relfileContent.split('\n').forEach(function (line) {
-						let [filename, caption] = line.split(',');
-						filename = Util.basename(filename);
-						if (filename.contains('.wav')) {
-							if (filename in base.upload.buffer.relfile.entries) {
-								base.upload.buffer.relfile.entries[filename].isDuplicate = true;
-								base.upload.error.relfileDuplicates = true;
-							} else {
-								base.upload.buffer.relfile.entries[filename] = {caption: caption};
+					return new Promise(function(resolve, reject) {
+						relfileContent.split('\n').forEach(function (line) {
+							let [filename, caption] = line.split(',');
+							filename = Util.basename(filename);
+							if (filename.contains('.wav')) {
+								if (filename in base.upload.buffer.relfile.entries) {
+									base.upload.buffer.relfile.entries[filename].isDuplicate = true;
+									base.upload.error.relfileDuplicates = true;
+								} else {
+									base.upload.buffer.relfile.entries[filename] = {caption: caption};
+								}
 							}
-						}
+						});
+						resolve();
+					}).then(function () {
+						base.upload.addingRelfile = true;
+						return base.upload.buffer.updateAudio();
 					});
-					base.upload.addingRelfile = true;
-					return base.upload.buffer.update();
 				},
 				update: function () {
 					return base.triggerState();
+				},
+				updateAudio: function () {
+					return Promise.all(Object.keys(base.upload.buffer.audio).map(function (key) {
+						return base.upload.buffer.addAudio(base.upload.buffer.audio[key]);
+					})).then(function () {
+						return base.upload.buffer.update();
+					});
 				},
 				check: function () {
 					// check for errors and accept or reject, then push
