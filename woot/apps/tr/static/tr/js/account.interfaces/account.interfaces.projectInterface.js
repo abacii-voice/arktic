@@ -346,9 +346,9 @@ AccountInterfaces.projectInterface = function () {
 			template: UI.template('div', 'ie'),
 			appearance: {
 				style: {
-					'height': '250px', // 45, 60, 250
+					'height': '45px', // 45, 60, 250
 					'width': '500px',
-					'overflow': 'visible',
+					'margin-top': '20px',
 				},
 			},
 		}),
@@ -358,7 +358,6 @@ AccountInterfaces.projectInterface = function () {
 				style: {
 					'height': '100%',
 					'width': '50%',
-					'margin-top': '20px',
 				},
 			},
 		}),
@@ -379,7 +378,6 @@ AccountInterfaces.projectInterface = function () {
 				style: {
 					'margin-left': '10px',
 				},
-				html: '0 entries',
 			},
 		}),
 		Components.searchableList('{id}-6-up-1-uc-1-rdc-1-rd-3-duplicates'.format({id: id}), {
@@ -389,7 +387,6 @@ AccountInterfaces.projectInterface = function () {
 					'height': '200px',
 					'left': '10px',
 				},
-				// classes: ['hidden'],
 			},
 		}),
 
@@ -400,7 +397,7 @@ AccountInterfaces.projectInterface = function () {
 				style: {
 					'height': '45px',
 					'width': '500px',
-					'overflow': 'visible',
+					'margin-top': '10px',
 				},
 			},
 		}),
@@ -410,7 +407,6 @@ AccountInterfaces.projectInterface = function () {
 				style: {
 					'height': '100%',
 					'width': '50%',
-					'margin-top': '10px',
 				},
 			},
 		}),
@@ -869,7 +865,6 @@ AccountInterfaces.projectInterface = function () {
 		uploadPanelUploadCheckRelfileDisplayDuplicates.data.load.source = function (path, options) {
 			return Util.ep(uploadController.upload.buffer.relfile.entries);
 		}
-		uploadPanelUploadCheckRelfileDisplayDuplicates.components
 		uploadPanelUploadCheckRelfileDisplayDuplicates.autocomplete = false;
 		uploadPanelUploadCheckRelfileDisplayDuplicates.targets = [
 			{
@@ -1282,13 +1277,37 @@ AccountInterfaces.projectInterface = function () {
 				},
 				states: {
 					'-project-state-upload-check': {
-						preFn: function (_this) {
+						fn: function (_this) {
 							// load data
 							return Promise.all([
+
+								// decide how big to make relfile display container
+								Util.ep(Object.keys(uploadController.upload.buffer.relfile.entries).length).then(function (numberOfEntries) {
+									if (uploadController.upload.addingRelfile) {
+										uploadController.upload.addingRelfile = false;
+										if (numberOfEntries) {
+											uploadPanelUploadCheckRelfileDisplayTitle.setAppearance({html: 'Relfile'});
+											uploadPanelUploadCheckRelfileDisplayEntries.setAppearance({html: '{entries} entries'.format({entries: numberOfEntries})});
+											var numberOfDuplicates = Object.keys(uploadController.upload.buffer.relfile.entries).filter(function (key) {
+												return uploadController.upload.buffer.relfile.entries[key].isDuplicate;
+											}).length;
+											if (numberOfDuplicates) {
+												uploadPanelUploadCheckRelfileDisplayContainer.setAppearance({style: {'height': '250px'}});
+											} else {
+												uploadPanelUploadCheckRelfileDisplayContainer.setAppearance({style: {'height': '60px'}});
+											}
+										} else {
+											uploadPanelUploadCheckRelfileDisplayTitle.setAppearance({html: 'No relfile'});
+											uploadPanelUploadCheckRelfileDisplayContainer.setAppearance({style: {'height': '45px'}});
+										}
+									}
+								}),
+
+								// display relfile duplicates
 								uploadPanelUploadCheckRelfileDisplayDuplicates.control.setup.main(),
 							]);
 						},
-						fn: UI.functions.show(),
+						preFn: UI.functions.show(),
 					},
 					'-project-state-upload': 'default',
 				},
@@ -1299,8 +1318,13 @@ AccountInterfaces.projectInterface = function () {
 			]),
 
 			// relfile display
-			uploadPanelUploadCheckRelfileDisplayDuplicates.setTitle({text: 'Duplicates', center: false, style: {'font-size': '14px'}}),
+			uploadPanelUploadCheckRelfileDisplayDuplicates.setTitle({text: 'Duplicates', center: false, style: {'font-size': '14px', 'margin-bottom': '0px'}}),
 			uploadPanelUploadCheckRelfileDisplayDuplicates.setSearch({mode: 'off', placeholder: ''}),
+			uploadPanelUploadCheckRelfileDisplayDuplicates.components.list.setAppearance({
+				style: {
+					'height': '158px',
+				},
+			}),
 			uploadPanelUploadCheckRelfileDisplayContainer.setChildren([
 				uploadPanelUploadCheckRelfileDisplay,
 			]),

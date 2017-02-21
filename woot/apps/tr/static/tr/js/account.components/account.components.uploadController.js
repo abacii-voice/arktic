@@ -50,6 +50,7 @@ AccountComponents.uploadController = function () {
 						audioFile.caption = base.upload.buffer.relfile.entries[filename].caption;
 					}
 					base.upload.buffer.audio[filename] = audioFile;
+					base.upload.addingAudio = true;
 					return base.upload.buffer.update();
 				},
 				addRelfile: function (relfileContent) {
@@ -65,6 +66,7 @@ AccountComponents.uploadController = function () {
 							}
 						}
 					});
+					base.upload.addingRelfile = true;
 					return base.upload.buffer.update();
 				},
 				update: function () {
