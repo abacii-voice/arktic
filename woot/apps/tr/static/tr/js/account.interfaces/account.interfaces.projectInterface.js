@@ -346,7 +346,7 @@ AccountInterfaces.projectInterface = function () {
 			template: UI.template('div', 'ie'),
 			appearance: {
 				style: {
-					'height': '45px',
+					'height': '250px', // 45, 60, 250
 					'width': '500px',
 					'overflow': 'visible',
 				},
@@ -370,7 +370,7 @@ AccountInterfaces.projectInterface = function () {
 					'margin-top': '10px',
 					'margin-left': '10px',
 				},
-				html: 'Relfile',
+				html: 'No relfile',
 			},
 		}),
 		UI.createComponent('{id}-6-up-1-uc-1-rdc-1-rd-2-entries'.format({id: id}), {
@@ -379,6 +379,7 @@ AccountInterfaces.projectInterface = function () {
 				style: {
 					'margin-left': '10px',
 				},
+				html: '0 entries',
 			},
 		}),
 		Components.searchableList('{id}-6-up-1-uc-1-rdc-1-rd-3-duplicates'.format({id: id}), {
@@ -388,7 +389,7 @@ AccountInterfaces.projectInterface = function () {
 					'height': '200px',
 					'left': '10px',
 				},
-				classes: ['hidden'],
+				// classes: ['hidden'],
 			},
 		}),
 
@@ -864,7 +865,138 @@ AccountInterfaces.projectInterface = function () {
 		})
 
 		// upload panel
+		// relfile duplicates
+		uploadPanelUploadCheckRelfileDisplayDuplicates.data.load.source = function (path, options) {
+			return Util.ep(uploadController.upload.buffer.relfile.entries);
+		}
+		uploadPanelUploadCheckRelfileDisplayDuplicates.autocomplete = false;
+		uploadPanelUploadCheckRelfileDisplayDuplicates.targets = [
+			{
+				name: 'duplicates',
+				path: function () {
+					return Util.ep();
+				},
+				process: function (data) {
+					var results = Object.keys(data).filter(function (key) {
+						return data[key].isDuplicate;
+					}).map(function (key) {
+						var entry = data[key];
+						return {
+							id: key,
+							main: key,
+							rule: 'duplicates',
+						}
+					});
+					return Util.ep(results);
+				},
+			}
+		]
+		uploadPanelUploadCheckRelfileDisplayDuplicates.unit = function (datum, query, index) {
+			query = (query || '');
+			var base = projectList.data.idgen(index);
+			return Promise.all([
+				// base component
+				UI.createComponent(base, {
+					template: UI.template('div', 'ie base'),
+					appearance: {
+						style: {
+							'height': '20px',
+						},
+						classes: [datum.rule],
+					},
+				}),
 
+				// main wrapper
+				UI.createComponent('{base}-main-wrapper'.format({base: base}), {
+					template: UI.template('div', 'ie centred-vertically'),
+					appearance: {
+						style: {
+							'display': 'inline-block',
+						},
+					},
+				}),
+
+				// main
+				UI.createComponent('{base}-main-head'.format({base: base}), {
+					template: UI.template('span', 'ie'),
+					appearance: {
+						style: {
+							'color': Color.grey.normal,
+							'display': 'inline-block',
+							'position': 'absolute',
+						},
+						html: datum.main.substring(0, query.length),
+					},
+				}),
+				UI.createComponent('{base}-main-tail'.format({base: base}), {
+					template: UI.template('span', 'ie'),
+					appearance: {
+						style: {
+							'display': 'inline-block',
+						},
+						html: datum.main,
+					},
+				}),
+
+			]).then(function (unitComponents) {
+				var [
+					unitBase,
+					unitMainWrapper,
+					unitMainHead,
+					unitMainTail,
+				] = unitComponents;
+
+				unitBase.activate = function () {
+					return unitBase.setAppearance({classes: {add: ['active']}});
+				}
+				unitBase.deactivate = function () {
+					return unitBase.setAppearance({classes: {remove: ['active']}});
+				}
+				unitBase.hide = function () {
+					unitBase.isHidden = true;
+					return unitBase.setAppearance({classes: {add: 'hidden'}});
+				}
+				unitBase.show = function () {
+					unitBase.isHidden = false;
+					return unitBase.setAppearance({classes: {remove: 'hidden'}});
+				}
+				unitBase.updateMetadata = function (ndatum, query) {
+					// if there are changes, do stuff.
+					return ((!unitBase.datum || ndatum.id !== unitBase.datum.id) ? unitBase.updateDatum : Util.ep)(ndatum).then(function () {
+						return (query !== unitBase.query ? unitBase.updateQuery : Util.ep)(query);
+					}).then(function () {
+						return (unitBase.isHidden ? unitBase.show : Util.ep)();
+					});
+				}
+				unitBase.updateDatum = function (ndatum) {
+					return unitBase.setAppearance({classes: {add: ndatum.rule, remove: (unitBase.datum || datum).rule}}).then(function () {
+						unitBase.datum = ndatum;
+						return Util.ep();
+					});
+				}
+				unitBase.updateQuery = function (query) {
+					unitBase.query = query;
+					return Promise.all([
+						unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+						unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
+					]);
+				}
+
+				// complete promises.
+				return Promise.all([
+					unitMainWrapper.setChildren([
+						unitMainHead,
+						unitMainTail,
+					]),
+				]).then(function () {
+					return unitBase.setChildren([
+						unitMainWrapper,
+					]);
+				}).then(function () {
+					return unitBase;
+				});
+			});
+		}
 
 		// upload controller
 		uploadController.triggerState = function () {
@@ -1151,7 +1283,9 @@ AccountInterfaces.projectInterface = function () {
 					'-project-state-upload-check': {
 						preFn: function (_this) {
 							// load data
-							return Util.ep();
+							return Promise.all([
+								uploadPanelUploadCheckRelfileDisplayDuplicates.control.setup.main(),
+							]);
 						},
 						fn: UI.functions.show(),
 					},
@@ -1162,6 +1296,10 @@ AccountInterfaces.projectInterface = function () {
 				uploadPanelUploadCheckRelfileDisplayContainer,
 				uploadPanelUploadCheckAudioDisplayContainer,
 			]),
+
+			// relfile display
+			uploadPanelUploadCheckRelfileDisplayDuplicates.setTitle({text: 'Duplicates', center: false, style: {'font-size': '14px'}}),
+			uploadPanelUploadCheckRelfileDisplayDuplicates.setSearch({mode: 'off', placeholder: ''}),
 			uploadPanelUploadCheckRelfileDisplayContainer.setChildren([
 				uploadPanelUploadCheckRelfileDisplay,
 			]),
@@ -1170,6 +1308,8 @@ AccountInterfaces.projectInterface = function () {
 				uploadPanelUploadCheckRelfileDisplayEntries,
 				uploadPanelUploadCheckRelfileDisplayDuplicates,
 			]),
+
+			// audio display
 			uploadPanelUploadCheckAudioDisplayContainer.setChildren([
 				uploadPanelUploadCheckAudioDisplay,
 			]),
