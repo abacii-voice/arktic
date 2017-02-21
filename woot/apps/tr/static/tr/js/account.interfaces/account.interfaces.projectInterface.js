@@ -869,6 +869,7 @@ AccountInterfaces.projectInterface = function () {
 		uploadPanelUploadCheckRelfileDisplayDuplicates.data.load.source = function (path, options) {
 			return Util.ep(uploadController.upload.buffer.relfile.entries);
 		}
+		uploadPanelUploadCheckRelfileDisplayDuplicates.components
 		uploadPanelUploadCheckRelfileDisplayDuplicates.autocomplete = false;
 		uploadPanelUploadCheckRelfileDisplayDuplicates.targets = [
 			{
@@ -893,7 +894,7 @@ AccountInterfaces.projectInterface = function () {
 		]
 		uploadPanelUploadCheckRelfileDisplayDuplicates.unit = function (datum, query, index) {
 			query = (query || '');
-			var base = projectList.data.idgen(index);
+			var base = uploadPanelUploadCheckRelfileDisplayDuplicates.data.idgen(index);
 			return Promise.all([
 				// base component
 				UI.createComponent(base, {
