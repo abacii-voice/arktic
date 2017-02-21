@@ -1292,6 +1292,7 @@ AccountInterfaces.projectInterface = function () {
 												return uploadController.upload.buffer.relfile.entries[key].isDuplicate;
 											}).length;
 											if (numberOfDuplicates) {
+												uploadPanelUploadCheckRelfileDisplayDuplicates.setTitle('{duplicates} Duplicates'.format({duplicates: numberOfDuplicates}), {center: false}),
 												uploadPanelUploadCheckRelfileDisplayContainer.setAppearance({style: {'height': '250px'}});
 											} else {
 												uploadPanelUploadCheckRelfileDisplayContainer.setAppearance({style: {'height': '60px'}});
