@@ -46,8 +46,9 @@ AccountComponents.uploadController = function () {
 					entries: {},
 				},
 				addAudio: function (audioFile) {
+					var filename = Util.basename(audioFile.name);
 					base.upload.addingAudio = true;
-					base.upload.buffer.audio[audioFile.name] = audioFile;
+					base.upload.buffer.audio[filename] = audioFile;
 					return base.upload.buffer.update();
 				},
 				addRelfile: function (relfileContent) {
