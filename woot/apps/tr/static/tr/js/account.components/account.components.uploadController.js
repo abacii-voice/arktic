@@ -45,16 +45,8 @@ AccountComponents.uploadController = function () {
 					entries: {},
 				},
 				addAudio: function (audioFile) {
-					console.log('here');
-					let filename = Util.basename(audioFile.name);
-					if (filename in base.upload.buffer.relfile.entries) {
-						audioFile.caption = base.upload.buffer.relfile.entries[filename].caption;
-					} else if (Object.keys(base.upload.buffer.relfile.entries).length !== 0) {
-						audioFile.caption = ''
-						audioFile.noCaption = true;
-					}
 					base.upload.addingAudio = true;
-					base.upload.buffer.audio[filename] = audioFile;
+					base.upload.buffer.audio[audioFile.name] = audioFile;
 					return base.upload.buffer.update();
 				},
 				addRelfile: function (relfileContent) {
@@ -118,43 +110,27 @@ AccountComponents.uploadController = function () {
 						// load zip
 						zip.load(e.target.result);
 
-						// 1. extract relfile
-						var relfileData = Object.keys(zip.files).filter(function (key) {
-							return key.contains('.csv');
-						}).map(function (key) {
-							return zip.file(key);
-						})[0];
-						if (relfileData) {
-							base.upload.buffer.addRelfile(zip.file(relfileData.name).asText());
-						}
-
-						// 2. extract audio files
-						Object.keys(zip.files).filter(function (key) {
-							return key.contains('.wav');
-						}).forEach(function (key) {
-							base.upload.buffer.addAudio(zip.file(key));
-						});
+						return Util.ep().then(function () {
+							// 1. extract relfile
+							var relfileData = Object.keys(zip.files).filter(function (key) {
+								return key.contains('.csv');
+							}).map(function (key) {
+								return zip.file(key);
+							})[0];
+							if (relfileData) {
+								base.upload.buffer.addRelfile(zip.file(relfileData.name).asText());
+							}
+						}).then(function () {
+							// 2. extract audio files
+							Object.keys(zip.files).filter(function (key) {
+								return key.contains('.wav');
+							}).forEach(function (key) {
+								base.upload.buffer.addAudio(zip.file(key));
+							});
+						})
 					}
 					zipReader.readAsBinaryString(file);
 				}
-				// get relevant data
-				// return Promise.all([
-				// 	Active.get('client'),
-				// 	Active.get('contract_client'),
-				// ]).then(function (results) {
-				// 	if (!base.error.any()) {
-				// 		var [client_id, contract_client] = results;
-				// 		return Context.set('clients.{client_id}.contract_clients.{contract_client_id}.projects.{project_id}.uploads.{upload_id}'.format({
-				// 			client_id: client_id,
-				// 			contract_client_id: contract_client.id,
-				// 			project_id: contract_client.project,
-				// 			upload_id: id,
-				// 		}), {audioData: audioDataInstances});
-				// 	}
-				// }).then(function () {
-				// 	// 4. trigger state to prompt display lists to draw from Context
-				// 	return base.triggerState();
-				// });
 			},
 			preUpload: function () {
 				// send list of files and hash

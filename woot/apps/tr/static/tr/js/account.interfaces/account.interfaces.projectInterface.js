@@ -1008,9 +1008,8 @@ AccountInterfaces.projectInterface = function () {
 				},
 				process: function (data) {
 					var results = Object.keys(data).filter(function (key) {
-						return data[key].noCaption;
+						return !(key in uploadController.upload.buffer.relfile.entries);
 					}).map(function (key) {
-						var noCaption = data[key];
 						return {
 							id: key,
 							main: key,
@@ -1127,6 +1126,8 @@ AccountInterfaces.projectInterface = function () {
 				});
 			});
 		}
+
+		// jss.set(); // set styles for errors and such
 
 		// upload controller
 		uploadController.triggerState = function () {
@@ -1420,53 +1421,84 @@ AccountInterfaces.projectInterface = function () {
 									if (uploadController.upload.addingRelfile) {
 										uploadController.upload.addingRelfile = false;
 										if (numberOfEntries) {
-											uploadPanelUploadCheckRelfileDisplayTitle.setAppearance({html: 'Relfile'});
-											uploadPanelUploadCheckRelfileDisplayEntries.setAppearance({html: '{entries} entries'.format({entries: numberOfEntries})});
-											var numberOfDuplicates = Object.keys(uploadController.upload.buffer.relfile.entries).filter(function (key) {
-												return uploadController.upload.buffer.relfile.entries[key].isDuplicate;
-											}).length;
-											if (numberOfDuplicates) {
-												uploadPanelUploadCheckRelfileDisplayDuplicates.setTitle({text: '{duplicates} duplicates'.format({duplicates: numberOfDuplicates}), center: false}),
-												uploadPanelUploadCheckRelfileDisplayContainer.setAppearance({style: {'height': '250px'}});
-											} else {
-												uploadPanelUploadCheckRelfileDisplayContainer.setAppearance({style: {'height': '60px'}});
-											}
+											return Promise.all([
+												uploadPanelUploadCheckRelfileDisplayTitle.setAppearance({html: 'Relfile'}),
+												uploadPanelUploadCheckRelfileDisplayEntries.setAppearance({html: '{entries} entries'.format({entries: numberOfEntries})}),
+											]).then(function () {
+												var numberOfDuplicates = Object.keys(uploadController.upload.buffer.relfile.entries).filter(function (key) {
+													return uploadController.upload.buffer.relfile.entries[key].isDuplicate;
+												}).length;
+												if (numberOfDuplicates) {
+													return Promise.all([
+														uploadPanelUploadCheckRelfileDisplayDuplicates.setTitle({text: '{duplicates} duplicates'.format({duplicates: numberOfDuplicates}), center: false}),
+														uploadPanelUploadCheckRelfileDisplayContainer.setAppearance({style: {'height': '250px'}}),
+													]);
+												} else {
+													return uploadPanelUploadCheckRelfileDisplayContainer.setAppearance({style: {'height': '60px'}});
+												}
+											});
+
+
 										} else {
-											uploadPanelUploadCheckRelfileDisplayTitle.setAppearance({html: 'No relfile'});
-											uploadPanelUploadCheckRelfileDisplayContainer.setAppearance({style: {'height': '45px'}});
+											return Promise.all([
+												uploadPanelUploadCheckRelfileDisplayTitle.setAppearance({html: 'No relfile'}),
+												uploadPanelUploadCheckRelfileDisplayContainer.setAppearance({style: {'height': '45px'}}),
+											]);
 										}
 									}
 								}),
-
-								// display relfile duplicates
-								uploadPanelUploadCheckRelfileDisplayDuplicates.control.setup.main(),
 
 								// adjust audio display container
 								Util.ep(Object.keys(uploadController.upload.buffer.audio).length).then(function (numberOfEntries) {
 									if (uploadController.upload.addingAudio) {
 										uploadController.upload.addingAudio = false;
 										if (numberOfEntries) {
-											uploadPanelUploadCheckAudioDisplayTitle.setAppearance({html: 'Audio'});
-											uploadPanelUploadCheckAudioDisplayEntries.setAppearance({html: '{entries} entries'.format({entries: numberOfEntries})});
-											var numberOfNoCaption = Object.keys(uploadController.upload.buffer.audio).filter(function (key) {
-												return uploadController.upload.buffer.audio[key].noCaption;
-											}).length;
-											if (numberOfNoCaption) {
-												uploadPanelUploadCheckAudioDisplayNoCaptionList.setTitle({text: '{nocaption} without captions'.format({nocaption: numberOfNoCaption}), center: false}),
-												uploadPanelUploadCheckAudioDisplayContainer.setAppearance({style: {'height': '250px'}});
-											} else {
-												uploadPanelUploadCheckAudioDisplayContainer.setAppearance({style: {'height': '60px'}});
-											}
+											return Promise.all([
+												uploadPanelUploadCheckAudioDisplayTitle.setAppearance({html: 'Audio'}),
+												uploadPanelUploadCheckAudioDisplayEntries.setAppearance({html: '{entries} entries'.format({entries: numberOfEntries})}),
+											]).then(function () {
+												var numberOfNoCaption = Object.keys(uploadController.upload.buffer.audio).filter(function (key) {
+													return !(key in uploadController.upload.buffer.relfile.entries);
+												}).length;
+												if (numberOfNoCaption) {
+													return uploadPanelUploadCheckAudioDisplayNoCaptionList.setTitle({text: '{nocaption} without captions'.format({nocaption: numberOfNoCaption}), center: false}).then(function () {
+														if (uploadController.upload.addingAudioTarget !== 1) {
+															uploadController.upload.addingAudioTarget = 1;
+															return uploadPanelUploadCheckAudioDisplayContainer.setAppearance({style: {'height': '250px'}}).then(function () {
+																uploadController.upload.addingAudioTarget = 0;
+															});
+														}
+													});
+												} else {
+													if (uploadController.upload.addingAudioTarget !== 2) {
+														uploadController.upload.addingAudioTarget = 2;
+														return uploadPanelUploadCheckAudioDisplayContainer.setAppearance({style: {'height': '60px'}}).then(function () {
+															uploadController.upload.addingAudioTarget = 0;
+														});
+													}
+												}
+											});
 										} else {
-											uploadPanelUploadCheckAudioDisplayTitle.setAppearance({html: 'No audio'});
-											uploadPanelUploadCheckAudioDisplayContainer.setAppearance({style: {'height': '45px'}});
+											return uploadPanelUploadCheckAudioDisplayTitle.setAppearance({html: 'No audio'}).then(function () {
+												if (uploadController.upload.addingAudioTarget !== 3) {
+													uploadController.upload.addingAudioTarget = 3;
+													return uploadPanelUploadCheckAudioDisplayContainer.setAppearance({style: {'height': '45px'}}).then(function () {
+														uploadController.upload.addingAudioTarget = 0;
+													});
+												}
+											});
 										}
 									}
 								}),
+							]).then(function () {
+								return Promise.all([
+									// display audio no caption
+									uploadPanelUploadCheckAudioDisplayNoCaptionList.control.setup.main(),
 
-								// display audio no caption
-								uploadPanelUploadCheckAudioDisplayNoCaptionList.control.setup.main(),
-							]);
+									// display relfile duplicates
+									uploadPanelUploadCheckRelfileDisplayDuplicates.control.setup.main(),
+								]);
+							});
 						},
 						preFn: UI.functions.show(),
 					},
