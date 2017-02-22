@@ -40,6 +40,7 @@ AccountComponents.uploadController = function () {
 			},
 			buffer: {
 				id: undefined,
+				relfileIndex: 0, // counts relfiles added to upload
 				audio: {},
 				relfile: {
 					entries: {},
@@ -50,21 +51,31 @@ AccountComponents.uploadController = function () {
 					return base.upload.buffer.update();
 				},
 				addRelfile: function (relfileContent) {
-					return new Promise(function(resolve, reject) {
+					return Util.ep().then(function () {
+						// extract from file and determine if there are duplicates within a single file
 						relfileContent.split('\n').forEach(function (line) {
 							let [filename, caption] = line.split(',');
 							filename = Util.basename(filename);
 							if (filename.contains('.wav')) {
 								if (filename in base.upload.buffer.relfile.entries) {
-									base.upload.buffer.relfile.entries[filename].isDuplicate = true;
-									base.upload.error.relfileDuplicates = true;
+									if (base.upload.buffer.relfile.entries[filename].index === base.upload.buffer.relfileIndex) {
+										// same file, flag duplicate
+										base.upload.buffer.relfile.entries[filename].isDuplicate = true;
+									} else {
+										// different file, replace caption
+										base.upload.buffer.relfile.entries[filename].index = base.upload.buffer.relfileIndex;
+										base.upload.buffer.relfile.entries[filename].caption = caption;
+									}
 								} else {
-									base.upload.buffer.relfile.entries[filename] = {caption: caption};
+									base.upload.buffer.relfile.entries[filename] = {
+										index: base.upload.buffer.relfileIndex,
+										caption: caption,
+									}
 								}
 							}
-						});
-						resolve();
+						})
 					}).then(function () {
+						base.upload.buffer.relfileIndex++;
 						base.upload.addingRelfile = true;
 						return base.upload.buffer.updateAudio();
 					});
