@@ -455,14 +455,42 @@ AccountInterfaces.projectInterface = function () {
 			},
 		}),
 
-		// confirm button
-		UI.createComponent('{id}-6-up-1-uc-3--confirm-upload-button'.format({id: id}), {
-			template: UI.template('div', 'ie hidden'),
+		// button panel
+		UI.createComponent('{id}-6-up-1-uc-3-button-panel'.format({id: id}), {
+			template: UI.template('div', 'ie'),
 			appearance: {
 				style: {
-					'height': '100%',
-					'width': '100%',
+					'height': '45px',
+					'width': '250px',
+					'margin-top': '10px',
 				},
+			},
+		}),
+
+		// cancel button
+		UI.createComponent('{id}-6-up-1-uc-3-bp-1-cancel-button'.format({id: id}), {
+			template: UI.template('div', 'ie border border-radius button no'),
+			appearance: {
+				style: {
+					'height': '45px',
+					'width': '80px',
+					'margin-right': '10px',
+					'float': 'left',
+				},
+				html: 'Cancel',
+			},
+		}),
+
+		// confirm button
+		UI.createComponent('{id}-6-up-1-uc-3-bp-2-confirm-upload-button'.format({id: id}), {
+			template: UI.template('div', 'ie border border-radius button yes'),
+			appearance: {
+				style: {
+					'height': '45px',
+					'width': 'calc(100% - 90px)',
+					'float': 'left',
+				},
+				html: 'Upload',
 			},
 		}),
 
@@ -549,7 +577,9 @@ AccountInterfaces.projectInterface = function () {
 			uploadPanelUploadCheckAudioDisplayTooManyFilesError,
 
 			// confirm button
-			uploadPanelConfirmUploadButton,
+			uploadPanelButtonPanel,
+			uploadPanelButtonPanelCancelButton,
+			uploadPanelButtonPanelConfirmUploadButton,
 
 			// 6.2 previous uploads
 			uploadPanelPreviousUploads,
@@ -1127,7 +1157,27 @@ AccountInterfaces.projectInterface = function () {
 			});
 		}
 
-		// jss.set(); // set styles for errors and such
+		// upload panel buttons
+		jss.set('#{id} .button.yes'.format({id: id}), {
+			'border-color': Color.green.normal,
+			'color': Color.green.normal,
+			'text-align': 'center',
+			'padding-top': '14px',
+		});
+		jss.set('#{id} .button.yes:hover'.format({id: id}),{
+			'border-color': Color.green.light,
+			'color': Color.green.light,
+		});
+		jss.set('#{id} .button.no'.format({id: id}), {
+			'border-color': Color.red.dark,
+			'color': Color.red.dark,
+			'text-align': 'center',
+			'padding-top': '14px',
+		});
+		jss.set('#{id} .button.no:hover'.format({id: id}), {
+			'border-color': Color.red.normal,
+			'color': Color.red.normal,
+		});
 
 		// upload controller
 		uploadController.triggerState = function () {
@@ -1508,6 +1558,7 @@ AccountInterfaces.projectInterface = function () {
 			uploadPanelUploadCheck.setChildren([
 				uploadPanelUploadCheckRelfileDisplayContainer,
 				uploadPanelUploadCheckAudioDisplayContainer,
+				uploadPanelButtonPanel,
 			]),
 
 			// relfile display
@@ -1542,6 +1593,12 @@ AccountInterfaces.projectInterface = function () {
 				uploadPanelUploadCheckAudioDisplayTitle,
 				uploadPanelUploadCheckAudioDisplayEntries,
 				uploadPanelUploadCheckAudioDisplayNoCaptionList,
+			]),
+
+			// button panel
+			uploadPanelButtonPanel.setChildren([
+				uploadPanelButtonPanelCancelButton,
+				uploadPanelButtonPanelConfirmUploadButton,
 			]),
 
 		]).then(function () {
