@@ -29,9 +29,8 @@ AccountComponents.uploadController = function () {
 						relfileDuplicates: false,
 					},
 					buffered: {
-						noRelfile: false,
-						noCaption: false,
-						notEnoughRelfileEntries: false,
+						noRelfile: true, // true until a relfile is added
+						noCaption: false, 
 					},
 					final: {
 						serverDuplicates: false,
