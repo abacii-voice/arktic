@@ -358,6 +358,7 @@ AccountInterfaces.projectInterface = function () {
 				style: {
 					'height': '100%',
 					'width': '50%',
+					'float': 'left',
 				},
 			},
 		}),
@@ -389,6 +390,74 @@ AccountInterfaces.projectInterface = function () {
 				},
 			},
 		}),
+		UI.createComponent('{id}-6-up-1-uc-1-rdc-2-relfile-error-container'.format({id: id}), {
+			template: UI.template('div', 'ie'),
+			appearance: {
+				style: {
+					'height': '100%',
+					'width': 'calc(50% - 10px)',
+					'margin-left': '10px',
+					'float': 'left',
+				},
+			},
+		}),
+		UI.createComponent('{id}-6-up-1-uc-1-rdc-2-rec-1-no-relfile-error'.format({id: id}), {
+			template: UI.template('div', 'ie hidden'),
+			appearance: {
+				style: {
+					'height': '30px',
+				},
+			},
+		}),
+		UI.createComponent('{id}-6-up-1-uc-1-rdc-2-rec-1-nre-1-text'.format({id: id}), {
+			template: UI.template('div', 'ie border border-radius'),
+			appearance: {
+				style: {
+					'height': '100%',
+					'width': '110px',
+					'color': Color.red.dark,
+					'border-color': Color.red.dark,
+					'float': 'left',
+					'text-align': 'center',
+					'font-size': '15px',
+					'padding-top': '6px',
+					'border-bottom-right-radius': '0px',
+					'border-top-right-radius': '0px',
+				},
+				html: 'No relfile',
+			},
+		}),
+		UI.createComponent('{id}-6-up-1-uc-1-rdc-2-rec-1-nre-2-ignore-button'.format({id: id}), {
+			template: UI.template('div', 'ie border border-radius button no'),
+			appearance: {
+				style: {
+					'height': '30px',
+					'width': '80px',
+					'float': 'left',
+					'padding-top': '6px',
+					'border-left': '0px',
+					'border-bottom-left-radius': '0px',
+					'border-top-left-radius': '0px',
+				},
+				html: 'Ignore',
+			},
+		}),
+		UI.createComponent('{id}-6-up-1-uc-1-rdc-2-rec-2-duplicates-error'.format({id: id}), {
+			template: UI.template('div', 'ie border border-radius hidden'),
+			appearance: {
+				style: {
+					'height': '30px',
+					'width': '110px',
+					'color': Color.red.dark,
+					'border-color': Color.red.dark,
+					'float': 'left',
+					'text-align': 'center',
+					'font-size': '15px',
+					'padding-top': '6px',
+				},
+				html: 'Duplicates',
+			},
+		}),
 
 		// audio display
 		UI.createComponent('{id}-6-up-1-uc-2-audio-display-container'.format({id: id}), {
@@ -407,6 +476,7 @@ AccountInterfaces.projectInterface = function () {
 				style: {
 					'height': '100%',
 					'width': '50%',
+					'float': 'left',
 				},
 			},
 		}),
@@ -438,20 +508,56 @@ AccountInterfaces.projectInterface = function () {
 				},
 			},
 		}),
-		UI.createComponent('{id}-6-up-1-uc-2-adc-1-ad-4-no-caption-error'.format({id: id}), {
-			template: UI.template('div', 'ie border border-radius'),
+		UI.createComponent('{id}-6-up-1-uc-1-adc-2-audio-error-container'.format({id: id}), {
+			template: UI.template('div', 'ie'),
 			appearance: {
 				style: {
-
+					'height': '100%',
+					'width': 'calc(50% - 10px)',
+					'margin-left': '10px',
+					'float': 'left',
 				},
 			},
 		}),
-		UI.createComponent('{id}-6-up-1-uc-2-adc-1-ad-5-too-many-files-error'.format({id: id}), {
+		UI.createComponent('{id}-6-up-1-uc-1-adc-2-aec-1-no-caption'.format({id: id}), {
+			template: UI.template('div', 'ie hidden'),
+			appearance: {
+				style: {
+					'height': '30px',
+				},
+			},
+		}),
+		UI.createComponent('{id}-6-up-1-uc-1-adc-2-aec-1-nc-1-text'.format({id: id}), {
 			template: UI.template('div', 'ie border border-radius'),
 			appearance: {
 				style: {
-
+					'height': '100%',
+					'width': '110px',
+					'color': Color.red.dark,
+					'border-color': Color.red.dark,
+					'float': 'left',
+					'text-align': 'center',
+					'font-size': '15px',
+					'padding-top': '6px',
+					'border-bottom-right-radius': '0px',
+					'border-top-right-radius': '0px',
 				},
+				html: 'No caption',
+			},
+		}),
+		UI.createComponent('{id}-6-up-1-uc-1-adc-2-aec-1-nc-2-ingore-button'.format({id: id}), {
+			template: UI.template('div', 'ie border border-radius button no'),
+			appearance: {
+				style: {
+					'height': '30px',
+					'width': '80px',
+					'float': 'left',
+					'padding-top': '6px',
+					'border-left': '0px',
+					'border-bottom-left-radius': '0px',
+					'border-top-left-radius': '0px',
+				},
+				html: 'Ignore',
 			},
 		}),
 
@@ -566,6 +672,11 @@ AccountInterfaces.projectInterface = function () {
 			uploadPanelUploadCheckRelfileDisplayTitle,
 			uploadPanelUploadCheckRelfileDisplayEntries,
 			uploadPanelUploadCheckRelfileDisplayDuplicates,
+			uploadPanelUploadCheckRelfileErrorContainer,
+			uploadPanelUploadCheckRelfileErrorContainerNoRelfileError,
+			uploadPanelUploadCheckRelfileErrorContainerNoRelfileErrorText,
+			uploadPanelUploadCheckRelfileErrorContainerNoRelfileErrorIgnoreButton,
+			uploadPanelUploadCheckRelfileErrorContainerDuplicatesError,
 
 			// audio display
 			uploadPanelUploadCheckAudioDisplayContainer,
@@ -573,8 +684,10 @@ AccountInterfaces.projectInterface = function () {
 			uploadPanelUploadCheckAudioDisplayTitle,
 			uploadPanelUploadCheckAudioDisplayEntries,
 			uploadPanelUploadCheckAudioDisplayNoCaptionList,
-			uploadPanelUploadCheckAudioDisplayNoCaptionError,
-			uploadPanelUploadCheckAudioDisplayTooManyFilesError,
+			uploadPanelUploadCheckAudioErrorContainer,
+			uploadPanelUploadCheckAudioErrorContainerNoCaptionError,
+			uploadPanelUploadCheckAudioErrorContainerNoCaptionErrorText,
+			uploadPanelUploadCheckAudioErrorContainerNoCaptionErrorIgnoreButton,
 
 			// confirm button
 			uploadPanelButtonPanel,
@@ -892,7 +1005,6 @@ AccountInterfaces.projectInterface = function () {
 			'cursor': 'pointer',
 		})
 
-		// upload panel
 		// relfile duplicates
 		uploadPanelUploadCheckRelfileDisplayDuplicates.data.load.source = function (path, options) {
 			return Util.ep(uploadController.upload.buffer.relfile.entries);
@@ -1026,6 +1138,7 @@ AccountInterfaces.projectInterface = function () {
 			});
 		}
 
+		// audio captions
 		uploadPanelUploadCheckAudioDisplayNoCaptionList.data.load.source = function (path, options) {
 			return Util.ep(uploadController.upload.buffer.audio);
 		}
@@ -1452,6 +1565,8 @@ AccountInterfaces.projectInterface = function () {
 				uploadPanelUploadCheck,
 				uploadPanelPreviousUploads,
 			]),
+
+			// CONVERT TO FUNCTION CALLS ON THE RELEVANT OBJECTS SET ABOVE
 			uploadPanelUploadCheck.setState({
 				defaultState: {
 					preFn: UI.functions.hide(),
@@ -1571,11 +1686,20 @@ AccountInterfaces.projectInterface = function () {
 			}),
 			uploadPanelUploadCheckRelfileDisplayContainer.setChildren([
 				uploadPanelUploadCheckRelfileDisplay,
+				uploadPanelUploadCheckRelfileErrorContainer,
 			]),
 			uploadPanelUploadCheckRelfileDisplay.setChildren([
 				uploadPanelUploadCheckRelfileDisplayTitle,
 				uploadPanelUploadCheckRelfileDisplayEntries,
 				uploadPanelUploadCheckRelfileDisplayDuplicates,
+			]),
+			uploadPanelUploadCheckRelfileErrorContainer.setChildren([
+				uploadPanelUploadCheckRelfileErrorContainerNoRelfileError,
+				uploadPanelUploadCheckRelfileErrorContainerDuplicatesError,
+			]),
+			uploadPanelUploadCheckRelfileErrorContainerNoRelfileError.setChildren([
+				uploadPanelUploadCheckRelfileErrorContainerNoRelfileErrorText,
+				uploadPanelUploadCheckRelfileErrorContainerNoRelfileErrorIgnoreButton,
 			]),
 
 			// audio display
@@ -1588,11 +1712,19 @@ AccountInterfaces.projectInterface = function () {
 			}),
 			uploadPanelUploadCheckAudioDisplayContainer.setChildren([
 				uploadPanelUploadCheckAudioDisplay,
+				uploadPanelUploadCheckAudioErrorContainer,
 			]),
 			uploadPanelUploadCheckAudioDisplay.setChildren([
 				uploadPanelUploadCheckAudioDisplayTitle,
 				uploadPanelUploadCheckAudioDisplayEntries,
 				uploadPanelUploadCheckAudioDisplayNoCaptionList,
+			]),
+			uploadPanelUploadCheckAudioErrorContainer.setChildren([
+				uploadPanelUploadCheckAudioErrorContainerNoCaptionError,
+			]),
+			uploadPanelUploadCheckAudioErrorContainerNoCaptionError.setChildren([
+				uploadPanelUploadCheckAudioErrorContainerNoCaptionErrorText,
+				uploadPanelUploadCheckAudioErrorContainerNoCaptionErrorIgnoreButton,
 			]),
 
 			// button panel
