@@ -1702,6 +1702,9 @@ AccountInterfaces.projectInterface = function () {
 				uploadPanelUploadCheckRelfileErrorContainerNoRelfileErrorIgnoreButton,
 			]),
 
+			// relfile errors
+			
+
 			// audio display
 			uploadPanelUploadCheckAudioDisplayNoCaptionList.setTitle({text: 'Without captions', center: false, style: {'font-size': '14px', 'margin-bottom': '0px'}}),
 			uploadPanelUploadCheckAudioDisplayNoCaptionList.setSearch({mode: 'off', placeholder: ''}),
@@ -1726,6 +1729,9 @@ AccountInterfaces.projectInterface = function () {
 				uploadPanelUploadCheckAudioErrorContainerNoCaptionErrorText,
 				uploadPanelUploadCheckAudioErrorContainerNoCaptionErrorIgnoreButton,
 			]),
+
+			// audio errors
+
 
 			// button panel
 			uploadPanelButtonPanel.setChildren([
