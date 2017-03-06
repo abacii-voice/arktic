@@ -242,35 +242,15 @@ AccountInterfaces.projectInterface = function () {
 
 		// 3.5 Upload
 		UI.createComponent('{id}-3-fs-5-upload'.format({id: id}), {
-			template: UI.template('div', 'ie border border-radius'),
+			template: UI.template('div', 'ie'),
 			appearance: {
 				style: {
 					'width': '100%',
 					'height': '200px',
-					'margin-bottom': '10px',
-					'border-style': 'dashed',
 				},
 			},
 		}),
-		UI.createComponent('{id}-3-fs-5-u-1-upload'.format({id: id}), {
-			template: UI.template('span', 'ie abs centred'),
-			appearance: {
-				style: {
-					'font-size': '15px',
-					'color': Color.grey.normal,
-				},
-				html: 'Upload',
-			},
-		}),
-		UI.createComponent('{id}-3-fs-5-u-2-dropzone'.format({id: id}), {
-			template: UI.template('div', 'ie abs centred'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '100%',
-				},
-			},
-		}),
+		Components.dropzone('{id}-3-fs-5-u-1-dropzone'.format({id: id})),
 
 		// 4. transcription panel
 		// -project-state-transcription
@@ -646,7 +626,6 @@ AccountInterfaces.projectInterface = function () {
 
 			// 3.5
 			focusSidebarUploadButton,
-			focusSidebarUploadButtonUpload,
 			focusSidebarUploadButtonDropzone,
 
 			// 4. transcription panel
@@ -1479,23 +1458,30 @@ AccountInterfaces.projectInterface = function () {
 
 			// 3.5
 			focusSidebarUploadButton.setChildren([
-				focusSidebarUploadButtonUpload,
 				focusSidebarUploadButtonDropzone,
 			]),
-			focusSidebarUploadButtonDropzone.setState({
-				states: {
-					'project-state': {
-						preFn: function (_this) {
-							if (!_this.isDropzoneSetup) {
-								_this.isDropzoneSetup = true;
-								_this.dropzone = new Dropzone('#{id}'.format({id: _this.id}), {
-									url: '#',
-									accept: uploadController.upload.accept,
-								});
-								return Util.ep();
-							}
-						},
-					},
+			focusSidebarUploadButtonDropzone.setBindings({
+				'drop': function (_this, event) {
+					event.preventDefault();
+					event.stopPropagation();
+					var length = event.originalEvent.dataTransfer.items.length;
+					for (var i = 0; i < length; i++) {
+						var item = event.originalEvent.dataTransfer.items[i];
+						var entry = item.webkitGetAsEntry();
+						if (entry.isFile) {
+							console.log(entry, item.getAsFile());
+						} else if (entry.isDirectory) {
+							console.log(entry);
+						}
+					}
+				},
+				'dragover': function (_this, event) {
+					event.preventDefault();
+					event.stopPropagation();
+				},
+				'dragleave': function (_this, event) {
+					event.preventDefault();
+					event.stopPropagation();
 				},
 			}),
 
@@ -1602,8 +1588,6 @@ AccountInterfaces.projectInterface = function () {
 													return uploadPanelUploadCheckRelfileDisplayContainer.setAppearance({style: {'height': '60px'}});
 												}
 											});
-
-
 										} else {
 											return Promise.all([
 												uploadPanelUploadCheckRelfileDisplayTitle.setAppearance({html: 'No relfile'}),
@@ -1703,7 +1687,7 @@ AccountInterfaces.projectInterface = function () {
 			]),
 
 			// relfile errors
-			
+
 
 			// audio display
 			uploadPanelUploadCheckAudioDisplayNoCaptionList.setTitle({text: 'Without captions', center: false, style: {'font-size': '14px', 'margin-bottom': '0px'}}),
