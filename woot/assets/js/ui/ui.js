@@ -374,8 +374,8 @@ var UI = {
 			var index = child.index;
 			child.index = (child.index !== undefined ? child.index : _this.children.length);
 			if (child.name) {
-				_this.components = _this.components || {};
-				_this.components[child.name] = child;
+				_this.cc = _this.cc || {};
+				_this.cc[child.name] = child;
 			}
 			child.isAddedToParent = true;
 			_this.children.splice(child.index, 0, child);
@@ -385,8 +385,8 @@ var UI = {
 			var _this = this;
 			return UI.getComponent(id).then(function (child) {
 				_this.children.splice(child.index, 1);
-				if (_this.components && id in _this.components) {
-					delete _this.components[id];
+				if (_this.cc && id in _this.cc) {
+					delete _this.cc[id];
 				}
 				return Util.ep(id);
 			}).then(UI.removeComponent).then(function () {
@@ -568,7 +568,6 @@ var UI = {
 		this.id = id;
 		this.isRendered = false; // establish whether or not the component has been rendered to the DOM.
 		this.state = undefined;
-		this.components = {};
 	},
 
 	// createComponent
