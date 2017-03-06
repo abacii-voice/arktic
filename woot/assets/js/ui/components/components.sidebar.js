@@ -6,76 +6,67 @@ Components.sidebar = function (id, args) {
 	// SIDEBAR
 	// A panel with a state structure and space for a content panel.
 
-	return Promise.all([
-
-		// base
-		UI.createComponent('{id}-base'.format({id: id}), {
-			template: UI.template('div', 'ie abstract'),
-			appearance: {
-				style: {
-					'height': '100%',
-				},
+	return UI.createComponent('{id}-base'.format({id: id}), {
+		name: args.name,
+		template: UI.template('div', 'ie abstract'),
+		appearance: {
+			style: {
+				'height': '100%',
 			},
-		}),
-
-		// main
-		UI.createComponent('{id}-main'.format({id: id}), {
-			template: UI.template('div', 'ie abs centred-vertically'),
-			appearance: {
-				style: {
-					'left': args.position.main.off,
-					'height': '100%',
-					'width': '200px',
-					'opacity': (args.fade ? '0.0' : '1.0')
+		},
+		children: [
+			// main
+			UI.createComponent('{id}-main'.format({id: id}), {
+				name: 'main',
+				template: UI.template('div', 'ie abs centred-vertically'),
+				appearance: {
+					style: {
+						'left': args.position.main.off,
+						'height': '100%',
+						'width': '200px',
+						'opacity': (args.fade ? '0.0' : '1.0')
+					},
 				},
-			},
-			children: args.children,
-		}),
+				children: args.children,
+			}),
 
-		// back
-		UI.createComponent('{id}-back'.format({id: id}), {
-			template: UI.template('div', 'ie abs centred-vertically'),
-			appearance: {
-				style: {
-					'left': '-500px',
-					'height': '100%',
-					'width': '50px',
+			// back
+			UI.createComponent('{id}-back'.format({id: id}), {
+				name: 'back',
+				template: UI.template('div', 'ie abs centred-vertically'),
+				appearance: {
+					style: {
+						'left': '-500px',
+						'height': '100%',
+						'width': '50px',
+					},
 				},
-			},
-		}),
-
-		// back button
-		UI.createComponent('{id}-back-button'.format({id: id}), {
-			template: UI.template('div', 'ie button'),
-			children: [
-				UI.createComponent('{id}-back-button-span'.format({id: id}), {
-					template: UI.template('span', 'glyphicon glyphicon-chevron-left'),
-				}),
-			],
-			state: {
-				stateMap: args.state.primary,
-			},
-			bindings: {
-				'click': function (_this) {
-					_this.triggerState();
-				},
-			}
-		}),
-
-	]).then(function (components) {
-		// unpack components
-		var [
-			base,
-			main,
-			back,
-			backButton,
-		] = components;
+				children: [
+					// back button
+					UI.createComponent('{id}-back-button'.format({id: id}), {
+						name: 'button',
+						template: UI.template('div', 'ie button'),
+						children: [
+							UI.createComponent('{id}-back-button-span'.format({id: id}), {
+								template: UI.template('span', 'glyphicon glyphicon-chevron-left'),
+							}),
+						],
+						state: {
+							stateMap: args.state.primary,
+						},
+						bindings: {
+							'click': function (_this) {
+								_this.triggerState();
+							},
+						}
+					}),
+				],
+			}),
+		],
+	}).then(function (base) {
 
 		// complete promises.
 		return Promise.all([
-			back.setChildren([
-				backButton,
-			]),
 			Promise.all(Object.keys(args.state).map(function (category) {
 				// get array of sets
 				var stateSet = args.state[category];
@@ -86,7 +77,7 @@ Components.sidebar = function (id, args) {
 				// add each one as a state
 				return Promise.all(stateSet.map(function (stateName) {
 					return Promise.all([
-						main.addState(stateName, {
+						base.cc.main.addState(stateName, {
 							preFn: category === 'primary' ? (args.fade ? UI.functions.show({
 								'left': args.position.main.on,
 							}) : undefined) : undefined,
@@ -95,7 +86,7 @@ Components.sidebar = function (id, args) {
 								'left': args.position.main.off,
 							}) : undefined),
 						}),
-						back.addState(stateName, {
+						base.cc.back.addState(stateName, {
 							preFn: category === 'secondary' ? (args.fade ? UI.functions.show({
 								'left': args.position.back.on,
 							}) : undefined) : undefined,
@@ -107,16 +98,7 @@ Components.sidebar = function (id, args) {
 					]);
 				}));
 			})),
-		]).then(function (results) {
-			base.components = {
-				main: main,
-				back: back,
-			}
-			return base.setChildren([
-				main,
-				back,
-			]);
-		}).then(function () {
+		]).then(function () {
 			return base;
 		});
 	});

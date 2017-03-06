@@ -563,6 +563,14 @@ var UI = {
 				});
 			});
 		}
+		this.ccTree = function () {
+			var _this = this;
+			var tree = {cc_name: _this.name};
+			Object.keys(_this.cc).forEach(function (key) {
+				tree[_this.cc[key].id] = _this.cc[key].cc ? _this.cc[key].ccTree() : _this.cc[key].id;
+			});
+			return tree;
+		}
 
 		// initialise
 		this.id = id;
