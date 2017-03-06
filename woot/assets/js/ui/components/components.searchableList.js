@@ -10,51 +10,56 @@ Components.searchableList = function (id, args) {
 	// Optional filter panel
 
 	// default appearance
-	var defaultAppearance = {
+	args.appearance = (args.appearance || {
 		style: {
 			'height': '100%',
 		},
-	}
+	})
 
-	// set up components
-	return Promise.all([
-		// base component
-		UI.createComponent(id, {
-			template: UI.template('div', 'ie'),
-			appearance: (args.appearance || defaultAppearance),
-		}),
-
-		// title
-		UI.createComponent('{id}-title'.format({id: id}), {
-			template: UI.template('h4', 'ie title'),
-			appearance: {
-				style: {
-					'width': '100%',
-					'height': '32px',
-					'font-size': '18px',
-					'padding-top': '10px',
+	return UI.createComponent(id, {
+		template: UI.template('div', 'ie'),
+		appearance: args.appearance,
+		children: [
+			// title
+			UI.createComponent('{id}-title'.format({id: id}), {
+				name: 'title',
+				template: UI.template('h4', 'ie title'),
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': '32px',
+						'font-size': '18px',
+						'padding-top': '10px',
+					},
 				},
-			},
-		}),
-
-		// search filter bar
-		UI.createComponent('{id}-search-filter-bar'.format({id: id}), {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'width': '100%',
-					'height': '40px',
+			}),
+			// search filter bar
+			UI.createComponent('{id}-search-filter-bar'.format({id: id}), {
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': '40px',
+					},
 				},
-			},
-		}),
+				children: [
+					// search input
+					Components.search('{id}-search'.format({id: id}), {name: 'search'}),
 
-		// search input
-		Components.search('{id}-search'.format({id: id}), {}),
+					// filter button
+					Components.filterButton('{id}-filter-button'.format({id: id}), {}),
+				],
+			}),
+		],
+	}).then(function (base) {
 
-		// filter button
-		Components.filterButton('{id}-filter-button'.format({id: id}), {
+	});
 
-		}),
+
+
+
+
+
 
 		// list
 		Components.contentPanel('{id}-list'.format({id: id}), {
@@ -299,7 +304,7 @@ Components.searchableList = function (id, args) {
 											// element does not exist. Create using info in datum.
 											return base.unit(datum, base.data.query.toLowerCase(), index).then(function (newListItem) {
 												base.data.storage.virtual.rendered.push(newListItem.id);
-												return base.list.components.wrapper.setChildren([newListItem]);
+												return base.list.cc.wrapper.setChildren([newListItem]);
 											}).then(function () {
 												base.lock = false;
 												return Util.ep();
@@ -403,7 +408,7 @@ Components.searchableList = function (id, args) {
 								return base.unit({main: ''}, '', index).then(function (newListItem) {
 									base.data.storage.virtual.rendered.push(newListItem.id);
 									return newListItem.hide().then(function () {
-										return base.list.components.wrapper.setChildren([newListItem]);
+										return base.list.cc.wrapper.setChildren([newListItem]);
 									});
 								});
 							}
@@ -743,7 +748,7 @@ Components.searchableList = function (id, args) {
 			search.isFocused = false;
 			base.isFocused = true;
 			return search.getContent().then(function (content) {
-				return search.components.tail.setAppearance({html: (content || search.placeholder)});
+				return search.cc.tail.setAppearance({html: (content || search.placeholder)});
 			});
 		}
 		search.input = function () {
@@ -762,7 +767,7 @@ Components.searchableList = function (id, args) {
 
 			search.placeholder = options.placeholder;
 			return searchFilterBar.setAppearance({classes: {add: (options.mode === 'off' ? ['hidden'] : [])}}).then(function () {
-				return search.components.tail.setAppearance({html: options.placeholder});
+				return search.cc.tail.setAppearance({html: options.placeholder});
 			}).then(function () {
 				if (options.mode !== 'off') {
 					return Promise.all([
@@ -775,7 +780,7 @@ Components.searchableList = function (id, args) {
 			});
 		}
 		base.focus = function () {
-			search.components.head.model().focus();
+			search.cc.head.model().focus();
 			return Util.ep();
 		}
 

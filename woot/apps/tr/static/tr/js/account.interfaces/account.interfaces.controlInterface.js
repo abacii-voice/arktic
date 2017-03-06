@@ -1,241 +1,241 @@
 var AccountInterfaces = (AccountInterfaces || {});
 AccountInterfaces.controlInterface = function (id, args) {
-	return Promise.all([
-		// base
-		UI.createComponent('{id}-base'.format({id: id}), {
-			template: UI.template('div', 'ie abstract'),
-			appearance: {
-				style: {
-					'height': '100%',
-				},
+	return UI.createComponent(id, {
+		name: args.name,
+		template: UI.template('div', 'ie abstract'),
+		appearance: {
+			style: {
+				'height': '100%',
 			},
-		}),
+		},
+		children: [
+			// clients
+			Components.sidebar('client-sidebar', {
+				name: 'clientSidebar',
+				position: {
+					main: {
+						on: '0px',
+						off: '-300px',
+					},
+					back: {
+						on: '0px',
+						off: '-200px',
+					},
+				},
+				state: {
+					primary: 'client-state',
+					secondary: 'role-state',
+					deactivate: 'control-state',
+				},
+				children: [
+					Components.searchableList('cs-client-list', {
+						name: 'clientList',
+						appearance: {
+							style: {
+								'top': '2px',
+							},
+						}
+					}),
+				],
+			}),
 
-		// clients
-		Components.sidebar('client-sidebar', {
-			position: {
-				main: {
-					on: '0px',
-					off: '-300px',
+			// roles
+			Components.sidebar('role-sidebar', {
+				name: 'roleSidebar',
+				position: {
+					main: {
+						on: '50px',
+						off: '-300px',
+					},
+					back: {
+						on: '0px',
+						off: '-200px',
+					},
 				},
-				back: {
-					on: '0px',
-					off: '-200px',
+				state: {
+					primary: 'role-state',
+					secondary: 'control-state',
+					deactivate: ['client-state', 'transcription-state', 'settings-state', 'project-state'],
 				},
-			},
-			state: {
-				primary: 'client-state',
-				secondary: 'role-state',
-				deactivate: 'control-state',
-			},
-		}),
-		Components.searchableList('cs-client-list', {
-			appearance: {
-				style: {
-					'top': '2px',
-				},
-			}
-		}),
+				children: [
+					Components.searchableList('cs-role-list', {
+						name: 'roleList',
+						appearance: {
+							style: {
+								'top': '2px',
+							},
+						},
+					}),
+				],
+			}),
 
-		// roles
-		Components.sidebar('role-sidebar',{
-			position: {
-				main: {
-					on: '50px',
-					off: '-300px',
+			// control
+			Components.sidebar('control-sidebar', {
+				name: 'controlSidebar',
+				position: {
+					main: {
+						on: '50px',
+						off: '-300px',
+					},
+					back: {
+						on: '0px',
+						off: '-200px',
+					},
 				},
-				back: {
-					on: '0px',
-					off: '-200px',
+				state: {
+					primary: 'control-state',
+					secondary: ['transcription-state', 'settings-state', 'project-state', '-project-state-project'],
+					deactivate: ['client-state', 'role-state', '-settings-state-shortcuts', '-project-state-focus'],
 				},
-			},
-			state: {
-				primary: 'role-state',
-				secondary: 'control-state',
-				deactivate: ['client-state', 'transcription-state', 'settings-state', 'project-state'],
-			},
-		}),
-		Components.searchableList('cs-role-list', {
-			appearance: {
-				style: {
-					'top': '2px',
-				},
-			},
-		}),
+				children: [
+					Components.searchableList('cs-control-list', {
+						name: 'controlList',
+						appearance: {
+							style: {
+								'top': '2px',
+							},
+						},
+						children: [
+							UI.createComponent('cs-cl-transcription-button', {
+								name: 'transcriptionButton',
+								template: UI.template('div', 'ie button'),
+								appearance: {
+									style: {
+										'left': '0px',
+										'width': '100%',
+										'height': '30px',
+										'padding-top': '8px',
+										'padding-left': '10px',
+										'border-radius': '0px',
+										'text-align': 'left',
+									},
+									html: 'Transcription',
+								},
+								state: {
+									stateMap: 'transcription-state',
+								},
+							}),
+							UI.createComponent('cs-cl-settings-button', {
+								name: 'settingsButton',
+								template: UI.template('div', 'ie button'),
+								appearance: {
+									style: {
+										'left': '0px',
+										'width': '100%',
+										'height': '30px',
+										'padding-top': '8px',
+										'padding-left': '10px',
+										'border-radius': '0px',
+										'text-align': 'left',
+									},
+									html: 'Settings',
+								},
+								state: {
+									stateMap: 'settings-state',
+								},
+							}),
+							UI.createComponent('cs-cl-moderation-button', {
+								name: 'moderationButton',,
+								template: UI.template('div', 'ie button'),
+								appearance: {
+									style: {
+										'left': '0px',
+										'width': '100%',
+										'height': '30px',
+										'padding-top': '8px',
+										'padding-left': '10px',
+										'border-radius': '0px',
+										'text-align': 'left',
+									},
+									html: 'Moderation',
+								},
+							}),
+							UI.createComponent('cs-cl-project-button', {
+								name: 'projectButton',
+								template: UI.template('div', 'ie button'),
+								appearance: {
+									style: {
+										'left': '0px',
+										'width': '100%',
+										'height': '30px',
+										'padding-top': '8px',
+										'padding-left': '10px',
+										'border-radius': '0px',
+										'text-align': 'left',
+									},
+									html: 'Projects',
+								},
+								state: {
+									stateMap: 'project-state',
+								},
+							}),
+						],
+					}),
+				],
+			}),
 
-		// control
-		Components.sidebar('control-sidebar', {
-			position: {
-				main: {
-					on: '50px',
-					off: '-300px',
+			// settings
+			Components.sidebar('settings-sidebar', {
+				name: 'settingsSidebar',
+				position: {
+					main: {
+						on: '50px',
+						off: '-300px',
+					},
+					back: {
+						on: '0px',
+						off: '-200px',
+					},
 				},
-				back: {
-					on: '0px',
-					off: '-200px',
+				state: {
+					primary: 'settings-state',
+					secondary: ['shortcut-state'],
+					deactivate: ['control-state'],
 				},
-			},
-			state: {
-				primary: 'control-state',
-				secondary: ['transcription-state', 'settings-state', 'project-state', '-project-state-project'],
-				deactivate: ['client-state', 'role-state', '-settings-state-shortcuts', '-project-state-focus'],
-			},
-		}),
-		Components.searchableList('cs-control-list', {
-			appearance: {
-				style: {
-					'top': '2px',
-				},
-			},
-		}),
-		UI.createComponent('cs-cl-transcription-button', {
-			template: UI.template('div', 'ie button'),
-			appearance: {
-				style: {
-					'left': '0px',
-					'width': '100%',
-					'height': '30px',
-					'padding-top': '8px',
-					'padding-left': '10px',
-					'border-radius': '0px',
-					'text-align': 'left',
-				},
-				html: 'Transcription',
-			},
-			state: {
-				stateMap: 'transcription-state',
-			},
-		}),
-		UI.createComponent('cs-cl-settings-button', {
-			template: UI.template('div', 'ie button'),
-			appearance: {
-				style: {
-					'left': '0px',
-					'width': '100%',
-					'height': '30px',
-					'padding-top': '8px',
-					'padding-left': '10px',
-					'border-radius': '0px',
-					'text-align': 'left',
-				},
-				html: 'Settings',
-			},
-			state: {
-				stateMap: 'settings-state',
-			},
-		}),
-		UI.createComponent('cs-cl-moderation-button', {
-			template: UI.template('div', 'ie button'),
-			appearance: {
-				style: {
-					'left': '0px',
-					'width': '100%',
-					'height': '30px',
-					'padding-top': '8px',
-					'padding-left': '10px',
-					'border-radius': '0px',
-					'text-align': 'left',
-				},
-				html: 'Moderation',
-			},
-		}),
-		UI.createComponent('cs-cl-project-button', {
-			template: UI.template('div', 'ie button'),
-			appearance: {
-				style: {
-					'left': '0px',
-					'width': '100%',
-					'height': '30px',
-					'padding-top': '8px',
-					'padding-left': '10px',
-					'border-radius': '0px',
-					'text-align': 'left',
-				},
-				html: 'Projects',
-			},
-			state: {
-				stateMap: 'project-state',
-			},
-		}),
+				children: [
+					Components.searchableList('ss-settings-list', {
+						name: 'settingsList',
+						appearance: {
+							style: {
+								'top': '2px',
+							},
+						},
+						children: [
+							UI.createComponent('ss-sl-shortcuts-button', {
+								name: 'shortcutsButton',
+								template: UI.template('div', 'ie button'),
+								appearance: {
+									style: {
+										'left': '0px',
+										'width': '100%',
+										'height': '60px',
+										'padding-top': '8px',
+										'padding-left': '10px',
+										'border-radius': '0px',
+										'text-align': 'left',
+									},
+									html: 'Shortcuts',
+								},
+								state: {
+									stateMap: 'shortcut-state',
+								},
+							}),
+						],
+					}),
+				],
+			}),
 
-		// settings
-		Components.sidebar('settings-sidebar', {
-			position: {
-				main: {
-					on: '50px',
-					off: '-300px',
-				},
-				back: {
-					on: '0px',
-					off: '-200px',
-				},
-			},
-			state: {
-				primary: 'settings-state',
-				secondary: ['shortcut-state'],
-				deactivate: ['control-state'],
-			},
-		}),
-		Components.searchableList('ss-settings-list', {
-			appearance: {
-				style: {
-					'top': '2px',
-				},
-			},
-		}),
-		UI.createComponent('ss-sl-shortcuts-button', {
-			template: UI.template('div', 'ie button'),
-			appearance: {
-				style: {
-					'left': '0px',
-					'width': '100%',
-					'height': '60px',
-					'padding-top': '8px',
-					'padding-left': '10px',
-					'border-radius': '0px',
-					'text-align': 'left',
-				},
-				html: 'Shortcuts',
-			},
-			state: {
-				stateMap: 'shortcut-state',
-			},
-		}),
-
-		// non-interface elements
-		Components.actionMasterController('control'),
-
-	]).then(function (components) {
-		// unpack components
-		var [
-			base,
-
-			clientSidebar,
-			clientList,
-
-			roleSidebar,
-			roleList,
-
-			controlSidebar,
-			controlList,
-			transcriptionButton,
-			settingsButton,
-			moderationButton,
-			projectButton,
-
-			settingsSidebar,
-			settingsList,
-			shortcutsButton,
-
-			amc,
-		] = components;
+			// action controller
+			Components.actionMasterController('amc'),
+		],
+	}).then(function (base) {
 
 		// action master controller
-		amc.action.period = 20000;
+		base.cc.amc.action.period = 20000;
 
 		// CLIENT SIDEBAR
-		clientList.autocomplete = false;
-		clientList.targets = [
+		base.cc.clientList.autocomplete = false;
+		base.cc.clientList.targets = [
 			{
 				name: 'clients',
 				path: function () {
@@ -262,10 +262,10 @@ AccountInterfaces.controlInterface = function (id, args) {
 				},
 			},
 		]
-		clientList.sort = Util.sort.alpha('main');
-		clientList.unit = function (datum, query, index) {
+		base.cc.clientList.sort = Util.sort.alpha('main');
+		base.cc.clientList.unit = function (datum, query, index) {
 			query = (query || '');
-			var base = clientList.data.idgen(index);
+			var base = base.cc.clientList.data.idgen(index);
 			return Promise.all([
 				// base component
 				UI.createComponent(base, {
@@ -358,7 +358,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 				return Promise.all([
 					unitBase.setBindings({
 						'click': function (_this) {
-							amc.addAction({type: 'click.clientlist', metadata: {client: datum.id}});
+							base.cc.amc.addAction({type: 'click.clientlist', metadata: {client: datum.id}});
 							Active.set('client', datum.id).then(function () {
 								return _this.triggerState();
 							});
@@ -379,8 +379,8 @@ AccountInterfaces.controlInterface = function (id, args) {
 		}
 
 		// ROLE SIDEBAR
-		roleList.autocomplete = false;
-		roleList.targets = [
+		base.cc.roleList.autocomplete = false;
+		base.cc.roleList.targets = [
 			{
 				name: 'roles',
 				path: function () {
@@ -409,8 +409,8 @@ AccountInterfaces.controlInterface = function (id, args) {
 				},
 			},
 		]
-		roleList.sort = Util.sort.alpha('main');
-		roleList.unit = function (datum, query, index) {
+		base.cc.roleList.sort = Util.sort.alpha('main');
+		base.cc.roleList.unit = function (datum, query, index) {
 			query = (query || '');
 			var base = roleList.data.idgen(index);
 			return Promise.all([
@@ -536,7 +536,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 		return Promise.all([
 
 			// action master controller
-			amc.setState({
+			base.cc.amc.setState({
 				defaultState: {
 					fn: function (_this) {
 						_this.action.start();
@@ -552,8 +552,8 @@ AccountInterfaces.controlInterface = function (id, args) {
 			}),
 
 			// CLIENT SIDEBAR
-			clientList.unitStyle.apply(),
-			clientList.search.setAppearance({
+			base.cc.clientList.unitStyle.apply(),
+			base.cc.clientList.search.setAppearance({
 				style: {
 					'left': '0px',
 					'width': '100%',
@@ -561,7 +561,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 					'padding-top': '8px',
 				},
 			}),
-			clientList.components.title.setAppearance({
+			base.cc.clientList.components.title.setAppearance({
 				style: {
 					'width': '100%',
 					'height': '32px',
@@ -570,10 +570,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 					'padding-left': '10px',
 				},
 			}),
-			clientSidebar.components.main.setChildren([
-				clientList,
-			]),
-			clientList.setState({
+			base.cc.clientList.setState({
 				states: {
 					'client-state': {
 						preFn: function (_this) {
@@ -582,12 +579,12 @@ AccountInterfaces.controlInterface = function (id, args) {
 					},
 				},
 			}),
-			clientList.setTitle({text: 'Clients', center: false}),
-			clientList.setSearch({mode: 'off', placeholder: 'Search clients...'}),
+			base.cc.clientList.setTitle({text: 'Clients', center: false}),
+			base.cc.clientList.setSearch({mode: 'off', placeholder: 'Search clients...'}),
 
 			// ROLE SIDEBAR
-			roleList.unitStyle.apply(),
-			roleList.search.setAppearance({
+			base.cc.roleList.unitStyle.apply(),
+			base.cc.roleList.cc.search.setAppearance({
 				style: {
 					'left': '0px',
 					'width': '100%',
@@ -595,7 +592,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 					'padding-top': '8px',
 				},
 			}),
-			roleList.components.title.setAppearance({
+			base.cc.roleList.cc.title.setAppearance({
 				style: {
 					'width': '100%',
 					'height': '32px',
