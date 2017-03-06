@@ -371,27 +371,24 @@ var UI = {
 		}
 		this.addChild = function (child) {
 			var _this = this;
-			return new Promise(function(resolve, reject) {
-				var index = child.index;
-				child.index = (child.index !== undefined ? child.index : _this.children.length);
-				if (child.name) {
-					_this.components[child.name] = child;
-				}
-				child.isAddedToParent = true;
-				// if (child.id.contains('tb-1-mp-3-caption-') && !child.id.contains('head') && !child.id.contains('tail') && !child.id.contains('space')) {
-				// 	console.log(child.id, child.index, index, _this.children.length);
-				// }
-				_this.children.splice(child.index, 0, child);
-				resolve(child);
-			});
+			var index = child.index;
+			child.index = (child.index !== undefined ? child.index : _this.children.length);
+			if (child.name) {
+				_this.cc = _this.cc || {};
+				_this.cc[child.name] = child;
+			}
+			child.isAddedToParent = true;
+			_this.children.splice(child.index, 0, child);
+			return Util.ep(child);
 		}
 		this.removeChild = function (id) {
 			var _this = this;
 			return UI.getComponent(id).then(function (child) {
-				return new Promise(function(resolve, reject) {
-					_this.children.splice(child.index, 1);
-					resolve(id);
-				})
+				_this.children.splice(child.index, 1);
+				if (_this.cc && id in _this.cc) {
+					delete _this.cc[id];
+				}
+				return Util.ep(id);
 			}).then(UI.removeComponent).then(function () {
 				// renumber children
 				return _this.setChildIndexes();
@@ -471,7 +468,7 @@ var UI = {
 			}
 		}
 		this.update = function (args) {
-			args = args !== undefined ? args : {};
+			args = args || {};
 			var _this = this;
 			return Promise.all([
 				// id, root, after, template
@@ -495,10 +492,8 @@ var UI = {
 		}
 		this.removeModel = function () {
 			var _this = this;
-			return new Promise(function(resolve, reject) {
-				_this.model().remove();
-				resolve();
-			});
+			_this.model().remove();
+			return Util.ep();
 		}
 		this.model = function (single) {
 			if (single) {
