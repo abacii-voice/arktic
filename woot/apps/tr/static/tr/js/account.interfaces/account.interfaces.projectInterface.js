@@ -250,7 +250,7 @@ AccountInterfaces.projectInterface = function () {
 				},
 			},
 		}),
-		Components.dropzone('{id}-3-fs-5-u-1-dropzone'.format({id: id})),
+		Components.dropzone('{id}-3-fs-5-u-1-dropzone'.format({id: id}), {name: 'dropzone'}),
 
 		// 4. transcription panel
 		// -project-state-transcription

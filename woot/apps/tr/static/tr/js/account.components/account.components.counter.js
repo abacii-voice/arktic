@@ -17,75 +17,69 @@ AccountComponents.counter = function (id, args) {
 	});
 
 	// components
-	return Promise.all([
-		// base
-		UI.createComponent(id, {
-			template: UI.template('div', 'ie'),
-			appearance: args.appearance,
-		}),
-
-		// header wrapper
-		UI.createComponent('{id}-header-wrapper'.format({id: id}), {
-			template: UI.template('div', 'ie border border-radius'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '105px',
-					'float': 'left',
-					'text-align': 'center',
+	return UI.createComponent(id, {
+		name: args.name,
+		template: UI.template('div', 'ie'),
+		appearance: args.appearance,
+		children: [
+			// header wrapper
+			UI.createComponent('{id}-header-wrapper'.format({id: id}), {
+				name: 'headerWrapper',
+				template: UI.template('div', 'ie border border-radius'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '105px',
+						'float': 'left',
+						'text-align': 'center',
+					},
 				},
-			},
-		}),
+				children: [
+					UI.createComponent('{id}-session-value'.format({id: id}), {
+						name: 'sessionValue',
+						template: UI.template('h2'),
+						appearance: {
+							style: {
+								'margin-top': '24px',
+								'margin-bottom': '0px',
+							},
+						},
+					}),
+					UI.createComponent('{id}-remaining-value'.format({id: id}), {
+						name: 'remainingValue',
+						template: UI.template('h4'),
+						appearance: {
+							style: {
+								'margin-top': '3px',
+							},
+						},
+					}),
+				],
+			}),
 
-		UI.createComponent('{id}-session-value'.format({id: id}), {
-			template: UI.template('h2'),
-			appearance: {
-				style: {
-					'margin-top': '24px',
-					'margin-bottom': '0px',
+			// counter wrapper
+			UI.createComponent('{id}-counter-wrapper'.format({id: id}), {
+				name: 'counterWrapper',
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': style.height,
+						'width': 'calc(100% - 105px)',
+						'float': 'left',
+					},
 				},
-			},
-		}),
-
-		UI.createComponent('{id}-remaining-value'.format({id: id}), {
-			template: UI.template('h4'),
-			appearance: {
-				style: {
-					'margin-top': '3px',
-				},
-			},
-		}),
-
-		// counter wrapper
-		UI.createComponent('{id}-counter-wrapper'.format({id: id}), {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': style.height,
-					'width': 'calc(100% - 105px)',
-					'float': 'left',
-				},
-			},
-		}),
-
-	]).then(function (components) {
-		// unpack components
-		var [
-			base,
-			headerWrapper,
-			sessionValue,
-			remainingValue,
-			counterWrapper,
-		] = components;
+			}),
+		],
+	}).then(function (base) {
 
 		// methods
 		base.setup = function () {
 			return base.styles().then(function () {
-				if (counterWrapper.children.length === 0) {
+				if (base.cc.counterWrapper.children.length === 0) {
 					return Promise.ordered(Array.range(base.limit).map(function (index) {
 						return function () {
 							return base.unit().then(function (unit) {
-								return counterWrapper.setChildren([unit]);
+								return base.cc.counterWrapper.setChildren([unit]);
 							});
 						}
 					}));
@@ -140,7 +134,7 @@ AccountComponents.counter = function (id, args) {
 				return base.clearAllIfReset(previousIndex).then(function () {
 					return base.deactivate()
 				}).then(function () {
-					base.active = counterWrapper.children[base.currentIndex];
+					base.active = base.cc.counterWrapper.children[base.currentIndex];
 					return base.active.activate();
 				}).then(function () {
 					if (!base.active.isPending && !base.active.isComplete) {
@@ -164,7 +158,7 @@ AccountComponents.counter = function (id, args) {
 		}
 		base.clearAllIfReset = function (previousIndex) {
 			if (base.currentIndex === 0 && previousIndex === base.limit - 1) {
-				return Promise.all(counterWrapper.children.map(function (child) {
+				return Promise.all(base.cc.counterWrapper.children.map(function (child) {
 					return child.setClear();
 				}));
 			} else {
@@ -183,20 +177,8 @@ AccountComponents.counter = function (id, args) {
 		}
 
 		return Promise.all([
-			headerWrapper.setChildren([
-				sessionValue,
-				remainingValue,
-			]),
+
 		]).then(function () {
-			base.components = {
-				sessionValue: sessionValue,
-				remainingValue: remainingValue,
-			}
-			return base.setChildren([
-				headerWrapper,
-				counterWrapper,
-			]);
-		}).then(function () {
 			return base;
 		})
 	});

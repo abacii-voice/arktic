@@ -1,7 +1,7 @@
 var AccountInterfaces = (AccountInterfaces || {});
-AccountInterfaces.controlInterface = function (id, args) {
-	return UI.createComponent(id, {
-		name: args.name,
+AccountInterfaces.controlInterface = function (name) {
+	return UI.createComponent('control-interface', {
+		name: name,
 		template: UI.template('div', 'ie abstract'),
 		appearance: {
 			style: {
@@ -135,7 +135,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 								},
 							}),
 							UI.createComponent('cs-cl-moderation-button', {
-								name: 'moderationButton',,
+								name: 'moderationButton',
 								template: UI.template('div', 'ie button'),
 								appearance: {
 									style: {
