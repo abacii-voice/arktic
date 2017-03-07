@@ -11,25 +11,19 @@ var AccountApplication = function (id, args) {
 		}),
 
 		// control interface
-		AccountInterfaces.controlInterface('control-interface', {
-			interface: args.interface,
-		}),
+		AccountInterfaces.controlInterface('controlInterface'),
 
 		// transcription interface
-		AccountInterfaces.transcriptionInterface('transcription-interface', {
-			interface: args.interface,
-		}),
+		AccountInterfaces.transcriptionInterface('transcriptionInterface'),
 
 		// project complete interface
-		AccountInterfaces.projectCompleteInterface('project-complete-interface', {
-			interface: args.interface,
-		}),
+		AccountInterfaces.projectCompleteInterface('projectCompleteInterface'),
 
 		// shortcuts interface
-		AccountInterfaces.shortcutInterface(),
+		AccountInterfaces.shortcutInterface('shortcutInterface'),
 
 		// project interface
-		AccountInterfaces.projectInterface(),
+		AccountInterfaces.projectInterface('projectInterface'),
 
 	]).then(function (components) {
 		// unpack components

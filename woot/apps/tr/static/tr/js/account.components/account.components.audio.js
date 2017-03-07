@@ -12,101 +12,93 @@ AccountComponents.audio = function (id, args) {
 	// 2. Audio track
 
 	// components
-	return Promise.all([
-		// create the base component and add the children from above.
-		UI.createComponent('{id}-audio'.format({id: id}), {
-			template: UI.template('div', 'ie'),
-			appearance: args.appearance,
-		}),
-
-		// play button
-		UI.createComponent('{id}-play-button'.format({id: id}), {
-			name: 'playButton',
-			template: UI.template('div', 'ie button border abs'),
-			appearance: {
-				style: {
-					'height': args.appearance.style.height,
-					'width': args.appearance.style.height,
-					'top': '0px',
-					'left': '0px',
-					'border-radius': '5px',
+	return UI.createComponent(id, {
+		name: args.name,
+		template: UI.template('div', 'ie'),
+		appearance: args.appearance,
+		children: [
+			// AUDIO GROUP
+			// audio wrapper
+			UI.createComponent('{id}-audio-wrapper'.format({id: id}), {
+				name: 'audioWrapper',
+				template: UI.template('div', 'ie abs border'),
+				appearance: {
+					style: {
+						'border-left': '0px',
+						'height': '100%',
+						'width': 'calc(100% - {height}px)'.format({height: parseInt(args.appearance.style.height) - 5}),
+						'left': '{px}px'.format({px: parseInt(args.appearance.style.height) - 5}),
+						'border-top-right-radius': '5px',
+						'border-bottom-right-radius': '5px',
+					},
 				},
-			},
-		}),
+				children: [
+					// audio track wrapper
+					UI.createComponent('{id}-audio-track-wrapper'.format({id: id}), {
+						name: 'audioTrackWrapper',
+						template: UI.template('div', 'ie abs'),
+						appearance: {
+							style: {
+								'height': '100%',
+								'width': 'calc(100% - 5px)',
+								'left': '5px',
+							},
+						},
+						children: [
+							// audio track
+							UI.createComponent('{id}-audio-track'.format({id: id}), {
+								name: 'audioTrack',
+								template: UI.template('div', 'ie abs'),
+								appearance: {
+									style: {
+										'height': '100%',
+										'width': '100%',
+									},
+								},
+							}),
 
-		// AUDIO GROUP
-		// audio wrapper
-		UI.createComponent('{id}-audio-wrapper'.format({id: id}), {
-			name: 'audioWrapper',
-			template: UI.template('div', 'ie abs border'),
-			appearance: {
-				style: {
-					'border-left': '0px',
-					'height': '100%',
-					'width': 'calc(100% - {height}px)'.format({height: parseInt(args.appearance.style.height) - 5}),
-					'left': '{px}px'.format({px: parseInt(args.appearance.style.height) - 5}),
-					'border-top-right-radius': '5px',
-					'border-bottom-right-radius': '5px',
+							// audio track canvas
+							UI.createComponent('{id}-audio-track-canvas'.format({id: id}), {
+								name: 'audioTrackCanvas',
+								template: UI.template('canvas', 'ie abs'),
+							}),
+
+							// audio track info
+							UI.createComponent('{id}-audio-track-info'.format({id: id}), {
+								name: 'audioTrackInfo',
+								template: UI.template('div', 'ie abs hidden'),
+								appearance: {
+									style: {
+										'height': '100%',
+										'width': '100%',
+									},
+								},
+							}),
+						],
+					}),
+				],
+			}),
+
+			// play button
+			UI.createComponent('{id}-play-button'.format({id: id}), {
+				name: 'playButton',
+				template: UI.template('div', 'ie button border abs'),
+				appearance: {
+					style: {
+						'height': args.appearance.style.height,
+						'width': args.appearance.style.height,
+						'top': '0px',
+						'left': '0px',
+						'border-radius': '5px',
+					},
 				},
-			},
-		}),
-
-		// audio track wrapper
-		UI.createComponent('{id}-audio-track-wrapper'.format({id: id}), {
-			name: 'audioTrackWrapper',
-			template: UI.template('div', 'ie abs'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': 'calc(100% - 5px)',
-					'left': '5px',
-				},
-			},
-		}),
-
-		// audio track
-		UI.createComponent('{id}-audio-track'.format({id: id}), {
-			template: UI.template('div', 'ie abs'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '100%',
-				},
-			},
-		}),
-
-		// audio track canvas
-		UI.createComponent('{id}-audio-track-canvas'.format({id: id}), {
-			template: UI.template('canvas', 'ie abs'),
-		}),
-
-		// audio track info
-		UI.createComponent('{id}-audio-track-info'.format({id: id}), {
-			template: UI.template('div', 'ie abs hidden'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '100%',
-				},
-			},
-		}),
-
-	]).then(function (components) {
+			}),
+		],
+	}).then(function (base) {
 
 		// unpack components
-		var [
-			base,
-
-			// BUTTON GROUP
-			playButton,
-
-			// AUDIO GROUP
-			audioWrapper,
-			audioTrackWrapper,
-			audioTrack,
-			audioTrackCanvas,
-			audioTrackInfo,
-		] = components;
+		var audioTrack = base.cc.audioWrapper.cc.audioTrackWrapper.cc.audioTrack;
+		var audioTrackCanvas = base.cc.audioWrapper.cc.audioTrackWrapper.cc.audioTrackCanvas;
 
 		// modify components and add methods etc.
 		// BUTTON GROUP
@@ -319,7 +311,7 @@ AccountComponents.audio = function (id, args) {
 
 		// complete promises
 		return Promise.all([
-			playButton.setBindings({
+			base.cc.playButton.setBindings({
 				'mousedown': function (_this) {
 					// The play button will always return to the anchor and play from there.
 					return base.play();
@@ -387,24 +379,7 @@ AccountComponents.audio = function (id, args) {
 					return _this.start();
 				}
 			}),
-			audioTrackWrapper.setChildren([
-				audioTrack,
-				audioTrackCanvas,
-				audioTrackInfo,
-			]),
-			audioWrapper.setChildren([
-				audioTrackWrapper,
-			]),
 		]).then(function () {
-			base.components = {
-				track: audioTrack,
-				canvas: audioTrackCanvas,
-			}
-			return base.setChildren([
-				audioWrapper,
-				playButton,
-			]);
-		}).then(function () {
 			return base;
 		});
 	});

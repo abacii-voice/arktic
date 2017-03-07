@@ -35,6 +35,7 @@ Components.searchableList = function (id, args) {
 			}),
 			// search filter bar
 			UI.createComponent('{id}-search-filter-bar'.format({id: id}), {
+				name: 'searchFilterBar',
 				template: UI.template('div', 'ie'),
 				appearance: {
 					style: {
@@ -47,60 +48,37 @@ Components.searchableList = function (id, args) {
 					Components.search('{id}-search'.format({id: id}), {name: 'search'}),
 
 					// filter button
-					Components.filterButton('{id}-filter-button'.format({id: id}), {}),
+					Components.filterButton('{id}-filter-button'.format({id: id}), {name: 'filterButton'}),
 				],
+			}),
+
+			// list
+			Components.contentPanel('{id}-list'.format({id: id}), {
+				name: 'list',
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': '100%',
+					},
+				},
+			}),
+
+			// filter
+			Components.contentPanel('{id}-filter'.format({id: id}), {
+				name: 'filter',
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': '100%',
+					},
+					classes: ['hidden'],
+				},
 			}),
 		],
 	}).then(function (base) {
 
-	});
-
-
-
-
-
-
-
-		// list
-		Components.contentPanel('{id}-list'.format({id: id}), {
-			appearance: {
-				style: {
-					'width': '100%',
-					'height': '100%',
-				},
-			},
-		}),
-
-		// filter
-		Components.contentPanel('{id}-filter'.format({id: id}), {
-			appearance: {
-				style: {
-					'width': '100%',
-					'height': '100%',
-				},
-				classes: ['hidden'],
-			},
-		}),
-
-	]).then(function (components) {
-		// unpack components
-		var [
-			base,
-			title,
-			searchFilterBar,
-			search,
-			filterButton,
-			list,
-			filter,
-		] = components;
-
-		// set up promises to be completed before returning the base.
-		// logic, bindings, etc.
-		// allow for swapable components
-		base.list = list;
-		base.search = search;
-
 		// storage
+		base.search = base.cc.searchFilterBar.cc.search;
 		base.data = {
 			// variables
 			limit: undefined,
@@ -304,7 +282,7 @@ Components.searchableList = function (id, args) {
 											// element does not exist. Create using info in datum.
 											return base.unit(datum, base.data.query.toLowerCase(), index).then(function (newListItem) {
 												base.data.storage.virtual.rendered.push(newListItem.id);
-												return base.list.cc.wrapper.setChildren([newListItem]);
+												return base.cc.list.cc.wrapper.setChildren([newListItem]);
 											}).then(function () {
 												base.lock = false;
 												return Util.ep();
@@ -354,17 +332,17 @@ Components.searchableList = function (id, args) {
 						}
 						if (!_this.data.storage.virtual.list.length) {
 							_this.currentIndex = undefined;
-							return _this.search.setMetadata({query: query, complete: '', type: '', tokens: []});
+							return _this.cc.searchFilterBar.cc.search.setMetadata({query: query, complete: '', type: '', tokens: []});
 						} else {
 							var complete = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
 							var type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
 							var tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
 							if (_this.currentIndex >= _this.data.storage.virtual.list.length || changeQuery) {
 								return _this.control.setActive.main({index: 0}).then(function () {
-									return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
+									return _this.cc.searchFilterBar.cc.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
 								});
 							} else {
-								return _this.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
+								return _this.cc.searchFilterBar.cc.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
 							}
 						}
 					},
@@ -408,7 +386,7 @@ Components.searchableList = function (id, args) {
 								return base.unit({main: ''}, '', index).then(function (newListItem) {
 									base.data.storage.virtual.rendered.push(newListItem.id);
 									return newListItem.hide().then(function () {
-										return base.list.cc.wrapper.setChildren([newListItem]);
+										return base.cc.list.cc.wrapper.setChildren([newListItem]);
 									});
 								});
 							}
@@ -442,7 +420,7 @@ Components.searchableList = function (id, args) {
 												}
 											},
 										}).then(function () {
-											filter.setChildren([filterUnit]);
+											base.cc.filter.setChildren([filterUnit]);
 										});
 									}).then(function () {
 										Mousetrap.bind(target.filter.char, function (event) {
@@ -464,7 +442,7 @@ Components.searchableList = function (id, args) {
 						})).then(function () {
 							// if any filters have been added, make the filter button appear
 							if (!Util.isEmptyObject(base.data.storage.filters)) {
-								return filterButton.setAppearance({classes: {remove: 'hidden'}});
+								return base.cc.searchFilterBar.cc.filterButton.setAppearance({classes: {remove: 'hidden'}});
 							} else {
 								return Util.ep();
 							}
@@ -507,16 +485,16 @@ Components.searchableList = function (id, args) {
 				}
 
 				// 1. update search
-				search.filterString = rule ? base.data.storage.filters[rule].input : undefined;
+				base.search.filterString = rule ? base.data.storage.filters[rule].input : undefined;
 				return Promise.all([
 					// 2. update data
 					base.control.update({filter: (rule || '')}),
 
 					// 3. update filter button
-					filterButton.setContent(rule ? base.data.storage.filters[rule].char : undefined),
+					base.cc.searchFilterBar.cc.filterButton.setContent(rule ? base.data.storage.filters[rule].char : undefined),
 
 					// 4. search
-					search.setMetadata(),
+					base.search.setMetadata(),
 				]).then(function () {
 					return base.control.start();
 				}).then(function () {
@@ -732,27 +710,27 @@ Components.searchableList = function (id, args) {
 		}
 
 		// search methods
-		search.focus = function (position) {
-			if (!search.isFocused) {
-				search.isFocused = true;
+		base.search.focus = function (position) {
+			if (!base.search.isFocused) {
+				base.search.isFocused = true;
 				base.isFocused = true;
 				return Promise.all([
-					search.setCaretPosition(position),
-					search.input(),
+					base.search.setCaretPosition(position),
+					base.search.input(),
 				]);
 			} else {
 				return Util.ep();
 			}
 		}
-		search.blur = function () {
-			search.isFocused = false;
+		base.search.blur = function () {
+			base.search.isFocused = false;
 			base.isFocused = true;
-			return search.getContent().then(function (content) {
-				return search.cc.tail.setAppearance({html: (content || search.placeholder)});
+			return base.search.getContent().then(function (content) {
+				return base.search.cc.tail.setAppearance({html: (content || base.search.placeholder)});
 			});
 		}
-		search.input = function () {
-			return search.getContent().then(function (content) {
+		base.search.input = function () {
+			return base.search.getContent().then(function (content) {
 				return base.control.update({query: content}).then(function () {
 					return base.control.start();
 				});
@@ -765,14 +743,14 @@ Components.searchableList = function (id, args) {
 			base.defaultLimit = base.data.limit;
 			base.autocomplete = (options.autocomplete || false);
 
-			search.placeholder = options.placeholder;
-			return searchFilterBar.setAppearance({classes: {add: (options.mode === 'off' ? ['hidden'] : [])}}).then(function () {
-				return search.cc.tail.setAppearance({html: options.placeholder});
+			base.search.placeholder = options.placeholder;
+			return base.cc.searchFilterBar.setAppearance({classes: {add: (options.mode === 'off' ? ['hidden'] : [])}}).then(function () {
+				return base.search.cc.tail.setAppearance({html: options.placeholder});
 			}).then(function () {
 				if (options.mode !== 'off') {
 					return Promise.all([
-						list.setAppearance({style: {'height': 'calc(100% - 40px)'}}),
-						filter.setAppearance({style: {'height': 'calc(100% - 40px)'}}),
+						base.cc.list.setAppearance({style: {'height': 'calc(100% - 40px)'}}),
+						base.cc.filter.setAppearance({style: {'height': 'calc(100% - 40px)'}}),
 					]);
 				} else {
 					return Util.ep();
@@ -780,7 +758,7 @@ Components.searchableList = function (id, args) {
 			});
 		}
 		base.focus = function () {
-			search.cc.head.model().focus();
+			base.search.cc.head.model().focus();
 			return Util.ep();
 		}
 
@@ -792,12 +770,12 @@ Components.searchableList = function (id, args) {
 				if (options.center) {
 					options.style['text-align'] = 'center';
 				}
-				return title.setAppearance({
+				return base.cc.title.setAppearance({
 					html: options.text,
 					style: options.style,
 				});
 			} else {
-				return title.setAppearance({
+				return base.cc.title.setAppearance({
 					style: {
 						'display': 'none',
 					}
@@ -808,71 +786,45 @@ Components.searchableList = function (id, args) {
 		// behaviours
 		base.behaviours = {
 			up: function () {
-				// console.log('{} searchlist behaviours up'.format(base.id));
 				return base.previous();
 			},
 			down: function () {
-				// console.log('{} searchlist behaviours down'.format(base.id));
 				return base.next();
 			},
 			left: function () {
-				// console.log('{} searchlist behaviours left'.format(base.id));
-				return search.behaviours.left();
+				return base.search.behaviours.left();
 			},
 			right: function () {
-				// console.log('{} searchlist behaviours right'.format(base.id));
-				return search.behaviours.right();
+				return base.search.behaviours.right();
 			},
 			number: function (char) {
-				// console.log('{} searchlist behaviours number'.format(base.id));
 				var index = parseInt(char);
 				if (index < base.data.storage.virtual.rendered.length) {
 					return base.control.setActive.main({index: index}).then(function () {
 						// don't know what behaviour to have here
-						return search.behaviours.right();
+						return base.search.behaviours.right();
 
 						// Maybe do this
-						// return search.behaviours.enter();
+						// return base.search.behaviours.enter();
 					});
 				}
 			},
 			enter: function () {
-				// console.log('{} searchlist behaviours enter'.format(base.id));
-				return search.behaviours.enter();
+				return base.search.behaviours.enter();
 			},
 			backspace: function () {
-				// console.log('{} searchlist behaviours backspace'.format(base.id));
-				return search.behaviours.backspace();
+				return base.search.behaviours.backspace();
 			},
 		}
 
 		// complete promises.
 		return Promise.all([
-			searchFilterBar.setChildren([
-				search,
-				filterButton,
-			]),
-			filterButton.setBindings({
+			base.cc.searchFilterBar.cc.filterButton.setBindings({
 				'click': function (_this) {
 					return _this.triggerState();
 				},
 			}),
-		]).then(function (results) {
-			base.components = {
-				title: title,
-				search: search,
-				list: list,
-				filter: filter,
-				filterButton: filterButton,
-				searchFilterBar: searchFilterBar,
-			}
-			return base.setChildren([
-				title,
-				searchFilterBar,
-				list,
-				filter,
-			]);
-		}).then(function () {
+		]).then(function () {
 			return base;
 		});
 	});
