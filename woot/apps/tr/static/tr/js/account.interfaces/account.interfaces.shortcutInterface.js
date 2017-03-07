@@ -1,67 +1,63 @@
 var AccountInterfaces = (AccountInterfaces || {});
-AccountInterfaces.shortcutInterface = function (id, args) {
+AccountInterfaces.shortcutInterface = function (name) {
 
 	var autocompleteWidth = '300px';
-	return Promise.all([
-		// base
-		UI.createComponent('shortcut-base', {
-			template: UI.template('div', 'ie abs'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'left': '60px',
-					'width': 'calc(100% - 60px)',
-				},
-				classes: ['centred-vertically'],
+	return UI.createComponent('shortcut-base', {
+		name: name,
+		template: UI.template('div', 'ie abs'),
+		appearance: {
+			style: {
+				'height': '100%',
+				'left': '60px',
+				'width': 'calc(100% - 60px)',
 			},
-		}),
-
-		// main panel
-		UI.createComponent('sb-1-main-panel', {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'left': '0px',
-					'width': 'calc(100% - {width})'.format({width: autocompleteWidth}),
-					'float': 'left',
+			classes: ['centred-vertically'],
+		},
+		children: [
+			// main panel
+			UI.createComponent('sb-1-main-panel', {
+				name: 'main',
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'left': '0px',
+						'width': 'calc(100% - {width})'.format({width: autocompleteWidth}),
+						'float': 'left',
+					},
 				},
-			},
-		}),
+			}),
 
-		// autocomplete panel
-		UI.createComponent('sb-2-autocomplete-panel', {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': autocompleteWidth,
-					'float': 'left',
+			// autocomplete panel
+			UI.createComponent('sb-2-autocomplete-panel', {
+				name: 'autocompletePanel',
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': autocompleteWidth,
+						'float': 'left',
+					},
+					classes: ['centred-vertically'],
 				},
-				classes: ['centred-vertically'],
-			},
-		}),
+				children: [
+					// autocomplete
+					Components.searchableList('sb-2-ap-1-autocomplete', {
+						name: 'autocomplete',
+						appearance: {
+							style: {
+								'height': '100%',
+								'width': '100%',
+							},
+							classes: ['ie','abs'],
+						},
+					}),
+				],
+			}),
+		],
+	}).then(function (base) {
 
-		// autocomplete
-		Components.searchableList('sb-2-ap-1-autocomplete', {
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '100%',
-				},
-				classes: ['ie','abs'],
-			},
-		}),
-
-	]).then(function (components) {
-		var [
-			base,
-
-			mainPanel,
-
-			autocompletePanel,
-			autocomplete,
-		] = components;
+		var autocomplete = base.cc.autocompletePanel.cc.autocomplete;
 
 		// autocomplete
 		autocomplete.targets = [
@@ -391,19 +387,14 @@ AccountInterfaces.shortcutInterface = function (id, args) {
 				},
 			}),
 
-			// autocomplete panel
-			autocompletePanel.setChildren([
-				autocomplete,
-			]),
-
 			// autocomplete
-			autocomplete.components.filterButton.setState({
+			autocomplete.cc.searchFilterBar.cc.filterButton.setState({
 				stateMap: {
 					'-settings-state-shortcuts': '-settings-state-shortcuts-filter',
 					'-settings-state-shortcuts-filter': '-settings-state-shortcuts',
 				},
 			}),
-			autocomplete.list.setState({
+			autocomplete.cc.list.setState({
 				states: {
 					'-settings-state-shortcuts': {
 						classes: {remove: 'hidden'},
@@ -413,7 +404,7 @@ AccountInterfaces.shortcutInterface = function (id, args) {
 					},
 				},
 			}),
-			autocomplete.components.filter.setState({
+			autocomplete.cc.filter.setState({
 				states: {
 					'-settings-state-shortcuts': {
 						classes: {add: 'hidden'},
@@ -425,14 +416,14 @@ AccountInterfaces.shortcutInterface = function (id, args) {
 			}),
 			autocomplete.setTitle(),
 			autocomplete.setSearch({mode: 'on', limit: 10, autocomplete: true}),
-			autocomplete.components.search.setAppearance({
+			autocomplete.search.setAppearance({
 				style: {
 					'border': '0px solid #fff',
 					'border-bottom': '1px solid #888',
 					'border-radius': '0px',
 				},
 			}),
-			autocomplete.components.searchFilterBar.setAppearance({
+			autocomplete.cc.searchFilterBar.setAppearance({
 				style: {
 					'display': 'block',
 				},
@@ -454,11 +445,6 @@ AccountInterfaces.shortcutInterface = function (id, args) {
 			}),
 
 		]).then(function () {
-			return base.setChildren([
-				mainPanel,
-				autocompletePanel,
-			]);
-		}).then(function () {
 			return base;
 		});
 	});

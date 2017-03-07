@@ -1725,7 +1725,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			]),
 
 			// autocomplete
-			autocomplete.components.filterButton.setState({
+			autocomplete.cc.searchFilterBar.cc.filterButton.setState({
 				stateMap: {
 					'transcription-state': '-transcription-state-filter',
 					'-transcription-state': '-transcription-state-filter',
@@ -1735,7 +1735,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					'transcription-state': {},
 				}
 			}),
-			autocomplete.list.setState({
+			autocomplete.cc.list.setState({
 				states: {
 					'transcription-state': {
 						classes: {remove: 'hidden'},
@@ -1748,7 +1748,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					},
 				},
 			}),
-			autocomplete.components.filter.setState({
+			autocomplete.cc.filter.setState({
 				states: {
 					'transcription-state': {
 						classes: {add: 'hidden'},
@@ -1763,14 +1763,14 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			}),
 			autocomplete.setTitle(),
 			autocomplete.setSearch({mode: 'on', limit: 10, autocomplete: true}),
-			autocomplete.components.search.setAppearance({
+			autocomplete.search.setAppearance({
 				style: {
 					'border': '0px solid #fff',
 					'border-bottom': '1px solid #888',
 					'border-radius': '0px',
 				},
 			}),
-			autocomplete.components.searchFilterBar.setAppearance({
+			autocomplete.cc.searchFilterBar.setAppearance({
 				style: {
 					'display': 'block',
 				},
@@ -1802,7 +1802,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				'click': function (_this) {
 					amc.addAction({type: 'click.flagAddButton'});
 					return autocomplete.control.setFilter('flag').then(function () {
-						return autocomplete.search.components.head.model().focus();
+						return autocomplete.search.cc.head.model().focus();
 					});
 				},
 			}),
