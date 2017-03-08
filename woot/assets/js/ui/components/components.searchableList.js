@@ -17,6 +17,7 @@ Components.searchableList = function (id, args) {
 	})
 
 	return UI.createComponent(id, {
+		name: args.name,
 		template: UI.template('div', 'ie'),
 		appearance: args.appearance,
 		children: [

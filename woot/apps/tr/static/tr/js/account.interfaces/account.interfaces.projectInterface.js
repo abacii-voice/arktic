@@ -1,685 +1,664 @@
 var AccountInterfaces = (AccountInterfaces || {});
 AccountInterfaces.projectInterface = function () {
 	var id = 'project-interface';
-	return Promise.all([
-
-		// base
-		UI.createComponent(id, {
-			template: UI.template('div', 'ie abstract hidden'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'left': '0px',
-					'top': '0px',
-				},
+	return UI.createComponent(id, {
+		name: 'projectInterface',
+		template: UI.template('div', 'ie abstract hidden'),
+		appearance: {
+			style: {
+				'height': '100%',
+				'left': '0px',
+				'top': '0px',
 			},
-		}),
-
-		// 1. client sidebar
-		Components.sidebar('{id}-1-client-sidebar'.format({id: id}), {
-			position: {
-				main: {
-					on: '50px',
-					off: '40px',
-				},
-				back: {
-					on: '-200px',
-					off: '-200px',
-				},
-			},
-			fade: true,
-			state: {
-				primary: ['project-state', '-project-state-project'],
-				secondary: [],
-				deactivate: ['-project-state-focus'],
-			},
-		}),
-		Components.searchableList('{id}-1-cs-1-client-list'.format({id: id}), {
-			appearance: {
-				style: {
-					'top': '2px',
-				},
-			}
-		}),
-
-		// 2. project sidebar
-		// -project-state-client
-		Components.sidebar('{id}-2-project-sidebar'.format({id: id}), {
-			position: {
-				main: {
-					on: '260px',
-					off: '250px',
-				},
-				back: {
-					on: '0px',
-					off: '-50px',
-				},
-			},
-			fade: true,
-			state: {
-				primary: '-project-state-project',
-				secondary: ['-project-state-focus'],
-				deactivate: ['project-state', 'control-state'],
-			},
-		}),
-		Components.searchableList('{id}-2-ps-1-project-list'.format({id: id}), {
-			appearance: {
-				style: {
-					'top': '2px',
-				},
-			}
-		}),
-
-		// 3. focus sidebar: viewing a single project
-		// -project-state-focus
-		Components.sidebar('{id}-3-focus-sidebar'.format({id: id}), {
-			position: {
-				main: {
-					on: '50px',
-					off: '-300px',
-				},
-				back: {
-					on: '-200px',
-					off: '-200px',
-				},
-			},
-			fade: false,
-			state: {
-				primary: '-project-state-focus',
-				secondary: [],
-				deactivate: ['project-state', '-project-state-project'],
-			},
-		}),
-		UI.createComponent('{id}-3-fs-1-title'.format({id: id}), {
-			template: UI.template('h4', 'ie'),
-			appearance: {
-				style: {
-					'width': '100%',
-					'height': '32px',
-					'font-size': '18px',
-					'padding-top': '12px',
-					'padding-left': '0px',
-				},
-				html: '',
-			},
-		}),
-		UI.createComponent('{id}-3-fs-2-subtitle'.format({id: id}), {
-			template: UI.template('h4', 'ie'),
-			appearance: {
-				style: {
-					'height': '40px',
-					'font-size': '14px',
-					'padding-top': '5px',
-					'padding-left': '0px',
-					'float': 'left',
-					'color': Color.grey.light,
-				},
-				html: '',
-			},
-		}),
-		UI.createComponent('{id}-3-fs-2-1-status'.format({id: id}), {
-			template: UI.template('h4', 'ie'),
-			appearance: {
-				style: {
-					'height': '40px',
-					'font-size': '14px',
-					'padding-top': '5px',
-					'padding-left': '8px',
-					'float': 'left',
-					'color': Color.red.normal,
-				},
-				html: 'incomplete',
-			},
-		}),
-
-		// 3.3 Transcriptions button
-		UI.createComponent('{id}-3-fs-3-transcriptions'.format({id: id}), {
-			template: UI.template('div', 'ie border border-radius menu-button'),
-			appearance: {
-				style: {
-					'width': '100%',
-					'height': '70px',
-					'margin-bottom': '10px',
-				},
-			},
-		}),
-		UI.createComponent('{id}-3-fs-3-t-2-transcription'.format({id: id}), {
-			template: UI.template('h1', 'ie'),
-			appearance: {
-				style: {
-					'font-size': '15px',
-					'padding-top': '10px',
-					'padding-left': '12px',
-					'float': 'left',
-					'display': 'inline-block',
-				},
-				html: 'Transcription',
-			},
-		}),
-		UI.createComponent('{id}-3-fs-3-t-4-transcriber-number'.format({id: id}), {
-			template: UI.template('span', 'ie'),
-			appearance: {
-				style: {
-					'font-size': '15px',
-					'padding-top': '10px',
-					'padding-left': '12px',
-					'float': 'left',
-					'clear': 'left',
-					'display': 'inline-block',
-					'color': Color.grey.normal,
-				},
-				html: '4 Transcribers',
-			},
-		}),
-		UI.createComponent('{id}-3-fs-3-t-1-percentage-completion'.format({id: id}), {
-			template: UI.template('span', 'ie abs'),
-			appearance: {
-				style: {
-					'right': '0px',
-					'font-size': '15px',
-					'padding-top': '10px',
-					'padding-right': '12px',
-					'display': 'inline-block',
-					'color': Color.green.normal,
-				},
-				html: '34%',
-			},
-		}),
-		UI.createComponent('{id}-3-fs-3-t-3-count-remaining'.format({id: id}), {
-			template: UI.template('span', 'ie'),
-			appearance: {
-				style: {
-					'font-size': '15px',
-					'padding-top': '10px',
-					'padding-right': '12px',
-					'float': 'right',
-					'clear': 'right',
-					'display': 'inline-block',
-					'color': Color.red.normal,
-				},
-				html: '6600',
-			},
-		}),
-
-		// 3.4 Export
-		UI.createComponent('{id}-3-fs-4-export'.format({id: id}), {
-			template: UI.template('div', 'ie border border-radius menu-button'),
-			appearance: {
-				style: {
-					'width': '100%',
-					'height': '40px',
-					'margin-bottom': '10px',
-				},
-			},
-		}),
-		UI.createComponent('{id}-3-fs-4-t-1-export'.format({id: id}), {
-			template: UI.template('h1', 'ie'),
-			appearance: {
-				style: {
-					'font-size': '15px',
-					'padding-top': '10px',
-					'padding-left': '12px',
-					'float': 'left',
-					'display': 'inline-block',
-				},
-				html: 'Export',
-			},
-		}),
-		UI.createComponent('{id}-3-fs-4-t-2-completed'.format({id: id}), {
-			template: UI.template('span', 'ie'),
-			appearance: {
-				style: {
-					'font-size': '15px',
-					'padding-top': '10px',
-					'padding-right': '12px',
-					'float': 'right',
-					'display': 'inline-block',
-					'color': Color.green.normal,
-				},
-				html: '3400',
-			},
-		}),
-
-		// 3.5 Upload
-		UI.createComponent('{id}-3-fs-5-upload'.format({id: id}), {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'width': '100%',
-					'height': '200px',
-				},
-			},
-		}),
-		Components.dropzone('{id}-3-fs-5-u-1-dropzone'.format({id: id}), {name: 'dropzone'}),
-
-		// 4. transcription panel
-		// -project-state-transcription
-		UI.createComponent('{id}-4-transcription-panel'.format({id: id}), {
-			template: UI.template('div', 'ie abs centred-vertically border'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '714px',
-					'left': '310px',
-				},
-			},
-		}),
-		UI.createComponent('{id}-4-tp-1-title'.format({id: id}), {
-
-		}),
-		UI.createComponent('{id}-4-tp-2-statistics'.format({id: id}), {
-
-		}),
-		UI.createComponent('{id}-4-tp-3-progress'.format({id: id}), {
-
-		}),
-		UI.createComponent('{id}-4-tp-4-user-lists'.format({id: id}), {
-
-		}),
-		UI.createComponent('{id}-4-tp-5-ul-1-lists-title'.format({id: id}), {
-
-		}),
-		Components.searchableList('{id}-5-tp-3-ul-2-assigned-list'.format({id: id}), {
-
-		}),
-		Components.searchableList('{id}-5-tp-3-ul-3-all-list'.format({id: id}), {
-
-		}),
-
-		// 5. export panel
-		// -project-state-export
-		UI.createComponent('{id}-5-export-panel'.format({id: id}), {
-			template: UI.template('div', 'ie abs centred-vertically border hidden'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '714px',
-					'left': '310px',
-				},
-			},
-		}),
-
-		// 6. upload panel
-		// -project-state-upload
-		UI.createComponent('{id}-6-upload-panel'.format({id: id}), {
-			template: UI.template('div', 'ie abs centred-vertically hidden'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '714px',
-					'left': '310px',
-				},
-			},
-		}),
-		UI.createComponent('{id}-6-up-1-upload-check'.format({id: id}), {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '100%',
-				},
-			},
-		}),
-
-		// relfile display
-		UI.createComponent('{id}-6-up-1-uc-1-relfile-display-container'.format({id: id}), {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '45px', // 45, 60, 250
-					'width': '500px',
-					'margin-top': '20px',
-				},
-			},
-		}),
-		UI.createComponent('{id}-6-up-1-uc-1-rdc-1-relfile-display'.format({id: id}), {
-			template: UI.template('div', 'ie border border-radius'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '50%',
-					'float': 'left',
-				},
-			},
-		}),
-		UI.createComponent('{id}-6-up-1-uc-1-rdc-1-rd-1-title'.format({id: id}), {
-			template: UI.template('h3', 'ie'),
-			appearance: {
-				style: {
-					'font-size': '18px',
-					'margin-top': '10px',
-					'margin-left': '10px',
-				},
-				html: 'No relfile',
-			},
-		}),
-		UI.createComponent('{id}-6-up-1-uc-1-rdc-1-rd-2-entries'.format({id: id}), {
-			template: UI.template('span', 'ie'),
-			appearance: {
-				style: {
-					'margin-left': '10px',
-				},
-			},
-		}),
-		Components.searchableList('{id}-6-up-1-uc-1-rdc-1-rd-3-duplicates'.format({id: id}), {
-			appearance: {
-				style: {
-					'width': 'calc(100% - 20px)',
-					'height': '200px',
-					'left': '10px',
-				},
-			},
-		}),
-		UI.createComponent('{id}-6-up-1-uc-1-rdc-2-relfile-error-container'.format({id: id}), {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': 'calc(50% - 10px)',
-					'margin-left': '10px',
-					'float': 'left',
-				},
-			},
-		}),
-		UI.createComponent('{id}-6-up-1-uc-1-rdc-2-rec-1-no-relfile-error'.format({id: id}), {
-			template: UI.template('div', 'ie hidden'),
-			appearance: {
-				style: {
-					'height': '30px',
-				},
-			},
-		}),
-		UI.createComponent('{id}-6-up-1-uc-1-rdc-2-rec-1-nre-1-text'.format({id: id}), {
-			template: UI.template('div', 'ie border border-radius'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '110px',
-					'color': Color.red.dark,
-					'border-color': Color.red.dark,
-					'float': 'left',
-					'text-align': 'center',
-					'font-size': '15px',
-					'padding-top': '6px',
-					'border-bottom-right-radius': '0px',
-					'border-top-right-radius': '0px',
-				},
-				html: 'No relfile',
-			},
-		}),
-		UI.createComponent('{id}-6-up-1-uc-1-rdc-2-rec-1-nre-2-ignore-button'.format({id: id}), {
-			template: UI.template('div', 'ie border border-radius button no'),
-			appearance: {
-				style: {
-					'height': '30px',
-					'width': '80px',
-					'float': 'left',
-					'padding-top': '6px',
-					'border-left': '0px',
-					'border-bottom-left-radius': '0px',
-					'border-top-left-radius': '0px',
-				},
-				html: 'Ignore',
-			},
-		}),
-		UI.createComponent('{id}-6-up-1-uc-1-rdc-2-rec-2-duplicates-error'.format({id: id}), {
-			template: UI.template('div', 'ie border border-radius hidden'),
-			appearance: {
-				style: {
-					'height': '30px',
-					'width': '110px',
-					'color': Color.red.dark,
-					'border-color': Color.red.dark,
-					'float': 'left',
-					'text-align': 'center',
-					'font-size': '15px',
-					'padding-top': '6px',
-				},
-				html: 'Duplicates',
-			},
-		}),
-
-		// audio display
-		UI.createComponent('{id}-6-up-1-uc-2-audio-display-container'.format({id: id}), {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '45px',
-					'width': '500px',
-					'margin-top': '10px',
-				},
-			},
-		}),
-		UI.createComponent('{id}-6-up-1-uc-2-adc-1-audio-display'.format({id: id}), {
-			template: UI.template('div', 'ie border border-radius'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '50%',
-					'float': 'left',
-				},
-			},
-		}),
-		UI.createComponent('{id}-6-up-1-uc-2-adc-1-ad-1-title'.format({id: id}), {
-			template: UI.template('h3', 'ie'),
-			appearance: {
-				style: {
-					'font-size': '18px',
-					'margin-top': '10px',
-					'margin-left': '10px',
-				},
-				html: 'No audio',
-			},
-		}),
-		UI.createComponent('{id}-6-up-1-uc-2-adc-1-ad-2-entries'.format({id: id}), {
-			template: UI.template('span', 'ie'),
-			appearance: {
-				style: {
-					'margin-left': '10px',
-				},
-			},
-		}),
-		Components.searchableList('{id}-6-up-1-uc-2-adc-1-ad-3-no-caption-list'.format({id: id}), {
-			appearance: {
-				style: {
-					'width': 'calc(100% - 20px)',
-					'height': '200px',
-					'left': '10px',
-				},
-			},
-		}),
-		UI.createComponent('{id}-6-up-1-uc-1-adc-2-audio-error-container'.format({id: id}), {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': 'calc(50% - 10px)',
-					'margin-left': '10px',
-					'float': 'left',
-				},
-			},
-		}),
-		UI.createComponent('{id}-6-up-1-uc-1-adc-2-aec-1-no-caption'.format({id: id}), {
-			template: UI.template('div', 'ie hidden'),
-			appearance: {
-				style: {
-					'height': '30px',
-				},
-			},
-		}),
-		UI.createComponent('{id}-6-up-1-uc-1-adc-2-aec-1-nc-1-text'.format({id: id}), {
-			template: UI.template('div', 'ie border border-radius'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '110px',
-					'color': Color.red.dark,
-					'border-color': Color.red.dark,
-					'float': 'left',
-					'text-align': 'center',
-					'font-size': '15px',
-					'padding-top': '6px',
-					'border-bottom-right-radius': '0px',
-					'border-top-right-radius': '0px',
-				},
-				html: 'No caption',
-			},
-		}),
-		UI.createComponent('{id}-6-up-1-uc-1-adc-2-aec-1-nc-2-ingore-button'.format({id: id}), {
-			template: UI.template('div', 'ie border border-radius button no'),
-			appearance: {
-				style: {
-					'height': '30px',
-					'width': '80px',
-					'float': 'left',
-					'padding-top': '6px',
-					'border-left': '0px',
-					'border-bottom-left-radius': '0px',
-					'border-top-left-radius': '0px',
-				},
-				html: 'Ignore',
-			},
-		}),
-
-		// button panel
-		UI.createComponent('{id}-6-up-1-uc-3-button-panel'.format({id: id}), {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '45px',
-					'width': '250px',
-					'margin-top': '10px',
-				},
-			},
-		}),
-
-		// cancel button
-		UI.createComponent('{id}-6-up-1-uc-3-bp-1-cancel-button'.format({id: id}), {
-			template: UI.template('div', 'ie border border-radius button no'),
-			appearance: {
-				style: {
-					'height': '45px',
-					'width': '80px',
-					'margin-right': '10px',
-					'float': 'left',
-				},
-				html: 'Cancel',
-			},
-		}),
-
-		// confirm button
-		UI.createComponent('{id}-6-up-1-uc-3-bp-2-confirm-upload-button'.format({id: id}), {
-			template: UI.template('div', 'ie border border-radius button yes'),
-			appearance: {
-				style: {
-					'height': '45px',
-					'width': 'calc(100% - 90px)',
-					'float': 'left',
-				},
-				html: 'Upload',
-			},
-		}),
-
-		// 6.2 previous uploads
-		UI.createComponent('{id}-6-up-2-previous-uploads'.format({id: id}), {
-			template: UI.template('div', 'ie hidden'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '100%',
-				},
-			},
-		}),
-
-		// non-interface elements
-		AccountComponents.uploadController(),
-
-	]).then(function (components) {
-		var [
-			base,
-
+		},
+		children: [
 			// 1. client sidebar
-			clientSidebar,
-			clientList,
+			Components.sidebar('{id}-client-sidebar'.format({id: id}), {
+				name: 'clientSidebar',
+				position: {
+					main: {
+						on: '50px',
+						off: '40px',
+					},
+					back: {
+						on: '-200px',
+						off: '-200px',
+					},
+				},
+				fade: true,
+				state: {
+					primary: ['project-state', '-project-state-project'],
+					secondary: [],
+					deactivate: ['-project-state-focus'],
+				},
+				children: [
+					Components.searchableList('{id}-cs-client-list'.format({id: id}), {
+						name: 'clientList',
+						appearance: {
+							style: {
+								'top': '2px',
+							},
+						}
+					}),
+
+				],
+			}),
 
 			// 2. project sidebar
-			projectSidebar,
-			projectList,
+			Components.sidebar('{id}-project-sidebar'.format({id: id}), {
+				name: 'projectSidebar',
+				position: {
+					main: {
+						on: '260px',
+						off: '250px',
+					},
+					back: {
+						on: '0px',
+						off: '-50px',
+					},
+				},
+				fade: true,
+				state: {
+					primary: '-project-state-project',
+					secondary: ['-project-state-focus'],
+					deactivate: ['project-state', 'control-state'],
+				},
+				children: [
+					Components.searchableList('{id}-ps-project-list'.format({id: id}), {
+						name: 'projectList',
+						appearance: {
+							style: {
+								'top': '2px',
+							},
+						}
+					}),
 
-			// 3. focus sidebar
-			focusSidebar,
-			focusSidebarTitle,
-			focusSidebarSubtitle,
-			focusSidebarStatus,
+				],
+			}),
 
-			// 3.3
-			focusSidebarTranscriptionButton,
-			focusSidebarTranscriptionButtonTranscription,
-			focusSidebarTranscriptionButtonTranscriberNumber,
-			focusSidebarTranscriptionButtonPercentageCompletion,
-			focusSidebarTranscriptionButtonCountRemaining,
-
-			// 3.4
-			focusSidebarExportButton,
-			focusSidebarExportButtonExport,
-			focusSidebarExportButtonCompleted,
-
-			// 3.5
-			focusSidebarUploadButton,
-			focusSidebarUploadButtonDropzone,
+			// 3. focus sidebar: viewing a single project
+			Components.sidebar('{id}-focus-sidebar'.format({id: id}), {
+				name: 'focusSidebar',
+				position: {
+					main: {
+						on: '50px',
+						off: '-300px',
+					},
+					back: {
+						on: '-200px',
+						off: '-200px',
+					},
+				},
+				fade: false,
+				state: {
+					primary: '-project-state-focus',
+					secondary: [],
+					deactivate: ['project-state', '-project-state-project'],
+				},
+				children: [
+					UI.createComponent('{id}-fs-title'.format({id: id}), {
+						name: 'title',
+						template: UI.template('h4', 'ie'),
+						appearance: {
+							style: {
+								'width': '100%',
+								'height': '32px',
+								'font-size': '18px',
+								'padding-top': '12px',
+								'padding-left': '0px',
+							},
+							html: '',
+						},
+					}),
+					UI.createComponent('{id}-fs-subtitle'.format({id: id}), {
+						name: 'subtitle',
+						template: UI.template('h4', 'ie'),
+						appearance: {
+							style: {
+								'height': '40px',
+								'font-size': '14px',
+								'padding-top': '5px',
+								'padding-left': '0px',
+								'float': 'left',
+								'color': Color.grey.light,
+							},
+							html: '',
+						},
+					}),
+					UI.createComponent('{id}-fs-status'.format({id: id}), {
+						name: 'status',
+						template: UI.template('h4', 'ie'),
+						appearance: {
+							style: {
+								'height': '40px',
+								'font-size': '14px',
+								'padding-top': '5px',
+								'padding-left': '8px',
+								'float': 'left',
+								'color': Color.red.normal,
+							},
+							html: 'incomplete',
+						},
+					}),
+					UI.createComponent('{id}-fs-transcription-button'.format({id: id}), {
+						name: 'transcriptionButton',
+						template: UI.template('div', 'ie border border-radius menu-button'),
+						appearance: {
+							style: {
+								'width': '100%',
+								'height': '70px',
+								'margin-bottom': '10px',
+							},
+						},
+						children: [
+							UI.createComponent('{id}-fs-tb-title'.format({id: id}), {
+								name: 'title',
+								template: UI.template('h1', 'ie'),
+								appearance: {
+									style: {
+										'font-size': '15px',
+										'padding-top': '10px',
+										'padding-left': '12px',
+										'float': 'left',
+										'display': 'inline-block',
+									},
+									html: 'Transcription',
+								},
+							}),
+							UI.createComponent('{id}-fs-tb-transcriber-number'.format({id: id}), {
+								name: 'transcriberNumber',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'font-size': '15px',
+										'padding-top': '10px',
+										'padding-left': '12px',
+										'float': 'left',
+										'clear': 'left',
+										'display': 'inline-block',
+										'color': Color.grey.normal,
+									},
+									html: '4 Transcribers',
+								},
+							}),
+							UI.createComponent('{id}-fs-tb-percentage-completion'.format({id: id}), {
+								name: 'percentageCompletion',
+								template: UI.template('span', 'ie abs'),
+								appearance: {
+									style: {
+										'right': '0px',
+										'font-size': '15px',
+										'padding-top': '10px',
+										'padding-right': '12px',
+										'display': 'inline-block',
+										'color': Color.green.normal,
+									},
+									html: '34%',
+								},
+							}),
+							UI.createComponent('{id}-fs-tb-count-remaining'.format({id: id}), {
+								name: 'countRemaining',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'font-size': '15px',
+										'padding-top': '10px',
+										'padding-right': '12px',
+										'float': 'right',
+										'clear': 'right',
+										'display': 'inline-block',
+										'color': Color.red.normal,
+									},
+									html: '6600',
+								},
+							}),
+						],
+					}),
+					UI.createComponent('{id}-fs-export-button'.format({id: id}), {
+						name: 'exportButton',
+						template: UI.template('div', 'ie border border-radius menu-button'),
+						appearance: {
+							style: {
+								'width': '100%',
+								'height': '40px',
+								'margin-bottom': '10px',
+							},
+						},
+						children: [
+							UI.createComponent('{id}-fs-eb-title'.format({id: id}), {
+								name: 'title',
+								template: UI.template('h1', 'ie'),
+								appearance: {
+									style: {
+										'font-size': '15px',
+										'padding-top': '10px',
+										'padding-left': '12px',
+										'float': 'left',
+										'display': 'inline-block',
+									},
+									html: 'Export',
+								},
+							}),
+							UI.createComponent('{id}-fs-eb-completed'.format({id: id}), {
+								name: 'completed',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'font-size': '15px',
+										'padding-top': '10px',
+										'padding-right': '12px',
+										'float': 'right',
+										'display': 'inline-block',
+										'color': Color.green.normal,
+									},
+									html: '3400',
+								},
+							}),
+						],
+					}),
+					UI.createComponent('{id}-fs-upload-button'.format({id: id}), {
+						name: 'uploadButton',
+						template: UI.template('div', 'ie'),
+						appearance: {
+							style: {
+								'width': '100%',
+								'height': '200px',
+							},
+						},
+						children: [
+							Components.dropzone('{id}-fs-ub-dropzone'.format({id: id}), {name: 'dropzone'}),
+						],
+					}),
+				],
+			}),
 
 			// 4. transcription panel
-			transcriptionPanel,
-			transcriptionPanelTitle,
-			transcriptionPanelStatistics,
-			transcriptionPanelProgress,
-			transcriptionPanelUserLists,
-			transcriptionPanelUserListsListsTitle,
-			transcriptionPanelAssignedList,
-			transcriptionPanelAllList,
+			UI.createComponent('{id}-transcription-panel'.format({id: id}), {
+				name: 'transcriptionPanel',
+				template: UI.template('div', 'ie abs centred-vertically border'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '714px',
+						'left': '310px',
+					},
+				},
+				children: [
+					UI.createComponent('{id}-tp-title'.format({id: id}), {
+						name: 'title',
+					}),
+					UI.createComponent('{id}-tp-statistics'.format({id: id}), {
+						name: 'statistics',
+					}),
+					UI.createComponent('{id}-tp-progress'.format({id: id}), {
+						name: 'progress',
+					}),
+					UI.createComponent('{id}-tp-user-lists'.format({id: id}), {
+						name: 'userLists',
+						children: [
+							UI.createComponent('{id}-tp-ul-title'.format({id: id}), {
+								name: 'title',
+							}),
+							Components.searchableList('{id}-tp-ul-assigned-list'.format({id: id}), {
+								name: 'assigned',
+							}),
+							Components.searchableList('{id}-tp-ul-all-list'.format({id: id}), {
+								name: 'all',
+							}),
+						],
+					}),
+				],
+			}),
 
 			// 5. export panel
-			exportPanel,
+			UI.createComponent('{id}-export-panel'.format({id: id}), {
+				name: 'exportPanel',
+				template: UI.template('div', 'ie abs centred-vertically border hidden'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '714px',
+						'left': '310px',
+					},
+				},
+			}),
 
 			// 6. upload panel
-			uploadPanel,
-			uploadPanelUploadCheck,
-
-			// relfile display
-			uploadPanelUploadCheckRelfileDisplayContainer,
-			uploadPanelUploadCheckRelfileDisplay,
-			uploadPanelUploadCheckRelfileDisplayTitle,
-			uploadPanelUploadCheckRelfileDisplayEntries,
-			uploadPanelUploadCheckRelfileDisplayDuplicates,
-			uploadPanelUploadCheckRelfileErrorContainer,
-			uploadPanelUploadCheckRelfileErrorContainerNoRelfileError,
-			uploadPanelUploadCheckRelfileErrorContainerNoRelfileErrorText,
-			uploadPanelUploadCheckRelfileErrorContainerNoRelfileErrorIgnoreButton,
-			uploadPanelUploadCheckRelfileErrorContainerDuplicatesError,
-
-			// audio display
-			uploadPanelUploadCheckAudioDisplayContainer,
-			uploadPanelUploadCheckAudioDisplay,
-			uploadPanelUploadCheckAudioDisplayTitle,
-			uploadPanelUploadCheckAudioDisplayEntries,
-			uploadPanelUploadCheckAudioDisplayNoCaptionList,
-			uploadPanelUploadCheckAudioErrorContainer,
-			uploadPanelUploadCheckAudioErrorContainerNoCaptionError,
-			uploadPanelUploadCheckAudioErrorContainerNoCaptionErrorText,
-			uploadPanelUploadCheckAudioErrorContainerNoCaptionErrorIgnoreButton,
-
-			// confirm button
-			uploadPanelButtonPanel,
-			uploadPanelButtonPanelCancelButton,
-			uploadPanelButtonPanelConfirmUploadButton,
-
-			// 6.2 previous uploads
-			uploadPanelPreviousUploads,
-
-			// non-interface elements
-			uploadController,
-
-		] = components;
+			UI.createComponent('{id}-upload-panel'.format({id: id}), {
+				name: 'uploadPanel',
+				template: UI.template('div', 'ie abs centred-vertically hidden'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': '714px',
+						'left': '310px',
+					},
+				},
+				children: [
+					UI.createComponent('{id}-up-upload-check'.format({id: id}), {
+						name: 'uploadCheck',
+						template: UI.template('div', 'ie'),
+						appearance: {
+							style: {
+								'height': '100%',
+								'width': '100%',
+							},
+						},
+						children: [
+							UI.createComponent('{id}-up-uc-relfile-display-container'.format({id: id}), {
+								name: 'relfileDisplayContainer',
+								template: UI.template('div', 'ie'),
+								appearance: {
+									style: {
+										'height': '45px', // 45, 60, 250
+										'width': '500px',
+										'margin-top': '20px',
+									},
+								},
+								children: [
+									UI.createComponent('{id}-up-uc-rdc-relfile-display'.format({id: id}), {
+										name: 'relfileDisplay',
+										template: UI.template('div', 'ie border border-radius'),
+										appearance: {
+											style: {
+												'height': '100%',
+												'width': '50%',
+												'float': 'left',
+											},
+										},
+										children: [
+											UI.createComponent('{id}-up-uc-rdc-rd-title'.format({id: id}), {
+												name: 'title',
+												template: UI.template('h3', 'ie'),
+												appearance: {
+													style: {
+														'font-size': '18px',
+														'margin-top': '10px',
+														'margin-left': '10px',
+													},
+													html: 'No relfile',
+												},
+											}),
+											UI.createComponent('{id}-up-uc-rdc-rd-entries'.format({id: id}), {
+												name: 'entries',
+												template: UI.template('span', 'ie'),
+												appearance: {
+													style: {
+														'margin-left': '10px',
+													},
+												},
+											}),
+											Components.searchableList('{id}-up-uc-rdc-rd-duplicates'.format({id: id}), {
+												name: 'duplicates',
+												appearance: {
+													style: {
+														'width': 'calc(100% - 20px)',
+														'height': '200px',
+														'left': '10px',
+													},
+												},
+											}),
+										],
+									}),
+									UI.createComponent('{id}-up-uc-rdc-relfile-error-container'.format({id: id}), {
+										name: 'relfileErrorContainer',
+										template: UI.template('div', 'ie'),
+										appearance: {
+											style: {
+												'height': '100%',
+												'width': 'calc(50% - 10px)',
+												'margin-left': '10px',
+												'float': 'left',
+											},
+										},
+										children: [
+											UI.createComponent('{id}-up-uc-rdc-rec-no-relfile-error'.format({id: id}), {
+												name: 'noRelfileError',
+												template: UI.template('div', 'ie hidden'),
+												appearance: {
+													style: {
+														'height': '30px',
+													},
+												},
+												children: [
+													UI.createComponent('{id}-up-uc-rdc-rec-nre-text'.format({id: id}), {
+														name: 'text',
+														template: UI.template('div', 'ie border border-radius'),
+														appearance: {
+															style: {
+																'height': '100%',
+																'width': '110px',
+																'color': Color.red.dark,
+																'border-color': Color.red.dark,
+																'float': 'left',
+																'text-align': 'center',
+																'font-size': '15px',
+																'padding-top': '6px',
+																'border-bottom-right-radius': '0px',
+																'border-top-right-radius': '0px',
+															},
+															html: 'No relfile',
+														},
+													}),
+													UI.createComponent('{id}-up-uc-rdc-rec-nre-ignore-button'.format({id: id}), {
+														template: UI.template('div', 'ie border border-radius button no'),
+														appearance: {
+															style: {
+																'height': '30px',
+																'width': '80px',
+																'float': 'left',
+																'padding-top': '6px',
+																'border-left': '0px',
+																'border-bottom-left-radius': '0px',
+																'border-top-left-radius': '0px',
+															},
+															html: 'Ignore',
+														},
+													}),
+												],
+											}),
+											UI.createComponent('{id}-up-uc-rdc-rec-duplicates-error'.format({id: id}), {
+												name: 'duplicatesError',
+												template: UI.template('div', 'ie border border-radius hidden'),
+												appearance: {
+													style: {
+														'height': '30px',
+														'width': '110px',
+														'color': Color.red.dark,
+														'border-color': Color.red.dark,
+														'float': 'left',
+														'text-align': 'center',
+														'font-size': '15px',
+														'padding-top': '6px',
+													},
+													html: 'Duplicates',
+												},
+											}),
+										],
+									}),
+								],
+							}),
+							UI.createComponent('{id}-up-uc-audio-display-container'.format({id: id}), {
+								name: 'audioDisplayContainer',
+								template: UI.template('div', 'ie'),
+								appearance: {
+									style: {
+										'height': '45px',
+										'width': '500px',
+										'margin-top': '10px',
+									},
+								},
+								children: [
+									UI.createComponent('{id}-up-uc-adc-audio-display'.format({id: id}), {
+										name: 'audioDisplay',
+										template: UI.template('div', 'ie border border-radius'),
+										appearance: {
+											style: {
+												'height': '100%',
+												'width': '50%',
+												'float': 'left',
+											},
+										},
+										children: [
+											UI.createComponent('{id}-up-uc-adc-ad-title'.format({id: id}), {
+												name: 'title',
+												template: UI.template('h3', 'ie'),
+												appearance: {
+													style: {
+														'font-size': '18px',
+														'margin-top': '10px',
+														'margin-left': '10px',
+													},
+													html: 'No audio',
+												},
+											}),
+											UI.createComponent('{id}-up-uc-adc-ad-entries'.format({id: id}), {
+												name: 'entries',
+												template: UI.template('span', 'ie'),
+												appearance: {
+													style: {
+														'margin-left': '10px',
+													},
+												},
+											}),
+											Components.searchableList('{id}-up-uc-adc-ad-no-caption-list'.format({id: id}), {
+												name: 'noCaptionList',
+												appearance: {
+													style: {
+														'width': 'calc(100% - 20px)',
+														'height': '200px',
+														'left': '10px',
+													},
+												},
+											}),
+										],
+									}),
+									UI.createComponent('{id}-up-uc-adc-audio-error-container'.format({id: id}), {
+										name: 'audioErrorContainer',
+										template: UI.template('div', 'ie'),
+										appearance: {
+											style: {
+												'height': '100%',
+												'width': 'calc(50% - 10px)',
+												'margin-left': '10px',
+												'float': 'left',
+											},
+										},
+										children: [
+											UI.createComponent('{id}-up-uc-adc-aec-no-caption'.format({id: id}), {
+												name: 'noCaption',
+												template: UI.template('div', 'ie hidden'),
+												appearance: {
+													style: {
+														'height': '30px',
+													},
+												},
+												children: [
+													UI.createComponent('{id}-up-uc-adc-aec-nc-text'.format({id: id}), {
+														name: 'text',
+														template: UI.template('div', 'ie border border-radius'),
+														appearance: {
+															style: {
+																'height': '100%',
+																'width': '110px',
+																'color': Color.red.dark,
+																'border-color': Color.red.dark,
+																'float': 'left',
+																'text-align': 'center',
+																'font-size': '15px',
+																'padding-top': '6px',
+																'border-bottom-right-radius': '0px',
+																'border-top-right-radius': '0px',
+															},
+															html: 'No caption',
+														},
+													}),
+													UI.createComponent('{id}-up-uc-adc-aec-nc-ingore-button'.format({id: id}), {
+														name: 'ignoreButton',
+														template: UI.template('div', 'ie border border-radius button no'),
+														appearance: {
+															style: {
+																'height': '30px',
+																'width': '80px',
+																'float': 'left',
+																'padding-top': '6px',
+																'border-left': '0px',
+																'border-bottom-left-radius': '0px',
+																'border-top-left-radius': '0px',
+															},
+															html: 'Ignore',
+														},
+													}),
+												],
+											}),
+										],
+									}),
+								],
+							}),
+							UI.createComponent('{id}-up-uc-button-panel'.format({id: id}), {
+								name: 'buttonPanel',
+								template: UI.template('div', 'ie'),
+								appearance: {
+									style: {
+										'height': '45px',
+										'width': '250px',
+										'margin-top': '10px',
+									},
+								},
+								children: [
+									UI.createComponent('{id}-up-uc-bp-cancel-button'.format({id: id}), {
+										name: 'cancelButton',
+										template: UI.template('div', 'ie border border-radius button no'),
+										appearance: {
+											style: {
+												'height': '45px',
+												'width': '80px',
+												'margin-right': '10px',
+												'float': 'left',
+											},
+											html: 'Cancel',
+										},
+									}),
+									UI.createComponent('{id}-up-uc-bp-confirm-upload-button'.format({id: id}), {
+										name: 'confirmUploadButton',
+										template: UI.template('div', 'ie border border-radius button yes'),
+										appearance: {
+											style: {
+												'height': '45px',
+												'width': 'calc(100% - 90px)',
+												'float': 'left',
+											},
+											html: 'Upload',
+										},
+									}),
+								],
+							}),
+						],
+					}),
+					UI.createComponent('{id}-up-previous-uploads'.format({id: id}), {
+						name: 'previousUploads',
+						template: UI.template('div', 'ie hidden'),
+						appearance: {
+							style: {
+								'height': '100%',
+								'width': '100%',
+							},
+						},
+					}),
+				],
+			}),
+			AccountComponents.uploadController('uploadController'),
+		],
+	}).then(function (base) {
+		var clientList = base.cc.clientSidebar.cc.main.cc.clientList;
+		var projectList = base.cc.projectSidebar.cc.main.cc.projectList;
+		// uploadPanelUploadCheckRelfileDisplayContainer,
+		// uploadPanelUploadCheckRelfileDisplayTitle,
+		// uploadPanelUploadCheckRelfileDisplayDuplicates,
+		// uploadPanelUploadCheckAudioDisplayContainer,
+		// uploadPanelUploadCheckAudioDisplayTitle,
+		// uploadPanelUploadCheckAudioDisplayNoCaptionList,
+		// uploadController,
 
 		// client sidebar
 		clientList.autocomplete = false;
@@ -1313,9 +1292,6 @@ AccountInterfaces.projectInterface = function () {
 					'padding-left': '10px',
 				},
 			}),
-			clientSidebar.components.main.setChildren([
-				clientList,
-			]),
 			clientList.setState({
 				states: {
 					'project-state': {
@@ -1357,9 +1333,6 @@ AccountInterfaces.projectInterface = function () {
 					'padding-left': '10px',
 				},
 			}),
-			projectSidebar.components.main.setChildren([
-				projectList,
-			]),
 			projectList.setState({
 				states: {
 					'-project-state-project': {
@@ -1388,14 +1361,6 @@ AccountInterfaces.projectInterface = function () {
 					'height': '100%',
 				},
 			}),
-			focusSidebar.components.main.setChildren([
-				focusSidebarTitle,
-				focusSidebarSubtitle,
-				focusSidebarStatus,
-				focusSidebarTranscriptionButton,
-				focusSidebarExportButton,
-				focusSidebarUploadButton,
-			]),
 			focusSidebar.components.main.addState('-project-state-focus', {
 				preFn: function (_this) {
 					return Promise.all([
@@ -1427,12 +1392,6 @@ AccountInterfaces.projectInterface = function () {
 			}),
 
 			// 3.3
-			focusSidebarTranscriptionButton.setChildren([
-				focusSidebarTranscriptionButtonTranscription,
-				focusSidebarTranscriptionButtonTranscriberNumber,
-				focusSidebarTranscriptionButtonPercentageCompletion,
-				focusSidebarTranscriptionButtonCountRemaining,
-			]),
 			focusSidebarTranscriptionButton.setState({
 				stateMap: '-project-state-transcription',
 			}),
@@ -1443,10 +1402,6 @@ AccountInterfaces.projectInterface = function () {
 			}),
 
 			// 3.4
-			focusSidebarExportButton.setChildren([
-				focusSidebarExportButtonExport,
-				focusSidebarExportButtonCompleted,
-			]),
 			focusSidebarExportButton.setState({
 				stateMap: '-project-state-export',
 			}),
@@ -1457,9 +1412,6 @@ AccountInterfaces.projectInterface = function () {
 			}),
 
 			// 3.5
-			focusSidebarUploadButton.setChildren([
-				focusSidebarUploadButtonDropzone,
-			]),
 			focusSidebarUploadButtonDropzone.setBindings({
 				'drop': function (_this, event) {
 					event.preventDefault();
@@ -1547,10 +1499,6 @@ AccountInterfaces.projectInterface = function () {
 					'-project-state-upload': 'default',
 				},
 			}),
-			uploadPanel.setChildren([
-				uploadPanelUploadCheck,
-				uploadPanelPreviousUploads,
-			]),
 
 			// CONVERT TO FUNCTION CALLS ON THE RELEVANT OBJECTS SET ABOVE
 			uploadPanelUploadCheck.setState({
@@ -1654,11 +1602,6 @@ AccountInterfaces.projectInterface = function () {
 					'-project-state-upload': 'default',
 				},
 			}),
-			uploadPanelUploadCheck.setChildren([
-				uploadPanelUploadCheckRelfileDisplayContainer,
-				uploadPanelUploadCheckAudioDisplayContainer,
-				uploadPanelButtonPanel,
-			]),
 
 			// relfile display
 			uploadPanelUploadCheckRelfileDisplayDuplicates.setTitle({text: 'Duplicates', center: false, style: {'font-size': '14px', 'margin-bottom': '0px'}}),
@@ -1668,23 +1611,6 @@ AccountInterfaces.projectInterface = function () {
 					'height': '158px',
 				},
 			}),
-			uploadPanelUploadCheckRelfileDisplayContainer.setChildren([
-				uploadPanelUploadCheckRelfileDisplay,
-				uploadPanelUploadCheckRelfileErrorContainer,
-			]),
-			uploadPanelUploadCheckRelfileDisplay.setChildren([
-				uploadPanelUploadCheckRelfileDisplayTitle,
-				uploadPanelUploadCheckRelfileDisplayEntries,
-				uploadPanelUploadCheckRelfileDisplayDuplicates,
-			]),
-			uploadPanelUploadCheckRelfileErrorContainer.setChildren([
-				uploadPanelUploadCheckRelfileErrorContainerNoRelfileError,
-				uploadPanelUploadCheckRelfileErrorContainerDuplicatesError,
-			]),
-			uploadPanelUploadCheckRelfileErrorContainerNoRelfileError.setChildren([
-				uploadPanelUploadCheckRelfileErrorContainerNoRelfileErrorText,
-				uploadPanelUploadCheckRelfileErrorContainerNoRelfileErrorIgnoreButton,
-			]),
 
 			// relfile errors
 
@@ -1697,42 +1623,13 @@ AccountInterfaces.projectInterface = function () {
 					'height': '158px',
 				},
 			}),
-			uploadPanelUploadCheckAudioDisplayContainer.setChildren([
-				uploadPanelUploadCheckAudioDisplay,
-				uploadPanelUploadCheckAudioErrorContainer,
-			]),
-			uploadPanelUploadCheckAudioDisplay.setChildren([
-				uploadPanelUploadCheckAudioDisplayTitle,
-				uploadPanelUploadCheckAudioDisplayEntries,
-				uploadPanelUploadCheckAudioDisplayNoCaptionList,
-			]),
-			uploadPanelUploadCheckAudioErrorContainer.setChildren([
-				uploadPanelUploadCheckAudioErrorContainerNoCaptionError,
-			]),
-			uploadPanelUploadCheckAudioErrorContainerNoCaptionError.setChildren([
-				uploadPanelUploadCheckAudioErrorContainerNoCaptionErrorText,
-				uploadPanelUploadCheckAudioErrorContainerNoCaptionErrorIgnoreButton,
-			]),
 
 			// audio errors
 
 
 			// button panel
-			uploadPanelButtonPanel.setChildren([
-				uploadPanelButtonPanelCancelButton,
-				uploadPanelButtonPanelConfirmUploadButton,
-			]),
 
 		]).then(function () {
-			return base.setChildren([
-				clientSidebar,
-				projectSidebar,
-				focusSidebar,
-				transcriptionPanel,
-				exportPanel,
-				uploadPanel,
-			]);
-		}).then(function () {
 			return base;
 		});
 	});
