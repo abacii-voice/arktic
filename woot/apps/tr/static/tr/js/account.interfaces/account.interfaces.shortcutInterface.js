@@ -165,100 +165,96 @@ AccountInterfaces.shortcutInterface = function (name) {
 		autocomplete.unit = function (datum, query, index) {
 			query = (query || '');
 			var base = autocomplete.data.idgen(index);
-			return Promise.all([
-				// base component
-				UI.createComponent(base, {
-					template: UI.template('div', 'ie button base'),
-					appearance: {
-						classes: [datum.rule],
-						style: {
-							'height': 'auto',
-						},
-					}
-				}),
-
-				// main container
-				UI.createComponent('{base}-main-container'.format({base: base}), {
-					template: UI.template('div', 'ie'),
-					appearance: {
-						style: {
-							'left': '0px',
-							'padding-top': '11px',
-							'padding-bottom': '5px',
-							'width': 'calc(100% - 15px)'
-						},
+			return UI.createComponent(base, {
+				name: 'unit{index}'.format({index: index}),
+				template: UI.template('div', 'ie button base'),
+				appearance: {
+					classes: [datum.rule],
+					style: {
+						'height': 'auto',
 					},
-				}),
-
-				// main wrapper
-				UI.createComponent('{base}-main-wrapper'.format({base: base}), {
-					template: UI.template('div', 'ie'),
-					appearance: {
-						style: {
-							'left': '0px',
-							'display': 'inline-block',
+				},
+				children: [
+					// main container
+					UI.createComponent('{base}-main-container'.format({base: base}), {
+						name: 'container',
+						template: UI.template('div', 'ie'),
+						appearance: {
+							style: {
+								'left': '0px',
+								'padding-top': '11px',
+								'padding-bottom': '5px',
+								'width': 'calc(100% - 15px)'
+							},
 						},
-					},
-				}),
-
-				// main
-				UI.createComponent('{base}-main-head'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'color': Color.grey.normal,
-							'display': 'inline-block',
-							'position': 'absolute',
+						children: [
+							// main wrapper
+							UI.createComponent('{base}-main-wrapper'.format({base: base}), {
+								name: 'wrapper',
+								template: UI.template('div', 'ie'),
+								appearance: {
+									style: {
+										'left': '0px',
+										'display': 'inline-block',
+									},
+								},
+								children: [
+									// main
+									UI.createComponent('{base}-main-head'.format({base: base}), {
+										name: 'head',
+										template: UI.template('span', 'ie'),
+										appearance: {
+											style: {
+												'color': Color.grey.normal,
+												'display': 'inline-block',
+												'position': 'absolute',
+											},
+											html: datum.main.substring(0, query.length),
+										},
+									}),
+									UI.createComponent('{base}-main-tail'.format({base: base}), {
+										name: 'tail',
+										template: UI.template('span', 'ie'),
+										appearance: {
+											style: {
+												'display': 'inline-block',
+												'max-width': '100%',
+											},
+											html: datum.main,
+										},
+									}),
+								],
+							}),
+							UI.createComponent('{base}-main-shortcut'.format({base: base}), {
+								name: 'shortcut',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'display': 'inline-block',
+										'left': '8px',
+										'opacity': '0.6',
+										'top': '-4px',
+									},
+									html: (datum.shortcut || ''),
+								},
+							}),
+						],
+					}),
+					// index
+					UI.createComponent('{base}-index'.format({base: base}), {
+						name: 'index',
+						template: UI.template('div', 'ie abs'),
+						appearance: {
+							style: {
+								'width': '10px',
+								'right': '5px',
+								'top': '11px',
+							},
+							html: index,
 						},
-						html: datum.main.substring(0, query.length),
-					},
-				}),
-				UI.createComponent('{base}-main-tail'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-							'max-width': '100%',
-						},
-						html: datum.main,
-					},
-				}),
-				UI.createComponent('{base}-main-shortcut'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-							'left': '8px',
-							'opacity': '0.6',
-							'top': '-4px',
-						},
-						html: (datum.shortcut || ''),
-					},
-				}),
-
-				// index
-				UI.createComponent('{base}-index'.format({base: base}), {
-					template: UI.template('div', 'ie abs'),
-					appearance: {
-						style: {
-							'width': '10px',
-							'right': '5px',
-							'top': '11px',
-						},
-						html: index,
-					},
-				}),
-
-			]).then(function (unitComponents) {
-				var [
-					unitBase,
-					unitMainContainer,
-					unitMainWrapper,
-					unitMainHead,
-					unitMainTail,
-					unitMainShortcut,
-					unitIndex,
-				] = unitComponents;
+					}),
+				],
+			}).then(function (unitBase) {
 
 				unitBase.activate = function () {
 					return unitBase.setAppearance({classes: {add: ['active']}});
@@ -286,33 +282,21 @@ AccountInterfaces.shortcutInterface = function (name) {
 				unitBase.updateDatum = function (ndatum) {
 					return unitBase.setAppearance({classes: {add: ndatum.rule, remove: (unitBase.datum || datum).rule}}).then(function () {
 						unitBase.datum = ndatum;
-						return unitMainShortcut.setAppearance({html: (ndatum.shortcut || '')});
+						return unitBase.cc.container.cc.shortcut.setAppearance({html: (ndatum.shortcut || '')});
 					});
 				}
 				unitBase.updateQuery = function (query) {
 					unitBase.query = query;
 					return Promise.all([
-						unitMainHead.setAppearance({html: unitBase.datum.main.substring(0, query.length)}),
-						unitMainTail.setAppearance({html: unitBase.datum.main}),
+						unitBase.cc.container.cc.wrapper.cc.head.setAppearance({html: unitBase.datum.main.substring(0, query.length)}),
+						unitBase.cc.container.cc.wrapper.cc.tail.setAppearance({html: unitBase.datum.main}),
 					]);
 				}
 
 				// complete promises.
 				return Promise.all([
-					unitMainWrapper.setChildren([
-						unitMainHead,
-						unitMainTail,
-					]),
-					unitMainContainer.setChildren([
-						unitMainWrapper,
-						unitMainShortcut,
-					]),
+
 				]).then(function () {
-					return unitBase.setChildren([
-						unitMainContainer,
-						unitIndex,
-					]);
-				}).then(function () {
 					return unitBase;
 				});
 			});

@@ -698,57 +698,53 @@ AccountInterfaces.projectInterface = function () {
 		clientList.unit = function (datum, query, index) {
 			query = (query || '');
 			var base = clientList.data.idgen(index);
-			return Promise.all([
-				// base component
-				UI.createComponent(base, {
-					template: UI.template('div', 'ie button base'),
-					appearance: {
-						classes: [datum.rule],
-					},
-					state: {
-						stateMap: '-project-state-project',
-					},
-				}),
-
-				// main wrapper
-				UI.createComponent('{base}-main-wrapper'.format({base: base}), {
-					template: UI.template('div', 'ie centred-vertically'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
+			return UI.createComponent(base, {
+				name: 'unit{index}'.format({index: index}),
+				template: UI.template('div', 'ie button base'),
+				appearance: {
+					classes: [datum.rule],
+				},
+				state: {
+					stateMap: '-project-state-project',
+				},
+				children: [
+					// main wrapper
+					UI.createComponent('{base}-main-wrapper'.format({base: base}), {
+						name: 'mainWrapper',
+						template: UI.template('div', 'ie centred-vertically'),
+						appearance: {
+							style: {
+								'display': 'inline-block',
+							},
 						},
-					},
-				}),
-
-				// main
-				UI.createComponent('{base}-main-head'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'color': Color.grey.normal,
-							'display': 'inline-block',
-							'position': 'absolute',
-						},
-						html: datum.main.substring(0, query.length),
-					},
-				}),
-				UI.createComponent('{base}-main-tail'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-						},
-						html: datum.main,
-					},
-				}),
-
-			]).then(function (unitComponents) {
-				var [
-					unitBase,
-					unitMainWrapper,
-					unitMainHead,
-					unitMainTail,
-				] = unitComponents;
+						children: [
+							// main
+							UI.createComponent('{base}-mw-head'.format({base: base}), {
+								name: 'head',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'color': Color.grey.normal,
+										'display': 'inline-block',
+										'position': 'absolute',
+									},
+									html: datum.main.substring(0, query.length),
+								},
+							}),
+							UI.createComponent('{base}-mw-tail'.format({base: base}), {
+								name: 'tail',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'display': 'inline-block',
+									},
+									html: datum.main,
+								},
+							}),
+						],
+					}),
+				],
+			}).then(function (unitBase) {
 
 				unitBase.activate = function () {
 					return unitBase.setAppearance({classes: {add: ['active']}});
@@ -781,8 +777,8 @@ AccountInterfaces.projectInterface = function () {
 				unitBase.updateQuery = function (query) {
 					unitBase.query = query;
 					return Promise.all([
-						unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
-						unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
+						unitBase.cc.mainWrapper.cc.head.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+						unitBase.cc.mainWrapper.cc.tail.setAppearance({html: (unitBase.datum || datum).main}),
 					]);
 				}
 
@@ -790,21 +786,12 @@ AccountInterfaces.projectInterface = function () {
 				return Promise.all([
 					unitBase.setBindings({
 						'click': function (_this) {
-							// amc.addAction({type: 'click.clientlist', metadata: {client: datum.id}});
 							return Active.set('contract_client.id', datum.id).then(function () {
 								return _this.triggerState();
 							})
 						},
 					}),
-					unitMainWrapper.setChildren([
-						unitMainHead,
-						unitMainTail,
-					]),
 				]).then(function () {
-					return unitBase.setChildren([
-						unitMainWrapper,
-					]);
-				}).then(function () {
 					return unitBase;
 				});
 			});
@@ -847,60 +834,53 @@ AccountInterfaces.projectInterface = function () {
 		projectList.unit = function (datum, query, index) {
 			query = (query || '');
 			var base = projectList.data.idgen(index);
-			return Promise.all([
-				// base component
-				UI.createComponent(base, {
-					template: UI.template('div', 'ie button base'),
-					appearance: {
-						classes: [datum.rule],
-					},
-					state: {
-						stateMap: '-project-state-focus',
-						states: {
-							'-project-state-project': {},
+			return UI.createComponent(base, {
+				name: 'unit{index}'.format({index: index}),
+				template: UI.template('div', 'ie button base'),
+				appearance: {
+					classes: [datum.rule],
+				},
+				state: {
+					stateMap: '-project-state-focus',
+				},
+				children: [
+					// main wrapper
+					UI.createComponent('{base}-main-wrapper'.format({base: base}), {
+						name: 'mainWrapper',
+						template: UI.template('div', 'ie centred-vertically'),
+						appearance: {
+							style: {
+								'display': 'inline-block',
+							},
 						},
-					},
-				}),
-
-				// main wrapper
-				UI.createComponent('{base}-main-wrapper'.format({base: base}), {
-					template: UI.template('div', 'ie centred-vertically'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-						},
-					},
-				}),
-
-				// main
-				UI.createComponent('{base}-main-head'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'color': Color.grey.normal,
-							'display': 'inline-block',
-							'position': 'absolute',
-						},
-						html: datum.main.substring(0, query.length),
-					},
-				}),
-				UI.createComponent('{base}-main-tail'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-						},
-						html: datum.main,
-					},
-				}),
-
-			]).then(function (unitComponents) {
-				var [
-					unitBase,
-					unitMainWrapper,
-					unitMainHead,
-					unitMainTail,
-				] = unitComponents;
+						children: [
+							// main
+							UI.createComponent('{base}-mw-head'.format({base: base}), {
+								name: 'head',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'color': Color.grey.normal,
+										'display': 'inline-block',
+										'position': 'absolute',
+									},
+									html: datum.main.substring(0, query.length),
+								},
+							}),
+							UI.createComponent('{base}-mw-tail'.format({base: base}), {
+								name: 'tail',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'display': 'inline-block',
+									},
+									html: datum.main,
+								},
+							}),
+						],
+					}),
+				],
+			}).then(function (unitBase) {
 
 				unitBase.activate = function () {
 					return unitBase.setAppearance({classes: {add: ['active']}});
@@ -933,8 +913,8 @@ AccountInterfaces.projectInterface = function () {
 				unitBase.updateQuery = function (query) {
 					unitBase.query = query;
 					return Promise.all([
-						unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
-						unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
+						unitBase.cc.mainWrapper.cc.head.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+						unitBase.cc.mainWrapper.cc.tail.setAppearance({html: (unitBase.datum || datum).main}),
 					]);
 				}
 
@@ -942,21 +922,12 @@ AccountInterfaces.projectInterface = function () {
 				return Promise.all([
 					unitBase.setBindings({
 						'click': function (_this) {
-							// amc.addAction({type: 'click.clientlist', metadata: {client: datum.id}});
 							return Active.set('contract_client.project', datum.id).then(function () {
 								return _this.triggerState();
 							})
 						},
 					}),
-					unitMainWrapper.setChildren([
-						unitMainHead,
-						unitMainTail,
-					]),
 				]).then(function () {
-					return unitBase.setChildren([
-						unitMainWrapper,
-					]);
-				}).then(function () {
 					return unitBase;
 				});
 			});
@@ -997,57 +968,50 @@ AccountInterfaces.projectInterface = function () {
 		rdDuplicates.unit = function (datum, query, index) {
 			query = (query || '');
 			var base = rdDuplicates.data.idgen(index);
-			return Promise.all([
-				// base component
-				UI.createComponent(base, {
-					template: UI.template('div', 'ie base'),
-					appearance: {
-						style: {
-							'height': '20px',
+			return UI.createComponent(base, {
+				name: 'unit{index}'.format({index: index}),
+				template: UI.template('div', 'ie button base'),
+				appearance: {
+					classes: [datum.rule],
+				},
+				children: [
+					// main wrapper
+					UI.createComponent('{base}-main-wrapper'.format({base: base}), {
+						name: 'mainWrapper',
+						template: UI.template('div', 'ie centred-vertically'),
+						appearance: {
+							style: {
+								'display': 'inline-block',
+							},
 						},
-						classes: [datum.rule],
-					},
-				}),
-
-				// main wrapper
-				UI.createComponent('{base}-main-wrapper'.format({base: base}), {
-					template: UI.template('div', 'ie centred-vertically'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-						},
-					},
-				}),
-
-				// main
-				UI.createComponent('{base}-main-head'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'color': Color.grey.normal,
-							'display': 'inline-block',
-							'position': 'absolute',
-						},
-						html: datum.main.substring(0, query.length),
-					},
-				}),
-				UI.createComponent('{base}-main-tail'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-						},
-						html: datum.main,
-					},
-				}),
-
-			]).then(function (unitComponents) {
-				var [
-					unitBase,
-					unitMainWrapper,
-					unitMainHead,
-					unitMainTail,
-				] = unitComponents;
+						children: [
+							// main
+							UI.createComponent('{base}-mw-head'.format({base: base}), {
+								name: 'head',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'color': Color.grey.normal,
+										'display': 'inline-block',
+										'position': 'absolute',
+									},
+									html: datum.main.substring(0, query.length),
+								},
+							}),
+							UI.createComponent('{base}-mw-tail'.format({base: base}), {
+								name: 'tail',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'display': 'inline-block',
+									},
+									html: datum.main,
+								},
+							}),
+						],
+					}),
+				],
+			}).then(function (unitBase) {
 
 				unitBase.activate = function () {
 					return unitBase.setAppearance({classes: {add: ['active']}});
@@ -1080,22 +1044,15 @@ AccountInterfaces.projectInterface = function () {
 				unitBase.updateQuery = function (query) {
 					unitBase.query = query;
 					return Promise.all([
-						unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
-						unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
+						unitBase.cc.mainWrapper.cc.head.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+						unitBase.cc.mainWrapper.cc.tail.setAppearance({html: (unitBase.datum || datum).main}),
 					]);
 				}
 
 				// complete promises.
 				return Promise.all([
-					unitMainWrapper.setChildren([
-						unitMainHead,
-						unitMainTail,
-					]),
+
 				]).then(function () {
-					return unitBase.setChildren([
-						unitMainWrapper,
-					]);
-				}).then(function () {
 					return unitBase;
 				});
 			});
@@ -1129,57 +1086,50 @@ AccountInterfaces.projectInterface = function () {
 		adNoCaptionList.unit = function (datum, query, index) {
 			query = (query || '');
 			var base = adNoCaptionList.data.idgen(index);
-			return Promise.all([
-				// base component
-				UI.createComponent(base, {
-					template: UI.template('div', 'ie base'),
-					appearance: {
-						style: {
-							'height': '20px',
+			return UI.createComponent(base, {
+				name: 'unit{index}'.format({index: index}),
+				template: UI.template('div', 'ie button base'),
+				appearance: {
+					classes: [datum.rule],
+				},
+				children: [
+					// main wrapper
+					UI.createComponent('{base}-main-wrapper'.format({base: base}), {
+						name: 'mainWrapper',
+						template: UI.template('div', 'ie centred-vertically'),
+						appearance: {
+							style: {
+								'display': 'inline-block',
+							},
 						},
-						classes: [datum.rule],
-					},
-				}),
-
-				// main wrapper
-				UI.createComponent('{base}-main-wrapper'.format({base: base}), {
-					template: UI.template('div', 'ie centred-vertically'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-						},
-					},
-				}),
-
-				// main
-				UI.createComponent('{base}-main-head'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'color': Color.grey.normal,
-							'display': 'inline-block',
-							'position': 'absolute',
-						},
-						html: datum.main.substring(0, query.length),
-					},
-				}),
-				UI.createComponent('{base}-main-tail'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-						},
-						html: datum.main,
-					},
-				}),
-
-			]).then(function (unitComponents) {
-				var [
-					unitBase,
-					unitMainWrapper,
-					unitMainHead,
-					unitMainTail,
-				] = unitComponents;
+						children: [
+							// main
+							UI.createComponent('{base}-mw-head'.format({base: base}), {
+								name: 'head',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'color': Color.grey.normal,
+										'display': 'inline-block',
+										'position': 'absolute',
+									},
+									html: datum.main.substring(0, query.length),
+								},
+							}),
+							UI.createComponent('{base}-mw-tail'.format({base: base}), {
+								name: 'tail',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'display': 'inline-block',
+									},
+									html: datum.main,
+								},
+							}),
+						],
+					}),
+				],
+			}).then(function (unitBase) {
 
 				unitBase.activate = function () {
 					return unitBase.setAppearance({classes: {add: ['active']}});
@@ -1212,22 +1162,15 @@ AccountInterfaces.projectInterface = function () {
 				unitBase.updateQuery = function (query) {
 					unitBase.query = query;
 					return Promise.all([
-						unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
-						unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
+						unitBase.cc.mainWrapper.cc.head.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+						unitBase.cc.mainWrapper.cc.tail.setAppearance({html: (unitBase.datum || datum).main}),
 					]);
 				}
 
 				// complete promises.
 				return Promise.all([
-					unitMainWrapper.setChildren([
-						unitMainHead,
-						unitMainTail,
-					]),
+
 				]).then(function () {
-					return unitBase.setChildren([
-						unitMainWrapper,
-					]);
-				}).then(function () {
 					return unitBase;
 				});
 			});

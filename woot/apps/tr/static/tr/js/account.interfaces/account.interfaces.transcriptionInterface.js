@@ -559,100 +559,96 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		autocomplete.unit = function (datum, query, index) {
 			query = (query || '');
 			var base = autocomplete.data.idgen(index);
-			return Promise.all([
-				// base component
-				UI.createComponent(base, {
-					template: UI.template('div', 'ie button base'),
-					appearance: {
-						classes: [datum.rule],
-						style: {
-							'height': 'auto',
-						},
-					}
-				}),
-
-				// main container
-				UI.createComponent('{base}-main-container'.format({base: base}), {
-					template: UI.template('div', 'ie'),
-					appearance: {
-						style: {
-							'left': '0px',
-							'padding-top': '11px',
-							'padding-bottom': '5px',
-							'width': 'calc(100% - 15px)'
-						},
+			return UI.createComponent(base, {
+				name: 'unit{index}'.format({index: index}),
+				template: UI.template('div', 'ie button base'),
+				appearance: {
+					classes: [datum.rule],
+					style: {
+						'height': 'auto',
 					},
-				}),
-
-				// main wrapper
-				UI.createComponent('{base}-main-wrapper'.format({base: base}), {
-					template: UI.template('div', 'ie'),
-					appearance: {
-						style: {
-							'left': '0px',
-							'display': 'inline-block',
+				},
+				children: [
+					// main container
+					UI.createComponent('{base}-main-container'.format({base: base}), {
+						name: 'container',
+						template: UI.template('div', 'ie'),
+						appearance: {
+							style: {
+								'left': '0px',
+								'padding-top': '11px',
+								'padding-bottom': '5px',
+								'width': 'calc(100% - 15px)'
+							},
 						},
-					},
-				}),
-
-				// main
-				UI.createComponent('{base}-main-head'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'color': Color.grey.normal,
-							'display': 'inline-block',
-							'position': 'absolute',
+						children: [
+							// main wrapper
+							UI.createComponent('{base}-main-wrapper'.format({base: base}), {
+								name: 'wrapper',
+								template: UI.template('div', 'ie'),
+								appearance: {
+									style: {
+										'left': '0px',
+										'display': 'inline-block',
+									},
+								},
+								children: [
+									// main
+									UI.createComponent('{base}-main-head'.format({base: base}), {
+										name: 'head',
+										template: UI.template('span', 'ie'),
+										appearance: {
+											style: {
+												'color': Color.grey.normal,
+												'display': 'inline-block',
+												'position': 'absolute',
+											},
+											html: datum.main.substring(0, query.length),
+										},
+									}),
+									UI.createComponent('{base}-main-tail'.format({base: base}), {
+										name: 'tail',
+										template: UI.template('span', 'ie'),
+										appearance: {
+											style: {
+												'display': 'inline-block',
+												'max-width': '100%',
+											},
+											html: datum.main,
+										},
+									}),
+								],
+							}),
+							UI.createComponent('{base}-main-shortcut'.format({base: base}), {
+								name: 'shortcut',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'display': 'inline-block',
+										'left': '8px',
+										'opacity': '0.6',
+										'top': '-4px',
+									},
+									html: (datum.shortcut || ''),
+								},
+							}),
+						],
+					}),
+					// index
+					UI.createComponent('{base}-index'.format({base: base}), {
+						name: 'index',
+						template: UI.template('div', 'ie abs'),
+						appearance: {
+							style: {
+								'width': '10px',
+								'right': '5px',
+								'top': '11px',
+							},
+							html: index,
 						},
-						html: datum.main.substring(0, query.length),
-					},
-				}),
-				UI.createComponent('{base}-main-tail'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-							'max-width': '100%',
-						},
-						html: datum.main,
-					},
-				}),
-				UI.createComponent('{base}-main-shortcut'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-							'left': '8px',
-							'opacity': '0.6',
-							'top': '-4px',
-						},
-						html: (datum.shortcut || ''),
-					},
-				}),
-
-				// index
-				UI.createComponent('{base}-index'.format({base: base}), {
-					template: UI.template('div', 'ie abs'),
-					appearance: {
-						style: {
-							'width': '10px',
-							'right': '5px',
-							'top': '11px',
-						},
-						html: index,
-					},
-				}),
-
-			]).then(function (unitComponents) {
-				var [
-					unitBase,
-					unitMainContainer,
-					unitMainWrapper,
-					unitMainHead,
-					unitMainTail,
-					unitMainShortcut,
-					unitIndex,
-				] = unitComponents;
+					}),
+				],
+			}).then(function (unitBase) {
 
 				unitBase.activate = function () {
 					return unitBase.setAppearance({classes: {add: ['active']}});
@@ -680,33 +676,21 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				unitBase.updateDatum = function (ndatum) {
 					return unitBase.setAppearance({classes: {add: ndatum.rule, remove: (unitBase.datum || datum).rule}}).then(function () {
 						unitBase.datum = ndatum;
-						return unitMainShortcut.setAppearance({html: (ndatum.shortcut || '')});
+						return unitBase.cc.container.cc.shortcut.setAppearance({html: (ndatum.shortcut || '')});
 					});
 				}
 				unitBase.updateQuery = function (query) {
 					unitBase.query = query;
 					return Promise.all([
-						unitMainHead.setAppearance({html: unitBase.datum.main.substring(0, query.length)}),
-						unitMainTail.setAppearance({html: unitBase.datum.main}),
+						unitBase.cc.container.cc.wrapper.cc.head.setAppearance({html: unitBase.datum.main.substring(0, query.length)}),
+						unitBase.cc.container.cc.wrapper.cc.tail.setAppearance({html: unitBase.datum.main}),
 					]);
 				}
 
 				// complete promises.
 				return Promise.all([
-					unitMainWrapper.setChildren([
-						unitMainHead,
-						unitMainTail,
-					]),
-					unitMainContainer.setChildren([
-						unitMainWrapper,
-						unitMainShortcut,
-					]),
+
 				]).then(function () {
-					return unitBase.setChildren([
-						unitMainContainer,
-						unitIndex,
-					]);
-				}).then(function () {
 					return unitBase;
 				});
 			});
@@ -838,25 +822,20 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		}
 		caption.unit = function () {
 			var id = caption.data.idgen();
-			return Promise.all([
-				// base
-				Components.search(id, {
-					// need custom appearance
-					appearance: {
-						style: {
-							'padding-left': '0px',
-							'padding-bottom': '8px',
-							'padding-top': '0px',
-							'height': 'auto',
-							'border': '0px',
-							'display': 'inline-block',
-						},
+			return Components.search(id, {
+				name: id,
+				// need custom appearance
+				appearance: {
+					style: {
+						'padding-left': '0px',
+						'padding-bottom': '8px',
+						'padding-top': '0px',
+						'height': 'auto',
+						'border': '0px',
+						'display': 'inline-block',
 					},
-				}),
-			]).then(function (components) {
-				var [
-					unitBase,
-				] = components;
+				},
+			}).then(function (unitBase) {
 
 				// caption unit display
 				unitBase.activate = function () {
@@ -1018,8 +997,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						},
 					}),
 				]).then(function () {
-
-				}).then(function () {
 					return unitBase;
 				});
 			});
@@ -1259,65 +1236,62 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			]);
 		}
 		counter.unit = function () {
-			var unitId = '{counterId}-icon-{id}'.format({counterId: counter.id, id: Util.makeid()});
-			return Promise.all([
-				// base
-				UI.createComponent(unitId, {
-					template: UI.template('div', 'ie unit border-radius'),
-					appearance: {
-						style: {
-							'height': '35px',
-							'width': '35px',
-							'float': 'left',
-							'margin-left': '10px',
-							'margin-bottom': '10px',
-							'box-sizing': 'border-box',
-						},
+			var unitId = '{counterId}_icon_{id}'.format({counterId: counter.id, id: Util.makeid()});
+			return UI.createComponent(unitId, {
+				name: unitId,
+				template: UI.template('div', 'ie unit border-radius'),
+				appearance: {
+					style: {
+						'height': '35px',
+						'width': '35px',
+						'float': 'left',
+						'margin-left': '10px',
+						'margin-bottom': '10px',
+						'box-sizing': 'border-box',
 					},
-				}),
-
-				// done glyph
-				UI.createComponent('{id}-done'.format({id: unitId}), {
-					template: UI.template('div', 'ie hidden'),
-					appearance: {
-						style: {
-							'height': '100%',
-							'width': '100%',
-							'background-color': Color.green.normal,
-						},
-					},
-					children: [
-						UI.createComponent('{id}-done-glyphicon'.format({id: unitId}), {
-							template: UI.template('span', 'glyphicon glyphicon-ok centred'),
-							appearance: {
-								style: {
-									'font-size': '15px',
-									'color': Color.grey.uberlight,
-									'top': '10px',
-									'left': '9px',
-								},
+				},
+				children: [
+					// done glyph
+					UI.createComponent('{id}-done'.format({id: unitId}), {
+						name: 'done',
+						template: UI.template('div', 'ie hidden'),
+						appearance: {
+							style: {
+								'height': '100%',
+								'width': '100%',
+								'background-color': Color.green.normal,
 							},
-						}),
-					],
-				}),
-
-				// pending glyph
-				UI.createComponent('{id}-pending'.format({id: unitId}), {
-					template: UI.template('div', 'ie hidden'),
-					appearance: {
-						style: {
-							'height': '100%',
-							'width': '100%',
-							'background-color': Color.grey.uberlight,
 						},
-					},
-				}),
-			]).then(function (components) {
-				var [
-					unitBase,
-					doneGlyph,
-					pendingGlyph,
-				] = components;
+						children: [
+							UI.createComponent('{id}-done-glyphicon'.format({id: unitId}), {
+								name: 'glyph',
+								template: UI.template('span', 'glyphicon glyphicon-ok centred'),
+								appearance: {
+									style: {
+										'font-size': '15px',
+										'color': Color.grey.uberlight,
+										'top': '10px',
+										'left': '9px',
+									},
+								},
+							}),
+						],
+					}),
+
+					// pending glyph
+					UI.createComponent('{id}-pending'.format({id: unitId}), {
+						name: 'pending',
+						template: UI.template('div', 'ie hidden'),
+						appearance: {
+							style: {
+								'height': '100%',
+								'width': '100%',
+								'background-color': Color.grey.uberlight,
+							},
+						},
+					}),
+				],
+			}).then(function (unitBase) {
 
 				// methods
 				unitBase.isComplete = false;
@@ -1333,8 +1307,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					unitBase.isPending = false;
 					return Promise.all([
 						unitBase.setAppearance({classes: {add: 'complete', remove: 'pending'}}),
-						doneGlyph.setAppearance({classes: {remove: 'hidden'}}),
-						pendingGlyph.setAppearance({classes: {add: 'hidden'}}),
+						unitBase.cc.done.setAppearance({classes: {remove: 'hidden'}}),
+						unitBase.cc.pending.setAppearance({classes: {add: 'hidden'}}),
 
 						// also increment the counter - must happen
 						counter.increment(),
@@ -1346,8 +1320,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					unitBase.isPending = true;
 					return Promise.all([
 						unitBase.setAppearance({classes: {remove: 'complete', add: 'pending'}}),
-						doneGlyph.setAppearance({classes: {add: 'hidden'}}),
-						pendingGlyph.setAppearance({classes: {remove: 'hidden'}}),
+						unitBase.cc.done.setAppearance({classes: {add: 'hidden'}}),
+						unitBase.cc.pending.setAppearance({classes: {remove: 'hidden'}}),
 					]).then(function () {
 						if (previousComplete) {
 							// only if the unit was previously complete
@@ -1360,19 +1334,14 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					unitBase.isPending = false;
 					return Promise.all([
 						unitBase.setAppearance({classes: {remove: ['complete', 'pending']}}),
-						doneGlyph.setAppearance({classes: {add: 'hidden'}}),
-						pendingGlyph.setAppearance({classes: {add: 'hidden'}}),
+						unitBase.cc.done.setAppearance({classes: {add: 'hidden'}}),
+						unitBase.cc.pending.setAppearance({classes: {add: 'hidden'}}),
 					]);
 				}
 
 				return Promise.all([
 
 				]).then(function () {
-					return unitBase.setChildren([
-						doneGlyph,
-						pendingGlyph,
-					]);
-				}).then(function () {
 					return unitBase;
 				})
 			});
@@ -1385,72 +1354,62 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		flags.unit = function (name) {
 			var unitId = '{base}-{id}'.format({base: flags.id, id: Util.makeid()});
 
-			return Promise.all([
-				// unit base
-				UI.createComponent(unitId, {
-					template: UI.template('div', 'ie border border-radius'),
-					appearance: {
-						style: {
-							'height': '30px',
-							'margin-top': '4px',
-							'display': 'inline-block',
-							'margin-right': '5px',
-							'background-color': Color.red.light,
-						},
+			return UI.createComponent(unitId, {
+				name: unitId,
+				template: UI.template('div', 'ie border border-radius'),
+				appearance: {
+					style: {
+						'height': '30px',
+						'margin-top': '4px',
+						'display': 'inline-block',
+						'margin-right': '5px',
+						'background-color': Color.red.light,
 					},
-				}),
-
-				// unit content
-				UI.createComponent('{id}-content'.format({id: unitId}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						html: name,
-						style: {
-							'float': 'left',
-							'margin-top': '5px',
-							'margin-right': '5px',
-							'margin-left': '10px',
+				},
+				children: [
+					// unit content
+					UI.createComponent('{id}-content'.format({id: unitId}), {
+						name: 'content',
+						template: UI.template('span', 'ie'),
+						appearance: {
+							html: name,
+							style: {
+								'float': 'left',
+								'margin-top': '5px',
+								'margin-right': '5px',
+								'margin-left': '10px',
+							},
+						}
+					}),
+					// unit button
+					UI.createComponent('{id}-button'.format({id: unitId}), {
+						name: 'button',
+						template: UI.template('div', 'ie button'),
+						appearance: {
+							style: {
+								'height': '40px',
+								'width': '30px',
+								'float': 'left',
+								'padding-top': '6px',
+							},
 						},
-					}
-				}),
-
-				// unit button
-				UI.createComponent('{id}-button'.format({id: unitId}), {
-					template: UI.template('div', 'ie button'),
-					appearance: {
-						style: {
-							'height': '40px',
-							'width': '30px',
-							'float': 'left',
-							'padding-top': '6px',
-						},
-					},
-				}),
-				UI.createComponent('{id}-glyph'.format({id: unitId}), {
-					template: UI.template('span', 'glyphicon glyphicon-remove'),
-				}),
-
-			]).then(function (unitComponents) {
-				var [
-					unitBase,
-					unitContent,
-					unitButton,
-					unitGlyph,
-				] = unitComponents;
+						children: [
+							UI.createComponent('{id}-glyph'.format({id: unitId}), {
+								name: 'glyph',
+								template: UI.template('span', 'glyphicon glyphicon-remove'),
+							}),
+						],
+					}),
+				],
+			}).then(function (unitBase) {
 
 				return Promise.all([
-					unitButton.setChildren([unitGlyph]),
-					unitButton.setBindings({
+					unitBase.cc.button.setBindings({
 						'click': function (_this) {
 							return flags.data.remove(unitBase.index);
 						},
 					}),
 				]).then(function () {
-					return unitBase.setChildren([
-						unitContent,
-						unitButton,
-					]);
-				}).then(function () {
 					return unitBase;
 				});
 			});

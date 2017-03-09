@@ -105,7 +105,7 @@ Components.searchableList = function (id, args) {
 
 			// methods
 			idgen: function (id) {
-				return '{base}-{id}'.format({base: base.id, id: id});
+				return '{base}_{id}'.format({base: base.id, id: id});
 			},
 			defaultSort: function (d1, d2) {
 				// sort by usage
