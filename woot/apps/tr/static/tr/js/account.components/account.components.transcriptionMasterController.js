@@ -5,13 +5,7 @@ var AccountComponents = (AccountComponents || {});
 AccountComponents.transcriptionMasterController = function () {
 
 	// components
-	return Promise.all([
-		UI.createComponent('transcription-master-controller', {}),
-	]).then(function (components) {
-		// unpack components
-		var [
-			base,
-		] = components;
+	return UI.createComponent('transcription-master-controller', {name: 'transcriptionMasterController'}).then(function (base) {
 
 		// The idea here is that the master controller should point at the list of transcriptions and act on it.
 		// The caption and the audio field should only operate on one transcription at a time,

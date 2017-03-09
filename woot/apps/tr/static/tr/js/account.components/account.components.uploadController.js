@@ -1,7 +1,7 @@
 var AccountComponents = (AccountComponents || {});
 AccountComponents.uploadController = function () {
 	var id = Util.makeid();
-	return UI.createComponent('upload-controller-{}'.format({id: id})).then(function (base) {
+	return UI.createComponent('upload-controller-{}'.format({id: id}), {name: 'uploadController'}).then(function (base) {
 
 		// controller logic
 		base.upload = {
@@ -30,7 +30,7 @@ AccountComponents.uploadController = function () {
 					},
 					buffered: {
 						noRelfile: true, // true until a relfile is added
-						noCaption: false, 
+						noCaption: false,
 					},
 					final: {
 						serverDuplicates: false,

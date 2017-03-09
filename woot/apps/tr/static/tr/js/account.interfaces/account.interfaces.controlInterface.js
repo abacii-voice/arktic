@@ -1,234 +1,241 @@
 var AccountInterfaces = (AccountInterfaces || {});
-AccountInterfaces.controlInterface = function (id, args) {
-	return Promise.all([
-		// base
-		UI.createComponent('{id}-base'.format({id: id}), {
-			template: UI.template('div', 'ie abstract'),
-			appearance: {
-				style: {
-					'height': '100%',
-				},
+AccountInterfaces.controlInterface = function (name) {
+	return UI.createComponent('control-interface', {
+		name: name,
+		template: UI.template('div', 'ie abstract'),
+		appearance: {
+			style: {
+				'height': '100%',
 			},
-		}),
+		},
+		children: [
+			// clients
+			Components.sidebar('client-sidebar', {
+				name: 'clientSidebar',
+				position: {
+					main: {
+						on: '0px',
+						off: '-300px',
+					},
+					back: {
+						on: '0px',
+						off: '-200px',
+					},
+				},
+				state: {
+					primary: 'client-state',
+					secondary: 'role-state',
+					deactivate: 'control-state',
+				},
+				children: [
+					Components.searchableList('cs-client-list', {
+						name: 'clientList',
+						appearance: {
+							style: {
+								'top': '2px',
+							},
+						}
+					}),
+				],
+			}),
 
-		// clients
-		Components.sidebar('client-sidebar', {
-			position: {
-				main: {
-					on: '0px',
-					off: '-300px',
+			// roles
+			Components.sidebar('role-sidebar', {
+				name: 'roleSidebar',
+				position: {
+					main: {
+						on: '50px',
+						off: '-300px',
+					},
+					back: {
+						on: '0px',
+						off: '-200px',
+					},
 				},
-				back: {
-					on: '0px',
-					off: '-200px',
+				state: {
+					primary: 'role-state',
+					secondary: 'control-state',
+					deactivate: ['client-state', 'transcription-state', 'settings-state', 'project-state'],
 				},
-			},
-			state: {
-				primary: 'client-state',
-				secondary: 'role-state',
-				deactivate: 'control-state',
-			},
-		}),
-		Components.searchableList('cs-client-list', {
-			appearance: {
-				style: {
-					'top': '2px',
-				},
-			}
-		}),
+				children: [
+					Components.searchableList('cs-role-list', {
+						name: 'roleList',
+						appearance: {
+							style: {
+								'top': '2px',
+							},
+						},
+					}),
+				],
+			}),
 
-		// roles
-		Components.sidebar('role-sidebar',{
-			position: {
-				main: {
-					on: '50px',
-					off: '-300px',
+			// control
+			Components.sidebar('control-sidebar', {
+				name: 'controlSidebar',
+				position: {
+					main: {
+						on: '50px',
+						off: '-300px',
+					},
+					back: {
+						on: '0px',
+						off: '-200px',
+					},
 				},
-				back: {
-					on: '0px',
-					off: '-200px',
+				state: {
+					primary: 'control-state',
+					secondary: ['transcription-state', 'settings-state', 'project-state', '-project-state-project'],
+					deactivate: ['client-state', 'role-state', '-settings-state-shortcuts', '-project-state-focus'],
 				},
-			},
-			state: {
-				primary: 'role-state',
-				secondary: 'control-state',
-				deactivate: ['client-state', 'transcription-state', 'settings-state', 'project-state'],
-			},
-		}),
-		Components.searchableList('cs-role-list', {
-			appearance: {
-				style: {
-					'top': '2px',
-				},
-			},
-		}),
+				children: [
+					Components.searchableList('cs-control-list', {
+						name: 'controlList',
+						appearance: {
+							style: {
+								'top': '2px',
+							},
+						},
+						children: [
+							UI.createComponent('cs-cl-transcription-button', {
+								name: 'transcriptionButton',
+								template: UI.template('div', 'ie button'),
+								appearance: {
+									style: {
+										'left': '0px',
+										'width': '100%',
+										'height': '30px',
+										'padding-top': '8px',
+										'padding-left': '10px',
+										'border-radius': '0px',
+										'text-align': 'left',
+									},
+									html: 'Transcription',
+								},
+								state: {
+									stateMap: 'transcription-state',
+								},
+							}),
+							UI.createComponent('cs-cl-settings-button', {
+								name: 'settingsButton',
+								template: UI.template('div', 'ie button'),
+								appearance: {
+									style: {
+										'left': '0px',
+										'width': '100%',
+										'height': '30px',
+										'padding-top': '8px',
+										'padding-left': '10px',
+										'border-radius': '0px',
+										'text-align': 'left',
+									},
+									html: 'Settings',
+								},
+								state: {
+									stateMap: 'settings-state',
+								},
+							}),
+							UI.createComponent('cs-cl-moderation-button', {
+								name: 'moderationButton',
+								template: UI.template('div', 'ie button'),
+								appearance: {
+									style: {
+										'left': '0px',
+										'width': '100%',
+										'height': '30px',
+										'padding-top': '8px',
+										'padding-left': '10px',
+										'border-radius': '0px',
+										'text-align': 'left',
+									},
+									html: 'Moderation',
+								},
+							}),
+							UI.createComponent('cs-cl-project-button', {
+								name: 'projectButton',
+								template: UI.template('div', 'ie button'),
+								appearance: {
+									style: {
+										'left': '0px',
+										'width': '100%',
+										'height': '30px',
+										'padding-top': '8px',
+										'padding-left': '10px',
+										'border-radius': '0px',
+										'text-align': 'left',
+									},
+									html: 'Projects',
+								},
+								state: {
+									stateMap: 'project-state',
+								},
+							}),
+						],
+					}),
+				],
+			}),
 
-		// control
-		Components.sidebar('control-sidebar', {
-			position: {
-				main: {
-					on: '50px',
-					off: '-300px',
+			// settings
+			Components.sidebar('settings-sidebar', {
+				name: 'settingsSidebar',
+				position: {
+					main: {
+						on: '50px',
+						off: '-300px',
+					},
+					back: {
+						on: '0px',
+						off: '-200px',
+					},
 				},
-				back: {
-					on: '0px',
-					off: '-200px',
+				state: {
+					primary: 'settings-state',
+					secondary: ['shortcut-state'],
+					deactivate: ['control-state'],
 				},
-			},
-			state: {
-				primary: 'control-state',
-				secondary: ['transcription-state', 'settings-state', 'project-state', '-project-state-project'],
-				deactivate: ['client-state', 'role-state', '-settings-state-shortcuts', '-project-state-focus'],
-			},
-		}),
-		Components.searchableList('cs-control-list', {
-			appearance: {
-				style: {
-					'top': '2px',
-				},
-			},
-		}),
-		UI.createComponent('cs-cl-transcription-button', {
-			template: UI.template('div', 'ie button'),
-			appearance: {
-				style: {
-					'left': '0px',
-					'width': '100%',
-					'height': '30px',
-					'padding-top': '8px',
-					'padding-left': '10px',
-					'border-radius': '0px',
-					'text-align': 'left',
-				},
-				html: 'Transcription',
-			},
-			state: {
-				stateMap: 'transcription-state',
-			},
-		}),
-		UI.createComponent('cs-cl-settings-button', {
-			template: UI.template('div', 'ie button'),
-			appearance: {
-				style: {
-					'left': '0px',
-					'width': '100%',
-					'height': '30px',
-					'padding-top': '8px',
-					'padding-left': '10px',
-					'border-radius': '0px',
-					'text-align': 'left',
-				},
-				html: 'Settings',
-			},
-			state: {
-				stateMap: 'settings-state',
-			},
-		}),
-		UI.createComponent('cs-cl-moderation-button', {
-			template: UI.template('div', 'ie button'),
-			appearance: {
-				style: {
-					'left': '0px',
-					'width': '100%',
-					'height': '30px',
-					'padding-top': '8px',
-					'padding-left': '10px',
-					'border-radius': '0px',
-					'text-align': 'left',
-				},
-				html: 'Moderation',
-			},
-		}),
-		UI.createComponent('cs-cl-project-button', {
-			template: UI.template('div', 'ie button'),
-			appearance: {
-				style: {
-					'left': '0px',
-					'width': '100%',
-					'height': '30px',
-					'padding-top': '8px',
-					'padding-left': '10px',
-					'border-radius': '0px',
-					'text-align': 'left',
-				},
-				html: 'Projects',
-			},
-			state: {
-				stateMap: 'project-state',
-			},
-		}),
+				children: [
+					Components.searchableList('ss-settings-list', {
+						name: 'settingsList',
+						appearance: {
+							style: {
+								'top': '2px',
+							},
+						},
+						children: [
+							UI.createComponent('ss-sl-shortcuts-button', {
+								name: 'shortcutsButton',
+								template: UI.template('div', 'ie button'),
+								appearance: {
+									style: {
+										'left': '0px',
+										'width': '100%',
+										'height': '60px',
+										'padding-top': '8px',
+										'padding-left': '10px',
+										'border-radius': '0px',
+										'text-align': 'left',
+									},
+									html: 'Shortcuts',
+								},
+								state: {
+									stateMap: 'shortcut-state',
+								},
+							}),
+						],
+					}),
+				],
+			}),
 
-		// settings
-		Components.sidebar('settings-sidebar', {
-			position: {
-				main: {
-					on: '50px',
-					off: '-300px',
-				},
-				back: {
-					on: '0px',
-					off: '-200px',
-				},
-			},
-			state: {
-				primary: 'settings-state',
-				secondary: ['shortcut-state'],
-				deactivate: ['control-state'],
-			},
-		}),
-		Components.searchableList('ss-settings-list', {
-			appearance: {
-				style: {
-					'top': '2px',
-				},
-			},
-		}),
-		UI.createComponent('ss-sl-shortcuts-button', {
-			template: UI.template('div', 'ie button'),
-			appearance: {
-				style: {
-					'left': '0px',
-					'width': '100%',
-					'height': '60px',
-					'padding-top': '8px',
-					'padding-left': '10px',
-					'border-radius': '0px',
-					'text-align': 'left',
-				},
-				html: 'Shortcuts',
-			},
-			state: {
-				stateMap: 'shortcut-state',
-			},
-		}),
+			// action controller
+			Components.actionMasterController('amc'),
+		],
+	}).then(function (base) {
 
-		// non-interface elements
-		Components.actionMasterController('control'),
-
-	]).then(function (components) {
 		// unpack components
-		var [
-			base,
-
-			clientSidebar,
-			clientList,
-
-			roleSidebar,
-			roleList,
-
-			controlSidebar,
-			controlList,
-			transcriptionButton,
-			settingsButton,
-			moderationButton,
-			projectButton,
-
-			settingsSidebar,
-			settingsList,
-			shortcutsButton,
-
-			amc,
-		] = components;
+		var amc = base.cc.amc;
+		var clientList = base.cc.clientSidebar.cc.main.cc.clientList;
+		var roleList = base.cc.roleSidebar.cc.main.cc.roleList;
+		var controlList = base.cc.controlSidebar.cc.main.cc.controlList;
+		var settingsList = base.cc.settingsSidebar.cc.main.cc.settingsList;
 
 		// action master controller
 		amc.action.period = 20000;
@@ -265,58 +272,54 @@ AccountInterfaces.controlInterface = function (id, args) {
 		clientList.sort = Util.sort.alpha('main');
 		clientList.unit = function (datum, query, index) {
 			query = (query || '');
-			var base = clientList.data.idgen(index);
-			return Promise.all([
-				// base component
-				UI.createComponent(base, {
-					template: UI.template('div', 'ie button base'),
-					appearance: {
-						classes: [datum.rule],
-					},
-					state: {
-						stateMap: 'role-state',
-					},
-				}),
-
-				// main wrapper
-				UI.createComponent('{base}-main-wrapper'.format({base: base}), {
-					template: UI.template('div', 'ie centred-vertically'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
+			var baseId = clientList.data.idgen(index);
+			return UI.createComponent(baseId, {
+				name: 'unit{index}'.format({index: index}),
+				template: UI.template('div', 'ie button base'),
+				appearance: {
+					classes: [datum.rule],
+				},
+				state: {
+					stateMap: 'role-state',
+				},
+				children: [
+					// main wrapper
+					UI.createComponent('{base}-main-wrapper'.format({base: base}), {
+						name: 'mainWrapper',
+						template: UI.template('div', 'ie centred-vertically'),
+						appearance: {
+							style: {
+								'display': 'inline-block',
+							},
 						},
-					},
-				}),
-
-				// main
-				UI.createComponent('{base}-main-head'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'color': Color.grey.normal,
-							'display': 'inline-block',
-							'position': 'absolute',
-						},
-						html: datum.main.substring(0, query.length),
-					},
-				}),
-				UI.createComponent('{base}-main-tail'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-						},
-						html: datum.main,
-					},
-				}),
-
-			]).then(function (unitComponents) {
-				var [
-					unitBase,
-					unitMainWrapper,
-					unitMainHead,
-					unitMainTail,
-				] = unitComponents;
+						children: [
+							// main
+							UI.createComponent('{base}-mw-head'.format({base: base}), {
+								name: 'head',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'color': Color.grey.normal,
+										'display': 'inline-block',
+										'position': 'absolute',
+									},
+									html: datum.main.substring(0, query.length),
+								},
+							}),
+							UI.createComponent('{base}-mw-tail'.format({base: base}), {
+								name: 'tail',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'display': 'inline-block',
+									},
+									html: datum.main,
+								},
+							}),
+						],
+					}),
+				],
+			}).then(function (unitBase) {
 
 				unitBase.activate = function () {
 					return unitBase.setAppearance({classes: {add: ['active']}});
@@ -349,8 +352,8 @@ AccountInterfaces.controlInterface = function (id, args) {
 				unitBase.updateQuery = function (query) {
 					unitBase.query = query;
 					return Promise.all([
-						unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
-						unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
+						unitBase.cc.mainWrapper.cc.head.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+						unitBase.cc.mainWrapper.cc.tail.setAppearance({html: (unitBase.datum || datum).main}),
 					]);
 				}
 
@@ -364,15 +367,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 							});
 						},
 					}),
-					unitMainWrapper.setChildren([
-						unitMainHead,
-						unitMainTail,
-					]),
 				]).then(function () {
-					return unitBase.setChildren([
-						unitMainWrapper,
-					]);
-				}).then(function () {
 					return unitBase;
 				});
 			});
@@ -413,57 +408,53 @@ AccountInterfaces.controlInterface = function (id, args) {
 		roleList.unit = function (datum, query, index) {
 			query = (query || '');
 			var base = roleList.data.idgen(index);
-			return Promise.all([
-				// base component
-				UI.createComponent(base, {
-					template: UI.template('div', 'ie button base'),
-					appearance: {
-						classes: [datum.rule],
-					},
-					state: {
-						stateMap: 'control-state',
-					},
-				}),
-
-				// main wrapper
-				UI.createComponent('{base}-main-wrapper'.format({base: base}), {
-					template: UI.template('div', 'ie centred-vertically'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
+			return UI.createComponent(base, {
+				name: 'unit{index}'.format({index: index}),
+				template: UI.template('div', 'ie button base'),
+				appearance: {
+					classes: [datum.rule],
+				},
+				state: {
+					stateMap: 'control-state',
+				},
+				children: [
+					// main wrapper
+					UI.createComponent('{base}-main-wrapper'.format({base: base}), {
+						name: 'mainWrapper',
+						template: UI.template('div', 'ie centred-vertically'),
+						appearance: {
+							style: {
+								'display': 'inline-block',
+							},
 						},
-					},
-				}),
-
-				// main
-				UI.createComponent('{base}-main-head'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'color': Color.grey.normal,
-							'display': 'inline-block',
-							'position': 'absolute',
-						},
-						html: datum.main.substring(0, query.length),
-					},
-				}),
-				UI.createComponent('{base}-main-tail'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-						},
-						html: datum.main,
-					},
-				}),
-
-			]).then(function (unitComponents) {
-				var [
-					unitBase,
-					unitMainWrapper,
-					unitMainHead,
-					unitMainTail,
-				] = unitComponents;
+						children: [
+							// main
+							UI.createComponent('{base}-mw-head'.format({base: base}), {
+								name: 'head',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'color': Color.grey.normal,
+										'display': 'inline-block',
+										'position': 'absolute',
+									},
+									html: datum.main.substring(0, query.length),
+								},
+							}),
+							UI.createComponent('{base}-mw-tail'.format({base: base}), {
+								name: 'tail',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'display': 'inline-block',
+									},
+									html: datum.main,
+								},
+							}),
+						],
+					}),
+				],
+			}).then(function (unitBase) {
 
 				unitBase.activate = function () {
 					return unitBase.setAppearance({classes: {add: ['active']}});
@@ -496,8 +487,8 @@ AccountInterfaces.controlInterface = function (id, args) {
 				unitBase.updateQuery = function (query) {
 					unitBase.query = query;
 					return Promise.all([
-						unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
-						unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
+						unitBase.cc.mainWrapper.cc.head.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+						unitBase.cc.mainWrapper.cc.tail.setAppearance({html: (unitBase.datum || datum).main}),
 					]);
 				}
 
@@ -518,15 +509,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 							});
 						},
 					}),
-					unitMainWrapper.setChildren([
-						unitMainHead,
-						unitMainTail,
-					]),
 				]).then(function () {
-					return unitBase.setChildren([
-						unitMainWrapper,
-					]);
-				}).then(function () {
 					return unitBase;
 				});
 			});
@@ -561,7 +544,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 					'padding-top': '8px',
 				},
 			}),
-			clientList.components.title.setAppearance({
+			clientList.cc.title.setAppearance({
 				style: {
 					'width': '100%',
 					'height': '32px',
@@ -570,9 +553,6 @@ AccountInterfaces.controlInterface = function (id, args) {
 					'padding-left': '10px',
 				},
 			}),
-			clientSidebar.components.main.setChildren([
-				clientList,
-			]),
 			clientList.setState({
 				states: {
 					'client-state': {
@@ -595,7 +575,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 					'padding-top': '8px',
 				},
 			}),
-			roleList.components.title.setAppearance({
+			roleList.cc.title.setAppearance({
 				style: {
 					'width': '100%',
 					'height': '32px',
@@ -604,9 +584,6 @@ AccountInterfaces.controlInterface = function (id, args) {
 					'padding-left': '10px',
 				},
 			}),
-			roleSidebar.components.main.setChildren([
-				roleList,
-			]),
 			roleList.setState({
 				states: {
 					'role-state': {
@@ -620,32 +597,29 @@ AccountInterfaces.controlInterface = function (id, args) {
 			roleList.setSearch({mode: 'off', placeholder: 'Search roles...'}),
 
 			// CONTROL SIDEBAR
-			transcriptionButton.setBindings({
+			controlList.cc.list.cc.wrapper.cc.transcriptionButton.setBindings({
 				'click': function (_this) {
 					amc.addAction({type: 'click.transcription-button'});
 					return _this.triggerState();
 				},
 			}),
-			settingsButton.setBindings({
+			controlList.cc.list.cc.wrapper.cc.settingsButton.setBindings({
 				'click': function (_this) {
 					amc.addAction({type: 'click.settings-button'});
 					return _this.triggerState();
 				},
 			}),
-			moderationButton.setBindings({}),
-			projectButton.setBindings({
+			controlList.cc.list.cc.wrapper.cc.moderationButton.setBindings({}),
+			controlList.cc.list.cc.wrapper.cc.projectButton.setBindings({
 				'click': function (_this) {
 					amc.addAction({type: 'click.project-button'});
 					return _this.triggerState();
 				},
 			}),
 
-			controlSidebar.components.main.setChildren([
-				controlList,
-			]),
 			controlList.setTitle({text: 'Menu', center: false}),
 			controlList.setSearch({mode: 'off', placeholder: ''}),
-			controlList.components.title.setAppearance({
+			controlList.cc.title.setAppearance({
 				style: {
 					'width': '100%',
 					'height': '32px',
@@ -669,23 +643,23 @@ AccountInterfaces.controlInterface = function (id, args) {
 								if (role.type === 'worker') {
 									// worker
 									return Promise.all([
-										transcriptionButton.setAppearance({classes: {remove: 'hidden'}}),
-										moderationButton.setAppearance({classes: {add: 'hidden'}}),
-										projectButton.setAppearance({classes: {add: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.transcriptionButton.setAppearance({classes: {remove: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.moderationButton.setAppearance({classes: {add: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.projectButton.setAppearance({classes: {add: 'hidden'}}),
 									]);
 								} else if (role.type === 'moderator') {
 									// moderator
 									return Promise.all([
-										transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
-										moderationButton.setAppearance({classes: {remove: 'hidden'}}),
-										projectButton.setAppearance({classes: {add: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.moderationButton.setAppearance({classes: {remove: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.projectButton.setAppearance({classes: {add: 'hidden'}}),
 									]);
 								} else if (role.type === 'admin') {
 									// admin
 									return Promise.all([
-										transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
-										moderationButton.setAppearance({classes: {add: 'hidden'}}),
-										projectButton.setAppearance({classes: {remove: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.moderationButton.setAppearance({classes: {add: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.projectButton.setAppearance({classes: {remove: 'hidden'}}),
 									]);
 								}
 							});
@@ -693,25 +667,16 @@ AccountInterfaces.controlInterface = function (id, args) {
 					},
 				},
 			}),
-			controlList.list.setChildren([
-				transcriptionButton,
-				moderationButton,
-				projectButton,
-				settingsButton,
-			]),
 
 			// SETTINGS SIDEBAR
-			shortcutsButton.setBindings({
+			settingsList.cc.list.cc.wrapper.cc.shortcutsButton.setBindings({
 				'click': function (_this) {
 					amc.addAction({type: 'click.shortcuts-button'});
 					return _this.triggerState();
 				},
 			}),
 
-			settingsSidebar.components.main.setChildren([
-				settingsList,
-			]),
-			settingsList.components.title.setAppearance({
+			settingsList.cc.title.setAppearance({
 				style: {
 					'width': '100%',
 					'height': '32px',
@@ -722,27 +687,8 @@ AccountInterfaces.controlInterface = function (id, args) {
 			}),
 			settingsList.setTitle({text: 'Settings', center: false}),
 			settingsList.setSearch({mode: 'off', placeholder: ''}),
-			settingsList.list.setChildren([
-				shortcutsButton,
-			]),
 
 		]).then(function () {
-			// base children
-			base.components = {
-				sidebars: {
-					client: clientSidebar,
-					role: roleSidebar,
-					control: controlSidebar,
-					settings: settingsSidebar,
-				},
-			}
-			return base.setChildren([
-				clientSidebar,
-				roleSidebar,
-				controlSidebar,
-				settingsSidebar,
-			]);
-		}).then(function () {
 			return base;
 		});
 	});
