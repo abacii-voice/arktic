@@ -62,6 +62,7 @@ Components.searchableList = function (id, args) {
 						'height': '100%',
 					},
 				},
+				children: args.children,
 			}),
 
 			// filter
@@ -410,7 +411,7 @@ Components.searchableList = function (id, args) {
 									}
 
 									// create filter unit and add to list
-									return base.defaultFilterUnit('{filterid}-{rule}'.format({filterid: filter.id, rule: target.filter.rule}), target.filter).then(function (filterUnit) {
+									return base.defaultFilterUnit('{filterid}-{rule}'.format({filterid: base.cc.filter.id, rule: target.filter.rule}), target.filter).then(function (filterUnit) {
 										// bindings
 										return filterUnit.setBindings({
 											'click': function (_this) {
