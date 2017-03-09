@@ -272,58 +272,54 @@ AccountInterfaces.controlInterface = function (name) {
 		clientList.sort = Util.sort.alpha('main');
 		clientList.unit = function (datum, query, index) {
 			query = (query || '');
-			var base = clientList.data.idgen(index);
-			return Promise.all([
-				// base component
-				UI.createComponent(base, {
-					template: UI.template('div', 'ie button base'),
-					appearance: {
-						classes: [datum.rule],
-					},
-					state: {
-						stateMap: 'role-state',
-					},
-				}),
-
-				// main wrapper
-				UI.createComponent('{base}-main-wrapper'.format({base: base}), {
-					template: UI.template('div', 'ie centred-vertically'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
+			var baseId = clientList.data.idgen(index);
+			return UI.createComponent(baseId, {
+				name: 'unit{index}'.format({index: index}),
+				template: UI.template('div', 'ie button base'),
+				appearance: {
+					classes: [datum.rule],
+				},
+				state: {
+					stateMap: 'role-state',
+				},
+				children: [
+					// main wrapper
+					UI.createComponent('{base}-main-wrapper'.format({base: base}), {
+						name: 'mainWrapper',
+						template: UI.template('div', 'ie centred-vertically'),
+						appearance: {
+							style: {
+								'display': 'inline-block',
+							},
 						},
-					},
-				}),
-
-				// main
-				UI.createComponent('{base}-main-head'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'color': Color.grey.normal,
-							'display': 'inline-block',
-							'position': 'absolute',
-						},
-						html: datum.main.substring(0, query.length),
-					},
-				}),
-				UI.createComponent('{base}-main-tail'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-						},
-						html: datum.main,
-					},
-				}),
-
-			]).then(function (unitComponents) {
-				var [
-					unitBase,
-					unitMainWrapper,
-					unitMainHead,
-					unitMainTail,
-				] = unitComponents;
+						children: [
+							// main
+							UI.createComponent('{base}-mw-head'.format({base: base}), {
+								name: 'head',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'color': Color.grey.normal,
+										'display': 'inline-block',
+										'position': 'absolute',
+									},
+									html: datum.main.substring(0, query.length),
+								},
+							}),
+							UI.createComponent('{base}-mw-tail'.format({base: base}), {
+								name: 'tail',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'display': 'inline-block',
+									},
+									html: datum.main,
+								},
+							}),
+						],
+					}),
+				],
+			}).then(function (unitBase) {
 
 				unitBase.activate = function () {
 					return unitBase.setAppearance({classes: {add: ['active']}});
@@ -356,8 +352,8 @@ AccountInterfaces.controlInterface = function (name) {
 				unitBase.updateQuery = function (query) {
 					unitBase.query = query;
 					return Promise.all([
-						unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
-						unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
+						unitBase.cc.mainWrapper.cc.head.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+						unitBase.cc.mainWrapper.cc.tail.setAppearance({html: (unitBase.datum || datum).main}),
 					]);
 				}
 
@@ -371,15 +367,7 @@ AccountInterfaces.controlInterface = function (name) {
 							});
 						},
 					}),
-					unitMainWrapper.setChildren([
-						unitMainHead,
-						unitMainTail,
-					]),
 				]).then(function () {
-					return unitBase.setChildren([
-						unitMainWrapper,
-					]);
-				}).then(function () {
 					return unitBase;
 				});
 			});
@@ -420,57 +408,53 @@ AccountInterfaces.controlInterface = function (name) {
 		roleList.unit = function (datum, query, index) {
 			query = (query || '');
 			var base = roleList.data.idgen(index);
-			return Promise.all([
-				// base component
-				UI.createComponent(base, {
-					template: UI.template('div', 'ie button base'),
-					appearance: {
-						classes: [datum.rule],
-					},
-					state: {
-						stateMap: 'control-state',
-					},
-				}),
-
-				// main wrapper
-				UI.createComponent('{base}-main-wrapper'.format({base: base}), {
-					template: UI.template('div', 'ie centred-vertically'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
+			return UI.createComponent(base, {
+				name: 'unit{index}'.format({index: index}),
+				template: UI.template('div', 'ie button base'),
+				appearance: {
+					classes: [datum.rule],
+				},
+				state: {
+					stateMap: 'control-state',
+				},
+				children: [
+					// main wrapper
+					UI.createComponent('{base}-main-wrapper'.format({base: base}), {
+						name: 'mainWrapper',
+						template: UI.template('div', 'ie centred-vertically'),
+						appearance: {
+							style: {
+								'display': 'inline-block',
+							},
 						},
-					},
-				}),
-
-				// main
-				UI.createComponent('{base}-main-head'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'color': Color.grey.normal,
-							'display': 'inline-block',
-							'position': 'absolute',
-						},
-						html: datum.main.substring(0, query.length),
-					},
-				}),
-				UI.createComponent('{base}-main-tail'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-						},
-						html: datum.main,
-					},
-				}),
-
-			]).then(function (unitComponents) {
-				var [
-					unitBase,
-					unitMainWrapper,
-					unitMainHead,
-					unitMainTail,
-				] = unitComponents;
+						children: [
+							// main
+							UI.createComponent('{base}-mw-head'.format({base: base}), {
+								name: 'head',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'color': Color.grey.normal,
+										'display': 'inline-block',
+										'position': 'absolute',
+									},
+									html: datum.main.substring(0, query.length),
+								},
+							}),
+							UI.createComponent('{base}-mw-tail'.format({base: base}), {
+								name: 'tail',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'display': 'inline-block',
+									},
+									html: datum.main,
+								},
+							}),
+						],
+					}),
+				],
+			}).then(function (unitBase) {
 
 				unitBase.activate = function () {
 					return unitBase.setAppearance({classes: {add: ['active']}});
@@ -503,8 +487,8 @@ AccountInterfaces.controlInterface = function (name) {
 				unitBase.updateQuery = function (query) {
 					unitBase.query = query;
 					return Promise.all([
-						unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
-						unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
+						unitBase.cc.mainWrapper.cc.head.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+						unitBase.cc.mainWrapper.cc.tail.setAppearance({html: (unitBase.datum || datum).main}),
 					]);
 				}
 
@@ -525,15 +509,7 @@ AccountInterfaces.controlInterface = function (name) {
 							});
 						},
 					}),
-					unitMainWrapper.setChildren([
-						unitMainHead,
-						unitMainTail,
-					]),
 				]).then(function () {
-					return unitBase.setChildren([
-						unitMainWrapper,
-					]);
-				}).then(function () {
 					return unitBase;
 				});
 			});
