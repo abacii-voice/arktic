@@ -6,22 +6,15 @@ AccountComponents.captionField = function (id, args) {
 	// CAPTION FIELD
 	// A content panel with bindings for adding and removing tokens.
 	// contenteditable is set to 'true' with appropriate bindings.
-	return Promise.all([
-		// base
-		UI.createComponent(id, {
-			template: UI.template('div', 'ie'),
-			appearance: args.appearance,
-		}),
-
-		// content
-		UI.createComponent('{id}-content'.format({id: id}), {
-
-		}),
-	]).then(function (components) {
-		var [
-			base,
-			content,
-		] = components;
+	return UI.createComponent(id, {
+		name: args.name,
+		template: UI.template('div', 'ie'),
+		appearance: args.appearance,
+		children: [
+			// content
+			UI.createComponent('{id}-content'.format({id: id}), {name: 'content'}),
+		],
+	}).then(function (base) {
 
 		base.defaultUnitStyle = function () {
 
@@ -175,7 +168,7 @@ AccountComponents.captionField = function (id, args) {
 								_this.renderedUnits.push(unit);
 								return unit.updateUnitMetadata(token).then(function () {
 									return unit.hide().then(function () {
-										return content.setChildren([unit]);
+										return base.cc.content.setChildren([unit]);
 									});
 								}).then(function () {
 									_this.currentAfter = unit.id;
@@ -254,7 +247,7 @@ AccountComponents.captionField = function (id, args) {
 					remove: function (phrase) {
 						return Promise.ordered(phrase.renderedUnits.map(function (renderedUnit) {
 							return function () {
-								return content.removeChild(renderedUnit.id);
+								return base.cc.content.removeChild(renderedUnit.id);
 							}
 						})).then(function () {
 							base.data.storage.virtual.splice(phrase.index, 1);
@@ -269,7 +262,7 @@ AccountComponents.captionField = function (id, args) {
 							return Promise.all(phrase.renderedUnits.filter(function (unit) {
 								return unit.isHidden;
 							}).map(function (unit) {
-								return content.removeChild(unit.id);
+								return base.cc.content.removeChild(unit.id);
 							})).then(function () {
 								base.data.storage.virtual.splice(phrase.index, 1);
 								return Util.ep();
@@ -324,7 +317,7 @@ AccountComponents.captionField = function (id, args) {
 					base.active = options.unit;
 				} else {
 					// construct array of active units
-					var visibleChildren = content.children.filter(function (unit) {
+					var visibleChildren = base.cc.content.children.filter(function (unit) {
 						return !unit.isHidden;
 					});
 					var visibleIndex = visibleChildren.map(function (child) {return child.id;}).indexOf(base.active.id);
@@ -394,7 +387,7 @@ AccountComponents.captionField = function (id, args) {
 		}
 		base.focus = function () {
 			// construct array of active units
-			var visibleChildren = content.children.filter(function (unit) {
+			var visibleChildren = base.cc.content.children.filter(function (unit) {
 				return !unit.isHidden;
 			});
 			var lastIndex = visibleChildren.length - 1;
@@ -415,8 +408,6 @@ AccountComponents.captionField = function (id, args) {
 				},
 			}),
 		]).then(function () {
-			return base.setChildren([content]);
-		}).then(function () {
 			return base;
 		});
 	});
