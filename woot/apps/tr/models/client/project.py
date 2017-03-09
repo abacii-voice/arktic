@@ -2,6 +2,7 @@
 from django.db import models
 
 # local
+from util import truncate
 from apps.tr.idgen import idgen
 
 ### Project model
@@ -138,7 +139,7 @@ class Project(models.Model):
 		return self.moderations.filter(is_active=True).count()
 
 	def completion_percentage(self):
-		return ((self.transcriptions.count() + self.moderations.count()) - (self.transcriptions_remaining() + self.moderations_remaining())) / (self.transcriptions.count() + self.moderations.count()) * 100.0
+		return truncate(((self.transcriptions.count() + self.moderations.count()) - (self.transcriptions_remaining() + self.moderations_remaining())) / (self.transcriptions.count() + self.moderations.count()) * 100.0, 2)
 
 	def redundancy_percentage(self):
 		return self.moderations.count() / self.transcriptions.count()

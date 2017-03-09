@@ -59,13 +59,13 @@ AccountComponents.audio = function (id, args) {
 
 							// audio track canvas
 							UI.createComponent('{id}-audio-track-canvas'.format({id: id}), {
-								name: 'audioTrackCanvas',
+								name: 'canvas',
 								template: UI.template('canvas', 'ie abs'),
 							}),
 
 							// audio track info
 							UI.createComponent('{id}-audio-track-info'.format({id: id}), {
-								name: 'audioTrackInfo',
+								name: 'info',
 								template: UI.template('div', 'ie abs hidden'),
 								appearance: {
 									style: {
@@ -97,8 +97,8 @@ AccountComponents.audio = function (id, args) {
 	}).then(function (base) {
 
 		// unpack components
-		var audioTrack = base.cc.audioWrapper.cc.audioTrackWrapper.cc.audioTrack;
-		var audioTrackCanvas = base.cc.audioWrapper.cc.audioTrackWrapper.cc.audioTrackCanvas;
+		base.audioTrack = base.cc.audioWrapper.cc.audioTrackWrapper.cc.audioTrack;
+		base.audioTrackCanvas = base.cc.audioWrapper.cc.audioTrackWrapper.cc.canvas;
 
 		// modify components and add methods etc.
 		// BUTTON GROUP
@@ -137,8 +137,8 @@ AccountComponents.audio = function (id, args) {
 				_this.controller.source.connect(_this.controller.context.destination);
 				_this.controller.source.onended = _this.reset;
 
-				audioTrackCanvas.data = _this.controller.data;
-				audioTrackCanvas.duration = _this.controller.data.duration;
+				base.audioTrackCanvas.data = _this.controller.data;
+				base.audioTrackCanvas.duration = _this.controller.data.duration;
 				return Util.ep();
 			});
 		}
@@ -150,23 +150,23 @@ AccountComponents.audio = function (id, args) {
 				// set position and duration
 				position = position || 0;
 				duration = duration || _this.controller.source.buffer.duration;
-				if (audioTrack.cut) {
-					position = audioTrack.cutStart;
-					duration = audioTrack.cutEnd - audioTrack.cutStart;
+				if (base.audioTrack.cut) {
+					position = base.audioTrack.cutStart;
+					duration = base.audioTrack.cutEnd - base.audioTrack.cutStart;
 				}
 				if (position === 0) {
-					audioTrackCanvas.cutStart = 0;
+					base.audioTrackCanvas.cutStart = 0;
 				}
 
 				// set audioTrackCanvas variables
-				audioTrackCanvas.duration = _this.controller.source.buffer.duration;
-				audioTrackCanvas.position = position;
-				audioTrackCanvas.isPlaying = true;
-				audioTrackCanvas.startTime = _this.controller.context.currentTime;
+				base.audioTrackCanvas.duration = _this.controller.source.buffer.duration;
+				base.audioTrackCanvas.position = position;
+				base.audioTrackCanvas.isPlaying = true;
+				base.audioTrackCanvas.startTime = _this.controller.context.currentTime;
 
 				// play
 				_this.controller.source.start(0, position, duration);
-				return audioTrackCanvas.start();
+				return base.audioTrackCanvas.start();
 			});
 		}
 		base.stop = function () {
@@ -175,7 +175,7 @@ AccountComponents.audio = function (id, args) {
 				_this.isPlaying = false;
 				_this.controller.source.stop();
 				_this.controller.source.disconnect();
-				audioTrackCanvas.isPlaying = false;
+				base.audioTrackCanvas.isPlaying = false;
 			}
 			return Util.ep();
 		}
@@ -189,29 +189,29 @@ AccountComponents.audio = function (id, args) {
 		base.display = function (current) {
 			var _this = base;
 			_this.controller.rawData = current.data;
-			return audioTrackCanvas.start().then(function () {
+			return base.audioTrackCanvas.start().then(function () {
 				return _this.load();
 			}).then(function () {
-				return audioTrackCanvas.stop();
+				return base.audioTrackCanvas.stop();
 			});
 		}
 
 		//// CANVAS
-		audioTrackCanvas.isRunning = false;
-		audioTrackCanvas.barWidth = 1;
-		audioTrackCanvas.nowCursorPosition = 0;
-		audioTrackCanvas.time = 0;
-		audioTrackCanvas.cutStart = 0;
-		audioTrackCanvas.start = function () {
-			var _this = audioTrackCanvas;
+		base.audioTrackCanvas.isRunning = false;
+		base.audioTrackCanvas.barWidth = 1;
+		base.audioTrackCanvas.nowCursorPosition = 0;
+		base.audioTrackCanvas.time = 0;
+		base.audioTrackCanvas.cutStart = 0;
+		base.audioTrackCanvas.start = function () {
+			var _this = base.audioTrackCanvas;
 			if (!_this.isRunning) {
 				_this.isRunning = true;
 
 				// create canvas and context
 				_this.canvas = document.getElementById(_this.id);
 				if (_this.canvas) {
-					_this.canvas.height = parseInt(audioTrack.model().css('height'));
-					_this.canvas.width = parseInt(audioTrack.model().css('width'));
+					_this.canvas.height = parseInt(base.audioTrack.model().css('height'));
+					_this.canvas.width = parseInt(base.audioTrack.model().css('width'));
 					_this.context = _this.canvas.getContext('2d');
 
 					// start loop
@@ -220,8 +220,8 @@ AccountComponents.audio = function (id, args) {
 			}
 			return Util.ep();
 		}
-		audioTrackCanvas.stop = function () {
-			var _this = audioTrackCanvas;
+		base.audioTrackCanvas.stop = function () {
+			var _this = base.audioTrackCanvas;
 			setTimeout(function () {
 				if (!_this.isPlaying && !_this.isMousedOver) {
 					_this.isRunning = false;
@@ -230,12 +230,12 @@ AccountComponents.audio = function (id, args) {
 			}, 500);
 			return Util.ep();
 		}
-		audioTrackCanvas.draw = function () {
-			var _this = audioTrackCanvas;
+		base.audioTrackCanvas.draw = function () {
+			var _this = base.audioTrackCanvas;
 			_this.animationReference = requestAnimationFrame(_this.draw);
 
-			_this.canvas.height = parseInt(audioTrack.model().css('height'));
-			_this.canvas.width = parseInt(audioTrack.model().css('width'));
+			_this.canvas.height = parseInt(base.audioTrack.model().css('height'));
+			_this.canvas.width = parseInt(base.audioTrack.model().css('width'));
 			_this.time = (base.controller.context.currentTime - _this.startTime + _this.position) || 0;
 			if (_this.duration && _this.time > _this.duration) {
 				_this.time = 0;
@@ -288,8 +288,8 @@ AccountComponents.audio = function (id, args) {
 				_this.nowCursorPosition = _this.cut ? _this.cutStart : 0;
 			}
 		}
-		audioTrackCanvas.getMousePosition = function (event) {
-			var _this = audioTrackCanvas;
+		base.audioTrackCanvas.getMousePosition = function (event) {
+			var _this = base.audioTrackCanvas;
 			if (_this.canvas !== undefined) {
 				var rect = _this.canvas.getBoundingClientRect();
 
@@ -301,11 +301,11 @@ AccountComponents.audio = function (id, args) {
 				return {x: 0, y: 0}
 			}
 		}
-		audioTrackCanvas.removeCut = function () {
-			audioTrackCanvas.cut = false;
-			audioTrack.cut = false;
-			audioTrack.cutStart = 0;
-			audioTrack.cutEnd = 0;
+		base.audioTrackCanvas.removeCut = function () {
+			base.audioTrackCanvas.cut = false;
+			base.audioTrack.cut = false;
+			base.audioTrack.cutStart = 0;
+			base.audioTrack.cutEnd = 0;
 			return Util.ep();
 		}
 
@@ -327,7 +327,7 @@ AccountComponents.audio = function (id, args) {
 
 				},
 			}),
-			audioTrackCanvas.setBindings({
+			base.audioTrackCanvas.setBindings({
 
 				// like it says
 				'mousedown': function (_this, event) {
@@ -351,15 +351,15 @@ AccountComponents.audio = function (id, args) {
 					_this.mouseDown = false;
 					if (_this.cut) {
 						if (_this.drag && (_this.cutEnd - _this.cutStart > 1)) {
-							audioTrack.cut = true;
-							audioTrack.cutStart = _this.cutStart / _this.canvas.width * _this.duration;
-							audioTrack.cutEnd = _this.cutEnd / _this.canvas.width * _this.duration;
-							return base.play(audioTrack.cutStart);
+							base.audioTrack.cut = true;
+							base.audioTrack.cutStart = _this.cutStart / _this.canvas.width * _this.duration;
+							base.audioTrack.cutEnd = _this.cutEnd / _this.canvas.width * _this.duration;
+							return base.play(base.audioTrack.cutStart);
 						} else {
 							_this.cut = false;
-							audioTrack.cut = false;
-							audioTrack.cutStart = 0;
-							audioTrack.cutEnd = 0;
+							base.audioTrack.cut = false;
+							base.audioTrack.cutStart = 0;
+							base.audioTrack.cutEnd = 0;
 							return base.stop();
 						}
 					} else {

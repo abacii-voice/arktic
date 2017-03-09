@@ -1,7 +1,7 @@
 var AccountComponents = (AccountComponents || {});
 AccountComponents.uploadController = function () {
 	var id = Util.makeid();
-	return UI.createComponent('upload-controller-{}'.format({id: id}), {name: 'uploadController-{id}'.format({id: id})}).then(function (base) {
+	return UI.createComponent('upload-controller-{}'.format({id: id}), {name: 'uploadController'}).then(function (base) {
 
 		// controller logic
 		base.upload = {
