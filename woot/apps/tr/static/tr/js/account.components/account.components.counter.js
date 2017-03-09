@@ -72,6 +72,10 @@ AccountComponents.counter = function (id, args) {
 		],
 	}).then(function (base) {
 
+		// unpack components
+		base.sessionValue = base.cc.headerWrapper.cc.sessionValue;
+		base.remainingValue = base.cc.headerWrapper.cc.remainingValue;
+
 		// methods
 		base.setup = function () {
 			return base.styles().then(function () {

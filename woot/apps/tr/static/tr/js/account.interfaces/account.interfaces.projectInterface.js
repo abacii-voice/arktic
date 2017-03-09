@@ -647,18 +647,23 @@ AccountInterfaces.projectInterface = function () {
 					}),
 				],
 			}),
+
+			// upload controller
 			AccountComponents.uploadController('uploadController'),
 		],
 	}).then(function (base) {
+
+		// unpack components
 		var clientList = base.cc.clientSidebar.cc.main.cc.clientList;
 		var projectList = base.cc.projectSidebar.cc.main.cc.projectList;
-		// uploadPanelUploadCheckRelfileDisplayContainer,
-		// uploadPanelUploadCheckRelfileDisplayTitle,
-		// uploadPanelUploadCheckRelfileDisplayDuplicates,
-		// uploadPanelUploadCheckAudioDisplayContainer,
-		// uploadPanelUploadCheckAudioDisplayTitle,
-		// uploadPanelUploadCheckAudioDisplayNoCaptionList,
-		// uploadController,
+		var focusSidebar = base.cc.focusSidebar;
+		var relfileDisplayContainer = base.cc.uploadPanel.cc.uploadCheck.cc.relfileDisplayContainer;
+		var rdTitle = relfileDisplayContainer.cc.relfileDisplay.cc.title;
+		var rdDuplicates = relfileDisplayContainer.cc.relfileDisplay.cc.duplicates;
+		var audioDisplayContainer = base.cc.uploadPanel.cc.uploadCheck.cc.audioDisplayContainer;
+		var adTitle = audioDisplayContainer.cc.audioDisplay.cc.title;
+		var adNoCaptionList = audioDisplayContainer.cc.audioDisplay.cc.noCaptionList;
+		var uploadController = base.cc.uploadController;
 
 		// client sidebar
 		clientList.autocomplete = false;
@@ -964,11 +969,11 @@ AccountInterfaces.projectInterface = function () {
 		})
 
 		// relfile duplicates
-		uploadPanelUploadCheckRelfileDisplayDuplicates.data.load.source = function (path, options) {
+		rdDuplicates.data.load.source = function (path, options) {
 			return Util.ep(uploadController.upload.buffer.relfile.entries);
 		}
-		uploadPanelUploadCheckRelfileDisplayDuplicates.autocomplete = false;
-		uploadPanelUploadCheckRelfileDisplayDuplicates.targets = [
+		rdDuplicates.autocomplete = false;
+		rdDuplicates.targets = [
 			{
 				name: 'duplicates',
 				path: function () {
@@ -989,9 +994,9 @@ AccountInterfaces.projectInterface = function () {
 				},
 			}
 		]
-		uploadPanelUploadCheckRelfileDisplayDuplicates.unit = function (datum, query, index) {
+		rdDuplicates.unit = function (datum, query, index) {
 			query = (query || '');
-			var base = uploadPanelUploadCheckRelfileDisplayDuplicates.data.idgen(index);
+			var base = rdDuplicates.data.idgen(index);
 			return Promise.all([
 				// base component
 				UI.createComponent(base, {
@@ -1097,11 +1102,11 @@ AccountInterfaces.projectInterface = function () {
 		}
 
 		// audio captions
-		uploadPanelUploadCheckAudioDisplayNoCaptionList.data.load.source = function (path, options) {
+		adNoCaptionList.data.load.source = function (path, options) {
 			return Util.ep(uploadController.upload.buffer.audio);
 		}
-		uploadPanelUploadCheckAudioDisplayNoCaptionList.autocomplete = false;
-		uploadPanelUploadCheckAudioDisplayNoCaptionList.targets = [
+		adNoCaptionList.autocomplete = false;
+		adNoCaptionList.targets = [
 			{
 				name: 'noCaption',
 				path: function () {
@@ -1121,9 +1126,9 @@ AccountInterfaces.projectInterface = function () {
 				},
 			}
 		]
-		uploadPanelUploadCheckAudioDisplayNoCaptionList.unit = function (datum, query, index) {
+		adNoCaptionList.unit = function (datum, query, index) {
 			query = (query || '');
-			var base = uploadPanelUploadCheckAudioDisplayNoCaptionList.data.idgen(index);
+			var base = adNoCaptionList.data.idgen(index);
 			return Promise.all([
 				// base component
 				UI.createComponent(base, {
@@ -1283,7 +1288,7 @@ AccountInterfaces.projectInterface = function () {
 					'border': '0px',
 				},
 			}),
-			clientList.components.title.setAppearance({
+			clientList.cc.title.setAppearance({
 				style: {
 					'width': '100%',
 					'height': '32px',
@@ -1303,7 +1308,7 @@ AccountInterfaces.projectInterface = function () {
 			}),
 			clientList.setTitle({text: 'Clients', center: false}),
 			clientList.setSearch({mode: 'on', placeholder: 'Search clients...'}),
-			clientSidebar.components.main.addStates({
+			base.cc.clientSidebar.cc.main.addStates({
 				'-project-state-focus': {
 					style: {
 						'left': '40px',
@@ -1324,7 +1329,7 @@ AccountInterfaces.projectInterface = function () {
 					'border': '0px',
 				},
 			}),
-			projectList.components.title.setAppearance({
+			projectList.cc.title.setAppearance({
 				style: {
 					'width': '100%',
 					'height': '32px',
@@ -1344,7 +1349,7 @@ AccountInterfaces.projectInterface = function () {
 			}),
 			projectList.setTitle({text: 'Projects', center: false}),
 			projectList.setSearch({mode: 'on', placeholder: 'Search projects...'}),
-			projectSidebar.components.main.addStates({
+			base.cc.projectSidebar.cc.main.addStates({
 				'-project-state-focus': {
 					style: {
 						'left': '250px',
@@ -1355,13 +1360,13 @@ AccountInterfaces.projectInterface = function () {
 			}),
 
 			// 3. FOCUS SIDEBAR
-			focusSidebar.components.main.setAppearance({
+			focusSidebar.cc.main.setAppearance({
 				style: {
 					'width': '250px',
 					'height': '100%',
 				},
 			}),
-			focusSidebar.components.main.addState('-project-state-focus', {
+			focusSidebar.cc.main.addState('-project-state-focus', {
 				preFn: function (_this) {
 					return Promise.all([
 						// Active
@@ -1373,18 +1378,18 @@ AccountInterfaces.projectInterface = function () {
 						return Context.get('clients.{client_id}.contract_clients.{contract_client_id}'.format({client_id: client_id, contract_client_id: contract_client.id})).then(function (contract_client_data) {
 							var project = contract_client_data.projects[contract_client.project];
 							return Promise.all([
-								focusSidebarTitle.setAppearance({html: '{contract_client}'.format({contract_client: contract_client_data.name})}),
-								focusSidebarSubtitle.setAppearance({html: '{contract_client_project}'.format({contract_client_project: project.name})}),
-								focusSidebarStatus.setAppearance({
+								focusSidebar.cc.main.cc.title.setAppearance({html: '{contract_client}'.format({contract_client: contract_client_data.name})}),
+								focusSidebar.cc.main.cc.subtitle.setAppearance({html: '{contract_client_project}'.format({contract_client_project: project.name})}),
+								focusSidebar.cc.main.cc.status.setAppearance({
 									html: (project.is_transcription_complete ? 'complete' : 'incomplete'),
 									style: {
 										'color': (project.is_transcription_complete ? Color.green.normal : Color.red.normal),
 									},
 								}),
-								focusSidebarTranscriptionButtonTranscriberNumber.setAppearance({html: '{transcribers} Transcribers'.format({transcribers: project.workers_assigned})}),
-								focusSidebarTranscriptionButtonPercentageCompletion.setAppearance({html: '{completion}%'.format({completion: project.completion_percentage})}),
-								focusSidebarTranscriptionButtonCountRemaining.setAppearance({html: '{remaining}'.format({remaining: project.transcriptions_remaining})}),
-								focusSidebarExportButtonCompleted.setAppearance({html: '{done}'.format({done: project.transcriptions_completed})}),
+								focusSidebar.cc.main.cc.transcriptionButton.cc.transcriberNumber.setAppearance({html: '{transcribers} Transcribers'.format({transcribers: project.workers_assigned})}),
+								focusSidebar.cc.main.cc.transcriptionButton.cc.percentageCompletion.setAppearance({html: '{completion}%'.format({completion: project.completion_percentage})}),
+								focusSidebar.cc.main.cc.transcriptionButton.cc.countRemaining.setAppearance({html: '{remaining}'.format({remaining: project.transcriptions_remaining})}),
+								focusSidebar.cc.main.cc.exportButton.cc.completed.setAppearance({html: '{done}'.format({done: project.transcriptions_completed})}),
 							]);
 						});
 					});
@@ -1392,27 +1397,27 @@ AccountInterfaces.projectInterface = function () {
 			}),
 
 			// 3.3
-			focusSidebarTranscriptionButton.setState({
+			focusSidebar.cc.main.cc.transcriptionButton.setState({
 				stateMap: '-project-state-transcription',
 			}),
-			focusSidebarTranscriptionButton.setBindings({
+			focusSidebar.cc.main.cc.transcriptionButton.setBindings({
 				'click': function (_this) {
 					return _this.triggerState();
 				},
 			}),
 
 			// 3.4
-			focusSidebarExportButton.setState({
+			focusSidebar.cc.main.cc.exportButton.setState({
 				stateMap: '-project-state-export',
 			}),
-			focusSidebarExportButton.setBindings({
+			focusSidebar.cc.main.cc.exportButton.setBindings({
 				'click': function (_this) {
 					return _this.triggerState();
 				},
 			}),
 
 			// 3.5
-			focusSidebarUploadButtonDropzone.setBindings({
+			focusSidebar.cc.main.cc.uploadButton.cc.dropzone.setBindings({
 				'drop': function (_this, event) {
 					event.preventDefault();
 					event.stopPropagation();
@@ -1438,7 +1443,7 @@ AccountInterfaces.projectInterface = function () {
 			}),
 
 			// 4. TRANSCRIPTION PANEL
-			transcriptionPanel.setState({
+			base.cc.transcriptionPanel.setState({
 				defaultState: {
 					preFn: UI.functions.hide(),
 				},
@@ -1459,7 +1464,7 @@ AccountInterfaces.projectInterface = function () {
 			}),
 
 			// 5. EXPORT PANEL
-			exportPanel.setState({
+			base.cc.exportPanel.setState({
 				defaultState: {
 					preFn: UI.functions.hide(),
 				},
@@ -1480,7 +1485,7 @@ AccountInterfaces.projectInterface = function () {
 			}),
 
 			// 6. UPLOAD PANEL
-			uploadPanel.setState({
+			base.cc.uploadPanel.setState({
 				defaultState: {
 					preFn: UI.functions.hide(),
 				},
@@ -1501,7 +1506,7 @@ AccountInterfaces.projectInterface = function () {
 			}),
 
 			// CONVERT TO FUNCTION CALLS ON THE RELEVANT OBJECTS SET ABOVE
-			uploadPanelUploadCheck.setState({
+			base.cc.uploadPanel.cc.uploadCheck.setState({
 				defaultState: {
 					preFn: UI.functions.hide(),
 					fn: function (_this) {
@@ -1521,7 +1526,7 @@ AccountInterfaces.projectInterface = function () {
 										uploadController.upload.addingRelfile = false;
 										if (numberOfEntries) {
 											return Promise.all([
-												uploadPanelUploadCheckRelfileDisplayTitle.setAppearance({html: 'Relfile'}),
+												rdTitle.setAppearance({html: 'Relfile'}),
 												uploadPanelUploadCheckRelfileDisplayEntries.setAppearance({html: '{entries} entries'.format({entries: numberOfEntries})}),
 											]).then(function () {
 												var numberOfDuplicates = Object.keys(uploadController.upload.buffer.relfile.entries).filter(function (key) {
@@ -1529,17 +1534,17 @@ AccountInterfaces.projectInterface = function () {
 												}).length;
 												if (numberOfDuplicates) {
 													return Promise.all([
-														uploadPanelUploadCheckRelfileDisplayDuplicates.setTitle({text: '{duplicates} duplicates'.format({duplicates: numberOfDuplicates}), center: false}),
-														uploadPanelUploadCheckRelfileDisplayContainer.setAppearance({style: {'height': '250px'}}),
+														rdDuplicates.setTitle({text: '{duplicates} duplicates'.format({duplicates: numberOfDuplicates}), center: false}),
+														relfileDisplayContainer.setAppearance({style: {'height': '250px'}}),
 													]);
 												} else {
-													return uploadPanelUploadCheckRelfileDisplayContainer.setAppearance({style: {'height': '60px'}});
+													return relfileDisplayContainer.setAppearance({style: {'height': '60px'}});
 												}
 											});
 										} else {
 											return Promise.all([
-												uploadPanelUploadCheckRelfileDisplayTitle.setAppearance({html: 'No relfile'}),
-												uploadPanelUploadCheckRelfileDisplayContainer.setAppearance({style: {'height': '45px'}}),
+												rdTitle.setAppearance({html: 'No relfile'}),
+												relfileDisplayContainer.setAppearance({style: {'height': '45px'}}),
 											]);
 										}
 									}
@@ -1551,17 +1556,17 @@ AccountInterfaces.projectInterface = function () {
 										uploadController.upload.addingAudio = false;
 										if (numberOfEntries) {
 											return Promise.all([
-												uploadPanelUploadCheckAudioDisplayTitle.setAppearance({html: 'Audio'}),
+												adTitle.setAppearance({html: 'Audio'}),
 												uploadPanelUploadCheckAudioDisplayEntries.setAppearance({html: '{entries} entries'.format({entries: numberOfEntries})}),
 											]).then(function () {
 												var numberOfNoCaption = Object.keys(uploadController.upload.buffer.audio).filter(function (key) {
 													return !(key in uploadController.upload.buffer.relfile.entries);
 												}).length;
 												if (numberOfNoCaption) {
-													return uploadPanelUploadCheckAudioDisplayNoCaptionList.setTitle({text: '{nocaption} without captions'.format({nocaption: numberOfNoCaption}), center: false}).then(function () {
+													return adNoCaptionList.setTitle({text: '{nocaption} without captions'.format({nocaption: numberOfNoCaption}), center: false}).then(function () {
 														if (uploadController.upload.addingAudioTarget !== 1) {
 															uploadController.upload.addingAudioTarget = 1;
-															return uploadPanelUploadCheckAudioDisplayContainer.setAppearance({style: {'height': '250px'}}).then(function () {
+															return audioDisplayContainer.setAppearance({style: {'height': '250px'}}).then(function () {
 																uploadController.upload.addingAudioTarget = 0;
 															});
 														}
@@ -1569,17 +1574,17 @@ AccountInterfaces.projectInterface = function () {
 												} else {
 													if (uploadController.upload.addingAudioTarget !== 2) {
 														uploadController.upload.addingAudioTarget = 2;
-														return uploadPanelUploadCheckAudioDisplayContainer.setAppearance({style: {'height': '60px'}}).then(function () {
+														return audioDisplayContainer.setAppearance({style: {'height': '60px'}}).then(function () {
 															uploadController.upload.addingAudioTarget = 0;
 														});
 													}
 												}
 											});
 										} else {
-											return uploadPanelUploadCheckAudioDisplayTitle.setAppearance({html: 'No audio'}).then(function () {
+											return adTitle.setAppearance({html: 'No audio'}).then(function () {
 												if (uploadController.upload.addingAudioTarget !== 3) {
 													uploadController.upload.addingAudioTarget = 3;
-													return uploadPanelUploadCheckAudioDisplayContainer.setAppearance({style: {'height': '45px'}}).then(function () {
+													return audioDisplayContainer.setAppearance({style: {'height': '45px'}}).then(function () {
 														uploadController.upload.addingAudioTarget = 0;
 													});
 												}
@@ -1590,10 +1595,10 @@ AccountInterfaces.projectInterface = function () {
 							]).then(function () {
 								return Promise.all([
 									// display audio no caption
-									uploadPanelUploadCheckAudioDisplayNoCaptionList.control.setup.main(),
+									adNoCaptionList.control.setup.main(),
 
 									// display relfile duplicates
-									uploadPanelUploadCheckRelfileDisplayDuplicates.control.setup.main(),
+									rdDuplicates.control.setup.main(),
 								]);
 							});
 						},
@@ -1604,9 +1609,9 @@ AccountInterfaces.projectInterface = function () {
 			}),
 
 			// relfile display
-			uploadPanelUploadCheckRelfileDisplayDuplicates.setTitle({text: 'Duplicates', center: false, style: {'font-size': '14px', 'margin-bottom': '0px'}}),
-			uploadPanelUploadCheckRelfileDisplayDuplicates.setSearch({mode: 'off', placeholder: ''}),
-			uploadPanelUploadCheckRelfileDisplayDuplicates.components.list.setAppearance({
+			rdDuplicates.setTitle({text: 'Duplicates', center: false, style: {'font-size': '14px', 'margin-bottom': '0px'}}),
+			rdDuplicates.setSearch({mode: 'off', placeholder: ''}),
+			rdDuplicates.cc.list.setAppearance({
 				style: {
 					'height': '158px',
 				},
@@ -1616,9 +1621,9 @@ AccountInterfaces.projectInterface = function () {
 
 
 			// audio display
-			uploadPanelUploadCheckAudioDisplayNoCaptionList.setTitle({text: 'Without captions', center: false, style: {'font-size': '14px', 'margin-bottom': '0px'}}),
-			uploadPanelUploadCheckAudioDisplayNoCaptionList.setSearch({mode: 'off', placeholder: ''}),
-			uploadPanelUploadCheckAudioDisplayNoCaptionList.components.list.setAppearance({
+			adNoCaptionList.setTitle({text: 'Without captions', center: false, style: {'font-size': '14px', 'margin-bottom': '0px'}}),
+			adNoCaptionList.setSearch({mode: 'off', placeholder: ''}),
+			adNoCaptionList.cc.list.setAppearance({
 				style: {
 					'height': '158px',
 				},

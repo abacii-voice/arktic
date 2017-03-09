@@ -230,12 +230,19 @@ AccountInterfaces.controlInterface = function (name) {
 		],
 	}).then(function (base) {
 
+		// unpack components
+		var amc = base.cc.amc;
+		var clientList = base.cc.clientSidebar.cc.main.cc.clientList;
+		var roleList = base.cc.roleSidebar.cc.main.cc.roleList;
+		var controlList = base.cc.controlSidebar.cc.main.cc.controlList;
+		var settingsList = base.cc.settingsSidebar.cc.main.cc.settingsList;
+
 		// action master controller
-		base.cc.amc.action.period = 20000;
+		amc.action.period = 20000;
 
 		// CLIENT SIDEBAR
-		base.cc.clientList.autocomplete = false;
-		base.cc.clientList.targets = [
+		clientList.autocomplete = false;
+		clientList.targets = [
 			{
 				name: 'clients',
 				path: function () {
@@ -262,10 +269,10 @@ AccountInterfaces.controlInterface = function (name) {
 				},
 			},
 		]
-		base.cc.clientList.sort = Util.sort.alpha('main');
-		base.cc.clientList.unit = function (datum, query, index) {
+		clientList.sort = Util.sort.alpha('main');
+		clientList.unit = function (datum, query, index) {
 			query = (query || '');
-			var base = base.cc.clientList.data.idgen(index);
+			var base = clientList.data.idgen(index);
 			return Promise.all([
 				// base component
 				UI.createComponent(base, {
@@ -358,7 +365,7 @@ AccountInterfaces.controlInterface = function (name) {
 				return Promise.all([
 					unitBase.setBindings({
 						'click': function (_this) {
-							base.cc.amc.addAction({type: 'click.clientlist', metadata: {client: datum.id}});
+							amc.addAction({type: 'click.clientlist', metadata: {client: datum.id}});
 							Active.set('client', datum.id).then(function () {
 								return _this.triggerState();
 							});
@@ -379,8 +386,8 @@ AccountInterfaces.controlInterface = function (name) {
 		}
 
 		// ROLE SIDEBAR
-		base.cc.roleList.autocomplete = false;
-		base.cc.roleList.targets = [
+		roleList.autocomplete = false;
+		roleList.targets = [
 			{
 				name: 'roles',
 				path: function () {
@@ -409,8 +416,8 @@ AccountInterfaces.controlInterface = function (name) {
 				},
 			},
 		]
-		base.cc.roleList.sort = Util.sort.alpha('main');
-		base.cc.roleList.unit = function (datum, query, index) {
+		roleList.sort = Util.sort.alpha('main');
+		roleList.unit = function (datum, query, index) {
 			query = (query || '');
 			var base = roleList.data.idgen(index);
 			return Promise.all([
@@ -536,7 +543,7 @@ AccountInterfaces.controlInterface = function (name) {
 		return Promise.all([
 
 			// action master controller
-			base.cc.amc.setState({
+			amc.setState({
 				defaultState: {
 					fn: function (_this) {
 						_this.action.start();
@@ -552,8 +559,8 @@ AccountInterfaces.controlInterface = function (name) {
 			}),
 
 			// CLIENT SIDEBAR
-			base.cc.clientList.unitStyle.apply(),
-			base.cc.clientList.search.setAppearance({
+			clientList.unitStyle.apply(),
+			clientList.search.setAppearance({
 				style: {
 					'left': '0px',
 					'width': '100%',
@@ -561,7 +568,7 @@ AccountInterfaces.controlInterface = function (name) {
 					'padding-top': '8px',
 				},
 			}),
-			base.cc.clientList.components.title.setAppearance({
+			clientList.cc.title.setAppearance({
 				style: {
 					'width': '100%',
 					'height': '32px',
@@ -570,7 +577,7 @@ AccountInterfaces.controlInterface = function (name) {
 					'padding-left': '10px',
 				},
 			}),
-			base.cc.clientList.setState({
+			clientList.setState({
 				states: {
 					'client-state': {
 						preFn: function (_this) {
@@ -579,12 +586,12 @@ AccountInterfaces.controlInterface = function (name) {
 					},
 				},
 			}),
-			base.cc.clientList.setTitle({text: 'Clients', center: false}),
-			base.cc.clientList.setSearch({mode: 'off', placeholder: 'Search clients...'}),
+			clientList.setTitle({text: 'Clients', center: false}),
+			clientList.setSearch({mode: 'off', placeholder: 'Search clients...'}),
 
 			// ROLE SIDEBAR
-			base.cc.roleList.unitStyle.apply(),
-			base.cc.roleList.cc.search.setAppearance({
+			roleList.unitStyle.apply(),
+			roleList.search.setAppearance({
 				style: {
 					'left': '0px',
 					'width': '100%',
@@ -592,7 +599,7 @@ AccountInterfaces.controlInterface = function (name) {
 					'padding-top': '8px',
 				},
 			}),
-			base.cc.roleList.cc.title.setAppearance({
+			roleList.cc.title.setAppearance({
 				style: {
 					'width': '100%',
 					'height': '32px',
@@ -601,9 +608,6 @@ AccountInterfaces.controlInterface = function (name) {
 					'padding-left': '10px',
 				},
 			}),
-			roleSidebar.components.main.setChildren([
-				roleList,
-			]),
 			roleList.setState({
 				states: {
 					'role-state': {
@@ -617,32 +621,29 @@ AccountInterfaces.controlInterface = function (name) {
 			roleList.setSearch({mode: 'off', placeholder: 'Search roles...'}),
 
 			// CONTROL SIDEBAR
-			transcriptionButton.setBindings({
+			controlList.cc.list.cc.wrapper.cc.transcriptionButton.setBindings({
 				'click': function (_this) {
 					amc.addAction({type: 'click.transcription-button'});
 					return _this.triggerState();
 				},
 			}),
-			settingsButton.setBindings({
+			controlList.cc.list.cc.wrapper.cc.settingsButton.setBindings({
 				'click': function (_this) {
 					amc.addAction({type: 'click.settings-button'});
 					return _this.triggerState();
 				},
 			}),
-			moderationButton.setBindings({}),
-			projectButton.setBindings({
+			controlList.cc.list.cc.wrapper.cc.moderationButton.setBindings({}),
+			controlList.cc.list.cc.wrapper.cc.projectButton.setBindings({
 				'click': function (_this) {
 					amc.addAction({type: 'click.project-button'});
 					return _this.triggerState();
 				},
 			}),
 
-			controlSidebar.components.main.setChildren([
-				controlList,
-			]),
 			controlList.setTitle({text: 'Menu', center: false}),
 			controlList.setSearch({mode: 'off', placeholder: ''}),
-			controlList.components.title.setAppearance({
+			controlList.cc.title.setAppearance({
 				style: {
 					'width': '100%',
 					'height': '32px',
@@ -666,23 +667,23 @@ AccountInterfaces.controlInterface = function (name) {
 								if (role.type === 'worker') {
 									// worker
 									return Promise.all([
-										transcriptionButton.setAppearance({classes: {remove: 'hidden'}}),
-										moderationButton.setAppearance({classes: {add: 'hidden'}}),
-										projectButton.setAppearance({classes: {add: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.transcriptionButton.setAppearance({classes: {remove: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.moderationButton.setAppearance({classes: {add: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.projectButton.setAppearance({classes: {add: 'hidden'}}),
 									]);
 								} else if (role.type === 'moderator') {
 									// moderator
 									return Promise.all([
-										transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
-										moderationButton.setAppearance({classes: {remove: 'hidden'}}),
-										projectButton.setAppearance({classes: {add: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.moderationButton.setAppearance({classes: {remove: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.projectButton.setAppearance({classes: {add: 'hidden'}}),
 									]);
 								} else if (role.type === 'admin') {
 									// admin
 									return Promise.all([
-										transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
-										moderationButton.setAppearance({classes: {add: 'hidden'}}),
-										projectButton.setAppearance({classes: {remove: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.moderationButton.setAppearance({classes: {add: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.projectButton.setAppearance({classes: {remove: 'hidden'}}),
 									]);
 								}
 							});
@@ -690,25 +691,16 @@ AccountInterfaces.controlInterface = function (name) {
 					},
 				},
 			}),
-			controlList.list.setChildren([
-				transcriptionButton,
-				moderationButton,
-				projectButton,
-				settingsButton,
-			]),
 
 			// SETTINGS SIDEBAR
-			shortcutsButton.setBindings({
+			settingsList.cc.list.cc.wrapper.cc.shortcutsButton.setBindings({
 				'click': function (_this) {
 					amc.addAction({type: 'click.shortcuts-button'});
 					return _this.triggerState();
 				},
 			}),
 
-			settingsSidebar.components.main.setChildren([
-				settingsList,
-			]),
-			settingsList.components.title.setAppearance({
+			settingsList.cc.title.setAppearance({
 				style: {
 					'width': '100%',
 					'height': '32px',
@@ -719,27 +711,8 @@ AccountInterfaces.controlInterface = function (name) {
 			}),
 			settingsList.setTitle({text: 'Settings', center: false}),
 			settingsList.setSearch({mode: 'off', placeholder: ''}),
-			settingsList.list.setChildren([
-				shortcutsButton,
-			]),
 
 		]).then(function () {
-			// base children
-			base.components = {
-				sidebars: {
-					client: clientSidebar,
-					role: roleSidebar,
-					control: controlSidebar,
-					settings: settingsSidebar,
-				},
-			}
-			return base.setChildren([
-				clientSidebar,
-				roleSidebar,
-				controlSidebar,
-				settingsSidebar,
-			]);
-		}).then(function () {
 			return base;
 		});
 	});

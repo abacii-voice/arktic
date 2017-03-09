@@ -2,197 +2,179 @@ var AccountInterfaces = (AccountInterfaces || {});
 AccountInterfaces.transcriptionInterface = function (id, args) {
 
 	var autocompleteWidth = '300px';
-	return Promise.all([
-
-		// base
-		// contains:
-		// 1. main panel
-		// 2. autocomplete panel
-		UI.createComponent('transcription-base', {
-			template: UI.template('div', 'ie abs'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'left': '60px',
-					'width': 'calc(100% - 60px)',
-				},
-				classes: ['centred-vertically'],
+	return UI.createComponent('transcription-base', {
+		name: 'transcriptionInterface',
+		template: UI.template('div', 'ie abs'),
+		appearance: {
+			style: {
+				'height': '100%',
+				'left': '60px',
+				'width': 'calc(100% - 60px)',
 			},
-		}),
-
-		// main panel
-		// contains:
-		// 1. counter
-		// 2. audio
-		// 3. caption
-		// 4. flags
-		// 5. button panel
-		UI.createComponent('tb-1-main-panel', {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'left': '0px',
-					'width': 'calc(100% - {width})'.format({width: autocompleteWidth}),
-					'float': 'left',
+			classes: ['centred-vertically'],
+		},
+		children: [
+			// main panel
+			UI.createComponent('tb-main-panel', {
+				name: 'mainPanel',
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'left': '0px',
+						'width': 'calc(100% - {width})'.format({width: autocompleteWidth}),
+						'float': 'left',
+					},
 				},
-			},
-		}),
+				children: [
+					// counter
+					AccountComponents.counter('tb-mp-counter', {
+						name: 'counter',
+						appearance: {
+							style: {
+								'margin-top': '10px',
+								'height': '80px',
+								'width': '555px',
+							},
+						},
+					}),
 
-		// counter
-		AccountComponents.counter('tb-1-mp-1-counter', {
-			appearance: {
-				style: {
-					'margin-top': '10px',
-					'height': '80px',
-					'width': '555px',
+					// audio
+					AccountComponents.audio('tb-mp-audio', {
+						name: 'audio',
+						appearance: {
+							style: {
+								'margin-top': '10px',
+								'height': '60px',
+								'width': '555px',
+							},
+						},
+					}),
+
+					// caption
+					AccountComponents.captionField('tb-mp-caption', {
+						name: 'caption',
+						appearance: {
+							style: {
+								'margin-top': '10px',
+								'height': '200px',
+								'width': '555px',
+								'border': '1px solid #888',
+								'padding': '10px',
+							},
+							classes: ['border-radius'],
+						},
+					}),
+
+					// button panel
+					UI.createComponent('tb-1-mp-4-button-panel', {
+						name: 'buttonPanel',
+						appearance: {
+							style: {
+								'margin-top': '10px',
+								'height': '40px',
+								'width': '555px',
+								'float': 'left',
+							},
+						},
+						children: [
+							// flag field
+							AccountComponents.flagField('tb-mp-bp-flag-field', {name: 'flagField'}),
+
+							// previous button
+							UI.createComponent('tb-mp-bp-previous-button', {
+								name: 'previousButton',
+								template: UI.template('div', 'ie button border border-radius'),
+								appearance: {
+									style: {
+										'margin-left': '10px',
+										'height': '100%',
+										'width': '40px',
+										'float': 'left',
+										'padding-top': '10px',
+									},
+								},
+								children: [
+									UI.createComponent('tb-mp-bp-pb-glyph', {
+										name: 'glyph',
+										template: UI.template('span', 'glyphicon glyphicon-chevron-up'),
+									}),
+								],
+							}),
+
+							// next/confirm button
+							UI.createComponent('tb-mp-bp-next-confirm-button', {
+								name: 'nextConfirmButton',
+								template: UI.template('div', 'ie button border border-radius'),
+								appearance: {
+									style: {
+										'margin-left': '10px',
+										'height': '100%',
+										'width': '40px',
+										'float': 'left',
+										'padding-top': '10px',
+									},
+								},
+								children: [
+									UI.createComponent('tb-mp-bp-cb-glyph', {
+										name: 'glyph',
+										template: UI.template('span', 'glyphicon glyphicon-ok'),
+									}),
+								],
+							}),
+						],
+					}),
+				],
+			}),
+
+			// autocomplete panel
+			UI.createComponent('tb-autocomplete-panel', {
+				name: 'autocompletePanel',
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': autocompleteWidth,
+						'float': 'left',
+					},
+					classes: ['centred-vertically'],
 				},
-			},
-		}),
+				children: [
+					// autocomplete
+					Components.searchableList('tb-ap-autocomplete', {
+						name: 'autocomplete',
+						appearance: {
+							style: {
+								'height': '100%',
+								'width': '100%',
+							},
+							classes: ['ie','abs'],
+						},
+					}),
 
-		// audio
-		AccountComponents.audio('tb-1-mp-2-audio', {
-			appearance: {
-				style: {
-					'margin-top': '10px',
-					'height': '60px',
-					'width': '555px',
-				},
-			},
-		}),
+					// autocomplete controls
+					// AccountComponents.autocompleteControls('tb-2-ap-2-autocomplete-controls', {}),
+				],
+			}),
 
-		// caption
-		AccountComponents.captionField('tb-1-mp-3-caption', {
-			appearance: {
-				style: {
-					'margin-top': '10px',
-					'height': '200px',
-					'width': '555px',
-					'border': '1px solid #888',
-					'padding': '10px',
-				},
-				classes: ['border-radius'],
-			},
-		}),
+			// Non interface elements
+			// transcription master controller
+			AccountComponents.transcriptionMasterController(),
+			Components.actionMasterController('transcriptionActions'),
+		],
+	}).then(function (base) {
 
-		// button panel
-		// contains:
-		// 1. flag field
-		// 2. previous button
-		// 3. next/confirm button
-		UI.createComponent('tb-1-mp-4-button-panel', {
-			appearance: {
-				style: {
-					'margin-top': '10px',
-					'height': '40px',
-					'width': '555px',
-					'float': 'left',
-				},
-			},
-		}),
-
-		// flag field
-		AccountComponents.flagField('tb-1-mp-4-bp-1-flag-field'),
-
-		// previous button
-		UI.createComponent('tb-1-mp-4-bp-2-previous-button', {
-			template: UI.template('div', 'ie button border border-radius'),
-			appearance: {
-				style: {
-					'margin-left': '10px',
-					'height': '100%',
-					'width': '40px',
-					'float': 'left',
-					'padding-top': '10px',
-				},
-			},
-			children: [
-				UI.createComponent('tb-1-mp-4-bp-2-pb-glyph', {
-					template: UI.template('span', 'glyphicon glyphicon-chevron-up'),
-				}),
-			],
-		}),
-
-		// next/confirm button
-		UI.createComponent('tb-1-mp-4-bp-3-next-confirm-button', {
-			template: UI.template('div', 'ie button border border-radius'),
-			appearance: {
-				style: {
-					'margin-left': '10px',
-					'height': '100%',
-					'width': '40px',
-					'float': 'left',
-					'padding-top': '10px',
-				},
-			},
-			children: [
-				UI.createComponent('tb-1-mp-4-bp-3-cb-glyph', {
-					template: UI.template('span', 'glyphicon glyphicon-ok'),
-				}),
-			],
-		}),
-
-		// autocomplete panel
-		// contains:
-		// 1. autocomplete
-		UI.createComponent('tb-2-autocomplete-panel', {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': autocompleteWidth,
-					'float': 'left',
-				},
-				classes: ['centred-vertically'],
-			},
-		}),
-
-		// autocomplete
-		Components.searchableList('tb-2-ap-1-autocomplete', {
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '100%',
-				},
-				classes: ['ie','abs'],
-			},
-		}),
-
-		// autocomplete controls
-		AccountComponents.autocompleteControls('tb-2-ap-2-autocomplete-controls', {}),
-
-		// Non interface elements
-		// transcription master controller
-		AccountComponents.transcriptionMasterController(),
-		Components.actionMasterController('transcription'),
-
-	]).then(function (components) {
-
-		// unpack components
-		var [
-			base,
-			mainPanel,
-			counter,
-			audio,
-			caption,
-			buttonPanel,
-			flags,
-			previousButton,
-			confirmButton,
-
-			// autocomplete
-			autocompletePanel,
-			autocomplete,
-			autocompleteControls,
-
-			// non interface elements
-			transcriptionMasterController,
-			amc,
-		] = components;
+		var counter = base.cc.mainPanel.cc.counter;
+		var audio = base.cc.mainPanel.cc.audio;
+		var caption = base.cc.mainPanel.cc.caption;
+		var flags = base.cc.mainPanel.cc.buttonPanel.cc.flagField;
+		var amc = base.cc.transcriptionActions;
+		var tmc = base.cc.transcriptionMasterController;
+		var autocomplete = base.cc.autocompletePanel.cc.autocomplete;
 
 		// Transcription Master Controller
-		transcriptionMasterController.data.updateThreshold = 4;
-		transcriptionMasterController.path = function () {
+		tmc.data.updateThreshold = 4;
+		tmc.path = function () {
 			return Promise.all([
 				Active.get('client'),
 				Active.get('role'),
@@ -204,8 +186,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				return 'user.clients.{client_id}.roles.{role_id}.active_transcription_token'.format({client_id: client_id, role_id: role_id});
 			});
 		}
-		transcriptionMasterController.process = function (result) {
-			var _this = transcriptionMasterController;
+		tmc.process = function (result) {
+			var _this = tmc;
 			var fragments = result.fragments;
 			_this.data.totalRemaining = result.remaining;
 			_this.data.tokenSize = Object.keys(fragments).length;
@@ -231,8 +213,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				return Util.ep(Object.keys(fragments).length !== 0);
 			});
 		}
-		transcriptionMasterController.pre.interface = function () {
-			var _this = transcriptionMasterController;
+		tmc.pre.interface = function () {
+			var _this = tmc;
 			return _this.data.current().then(function (current) {
 				current.is_available = false;
 
@@ -244,14 +226,14 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				]);
 			});
 		}
-		transcriptionMasterController.setActive = function (options) {
-			var _this = transcriptionMasterController;
+		tmc.setActive = function (options) {
+			var _this = tmc;
 			options = (options || {});
 
 			audio.controller.isLoaded = false;
 			return Promise.all([
 				audio.stop(),
-				audio.components.canvas.removeCut(),
+				audio.audioTrackCanvas.removeCut(),
 			]).then(function () {
 				return _this.save()
 			}).then(function () {
@@ -270,10 +252,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				});
 			});
 		}
-		transcriptionMasterController.save = function () {
+		tmc.save = function () {
 			var tokens = caption.export();
 			var flagList = flags.export();
-			var _this = transcriptionMasterController;
+			var _this = tmc;
 			return _this.data.current().then(function (current) {
 				current.revisions = (current.revisions || []);
 				var revisionAlreadyExists = current.revisions.filter(function (revision) {
@@ -293,10 +275,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				}
 			});
 		}
-		transcriptionMasterController.setComplete = function () {
+		tmc.setComplete = function () {
 			return Promise.all([
 				counter.active.setComplete(),
-				transcriptionMasterController.data.current().then(function (current) {
+				tmc.data.current().then(function (current) {
 					current.isPending = false;
 					current.isComplete = true;
 					return Util.ep();
@@ -535,7 +517,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						return {};
 					},
 					activate: function () {
-						return autocomplete.search.components.head.model().focus();
+						return autocomplete.search.cc.head.model().focus();
 					},
 					confirm: function () {
 						return flags.data.add(autocomplete.data.storage.virtual.list[autocomplete.currentIndex].main);
@@ -738,7 +720,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			_this.metadata.combined = _this.metadata.query + _this.metadata.complete.substring(_this.metadata.query.length);
 			_this.metadata.tokens = (metadata.tokens || []);
 			_this.metadata.type = metadata.type;
-			return _this.components.tail.setAppearance({html: ((_this.isComplete ? _this.metadata.complete : '') || _this.metadata.combined || _this.metadata.query || _this.filterString || _this.placeholder || '')}).then(function () {
+			return _this.cc.tail.setAppearance({html: ((_this.isComplete ? _this.metadata.complete : '') || _this.metadata.combined || _this.metadata.query || _this.filterString || _this.placeholder || '')}).then(function () {
 				// reset complete
 				if (_this.isComplete && _this.metadata.query !== _this.metadata.complete) {
 					_this.isComplete = false;
@@ -758,8 +740,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			var _this = autocomplete.search;
 			_this.completeQuery = ((_this.metadata || {}).complete || '');
 			_this.isComplete = true;
-			return _this.components.tail.setAppearance({html: _this.completeQuery}).then(function () {
-				return _this.components.head.setAppearance({html: _this.completeQuery});
+			return _this.cc.tail.setAppearance({html: _this.completeQuery}).then(function () {
+				return _this.cc.head.setAppearance({html: _this.completeQuery});
 			}).then(function () {
 				if (!caption.isFocused) {
 					return _this.setCaretPosition('end');
@@ -968,7 +950,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					unitBase.metadata.query = metadata.query !== undefined ? metadata.query.trim() : (unitBase.metadata.query || '');
 					unitBase.metadata.complete = metadata.complete !== undefined ? metadata.complete : unitBase.metadata.query;
 					unitBase.metadata.combined = unitBase.metadata.query + unitBase.metadata.complete.substring(unitBase.metadata.query.length);
-					return unitBase.components.tail.setAppearance({html: ((unitBase.isComplete ? unitBase.metadata.complete : '') || unitBase.metadata.combined || unitBase.metadata.query || unitBase.filterString || unitBase.placeholder || '')}).then(function () {
+					return unitBase.cc.tail.setAppearance({html: ((unitBase.isComplete ? unitBase.metadata.complete : '') || unitBase.metadata.combined || unitBase.metadata.query || unitBase.filterString || unitBase.placeholder || '')}).then(function () {
 						unitBase.isComplete = unitBase.metadata.query === unitBase.metadata.complete;
 						return Util.ep();
 					}).then(function () {
@@ -990,7 +972,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 								});
 							}),
 							counter.active.setPending(),
-							transcriptionMasterController.setPending(),
+							tmc.setPending(),
 						]);
 					} else {
 						return Util.ep();
@@ -1030,7 +1012,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				}
 
 				return Promise.all([
-					unitBase.components.head.setBindings({
+					unitBase.cc.head.setBindings({
 						'focus': function (_this) {
 							return unitBase.focus();
 						},
@@ -1130,11 +1112,11 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					// only if the last token is active, it is complete, and the query is not empty (must be empty complete as well)
 					if (caption.active.isLastToken() && (caption.active.metadata.query !== '' || flags.data.list.length > 0)) {
 						return Promise.all([
-							transcriptionMasterController.setComplete(),
+							tmc.setComplete(),
 						]).then(function () {
 							return caption.active.blur();
 						}).then(function () {
-							return transcriptionMasterController.behaviours.down();
+							return tmc.behaviours.down();
 						}).then(function () {
 							return caption.focus();
 						});
@@ -1262,18 +1244,18 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			var _this = counter;
 
 			// update remaining
-			if (_this.serverRemaining !== transcriptionMasterController.data.totalRemaining) {
+			if (_this.serverRemaining !== tmc.data.totalRemaining) {
 				if (_this.offset !== 0) {
-					_this.offset = transcriptionMasterController.data.updateThreshold - 2;
+					_this.offset = tmc.data.updateThreshold - 2;
 				}
-				_this.serverRemaining = transcriptionMasterController.data.totalRemaining;
+				_this.serverRemaining = tmc.data.totalRemaining;
 			}
-			_this.remaining = _this.serverRemaining + _this.offset + transcriptionMasterController.data.tokenSize;
+			_this.remaining = _this.serverRemaining + _this.offset + tmc.data.tokenSize;
 
 			var _this = counter;
 			return Promise.all([
-				_this.components.sessionValue.setAppearance({html: _this.count}),
-				_this.components.remainingValue.setAppearance({html: _this.remaining}),
+				_this.sessionValue.setAppearance({html: _this.count}),
+				_this.remainingValue.setAppearance({html: _this.remaining}),
 			]);
 		}
 		counter.unit = function () {
@@ -1496,7 +1478,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 									]);
 								} else {
 									Promise.all([
-										transcriptionMasterController.behaviours.up(),
+										tmc.behaviours.up(),
 									]);
 								}
 							});
@@ -1509,7 +1491,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 									]);
 								} else {
 									Promise.all([
-										transcriptionMasterController.behaviours.down(),
+										tmc.behaviours.down(),
 									]);
 								}
 							});
@@ -1517,7 +1499,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 								event.preventDefault();
 								amc.addAction({type: 'key.alt+up'});
 								caption.active.blur().then(function () {
-									return transcriptionMasterController.behaviours.up();
+									return tmc.behaviours.up();
 								}).then(function () {
 									return caption.focus();
 								});
@@ -1526,7 +1508,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 								event.preventDefault();
 								amc.addAction({type: 'key.alt+down'});
 								caption.active.blur().then(function () {
-									return transcriptionMasterController.behaviours.down();
+									return tmc.behaviours.down();
 								}).then(function () {
 									return caption.focus();
 								});
@@ -1657,7 +1639,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			}),
 
 			// transcription master controller
-			transcriptionMasterController.setState({
+			tmc.setState({
 				states: {
 					'control-state': {
 						fn: function (_this) {
@@ -1693,19 +1675,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			}),
 
 			// button panel
-			buttonPanel.setChildren([
-				flags,
-				previousButton,
-				confirmButton,
-			]),
 
 			// main panel
-			mainPanel.setChildren([
-				counter,
-				audio,
-				caption,
-				buttonPanel,
-			]),
 
 			// caption
 			caption.setState({
@@ -1719,10 +1690,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			}),
 
 			// autocomplete panel
-			autocompletePanel.setChildren([
-				autocomplete,
-				// autocompleteControls,
-			]),
 
 			// autocomplete
 			autocomplete.cc.searchFilterBar.cc.filterButton.setState({
@@ -1798,7 +1765,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			}),
 
 			// flags add button binding
-			flags.components.addButton.setBindings({
+			flags.cc.addButton.setBindings({
 				'click': function (_this) {
 					amc.addAction({type: 'click.flagAddButton'});
 					return autocomplete.control.setFilter('flag').then(function () {
@@ -1808,23 +1775,23 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			}),
 
 			// buttons
-			previousButton.setBindings({
+			base.cc.mainPanel.cc.buttonPanel.cc.previousButton.setBindings({
 				'click': function (_this) {
 					amc.addAction({type: 'click.previousButton'});
-					return transcriptionMasterController.behaviours.up();
+					return tmc.behaviours.up();
 				},
 			}),
-			confirmButton.setBindings({
+			base.cc.mainPanel.cc.buttonPanel.cc.nextConfirmButton.setBindings({
 				'click': function (_this) {
 					amc.addAction({type: 'click.confirmButton'});
-					return transcriptionMasterController.setComplete().then(function () {
+					return tmc.setComplete().then(function () {
 						if (caption.isFocused) {
 							return caption.active.blur();
 						} else {
 							return Util.ep();
 						}
 					}).then(function () {
-						return transcriptionMasterController.behaviours.down();
+						return tmc.behaviours.down();
 					}).then(function () {
 						return caption.focus();
 					});
@@ -1832,11 +1799,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			}),
 
 		]).then(function () {
-			return base.setChildren([
-				mainPanel,
-				autocompletePanel,
-			]);
-		}).then(function () {
 			return base;
 		});
 	});
