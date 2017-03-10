@@ -57,3 +57,17 @@ EMAIL_USE_TLS = True
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#server-email
 SERVER_EMAIL = EMAIL_HOST_USER
 ########## END EMAIL CONFIGURATION
+
+
+########## DATABASE CONFIGURATION
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
+DATABASES = {
+	'default': {
+		'ENGINE': 'django.db.backends.mysql',
+		'NAME': 'NicholasPiano$arktic_db',
+		'HOST': 'NicholasPiano.mysql.pythonanywhere-services.com',
+		'USER': 'NicholasPiano',
+		'PASSWORD': 'uqnhs77f',
+	}
+}
+########## END DATABASE CONFIGURATION
