@@ -29,7 +29,7 @@ Still trying to do this caption field
 Behaviour cases:
 
 1. Focus autocomplete
-	a. caption was focussed?
+	a. caption was Focused?
 
 2. Focus caption (active token glued to caret)
 	a. Make token active

@@ -5,5 +5,5 @@ from apps.tr.models.transcription.grammar import Grammar
 from apps.tr.models.transcription.moderation import Moderation
 from apps.tr.models.transcription.rule import Rule, RuleInstance
 from apps.tr.models.transcription.token import Token, TokenInstance, TokenShortcut
-from apps.tr.models.transcription.transcription import Transcription
+from apps.tr.models.transcription.transcription import Transcription, TranscriptionFragment, TranscriptionInstance
 from apps.tr.models.transcription.utterance import Utterance

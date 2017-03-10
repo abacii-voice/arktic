@@ -1,158 +1,244 @@
 var AccountInterfaces = (AccountInterfaces || {});
-AccountInterfaces.controlInterface = function (id, args) {
-	return Promise.all([
-		// base
-		UI.createComponent('{id}-base'.format({id: id}), {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '100%',
-				},
+AccountInterfaces.controlInterface = function (name) {
+	return UI.createComponent('control-interface', {
+		name: name,
+		template: UI.template('div', 'ie abstract'),
+		appearance: {
+			style: {
+				'height': '100%',
 			},
-		}),
+		},
+		children: [
+			// clients
+			Components.sidebar('client-sidebar', {
+				name: 'clientSidebar',
+				position: {
+					main: {
+						on: '0px',
+						off: '-300px',
+					},
+					back: {
+						on: '0px',
+						off: '-200px',
+					},
+				},
+				state: {
+					primary: 'client-state',
+					secondary: 'role-state',
+					deactivate: 'control-state',
+				},
+				children: [
+					Components.searchableList('cs-client-list', {
+						name: 'clientList',
+						appearance: {
+							style: {
+								'top': '2px',
+							},
+						}
+					}),
+				],
+			}),
 
-		// sidebars
-		Components.sidebar('client-sidebar', {
-			position: {
-				main: {
-					on: '0px',
-					off: '-300px',
+			// roles
+			Components.sidebar('role-sidebar', {
+				name: 'roleSidebar',
+				position: {
+					main: {
+						on: '50px',
+						off: '-300px',
+					},
+					back: {
+						on: '0px',
+						off: '-200px',
+					},
 				},
-				back: {
-					on: '0px',
-					off: '-200px',
+				state: {
+					primary: 'role-state',
+					secondary: 'control-state',
+					deactivate: ['client-state', 'transcription-state', 'settings-state', 'project-state'],
 				},
-			},
-			state: {
-				primary: 'client-state',
-				secondary: 'role-state',
-				deactivate: 'control-state',
-			},
-		}),
-		Components.searchableList('cs-client-list', {
-			appearance: {
+				children: [
+					Components.searchableList('cs-role-list', {
+						name: 'roleList',
+						appearance: {
+							style: {
+								'top': '2px',
+							},
+						},
+					}),
+				],
+			}),
 
-			},
-		}),
-		Components.sidebar('role-sidebar',{
-			position: {
-				main: {
-					on: '50px',
-					off: '-300px',
+			// control
+			Components.sidebar('control-sidebar', {
+				name: 'controlSidebar',
+				position: {
+					main: {
+						on: '50px',
+						off: '-300px',
+					},
+					back: {
+						on: '0px',
+						off: '-200px',
+					},
 				},
-				back: {
-					on: '0px',
-					off: '-200px',
+				state: {
+					primary: 'control-state',
+					secondary: ['transcription-state', 'settings-state', 'project-state', '-project-state-project'],
+					deactivate: ['client-state', 'role-state', '-settings-state-shortcuts', '-project-state-focus'],
 				},
-			},
-			state: {
-				primary: 'role-state',
-				secondary: 'control-state',
-				deactivate: ['client-state', 'transcription-state'],
-			},
-		}),
-		Components.searchableList('cs-role-list', {
-			appearance: {
+				children: [
+					Components.searchableList('cs-control-list', {
+						name: 'controlList',
+						appearance: {
+							style: {
+								'top': '2px',
+							},
+						},
+						children: [
+							UI.createComponent('cs-cl-transcription-button', {
+								name: 'transcriptionButton',
+								template: UI.template('div', 'ie button'),
+								appearance: {
+									style: {
+										'left': '0px',
+										'width': '100%',
+										'height': '30px',
+										'padding-top': '8px',
+										'padding-left': '10px',
+										'border-radius': '0px',
+										'text-align': 'left',
+									},
+									html: 'Transcription',
+								},
+								state: {
+									stateMap: 'transcription-state',
+								},
+							}),
+							UI.createComponent('cs-cl-settings-button', {
+								name: 'settingsButton',
+								template: UI.template('div', 'ie button'),
+								appearance: {
+									style: {
+										'left': '0px',
+										'width': '100%',
+										'height': '30px',
+										'padding-top': '8px',
+										'padding-left': '10px',
+										'border-radius': '0px',
+										'text-align': 'left',
+									},
+									html: 'Settings',
+								},
+								state: {
+									stateMap: 'settings-state',
+								},
+							}),
+							UI.createComponent('cs-cl-moderation-button', {
+								name: 'moderationButton',
+								template: UI.template('div', 'ie button'),
+								appearance: {
+									style: {
+										'left': '0px',
+										'width': '100%',
+										'height': '30px',
+										'padding-top': '8px',
+										'padding-left': '10px',
+										'border-radius': '0px',
+										'text-align': 'left',
+									},
+									html: 'Moderation',
+								},
+							}),
+							UI.createComponent('cs-cl-project-button', {
+								name: 'projectButton',
+								template: UI.template('div', 'ie button'),
+								appearance: {
+									style: {
+										'left': '0px',
+										'width': '100%',
+										'height': '30px',
+										'padding-top': '8px',
+										'padding-left': '10px',
+										'border-radius': '0px',
+										'text-align': 'left',
+									},
+									html: 'Projects',
+								},
+								state: {
+									stateMap: 'project-state',
+								},
+							}),
+						],
+					}),
+				],
+			}),
 
-			},
-		}),
-		Components.sidebar('control-sidebar', {
-			position: {
-				main: {
-					on: '50px',
-					off: '-300px',
+			// settings
+			Components.sidebar('settings-sidebar', {
+				name: 'settingsSidebar',
+				position: {
+					main: {
+						on: '50px',
+						off: '-300px',
+					},
+					back: {
+						on: '0px',
+						off: '-200px',
+					},
 				},
-				back: {
-					on: '0px',
-					off: '-200px',
+				state: {
+					primary: 'settings-state',
+					secondary: ['shortcut-state'],
+					deactivate: ['control-state'],
 				},
-			},
-			state: {
-				primary: 'control-state',
-				secondary: ['transcription-state'],
-				deactivate: ['client-state', 'role-state'],
-			},
-		}),
-		Components.searchableList('cs-control-list', {
-			appearance: {
+				children: [
+					Components.searchableList('ss-settings-list', {
+						name: 'settingsList',
+						appearance: {
+							style: {
+								'top': '2px',
+							},
+						},
+						children: [
+							UI.createComponent('ss-sl-shortcuts-button', {
+								name: 'shortcutsButton',
+								template: UI.template('div', 'ie button'),
+								appearance: {
+									style: {
+										'left': '0px',
+										'width': '100%',
+										'height': '60px',
+										'padding-top': '8px',
+										'padding-left': '10px',
+										'border-radius': '0px',
+										'text-align': 'left',
+									},
+									html: 'Shortcuts',
+								},
+								state: {
+									stateMap: 'shortcut-state',
+								},
+							}),
+						],
+					}),
+				],
+			}),
 
-			},
-		}),
-		UI.createComponent('cs-cl-transcription-button', {
-			template: UI.template('div', 'ie button'),
-			appearance: {
-				style: {
-					'left': '0px',
-					'width': '100%',
-					'border': '0px',
-					'height': '60px',
-					'padding-top': '8px',
-					'background-color': 'rgba(255,255,255,0.1)',
-					'border-radius': '0px',
-					'border-bottom': '1px solid #00869B',
-				},
-				html: 'Transcription',
-			},
-			state: {
-				stateMap: 'transcription-state',
-			},
-			bindings: {
-				'click': function (_this) {
-					return _this.triggerState();
-				},
-			},
-		}),
-		UI.createComponent('cs-cl-moderation-button', {
-			template: UI.template('div', 'ie button'),
-			appearance: {
-				style: {
-					'left': '0px',
-					'width': '100%',
-					'border': '0px',
-					'height': '60px',
-					'padding-top': '8px',
-					'background-color': 'rgba(255,255,255,0.1)',
-					'border-radius': '0px',
-					'border-bottom': '1px solid #00869B',
-				},
-				html: 'Moderation',
-			},
-		}),
-		UI.createComponent('cs-cl-upload-button', {
-			template: UI.template('div', 'ie button'),
-			appearance: {
-				style: {
-					'left': '0px',
-					'width': '100%',
-					'border': '0px',
-					'height': '60px',
-					'padding-top': '8px',
-					'background-color': 'rgba(255,255,255,0.1)',
-					'border-radius': '0px',
-					'border-bottom': '1px solid #00869B',
-				},
-				html: 'Upload',
-			},
-		}),
+			// action controller
+			Components.actionMasterController('amc'),
+		],
+	}).then(function (base) {
 
-	]).then(function (components) {
 		// unpack components
-		var [
-			base,
-			clientSidebar,
-			clientList,
-			roleSidebar,
-			roleList,
-			controlSidebar,
-			controlList,
-			transcriptionButton,
-			moderationButton,
-			uploadButton,
-		] = components;
+		var amc = base.cc.amc;
+		var clientList = base.cc.clientSidebar.cc.main.cc.clientList;
+		var roleList = base.cc.roleSidebar.cc.main.cc.roleList;
+		var controlList = base.cc.controlSidebar.cc.main.cc.controlList;
+		var settingsList = base.cc.settingsSidebar.cc.main.cc.settingsList;
 
-		// ASSOCIATE
-		// key bindings and other
-		// TRANSCRIPTION INTERFACE
+		// action master controller
+		amc.action.period = 20000;
 
 		// CLIENT SIDEBAR
 		clientList.autocomplete = false;
@@ -186,58 +272,54 @@ AccountInterfaces.controlInterface = function (id, args) {
 		clientList.sort = Util.sort.alpha('main');
 		clientList.unit = function (datum, query, index) {
 			query = (query || '');
-			var base = clientList.data.idgen(index);
-			return Promise.all([
-				// base component
-				UI.createComponent(base, {
-					template: UI.template('div', 'ie button base'),
-					appearance: {
-						classes: [datum.rule],
-					},
-					state: {
-						stateMap: 'role-state',
-					},
-				}),
-
-				// main wrapper
-				UI.createComponent('{base}-main-wrapper'.format({base: base}), {
-					template: UI.template('div', 'ie centred-vertically'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
+			var baseId = clientList.data.idgen(index);
+			return UI.createComponent(baseId, {
+				name: 'unit{index}'.format({index: index}),
+				template: UI.template('div', 'ie button base'),
+				appearance: {
+					classes: [datum.rule],
+				},
+				state: {
+					stateMap: 'role-state',
+				},
+				children: [
+					// main wrapper
+					UI.createComponent('{base}-main-wrapper'.format({base: base}), {
+						name: 'mainWrapper',
+						template: UI.template('div', 'ie centred-vertically'),
+						appearance: {
+							style: {
+								'display': 'inline-block',
+							},
 						},
-					},
-				}),
-
-				// main
-				UI.createComponent('{base}-main-head'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'color': '#eee',
-							'display': 'inline-block',
-							'position': 'absolute',
-						},
-						html: datum.main.substring(0, query.length),
-					},
-				}),
-				UI.createComponent('{base}-main-tail'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-						},
-						html: datum.main,
-					},
-				}),
-
-			]).then(function (unitComponents) {
-				var [
-					unitBase,
-					unitMainWrapper,
-					unitMainHead,
-					unitMainTail,
-				] = unitComponents;
+						children: [
+							// main
+							UI.createComponent('{base}-mw-head'.format({base: base}), {
+								name: 'head',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'color': Color.grey.normal,
+										'display': 'inline-block',
+										'position': 'absolute',
+									},
+									html: datum.main.substring(0, query.length),
+								},
+							}),
+							UI.createComponent('{base}-mw-tail'.format({base: base}), {
+								name: 'tail',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'display': 'inline-block',
+									},
+									html: datum.main,
+								},
+							}),
+						],
+					}),
+				],
+			}).then(function (unitBase) {
 
 				unitBase.activate = function () {
 					return unitBase.setAppearance({classes: {add: ['active']}});
@@ -270,8 +352,8 @@ AccountInterfaces.controlInterface = function (id, args) {
 				unitBase.updateQuery = function (query) {
 					unitBase.query = query;
 					return Promise.all([
-						unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
-						unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
+						unitBase.cc.mainWrapper.cc.head.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+						unitBase.cc.mainWrapper.cc.tail.setAppearance({html: (unitBase.datum || datum).main}),
 					]);
 				}
 
@@ -279,20 +361,13 @@ AccountInterfaces.controlInterface = function (id, args) {
 				return Promise.all([
 					unitBase.setBindings({
 						'click': function (_this) {
+							amc.addAction({type: 'click.clientlist', metadata: {client: datum.id}});
 							Active.set('client', datum.id).then(function () {
 								return _this.triggerState();
 							});
 						},
 					}),
-					unitMainWrapper.setChildren([
-						unitMainHead,
-						unitMainTail,
-					]),
 				]).then(function () {
-					return unitBase.setChildren([
-						unitMainWrapper,
-					]);
-				}).then(function () {
 					return unitBase;
 				});
 			});
@@ -316,7 +391,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 							var role = data[key];
 							return {
 								id: key,
-								main: role.type,
+								main: role.display,
 								rule: 'roles',
 							}
 						});
@@ -333,57 +408,53 @@ AccountInterfaces.controlInterface = function (id, args) {
 		roleList.unit = function (datum, query, index) {
 			query = (query || '');
 			var base = roleList.data.idgen(index);
-			return Promise.all([
-				// base component
-				UI.createComponent(base, {
-					template: UI.template('div', 'ie button base'),
-					appearance: {
-						classes: [datum.rule],
-					},
-					state: {
-						stateMap: 'control-state',
-					},
-				}),
-
-				// main wrapper
-				UI.createComponent('{base}-main-wrapper'.format({base: base}), {
-					template: UI.template('div', 'ie centred-vertically'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
+			return UI.createComponent(base, {
+				name: 'unit{index}'.format({index: index}),
+				template: UI.template('div', 'ie button base'),
+				appearance: {
+					classes: [datum.rule],
+				},
+				state: {
+					stateMap: 'control-state',
+				},
+				children: [
+					// main wrapper
+					UI.createComponent('{base}-main-wrapper'.format({base: base}), {
+						name: 'mainWrapper',
+						template: UI.template('div', 'ie centred-vertically'),
+						appearance: {
+							style: {
+								'display': 'inline-block',
+							},
 						},
-					},
-				}),
-
-				// main
-				UI.createComponent('{base}-main-head'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'color': '#eee',
-							'display': 'inline-block',
-							'position': 'absolute',
-						},
-						html: datum.main.substring(0, query.length),
-					},
-				}),
-				UI.createComponent('{base}-main-tail'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-						},
-						html: datum.main,
-					},
-				}),
-
-			]).then(function (unitComponents) {
-				var [
-					unitBase,
-					unitMainWrapper,
-					unitMainHead,
-					unitMainTail,
-				] = unitComponents;
+						children: [
+							// main
+							UI.createComponent('{base}-mw-head'.format({base: base}), {
+								name: 'head',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'color': Color.grey.normal,
+										'display': 'inline-block',
+										'position': 'absolute',
+									},
+									html: datum.main.substring(0, query.length),
+								},
+							}),
+							UI.createComponent('{base}-mw-tail'.format({base: base}), {
+								name: 'tail',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'display': 'inline-block',
+									},
+									html: datum.main,
+								},
+							}),
+						],
+					}),
+				],
+			}).then(function (unitBase) {
 
 				unitBase.activate = function () {
 					return unitBase.setAppearance({classes: {add: ['active']}});
@@ -416,8 +487,8 @@ AccountInterfaces.controlInterface = function (id, args) {
 				unitBase.updateQuery = function (query) {
 					unitBase.query = query;
 					return Promise.all([
-						unitMainHead.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
-						unitMainTail.setAppearance({html: (unitBase.datum || datum).main}),
+						unitBase.cc.mainWrapper.cc.head.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+						unitBase.cc.mainWrapper.cc.tail.setAppearance({html: (unitBase.datum || datum).main}),
 					]);
 				}
 
@@ -428,6 +499,7 @@ AccountInterfaces.controlInterface = function (id, args) {
 							return Active.get('client').then(function (client_id) {
 								return Context.get('user.clients.{client_id}.roles.{role_id}.project'.format({client_id: client_id, role_id: datum.id}));
 							}).then(function (project_id) {
+								amc.addAction({type: 'click.rolelist', metadata: {project: project_id, role: datum.id}});
 								return Promise.all([
 									Active.set('project', project_id),
 									Active.set('role', datum.id),
@@ -437,25 +509,30 @@ AccountInterfaces.controlInterface = function (id, args) {
 							});
 						},
 					}),
-					unitMainWrapper.setChildren([
-						unitMainHead,
-						unitMainTail,
-					]),
 				]).then(function () {
-					return unitBase.setChildren([
-						unitMainWrapper,
-					]);
-				}).then(function () {
 					return unitBase;
 				});
 			});
 		}
 
-		// CONTROL SIDEBAR
-
-
 		// complete promises
 		return Promise.all([
+
+			// action master controller
+			amc.setState({
+				defaultState: {
+					fn: function (_this) {
+						_this.action.start();
+						return Util.ep();
+					}
+				},
+				states: {
+					'client-state': 'default',
+					'role-state': 'default',
+					'control-state': 'default',
+					'transcription-state': 'default',
+				},
+			}),
 
 			// CLIENT SIDEBAR
 			clientList.unitStyle.apply(),
@@ -463,35 +540,29 @@ AccountInterfaces.controlInterface = function (id, args) {
 				style: {
 					'left': '0px',
 					'width': '100%',
-					'border': '0px',
 					'height': '30px',
 					'padding-top': '8px',
-					'background-color': 'rgba(255,255,255,0.1)',
-					'border-radius': '0px',
-					'border-bottom': '1px solid #00869B',
 				},
 			}),
-			clientSidebar.components.main.setChildren([
-				clientList,
-			]),
+			clientList.cc.title.setAppearance({
+				style: {
+					'width': '100%',
+					'height': '32px',
+					'font-size': '18px',
+					'padding-top': '10px',
+					'padding-left': '10px',
+				},
+			}),
 			clientList.setState({
 				states: {
 					'client-state': {
 						preFn: function (_this) {
 							return _this.control.setup.main();
 						},
-						fn: function () {
-							return clientList.search.clear();
-						},
 					},
-					'role-state': {
-						preFn: function (_this) {
-							return _this.control.reset();
-						}
-					}
 				},
 			}),
-			clientList.setTitle({text: 'Clients', centre: true}),
+			clientList.setTitle({text: 'Clients', center: false}),
 			clientList.setSearch({mode: 'off', placeholder: 'Search clients...'}),
 
 			// ROLE SIDEBAR
@@ -500,45 +571,64 @@ AccountInterfaces.controlInterface = function (id, args) {
 				style: {
 					'left': '0px',
 					'width': '100%',
-					'border': '0px',
 					'height': '30px',
 					'padding-top': '8px',
-					'background-color': 'rgba(255,255,255,0.1)',
-					'border-radius': '0px',
-					'border-bottom': '1px solid #00869B',
 				},
 			}),
-			roleSidebar.components.main.setChildren([
-				roleList,
-			]),
+			roleList.cc.title.setAppearance({
+				style: {
+					'width': '100%',
+					'height': '32px',
+					'font-size': '18px',
+					'padding-top': '10px',
+					'padding-left': '10px',
+				},
+			}),
 			roleList.setState({
 				states: {
-					'client-state': {
-						preFn: function (_this) {
-							return _this.control.reset();
-						}
-					},
 					'role-state': {
 						preFn: function (_this) {
 							return _this.control.setup.main();
 						},
 					},
-					'control-state': {
-						preFn: function (_this) {
-							return _this.control.reset();
-						}
-					},
 				}
 			}),
-			roleList.setTitle({text: 'Roles', centre: true}),
+			roleList.setTitle({text: 'Roles', center: false}),
 			roleList.setSearch({mode: 'off', placeholder: 'Search roles...'}),
 
 			// CONTROL SIDEBAR
-			controlSidebar.components.main.setChildren([
-				controlList,
-			]),
-			controlList.setTitle({text: 'Menu', centre: true}),
+			controlList.cc.list.cc.wrapper.cc.transcriptionButton.setBindings({
+				'click': function (_this) {
+					amc.addAction({type: 'click.transcription-button'});
+					return _this.triggerState();
+				},
+			}),
+			controlList.cc.list.cc.wrapper.cc.settingsButton.setBindings({
+				'click': function (_this) {
+					amc.addAction({type: 'click.settings-button'});
+					return _this.triggerState();
+				},
+			}),
+			controlList.cc.list.cc.wrapper.cc.moderationButton.setBindings({}),
+			controlList.cc.list.cc.wrapper.cc.projectButton.setBindings({
+				'click': function (_this) {
+					amc.addAction({type: 'click.project-button'});
+					return _this.triggerState();
+				},
+			}),
+
+			controlList.setTitle({text: 'Menu', center: false}),
 			controlList.setSearch({mode: 'off', placeholder: ''}),
+			controlList.cc.title.setAppearance({
+				style: {
+					'width': '100%',
+					'height': '32px',
+					'font-size': '18px',
+					'padding-top': '10px',
+					'padding-left': '10px',
+				},
+				html: 'Menu',
+			}),
 			controlList.setState({
 				states: {
 					'control-state': {
@@ -553,23 +643,23 @@ AccountInterfaces.controlInterface = function (id, args) {
 								if (role.type === 'worker') {
 									// worker
 									return Promise.all([
-										transcriptionButton.setAppearance({classes: {remove: 'hidden'}}),
-										moderationButton.setAppearance({classes: {add: 'hidden'}}),
-										uploadButton.setAppearance({classes: {add: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.transcriptionButton.setAppearance({classes: {remove: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.moderationButton.setAppearance({classes: {add: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.projectButton.setAppearance({classes: {add: 'hidden'}}),
 									]);
 								} else if (role.type === 'moderator') {
 									// moderator
 									return Promise.all([
-										transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
-										moderationButton.setAppearance({classes: {remove: 'hidden'}}),
-										uploadButton.setAppearance({classes: {add: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.moderationButton.setAppearance({classes: {remove: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.projectButton.setAppearance({classes: {add: 'hidden'}}),
 									]);
 								} else if (role.type === 'admin') {
 									// admin
 									return Promise.all([
-										transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
-										moderationButton.setAppearance({classes: {add: 'hidden'}}),
-										uploadButton.setAppearance({classes: {remove: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.moderationButton.setAppearance({classes: {add: 'hidden'}}),
+										controlList.cc.list.cc.wrapper.cc.projectButton.setAppearance({classes: {remove: 'hidden'}}),
 									]);
 								}
 							});
@@ -577,27 +667,28 @@ AccountInterfaces.controlInterface = function (id, args) {
 					},
 				},
 			}),
-			controlList.list.setChildren([
-				transcriptionButton,
-				moderationButton,
-				uploadButton,
-			]),
+
+			// SETTINGS SIDEBAR
+			settingsList.cc.list.cc.wrapper.cc.shortcutsButton.setBindings({
+				'click': function (_this) {
+					amc.addAction({type: 'click.shortcuts-button'});
+					return _this.triggerState();
+				},
+			}),
+
+			settingsList.cc.title.setAppearance({
+				style: {
+					'width': '100%',
+					'height': '32px',
+					'font-size': '18px',
+					'padding-top': '10px',
+					'padding-left': '10px',
+				},
+			}),
+			settingsList.setTitle({text: 'Settings', center: false}),
+			settingsList.setSearch({mode: 'off', placeholder: ''}),
 
 		]).then(function () {
-			// base children
-			base.components = {
-				sidebars: {
-					client: clientSidebar,
-					role: roleSidebar,
-					control: controlSidebar,
-				},
-			}
-			return base.setChildren([
-				clientSidebar,
-				roleSidebar,
-				controlSidebar,
-			]);
-		}).then(function () {
 			return base;
 		});
 	});
