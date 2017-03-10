@@ -31,7 +31,7 @@ class Command(BaseCommand):
 		production_admin_role = production_client.add_admin(user)
 		contract_admin_role = contract_client.add_admin(user)
 		moderator_role = production_client.add_moderator(user)
-		worker_role = production_client.add_worker(user, moderator_role)
+		worker_role = production_client.add_worker(user)
 
 		# save
 		user.save()
@@ -41,7 +41,7 @@ class Command(BaseCommand):
 		user2.set_password('mach')
 
 		# create roles
-		worker_role2 = production_client.add_worker(user2, moderator_role)
+		worker_role2 = production_client.add_worker(user2)
 
 		# save
 		user2.save()
@@ -49,6 +49,7 @@ class Command(BaseCommand):
 		### UPLOADS AND TRANSCRIPTIONS
 
 		# basic upload
+		production_client.contract_clients.add(contract_client)
 		project = production_client.production_projects.create(name='TestProject', contract_client=contract_client)
 		grammar = contract_client.grammars.create(name='TestGrammar')
 		batch = project.batches.create(name='TestBatch')
@@ -66,11 +67,15 @@ class Command(BaseCommand):
 		dictionary.tokens.create(type='tag', content='unintelligible')
 		dictionary.tokens.create(type='tag', content='dtmf')
 		dictionary.tokens.create(type='tag', content='noise')
-		dictionary.tokens.create(type='tag', content='breath-noise')
+		test_tag = dictionary.tokens.create(type='tag', content='breath-noise')
 
-		# create phrases
-		dictionary.create_phrase('luke i am you father :breath-noise')
-		dictionary.create_phrase('i want to speak to _')
+		# create shortcuts
+		test_tag.shortcuts.create(role=worker_role, combo='ctrl+b')
+
+		# flags
+		production_client.flags.create(name='unsure')
+		test_flag = production_client.flags.create(name='no-speech')
+		test_flag.shortcuts.create(role=worker_role, combo='ctrl+n')
 
 		# fragment list
 		base = '/Users/nicholaspiano/code/abacii-voice/arktic/test/'
@@ -85,7 +90,7 @@ class Command(BaseCommand):
 
 			# 2. create caption
 			content = relfile_data[file_name] if relfile_data[file_name] else ''
-			phrase, phrase_created = dictionary.create_phrase(content)
+			phrase, phrase_created = dictionary.create_phrase(content=content)
 
 			# 2. create transcription
 			transcription = batch.transcriptions.create(project=project, grammar=grammar, filename=fragment.filename, content=phrase)

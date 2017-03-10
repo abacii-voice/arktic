@@ -14,48 +14,40 @@ Components.search = function (id, args) {
 		},
 	});
 
-	// set up components
-	return Promise.all([
-		// base component
-		UI.createComponent('{id}'.format({id: id}), {
-			template: UI.template('div', 'ie input border border-radius'),
-			appearance: args.appearance,
-		}),
-
-		// head
-		UI.createComponent('{id}-head'.format({id: id}), {
-			template: UI.template('div', 'ie head mousetrap'),
-			appearance: {
-				properties: {
-					'contenteditable': 'true',
+	return UI.createComponent('{id}'.format({id: id}), {
+		name: args.name,
+		template: UI.template('div', 'ie input border border-radius'),
+		appearance: args.appearance,
+		children: [
+			// head
+			UI.createComponent('{id}-head'.format({id: id}), {
+				name: 'head',
+				template: UI.template('div', 'ie head mousetrap'),
+				appearance: {
+					properties: {
+						'contenteditable': 'true',
+					},
 				},
-			},
-		}),
+			}),
 
-		// tail
-		UI.createComponent('{id}-tail'.format({id: id}), {
-			template: UI.template('div', 'ie tail'),
-		}),
+			// tail
+			UI.createComponent('{id}-tail'.format({id: id}), {
+				name: 'tail',
+				template: UI.template('div', 'ie tail'),
+			}),
 
-		// space
-		UI.createComponent('{id}-space'.format({id: id}), {
-			template: UI.template('div', 'ie tail'),
-			appearance: {
-				html: '&nbsp;',
-			},
-		}),
-
-	]).then(function (components) {
-		// unpack components
-		var [
-			base,
-			head,
-			tail,
-			space,
-		] = components;
-
+			// space
+			UI.createComponent('{id}-space'.format({id: id}), {
+				name: 'space',
+				template: UI.template('div', 'ie tail'),
+				appearance: {
+					html: '&nbsp;',
+				},
+			}),
+		],
+	}).then(function (base) {
 		// variables
-		base.isFocussed = false;
+		base.isFocused = false;
 
 		// logic, bindings, etc.
 		base.setMetadata = function (metadata) {
@@ -64,34 +56,31 @@ Components.search = function (id, args) {
 			base.metadata.query = metadata.query !== undefined ? metadata.query : (base.metadata.query || '');
 			base.metadata.complete = metadata.complete !== undefined ? metadata.complete : base.metadata.query;
 			base.metadata.combined = base.metadata.query + base.metadata.complete.substring(base.metadata.query.length);
-			return tail.setAppearance({html: ((base.isComplete ? base.metadata.complete : '') || base.metadata.combined || base.metadata.query || base.filterString || base.placeholder || '')}).then(function () {
+			return base.cc.tail.setAppearance({html: ((base.isComplete ? base.metadata.complete : '') || base.metadata.combined || base.metadata.query || base.filterString || base.placeholder || '')}).then(function () {
 				base.isComplete = false;
 				return Util.ep();
 			});
 		}
 		base.isCaretInPosition = function (mode) {
-			// console.log('{} search isCaretInPosition'.format(base.id));
-			return new Promise(function(resolve, reject) {
-				mode = (mode || 'end');
-				// determine caret position after an action. Only important thing is whether or not it is at the end.
-				var selection = window.getSelection();
-				var caretInPosition = false;
-				if (base.isFocussed && head.element() === selection.focusNode.parentNode) { // is the selection inside
-					var range = selection.getRangeAt(0); // get the only range
-					if (mode === 'end') {
-						caretInPosition = range.endOffset === selection.focusNode.length; // check the offset == the node value length
-					} else if (mode === 'start') {
-						caretInPosition = range.endOffset === 0; // or 0
-					}
-				} else if (head.element() === selection.focusNode) {
-					caretInPosition = true;
+			mode = (mode || 'end');
+			// determine caret position after an action. Only important thing is whether or not it is at the end.
+			var selection = window.getSelection();
+			var caretInPosition = false;
+			if (base.isFocused && base.cc.head.element() === selection.focusNode.parentNode) { // is the selection inside
+				var range = selection.getRangeAt(0); // get the only range
+				if (mode === 'end') {
+					caretInPosition = range.endOffset === selection.focusNode.length; // check the offset == the node value length
+				} else if (mode === 'start') {
+					caretInPosition = range.endOffset === 0; // or 0
 				}
-				resolve(caretInPosition);
-			});
+			} else if (base.cc.head.element() === selection.focusNode) {
+				caretInPosition = true;
+			}
+			return caretInPosition;
 		}
 		base.setCaretPosition = function (position) {
 			// set position
-			var maxLength = head.model().text().length;
+			var maxLength = base.cc.head.model().text().length;
 			var limits = {'start': 0, 'end': maxLength};
 			position = position in limits ? limits[position] : position;
 
@@ -101,7 +90,7 @@ Components.search = function (id, args) {
 			// set the caret position to the end or the beginning
 			if (position !== undefined) {
 				var range = document.createRange(); // Create a range (a range is a like the selection but invisible)
-				var lm = head.element();
+				var lm = base.cc.head.element();
 				range.setStart(lm.childNodes.length ? lm.firstChild : lm, position);
 				var selection = window.getSelection(); // get the selection object (allows you to change selection)
 				selection.removeAllRanges(); // remove any selections already made
@@ -115,8 +104,8 @@ Components.search = function (id, args) {
 			if (base.completeQuery !== base.metadata.query) {
 				base.isComplete = true;
 				base.metadata.query = base.completeQuery;
-				return tail.setAppearance({html: base.completeQuery}).then(function () {
-					return head.setAppearance({html: base.completeQuery});
+				return base.cc.tail.setAppearance({html: base.completeQuery}).then(function () {
+					return base.cc.head.setAppearance({html: base.completeQuery});
 				}).then(function () {
 					return base.setCaretPosition('end');
 				});
@@ -125,30 +114,30 @@ Components.search = function (id, args) {
 			}
 		}
 		base.focus = function (position) {
-			if (!base.isFocussed) {
-				base.isFocussed = true;
+			if (!base.isFocused) {
+				base.isFocused = true;
 				return base.setCaretPosition(position);
 			} else {
 				return Util.ep();
 			}
 		}
 		base.blur = function () {
-			base.isFocussed = false;
+			base.isFocused = false;
 			return base.getContent().then(function (content) {
-				return tail.setAppearance({html: (content || base.placeholder)});
+				return base.cc.tail.setAppearance({html: (content || base.placeholder)});
 			});
 		}
 		base.clear = function () {
-			return head.setAppearance({html: ''}).then(function () {
-				return tail.setAppearance({html: base.placeholder});
+			return base.cc.head.setAppearance({html: ''}).then(function () {
+				return base.cc.tail.setAppearance({html: base.placeholder});
 			});
 		}
 		base.getContent = function () {
 			// also replaces generic whitespace, including char160/&nbsp;, with a space character.
-			return Util.ep(head.model().text().replace(/\s+/gi, ' '));
+			return Util.ep(base.cc.head.model().text().replace(/\s+/gi, ' '));
 		}
 		base.setContent = function (metadata) {
-			return head.setAppearance({html: (metadata.query || '').replace(/\s+/gi, ' ')}).then(function () {
+			return base.cc.head.setAppearance({html: (metadata.query || '').replace(/\s+/gi, ' ')}).then(function () {
 				if (metadata.trigger) {
 					return base.input();
 				} else {
@@ -165,15 +154,13 @@ Components.search = function (id, args) {
 		// behaviours
 		base.behaviours = {
 			right: function () {
-				return base.isCaretInPosition('end').then(function (inPosition) {
-					if (inPosition && !base.isComplete) {
-						return base.complete().then(function () {
-							return base.input();
-						});
-					} else {
-						return Util.ep();
-					}
-				});
+				if (!base.isComplete && base.isCaretInPosition('end')) {
+					return base.complete().then(function () {
+						return base.input();
+					});
+				} else {
+					return Util.ep();
+				}
 			},
 			left: function () {
 
@@ -197,17 +184,14 @@ Components.search = function (id, args) {
 					return base.focus('end');
 				}
 			}),
-			head.setBindings({
+			base.cc.head.setBindings({
 				'input': function (_this) {
-					// console.log('{} search bindings head input'.format(base.id));
 					return base.input();
 				},
 				'focus': function (_this) {
-					// console.log('{} search bindings head focus'.format(base.id));
 					return base.focus();
 				},
 				'blur': function (_this) {
-					// console.log('{} search bindings head blur'.format(base.id));
 					return base.blur();
 				},
 				'click': function (_this, event) {
@@ -215,17 +199,7 @@ Components.search = function (id, args) {
 					return base.focus();
 				},
 			}),
-		]).then(function (results) {
-			base.components = {
-				head: head,
-				tail: tail,
-			}
-			return base.setChildren([
-				head,
-				tail, // must be underneath
-				space,
-			]);
-		}).then(function () {
+		]).then(function () {
 			return base;
 		});
 	});

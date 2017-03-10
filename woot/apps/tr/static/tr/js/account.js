@@ -1,15 +1,33 @@
 UI.app('hook', [
-	AccountApplication('unified-account-interface', {
+	AccountApplication('account-application', {
 		interface: {
 			size: 50,
 			margin: 10,
 			corner: 5,
 		},
-		colour: {
-
-		},
 	}),
 ]).then (function (app) {
+	// styles
+	jss.set('.ie.button', {
+		'padding-top': '1.0em',
+		'width': '100%',
+		'height': '50px',
+		'-webkit-box-shadow': 'none',
+		'box-shadow': 'none',
+		'text-shadow': 'none',
+		'color': Color.grey.normal,
+	});
+	jss.set('.ie.button:hover', {
+		'color': Color.grey.light,
+	});
+	jss.set('.ie.border', {
+		'border': '1px solid {color}'.format({color: Color.grey.normal}),
+	});
+	jss.set('.ie.border-radius', {
+		'border-radius': '4px',
+	});
+
+	// render
 	return app.render();
 }).then(function () {
 	return Promise.all([
@@ -29,24 +47,26 @@ UI.app('hook', [
 				// role
 				Context.get('user.clients.{client}.roles'.format({client: clientId})).then(function (roles) {
 					var roleId = Object.keys(roles).filter(function (key) {
-						return roles[key].type === 'worker';
+						return roles[key].type === 'admin';
 					})[0];
 					return Promise.all([
 						// active
 						Active.set('role', roleId),
 
 						// project
-						Context.get('user.clients.{client}.roles.{role}.project'.format({client: clientId, role: roleId})).then(function (project) {
-							return Active.set('project', project);
-						}),
+						// Context.get('user.clients.{client}.roles.{role}.project'.format({client: clientId, role: roleId})).then(function (project) {
+						// 	return Active.set('project', project);
+						// }),
 					]);
 				}),
 			]);
 		}),
 	]).then(function () {
 		// return UI.changeState('client-state');
-		// return UI.changeState('role-state');
-		return UI.changeState('transcription-state');
+		// return UI.changeState('control-state');
+		// return UI.changeState('transcription-state');
+		// return UI.changeState('shortcut-state');
+		return UI.changeState('project-state');
 	});
 }).catch(function (error) {
 	console.log(error);

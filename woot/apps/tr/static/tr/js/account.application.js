@@ -11,14 +11,19 @@ var AccountApplication = function (id, args) {
 		}),
 
 		// control interface
-		AccountInterfaces.controlInterface('control-interface', {
-			interface: args.interface,
-		}),
+		AccountInterfaces.controlInterface('controlInterface'),
 
 		// transcription interface
-		AccountInterfaces.transcriptionInterface('transcription-interface', {
-			interface: args.interface,
-		}),
+		AccountInterfaces.transcriptionInterface('transcriptionInterface'),
+
+		// project complete interface
+		AccountInterfaces.projectCompleteInterface('projectCompleteInterface'),
+
+		// shortcuts interface
+		AccountInterfaces.shortcutInterface('shortcutInterface'),
+
+		// project interface
+		AccountInterfaces.projectInterface('projectInterface'),
 
 	]).then(function (components) {
 		// unpack components
@@ -26,13 +31,10 @@ var AccountApplication = function (id, args) {
 			base,
 			controlInterface,
 			transcriptionInterface,
+			projectCompleteInterface,
+			shortcutInterface,
+			projectInterface,
 		] = components;
-
-		// ASSOCIATE
-		// key bindings and other
-		// TRANSCRIPTION INTERFACE
-		controlInterface.name = 'controlInterface';
-		transcriptionInterface.name = 'transcriptionInterface';
 
 		// complete promises
 		return Promise.all([
@@ -42,6 +44,9 @@ var AccountApplication = function (id, args) {
 			return base.setChildren([
 				controlInterface,
 				transcriptionInterface,
+				projectCompleteInterface,
+				shortcutInterface,
+				projectInterface,
 			]);
 		}).then(function () {
 			return base;

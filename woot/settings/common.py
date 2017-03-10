@@ -27,6 +27,7 @@ TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 ########## ALLOWED HOSTS CONFIGURATION
 ALLOWED_HOSTS = (
 	'localhost',
+	'192.168.16.25',
 )
 ########## END ALLOWED HOSTS CONFIGURATION
 
@@ -60,7 +61,7 @@ def get_access():
 
 ########## DEBUG CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = True
+DEBUG = False
 ########## END DEBUG CONFIGURATION
 
 
@@ -126,9 +127,6 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
 	'django.contrib.staticfiles.finders.FileSystemFinder',
 	'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-
-	# Compressor
-	'compressor.finders.CompressorFinder',
 )
 ########## END STATIC FILE CONFIGURATION
 
@@ -179,10 +177,7 @@ TEMPLATES = [
 MIDDLEWARE_CLASSES = (
 	# Use GZip compression to reduce bandwidth.
 	'django.middleware.gzip.GZipMiddleware',
-
-	# Django debug toolbar
-	'debug_toolbar.middleware.DebugToolbarMiddleware',
-
+	
 	# Default Django middleware.
 	'django.middleware.common.CommonMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',
@@ -248,10 +243,7 @@ DATABASES = {}
 ########## APP CONFIGURATION
 THIRD_PARTY_APPS = (
 	# Asynchronous task scheduling
-	'djcelery',
-
-	# Static compression
-	'compressor',
+	# 'djcelery',
 )
 
 LOCAL_APPS = (
@@ -302,32 +294,25 @@ LOGGING = {
 
 
 ########## CELERY CONFIGURATION
-from djcelery import setup_loader
-
-CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
-
-# : Only add pickle to this list if your broker is secured
-# : from unwanted access (see userguide/security.html)
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-
-# See: http://celery.readthedocs.org/en/latest/configuration.html#celery-task-result-expires
-CELERY_TASK_RESULT_EXPIRES = timedelta(minutes=30)
-
-# See: http://docs.celeryproject.org/en/master/configuration.html#std:setting-CELERY_CHORD_PROPAGATES
-CELERY_CHORD_PROPAGATES = True
-
-# See: http://celery.github.com/celery/django/
-setup_loader()
-
-# rabbitmq: https://www.rabbitmq.com/man/rabbitmqctl.1.man.html
-# celery: https://zapier.com/blog/async-celery-example-why-and-how/
-########## END CELERY CONFIGURATION
-
-
-########## COMPRESSOR CONFIGURATION
-# usage: http://django-compressor.readthedocs.io/en/latest/usage/
-COMPRESS_ENABLED = True
-
-########## END COMPRESSOR CONFIGURATION
+# from djcelery import setup_loader
+#
+# CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
+#
+# # : Only add pickle to this list if your broker is secured
+# # : from unwanted access (see userguide/security.html)
+# CELERY_ACCEPT_CONTENT = ['json']
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'
+#
+# # See: http://celery.readthedocs.org/en/latest/configuration.html#celery-task-result-expires
+# CELERY_TASK_RESULT_EXPIRES = timedelta(minutes=30)
+#
+# # See: http://docs.celeryproject.org/en/master/configuration.html#std:setting-CELERY_CHORD_PROPAGATES
+# CELERY_CHORD_PROPAGATES = True
+#
+# # See: http://celery.github.com/celery/django/
+# setup_loader()
+#
+# # rabbitmq: https://www.rabbitmq.com/man/rabbitmqctl.1.man.html
+# # celery: https://zapier.com/blog/async-celery-example-why-and-how/
+# ########## END CELERY CONFIGURATION
