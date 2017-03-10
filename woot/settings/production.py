@@ -63,10 +63,10 @@ SERVER_EMAIL = EMAIL_HOST_USER
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {
 	'default': {
-		'ENGINE': 'django.db.backends.mysql',
-		'NAME': 'NicholasPiano$arktic_db',
-		'HOST': 'NicholasPiano.mysql.pythonanywhere-services.com',
-		'USER': 'NicholasPiano',
+		'ENGINE': 'django.db.backends.postgresql_psycopg2',
+		'NAME': 'arktic_db',
+		'HOST': 'NicholasPiano-358.postgres.pythonanywhere-services.com',
+		'USER': 'super',
 		'PASSWORD': 'uqnhs77f',
 	}
 }
