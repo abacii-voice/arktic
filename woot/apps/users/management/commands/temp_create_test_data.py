@@ -80,7 +80,7 @@ class Command(BaseCommand):
 
 		# fragment list
 		print(settings.SITE_ROOT)
-		base = join(settings.SITE_ROOT, '/test/')
+		base = join(settings.SITE_ROOT, 'test/')
 		fragment_list = [f for f in os.listdir(join(base, 'selectedAudioFiles')) if ('.DS' not in f and not isdir(join(base, 'selectedAudioFiles', f)))]
 		relfile_data = {}
 		with open(join(base, 'relfile.csv'), 'r') as open_relfile:
