@@ -1,5 +1,3 @@
-// TODO
-// 1. set active is not called to reset to zero when a new query is entered.
 
 // initialise
 var Components = (Components || {});
@@ -12,95 +10,81 @@ Components.searchableList = function (id, args) {
 	// Optional filter panel
 
 	// default appearance
-	var defaultAppearance = {
+	args.appearance = (args.appearance || {
 		style: {
 			'height': '100%',
 		},
-	}
+	})
 
-	// set up components
-	return Promise.all([
-		// base component
-		UI.createComponent('{id}'.format({id: id}), {
-			template: UI.template('div', 'ie'),
-			appearance: (args.appearance || defaultAppearance),
-		}),
-
-		// title
-		UI.createComponent('{id}-title'.format({id: id}), {
-			template: UI.template('h4', 'ie title'),
-			appearance: {
-				style: {
-					'width': '100%',
-					'height': '22px',
-					'font-size': '18px',
-					'display': 'none',
+	return UI.createComponent(id, {
+		name: args.name,
+		template: UI.template('div', 'ie'),
+		appearance: args.appearance,
+		children: [
+			// title
+			UI.createComponent('{id}-title'.format({id: id}), {
+				name: 'title',
+				template: UI.template('h4', 'ie title'),
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': '32px',
+						'font-size': '18px',
+						'padding-top': '10px',
+					},
 				},
-			},
-		}),
-
-		// search filter bar
-		UI.createComponent('{id}-search-filter-bar'.format({id: id}), {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'width': '100%',
-					'height': '40px',
+			}),
+			// search filter bar
+			UI.createComponent('{id}-search-filter-bar'.format({id: id}), {
+				name: 'searchFilterBar',
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': '40px',
+					},
 				},
-			},
-		}),
+				children: [
+					// search input
+					Components.search('{id}-search'.format({id: id}), {name: 'search'}),
 
-		// search input
-		Components.search('{id}-search'.format({id: id}), {}),
+					// filter button
+					Components.filterButton('{id}-filter-button'.format({id: id}), {name: 'filterButton'}),
+				],
+			}),
 
-		// filter button
-		Components.filterButton('{id}-filter-button'.format({id: id}), {
-
-		}),
-
-		// list
-		Components.contentPanel('{id}-list'.format({id: id}), {
-			appearance: {
-				style: {
-					'width': '100%',
-					'height': '100%',
+			// list
+			Components.contentPanel('{id}-list'.format({id: id}), {
+				name: 'list',
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': '100%',
+					},
 				},
-			},
-		}),
+				children: args.children,
+			}),
 
-		// filter
-		Components.contentPanel('{id}-filter'.format({id: id}), {
-			appearance: {
-				style: {
-					'width': '100%',
-					'height': '100%',
+			// filter
+			Components.contentPanel('{id}-filter'.format({id: id}), {
+				name: 'filter',
+				appearance: {
+					style: {
+						'width': '100%',
+						'height': '100%',
+					},
+					classes: ['hidden'],
 				},
-				classes: ['hidden'],
-			},
-		}),
-
-	]).then(function (components) {
-		// unpack components
-		var [
-			base,
-			title,
-			searchFilterBar,
-			search,
-			filterButton,
-			list,
-			filter,
-		] = components;
-
-		// set up promises to be completed before returning the base.
-		// logic, bindings, etc.
-		// allow for swapable components
-		base.list = list;
-		base.search = search;
+			}),
+		],
+	}).then(function (base) {
 
 		// storage
+		base.search = base.cc.searchFilterBar.cc.search;
 		base.data = {
 			// variables
 			limit: undefined,
+			previousQuery: '',
 			query: '',
 			filter: '',
 			lock: false,
@@ -121,7 +105,7 @@ Components.searchableList = function (id, args) {
 
 			// methods
 			idgen: function (id) {
-				return '{base}-{id}'.format({base: base.id, id: id});
+				return '{base}_{id}'.format({base: base.id, id: id});
 			},
 			defaultSort: function (d1, d2) {
 				// sort by usage
@@ -141,6 +125,9 @@ Components.searchableList = function (id, args) {
 				}
 			},
 			load: {
+				source: function (path, options) {
+					return Context.get(path, options);
+				},
 				get: function () {
 					// this looks at the Context.get and Context.get:force, separately.
 					if (base.data.reset) {
@@ -153,8 +140,9 @@ Components.searchableList = function (id, args) {
 					// Load each target
 					return Promise.all(base.targets.map(function (target) {
 						target.queries = (target.queries || []);
+						var filterRequest = target.filter ? (target.filter.request ? target.filter.request(base.data.query) : {}) : {};
 						return Promise.all([
-							Context.get((target.resolvedPath || target.path), {options: {filter: target.filterRequest(base.data.query)}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
+							base.data.load.source((target.resolvedPath || target.path), {options: {filter: filterRequest}}).then(target.process).then(base.data.load.append).then(base.data.display.main),
 
 							// add one second delay before searching the server. Only do if query is the same as it was 1 sec ago.
 							// Also, only query if this query has never been queried before
@@ -167,7 +155,7 @@ Components.searchableList = function (id, args) {
 									}, 1000);
 								}).then(function (timeout) {
 									if (timeout) {
-										return Context.get((target.resolvedPath || target.path), {options: {filter: target.filterRequest(base.data.query)}, force: true}).then(target.process).then(base.data.load.append).then(base.data.display.main);
+										return base.data.load.source((target.resolvedPath || target.path), {options: {filter: filterRequest}, force: true}).then(target.process).then(base.data.load.append).then(base.data.display.main);
 									} else {
 										return Util.ep();
 									}
@@ -201,7 +189,7 @@ Components.searchableList = function (id, args) {
 
 							// 2. filter dataset to produce new subset
 							return base.data.display.filter.in();
-						})
+						});
 					},
 					condition: function (datum) {
 
@@ -213,17 +201,19 @@ Components.searchableList = function (id, args) {
 
 								(
 									(
+										// lower case query match at beginning
 										datum.main.toLowerCase().indexOf(base.data.query.toLowerCase()) === 0
 										&&
 										base.data.query.toLowerCase() !== ''
 									)
 									||
 									(
+										// allow autocomplete mode to display everything
 										(base.data.autocompleteOverride || !base.autocomplete || false)
 										&&
 										base.data.query === ''
 									)
-								), // lower case query match at beginning
+								),
 
 								// TODO: THESE CONDITIONS NEED TO BE OVERHAULED
 
@@ -251,11 +241,15 @@ Components.searchableList = function (id, args) {
 						}));
 					},
 					in: function () {
+						base.data.exactMatch = false;
 						return Promise.all(Object.keys(base.data.storage.dataset).map(function (key) {
 							var datum = base.data.storage.dataset[key];
 							return base.data.display.filter.condition(datum).then(function (condition) {
 								if (condition) {
 									base.data.storage.subset[key] = datum;
+									if (datum.main.toLowerCase() === base.data.query.toLowerCase() && base.data.query !== '') {
+										base.data.exactMatch = true; // in the event of an exact match, add a flag that prevents the item from being displayed twice.
+									}
 								}
 								return Util.ep();
 							});
@@ -276,7 +270,6 @@ Components.searchableList = function (id, args) {
 										// element already exists. Update using info in datum.
 										// NO RETURN: releases promise immediately. No need to wait for order if one exists.
 										UI.getComponent(base.data.storage.virtual.rendered[index]).then(function (existingListItem) {
-											// console.log(datum);
 											return existingListItem.updateMetadata(datum, base.data.query.toLowerCase());
 										}).then(function () {
 											if (base.currentIndex === undefined) {
@@ -291,7 +284,7 @@ Components.searchableList = function (id, args) {
 											// element does not exist. Create using info in datum.
 											return base.unit(datum, base.data.query.toLowerCase(), index).then(function (newListItem) {
 												base.data.storage.virtual.rendered.push(newListItem.id);
-												return base.list.components.wrapper.setChildren([newListItem]);
+												return base.cc.list.cc.wrapper.setChildren([newListItem]);
 											}).then(function () {
 												base.lock = false;
 												return Util.ep();
@@ -317,6 +310,12 @@ Components.searchableList = function (id, args) {
 						base.data.storage.virtual.list = Object.keys(base.data.storage.subset).map(function (key) {
 							return base.data.storage.subset[key];
 						});
+						if (!base.data.preventIncomplete && base.data.query && !base.data.exactMatch) {
+							base.data.storage.virtual.list.unshift({
+								main: base.data.query.toLowerCase(),
+								rule: 'word',
+							});
+						}
 						return Util.ep();
 					},
 					sort: function () {
@@ -324,26 +323,33 @@ Components.searchableList = function (id, args) {
 						return Util.ep();
 					},
 					setMetadata: function () {
-						var query = base.data.query; // query is set no matter the status of virtual
+						var _this = base;
+						var query = _this.data.query; // query is set no matter the status of virtual
 
-						if (!base.data.storage.virtual.list.length) {
-							base.currentIndex = undefined;
-							return base.search.setMetadata({query: query, complete: '', type: ''});
+						// reset previous query and check for change
+						var changeQuery = false;
+						if (query !== _this.data.previousQuery) {
+							_this.data.previousQuery = query;
+							changeQuery = true;
+						}
+						if (!_this.data.storage.virtual.list.length) {
+							_this.currentIndex = undefined;
+							return _this.cc.searchFilterBar.cc.search.setMetadata({query: query, complete: '', type: '', tokens: []});
 						} else {
-
-							if (base.currentIndex >= base.data.storage.virtual.list.length) {
-								return base.control.setActive({index: 0}).then(function () {
-									var complete = (base.data.storage.virtual.list[base.currentIndex] || {}).main;
-									var type = (base.data.storage.virtual.list[base.currentIndex] || {}).rule;
-									return base.search.setMetadata({query: query, complete: complete, type: type});
+							var complete = (_this.data.storage.virtual.list[_this.currentIndex] || {}).main;
+							var type = (_this.data.storage.virtual.list[_this.currentIndex] || {}).rule;
+							var tokens = ((_this.data.storage.virtual.list[_this.currentIndex] || {}).tokens || []);
+							if (_this.currentIndex >= _this.data.storage.virtual.list.length || changeQuery) {
+								return _this.control.setActive.main({index: 0}).then(function () {
+									return _this.cc.searchFilterBar.cc.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
 								});
 							} else {
-								var complete = (base.data.storage.virtual.list[base.currentIndex] || {}).main;
-								var type = (base.data.storage.virtual.list[base.currentIndex] || {}).rule;
-								return base.search.setMetadata({query: query, complete: complete, type: type});
+								return _this.cc.searchFilterBar.cc.search.setMetadata({query: query, complete: complete, type: type, tokens: tokens});
 							}
 						}
 					},
+
+
 				},
 			},
 		}
@@ -353,18 +359,24 @@ Components.searchableList = function (id, args) {
 			// global control
 			setup: {
 				main: function () {
-					return Promise.all([
-						base.control.setup.resolvePaths(),
-						base.control.setup.renderUntilDefaultLimit(),
-						base.control.setup.extractFilters(),
-					]).then(function () {
-						return base.control.start();
+					return base.control.setup.resolvePaths().then(function () {
+						if (!base.data.isSetup) {
+							return Promise.all([
+								base.control.setup.renderUntilDefaultLimit(),
+								base.control.setup.extractFilters(),
+							]).then(function () {
+								base.data.isSetup = true;
+								return base.control.start();
+							});
+						} else {
+							return base.control.reset();
+						}
 					});
 				},
 				resolvePaths: function () {
 					return Promise.all(base.targets.map(function (target) {
 						return target.path().then(function (path) {
-							target.resolvedPath = path; // this can be recalculated upon stopping and restarting.
+							target.resolvedPath = path; // this is recalculated every time
 							target.queries = [];
 						});
 					}));
@@ -376,7 +388,7 @@ Components.searchableList = function (id, args) {
 								return base.unit({main: ''}, '', index).then(function (newListItem) {
 									base.data.storage.virtual.rendered.push(newListItem.id);
 									return newListItem.hide().then(function () {
-										return base.list.components.wrapper.setChildren([newListItem]);
+										return base.cc.list.cc.wrapper.setChildren([newListItem]);
 									});
 								});
 							}
@@ -399,19 +411,23 @@ Components.searchableList = function (id, args) {
 									}
 
 									// create filter unit and add to list
-									return base.defaultFilterUnit('{filterid}-{rule}'.format({filterid: filter.id, rule: target.filter.rule}), target.filter).then(function (filterUnit) {
+									return base.defaultFilterUnit('{filterid}-{rule}'.format({filterid: base.cc.filter.id, rule: target.filter.rule}), target.filter).then(function (filterUnit) {
 										// bindings
 										return filterUnit.setBindings({
 											'click': function (_this) {
-												return base.control.setFilter(target.filter.rule);
+												if (base.data.filter === target.filter.rule) {
+													base.control.setFilter();
+												} else {
+													base.control.setFilter(target.filter.rule);
+												}
 											},
 										}).then(function () {
-											filter.setChildren([filterUnit]);
+											base.cc.filter.setChildren([filterUnit]);
 										});
 									}).then(function () {
 										Mousetrap.bind(target.filter.char, function (event) {
 											event.preventDefault();
-											if (base.isFocussed) {
+											if (base.isFocused) {
 												if (base.data.filter === target.filter.rule) {
 													base.control.setFilter();
 												} else {
@@ -428,7 +444,7 @@ Components.searchableList = function (id, args) {
 						})).then(function () {
 							// if any filters have been added, make the filter button appear
 							if (!Util.isEmptyObject(base.data.storage.filters)) {
-								return filterButton.setAppearance({classes: {remove: 'hidden'}});
+								return base.cc.searchFilterBar.cc.filterButton.setAppearance({classes: {remove: 'hidden'}});
 							} else {
 								return Util.ep();
 							}
@@ -463,24 +479,34 @@ Components.searchableList = function (id, args) {
 				if (rule in base.data.storage.filters) {
 					base.data.limit = base.data.storage.filters[rule].limit !== 0 ? (base.data.storage.filters[rule].limit !== undefined ? base.data.storage.filters[rule].limit : base.data.limit) : undefined;
 					base.data.autocompleteOverride = base.data.storage.filters[rule].autocompleteOverride;
+					base.data.preventIncomplete = base.data.storage.filters[rule].preventIncomplete;
 				} else {
 					base.data.limit = base.defaultLimit;
 					base.data.autocompleteOverride = undefined;
+					base.data.preventIncomplete = false;
 				}
 
 				// 1. update search
-				search.filterString = rule ? base.data.storage.filters[rule].input : undefined;
+				base.search.filterString = rule ? base.data.storage.filters[rule].input : undefined;
 				return Promise.all([
 					// 2. update data
 					base.control.update({filter: (rule || '')}),
 
 					// 3. update filter button
-					filterButton.setContent(rule ? base.data.storage.filters[rule].char : undefined),
+					base.cc.searchFilterBar.cc.filterButton.setContent(rule ? base.data.storage.filters[rule].char : undefined),
 
 					// 4. search
-					search.setMetadata(),
+					base.search.setMetadata(),
 				]).then(function () {
 					return base.control.start();
+				}).then(function () {
+					if (base.data.storage.filters[rule]) {
+						return (base.data.storage.filters[rule].activate || Util.ep)();
+					} else {
+						return Util.ep();
+					}
+				}).then(function () {
+					return base.control.setActive.main({index: 0});
 				});
 			},
 			setActive: {
@@ -488,7 +514,7 @@ Components.searchableList = function (id, args) {
 					options = (options || {});
 
 					// if there are any results
-					if (base.data.storage.virtual.rendered.length && base.isFocussed) {
+					if (base.data.storage.virtual.rendered.length && base.isFocused) {
 
 						// changes
 						var previousIndex = base.currentIndex;
@@ -511,9 +537,13 @@ Components.searchableList = function (id, args) {
 					return base.control.deactivate().then(function () {
 						return UI.getComponent(base.data.storage.virtual.rendered[base.currentIndex]).then(function (activeListItem) {
 							base.active = activeListItem;
-							return base.active.activate().then(function () {
-								return base.data.display.render.setMetadata();
-							});
+							if (base.active) {
+								return base.active.activate().then(function () {
+									return base.data.display.render.setMetadata();
+								});
+							} else {
+								return Util.ep();
+							}
 						})
 					});
 				},
@@ -557,23 +587,23 @@ Components.searchableList = function (id, args) {
 			default: function (target) {
 				return function () {
 					jss.set('#{id} .{type}'.format({id: base.id, type: target.name}), {
-						'background-color': 'rgba(255,255,255,0.00)'
+						'background-color': 'transparent',
 					});
 					jss.set('#{id} .base.{type}.active'.format({id: base.id, type: target.name}), {
-						'background-color': 'rgba(255,255,255,0.1)'
+						'background-color': '#eee',
 					});
 					return Util.ep();
 				}
 			},
 		}
-		base.defaultFilterUnit = function (id, args) {
+		base.defaultFilterUnit = function (id, filterArgs) {
 			return Promise.all([
 				// Base
 				UI.createComponent('{id}'.format({id: id}), {
 					template: UI.template('div', 'ie'),
 					appearance: {
 						style: {
-							'height': '80px',
+							'height': '60px',
 							'width': '100%',
 							'border-bottom': '1px solid #ccc',
 						},
@@ -600,6 +630,7 @@ Components.searchableList = function (id, args) {
 							'float': 'left',
 							'width': '100%',
 						},
+						html: filterArgs.input,
 					},
 				}),
 
@@ -611,6 +642,7 @@ Components.searchableList = function (id, args) {
 							'float': 'left',
 							'width': '100%',
 						},
+						html: filterArgs.blurb,
 					},
 				}),
 
@@ -633,7 +665,7 @@ Components.searchableList = function (id, args) {
 				UI.createComponent('{id}-button-content'.format({id: id}), {
 					template: UI.template('span', 'ie'),
 					appearance: {
-						html: args.char,
+						html: filterArgs.char,
 					},
 				}),
 
@@ -680,27 +712,27 @@ Components.searchableList = function (id, args) {
 		}
 
 		// search methods
-		search.focus = function (position) {
-			if (!search.isFocussed) {
-				search.isFocussed = true;
-				base.isFocussed = true;
+		base.search.focus = function (position) {
+			if (!base.search.isFocused) {
+				base.search.isFocused = true;
+				base.isFocused = true;
 				return Promise.all([
-					search.setCaretPosition(position),
-					search.input(),
+					base.search.setCaretPosition(position),
+					base.search.input(),
 				]);
 			} else {
 				return Util.ep();
 			}
 		}
-		search.blur = function () {
-			search.isFocussed = false;
-			base.isFocussed = true;
-			return search.getContent().then(function (content) {
-				return search.components.tail.setAppearance({html: (content || search.placeholder)});
+		base.search.blur = function () {
+			base.search.isFocused = false;
+			base.isFocused = true;
+			return base.search.getContent().then(function (content) {
+				return base.search.cc.tail.setAppearance({html: (content || base.search.placeholder)});
 			});
 		}
-		search.input = function () {
-			return search.getContent().then(function (content) {
+		base.search.input = function () {
+			return base.search.getContent().then(function (content) {
 				return base.control.update({query: content}).then(function () {
 					return base.control.start();
 				});
@@ -713,32 +745,39 @@ Components.searchableList = function (id, args) {
 			base.defaultLimit = base.data.limit;
 			base.autocomplete = (options.autocomplete || false);
 
-			search.placeholder = options.placeholder;
-			return searchFilterBar.setAppearance({classes: {add: (options.mode === 'off' ? ['hidden'] : [])}}).then(function () {
-				return search.components.tail.setAppearance({html: options.placeholder});
+			base.search.placeholder = options.placeholder;
+			return base.cc.searchFilterBar.setAppearance({classes: {add: (options.mode === 'off' ? ['hidden'] : [])}}).then(function () {
+				return base.search.cc.tail.setAppearance({html: options.placeholder});
 			}).then(function () {
 				if (options.mode !== 'off') {
 					return Promise.all([
-						list.setAppearance({style: {'height': 'calc(100% - 40px)'}}),
-						filter.setAppearance({style: {'height': 'calc(100% - 40px)'}}),
+						base.cc.list.setAppearance({style: {'height': 'calc(100% - 40px)'}}),
+						base.cc.filter.setAppearance({style: {'height': 'calc(100% - 40px)'}}),
 					]);
 				} else {
 					return Util.ep();
 				}
 			});
 		}
+		base.focus = function () {
+			base.search.cc.head.model().focus();
+			return Util.ep();
+		}
 
 		// title methods
 		base.setTitle = function (options) {
+			options = (options || {});
 			if (options.text) {
-				return title.setAppearance({
+				options.style = (options.style || {});
+				if (options.center) {
+					options.style['text-align'] = 'center';
+				}
+				return base.cc.title.setAppearance({
 					html: options.text,
-					style: {
-						'text-align': (options.centre ? 'center': 'left'),
-					},
+					style: options.style,
 				});
 			} else {
-				return title.setAppearance({
+				return base.cc.title.setAppearance({
 					style: {
 						'display': 'none',
 					}
@@ -749,70 +788,45 @@ Components.searchableList = function (id, args) {
 		// behaviours
 		base.behaviours = {
 			up: function () {
-				// console.log('{} searchlist behaviours up'.format(base.id));
 				return base.previous();
 			},
 			down: function () {
-				// console.log('{} searchlist behaviours down'.format(base.id));
 				return base.next();
 			},
 			left: function () {
-				// console.log('{} searchlist behaviours left'.format(base.id));
-				return search.behaviours.left();
+				return base.search.behaviours.left();
 			},
 			right: function () {
-				// console.log('{} searchlist behaviours right'.format(base.id));
-				return search.behaviours.right();
+				return base.search.behaviours.right();
 			},
 			number: function (char) {
-				// console.log('{} searchlist behaviours number'.format(base.id));
 				var index = parseInt(char);
 				if (index < base.data.storage.virtual.rendered.length) {
 					return base.control.setActive.main({index: index}).then(function () {
 						// don't know what behaviour to have here
-						return search.behaviours.right();
+						return base.search.behaviours.right();
 
 						// Maybe do this
-						// return search.behaviours.enter();
+						// return base.search.behaviours.enter();
 					});
 				}
 			},
 			enter: function () {
-				// console.log('{} searchlist behaviours enter'.format(base.id));
-				return search.behaviours.enter();
+				return base.search.behaviours.enter();
 			},
 			backspace: function () {
-				// console.log('{} searchlist behaviours backspace'.format(base.id));
-				return search.behaviours.backspace();
+				return base.search.behaviours.backspace();
 			},
 		}
 
 		// complete promises.
 		return Promise.all([
-			searchFilterBar.setChildren([
-				search,
-				filterButton,
-			]),
-			filterButton.setBindings({
+			base.cc.searchFilterBar.cc.filterButton.setBindings({
 				'click': function (_this) {
 					return _this.triggerState();
 				},
 			}),
-		]).then(function (results) {
-			base.components = {
-				title: title,
-				search: search,
-				list: list,
-				filter: filter,
-				filterButton: filterButton,
-			}
-			return base.setChildren([
-				title,
-				searchFilterBar,
-				list,
-				filter,
-			]);
-		}).then(function () {
+		]).then(function () {
 			return base;
 		});
 	});
