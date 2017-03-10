@@ -1,6 +1,7 @@
 # django
 from django.core.management.base import BaseCommand, CommandError
 from django.core.files import File
+from django.conf import settings
 
 # local
 from apps.tr.models.client.client import Client
@@ -78,7 +79,7 @@ class Command(BaseCommand):
 		test_flag.shortcuts.create(role=worker_role, combo='ctrl+n')
 
 		# fragment list
-		base = '/Users/nicholaspiano/code/abacii-voice/arktic/test/'
+		base = join(settings.SITE_ROOT, '/test/')
 		fragment_list = [f for f in os.listdir(join(base, 'selectedAudioFiles')) if ('.DS' not in f and not isdir(join(base, 'selectedAudioFiles', f)))]
 		relfile_data = {}
 		with open(join(base, 'relfile.csv'), 'r') as open_relfile:
