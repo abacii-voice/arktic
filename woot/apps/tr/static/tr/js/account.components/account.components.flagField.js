@@ -35,6 +35,7 @@ AccountComponents.flagField = function (id, args) {
 
 			// content
 			UI.createComponent('{id}-content'.format({id: id}), {
+				name: 'content',
 				template: UI.template('div', 'ie'),
 				appearance: {
 					style: {
