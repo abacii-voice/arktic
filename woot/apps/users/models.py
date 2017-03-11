@@ -67,7 +67,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 		if path.check('clients'):
 			data.update({
-				'clients': {client.id: client.user_data(path.down('clients'), permission) for client in self.clients.filter(id__startswith=path.get_id())},
+				'clients': {str(client.id): client.user_data(path.down('clients'), permission) for client in self.clients.filter(id__startswith=path.get_id())},
 			})
 
 		return data

@@ -1,8 +1,8 @@
 # django
 from django.db import models
 
-# local
-from apps.tr.idgen import idgen
+# util
+import uuid
 
 ### Client model
 class Client(models.Model):
@@ -13,7 +13,7 @@ class Client(models.Model):
 
 	### Properties
 	# Identification
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	name = models.CharField(max_length=255)
 
 	# Type
@@ -60,7 +60,7 @@ class Client(models.Model):
 
 			if path.check('contract_clients') and permission.is_productionadmin:
 				data.update({
-					'contract_clients': {contract_client.id: contract_client.contract_client_data(path.down('contract_clients'), permission) for contract_client in self.contract_clients.filter(id__startswith=path.get_id())},
+					'contract_clients': {str(contract_client.id): contract_client.contract_client_data(path.down('contract_clients'), permission) for contract_client in self.contract_clients.filter(id__startswith=path.get_id())},
 				})
 		else:
 			if path.check('projects'):
