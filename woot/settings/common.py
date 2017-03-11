@@ -28,6 +28,7 @@ TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 ALLOWED_HOSTS = (
 	'localhost',
 	'192.168.16.25',
+	'nicholaspiano.pythonanywhere.com',
 )
 ########## END ALLOWED HOSTS CONFIGURATION
 
