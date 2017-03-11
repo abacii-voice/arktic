@@ -149,7 +149,7 @@ def process_request(request):
 	# 2. get user and role_type
 	user = request.user
 	role_id = data['permission']
-	role = user.roles.get(id=role_id) if user.roles.filter(id=role_id).exists() else None
+	role = user.roles.get(id=role_id) if role_id and user.roles.filter(id=role_id).exists() else None
 
 	# 3. get permission
 	permission = Permission(user, role=role)

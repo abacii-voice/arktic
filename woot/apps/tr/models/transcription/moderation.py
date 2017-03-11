@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.tr.idgen import idgen
+import uuid
 
 ### Moderation classes
 class ModerationToken(models.Model):
@@ -19,7 +19,7 @@ class ModerationToken(models.Model):
 	role = models.ForeignKey('tr.Role', related_name='moderation_tokens')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	date_created = models.DateTimeField(auto_now_add=True)
 	moderation_limit = models.PositiveIntegerField(default=20)
 	is_active = models.BooleanField(default=True)
@@ -53,7 +53,7 @@ class Moderation(models.Model):
 	transcription = models.ForeignKey('tr.TranscriptionInstance', related_name='moderations')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	date_created = models.DateTimeField(auto_now_add=True)
 	is_approved = models.BooleanField(default=True)
 	is_active = models.BooleanField(default=True)
@@ -79,7 +79,7 @@ class ModerationFragment(models.Model):
 	session = models.ForeignKey('users.Session', related_name='moderation_fragments')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	index = models.PositiveIntegerField(default=0)
 	date_created = models.DateTimeField(auto_now_add=True)
 	date_reconciled = models.DateTimeField(auto_now_add=True)
