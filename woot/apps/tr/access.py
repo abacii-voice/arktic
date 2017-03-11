@@ -125,7 +125,7 @@ def access(original_path, permission, fltr={}):
 
 	if path.check('clients'):
 		data.update({
-			'clients': {client.id: client.data(path.down('clients'), permission) for client in Client.objects.filter(id__startswith=path.get_id()) if client.users.filter(id=permission.user.id).exists()},
+			'clients': {str(client.id): client.data(path.down('clients'), permission) for client in Client.objects.filter(id__startswith=path.get_id()) if client.users.filter(id=permission.user.id).exists()},
 		})
 
 	if path.check('user'):
