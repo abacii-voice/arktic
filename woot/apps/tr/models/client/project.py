@@ -3,7 +3,7 @@ from django.db import models
 
 # local
 from util import truncate
-from apps.tr.idgen import idgen
+import uuid
 
 ### Project model
 class Project(models.Model):
@@ -14,7 +14,7 @@ class Project(models.Model):
 
 	### Properties
 	# Identification
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	name = models.CharField(max_length=255)
 	date_created = models.DateTimeField(auto_now_add=True)
 	description = models.TextField(default='')
@@ -42,7 +42,6 @@ class Project(models.Model):
 				'contract_client': self.contract_client.id,
 			})
 
-		print(self.contract_client.id)
 		if permission.is_contractadmin and permission.check_client(self.contract_client):
 			data.update({
 				'production_client': self.production_client.id,
@@ -69,12 +68,12 @@ class Project(models.Model):
 
 		if path.check('batches') and permission.is_admin:
 			data.update({
-				'batches': {batch.id: batch.data(path.down('batches'), permission) for batch in self.batches.filter(id__startswith=path.get_id())},
+				'batches': {str(batch.id): batch.data(path.down('batches'), permission) for batch in self.batches.filter(id__startswith=path.get_id())},
 			})
 
 		if path.check('transcriptions', blank=False):
 			data.update({
-				'transcriptions': {transcription.id: transcription.data(path.down('transcriptions'), permission) for transcription in self.transcriptions.filter(id__startswith=path.get_id()).filter(**path.get_filter('transcriptions')).order_by('content')},
+				'transcriptions': {str(transcription.id): transcription.data(path.down('transcriptions'), permission) for transcription in self.transcriptions.filter(id__startswith=path.get_id()).filter(**path.get_filter('transcriptions')).order_by('content')},
 			})
 
 		return data
@@ -157,7 +156,7 @@ class Batch(models.Model):
 	### Properties
 	# Identification
 	date_created = models.DateTimeField(auto_now_add=True)
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	name = models.CharField(max_length=255)
 	description = models.TextField(default='')
 
@@ -187,7 +186,7 @@ class Batch(models.Model):
 
 		if path.check('uploads'):
 			data.update({
-				'uploads': {upload.id: upload.data(path.down('uploads'), permission) for upload in self.uploads.filter(id__startswith=path.get_id())},
+				'uploads': {str(upload.id): upload.data(path.down('uploads'), permission) for upload in self.uploads.filter(id__startswith=path.get_id())},
 			})
 
 		return data
@@ -204,7 +203,7 @@ class Upload(models.Model):
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	archive_name = models.CharField(max_length=255, default='')
 	is_complete = models.BooleanField(default=False)
 
@@ -234,7 +233,7 @@ class Upload(models.Model):
 
 		if path.check('fragments'):
 			data.update({
-				'fragments': {fragment.id: fragment.data(path.down('fragments'), permission) for fragment in self.fragments.filter(id__startswith=path.get_id())},
+				'fragments': {str(fragment.id): fragment.data(path.down('fragments'), permission) for fragment in self.fragments.filter(id__startswith=path.get_id())},
 			})
 
 		return data
@@ -250,7 +249,7 @@ class Fragment(models.Model):
 	upload = models.ForeignKey('tr.Upload', related_name='fragments')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	filename = models.CharField(max_length=255)
 	is_reconciled = models.BooleanField(default=False)
 

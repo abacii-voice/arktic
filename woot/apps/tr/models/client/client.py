@@ -34,30 +34,31 @@ class Client(models.Model):
 		# paths
 		if path.check('rules'):
 			data.update({
-				'rules': {rule.id: rule.data(path.down('rules'), permission) for rule in self.rules.filter(id__startswith=path.get_id())},
+				'rules': {str(rule.id): rule.data(path.down('rules'), permission) for rule in self.rules.filter(id__startswith=path.get_id())},
 			})
 
 		if path.check('flags'):
 			data.update({
-				'flags': {flag.id: flag.data(path.down('flags'), permission) for flag in self.flags.filter(id__startswith=path.get_id())},
+				'flags': {str(flag.id): flag.data(path.down('flags'), permission) for flag in self.flags.filter(id__startswith=path.get_id())},
 			})
 
 		if path.check('checks') and permission.is_productionadmin:
 			data.update({
-				'checks': {check.id: check.data(path.down('checks'), permission) for check in self.checks.filter(id__startswith=path.get_id())},
+				'checks': {str(check.id): check.data(path.down('checks'), permission) for check in self.checks.filter(id__startswith=path.get_id())},
 			})
 
 		if path.check('users') and permission.is_admin:
 			data.update({
-				'users': {user.id: user.role_data(self, path.down('users'), permission) for user in self.users.filter(id__startswith=path.get_id())},
+				'users': {str(user.id): user.role_data(self, path.down('users'), permission) for user in self.users.filter(id__startswith=path.get_id())},
 			})
 
 		if self.is_production:
 			if path.check('projects'):
 				data.update({
-					'projects': {project.id: project.data(path.down('projects'), permission) for project in self.production_projects.filter(id__startswith=path.get_id())},
+					'projects': {str(project.id): project.data(path.down('projects'), permission) for project in self.production_projects.filter(id__startswith=path.get_id())},
 				})
 
+			print([c.id for c in self.contract_clients.filter(id__startswith=path.get_id())], permission)
 			if path.check('contract_clients') and permission.is_productionadmin:
 				data.update({
 					'contract_clients': {str(contract_client.id): contract_client.contract_client_data(path.down('contract_clients'), permission) for contract_client in self.contract_clients.filter(id__startswith=path.get_id())},
@@ -65,7 +66,7 @@ class Client(models.Model):
 		else:
 			if path.check('projects'):
 				data.update({
-					'projects': {project.id: project.data(path.down('projects'), permission) for project in self.contract_projects.filter(id__startswith=path.get_id())},
+					'projects': {str(project.id): project.data(path.down('projects'), permission) for project in self.contract_projects.filter(id__startswith=path.get_id())},
 				})
 
 		return data
@@ -75,7 +76,7 @@ class Client(models.Model):
 
 		if path.check('roles'):
 			data.update({
-				'roles': {role.id: role.data(path.down('roles'), permission) for role in self.roles.filter(user=permission.user, id__startswith=path.get_id())},
+				'roles': {str(role.id): role.data(path.down('roles'), permission) for role in self.roles.filter(user=permission.user, id__startswith=path.get_id())},
 			})
 
 		return data
@@ -89,7 +90,7 @@ class Client(models.Model):
 
 			if path.check('projects'):
 				data.update({
-					'projects': {project.id: project.contract_client_data(path.down('projects'), permission) for project in self.contract_projects.filter(id__startswith=path.get_id())},
+					'projects': {str(project.id): project.contract_client_data(path.down('projects'), permission) for project in self.contract_projects.filter(id__startswith=path.get_id())},
 				})
 
 		return data

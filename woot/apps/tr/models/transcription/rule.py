@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.tr.idgen import idgen
+import uuid
 
 ### Rule classes
 class Rule(models.Model):
@@ -15,7 +15,7 @@ class Rule(models.Model):
 	project = models.ForeignKey('tr.Project', related_name='rules', null=True)
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	number = models.PositiveIntegerField(default=0)
 	name = models.CharField(max_length=255)
 	description = models.TextField(default='')

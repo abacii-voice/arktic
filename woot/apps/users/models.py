@@ -3,7 +3,7 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
-from apps.users.idgen import idgen
+import uuid
 
 ### User classes
 class UserManager(BaseUserManager):
@@ -22,7 +22,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 	### Properties
 	# identification
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	email = models.EmailField(max_length=255, unique=True)
 	first_name = models.CharField(max_length=255)
 	last_name = models.CharField(max_length=255)
@@ -77,7 +77,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 		if path.check('roles'):
 			data.update({
-				'roles': {role.id: role.data(path.down('roles'), permission) for role in self.roles.filter(id__startswith=path.get_id(), client=client)}
+				'roles': {str(role.id): role.data(path.down('roles'), permission) for role in self.roles.filter(id__startswith=path.get_id(), client=client)}
 			})
 
 		return data
@@ -130,7 +130,7 @@ class Session(models.Model):
 	user = models.ForeignKey('users.User', related_name='sessions')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	is_active = models.BooleanField(default=True)
 	date_created = models.DateTimeField(auto_now_add=True)
 	type = models.CharField(max_length=255)

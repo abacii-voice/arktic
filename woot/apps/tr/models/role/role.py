@@ -3,7 +3,7 @@ from django.db import models
 
 # local
 from apps.tr.models.client.project import Project
-from apps.tr.idgen import idgen
+import uuid
 
 ### Role classes
 class Role(models.Model):
@@ -14,7 +14,7 @@ class Role(models.Model):
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	type = models.CharField(max_length=255)
 	display = models.CharField(max_length=255)
 	status = models.CharField(max_length=255, default='pending') # shows the stage of becoming a full user.
@@ -41,12 +41,12 @@ class Role(models.Model):
 
 		if path.check('stats') and (permission.is_moderator or permission.is_productionadmin or permission.check_user(self.user)):
 			data.update({
-				'stats': {stat.id: stat.data() for stat in self.stats.filter(id__startswith=path.get_id())},
+				'stats': {str(stat.id): stat.data() for stat in self.stats.filter(id__startswith=path.get_id())},
 			})
 
 		if path.check('thresholds') and (permission.is_moderator or permission.is_productionadmin) and self.type == 'worker':
 			data.update({
-				'thresholds': {threshold.id: threshold.data() for threshold in self.thresholds.filter(id__startswith=path.get_id())},
+				'thresholds': {str(threshold.id): threshold.data() for threshold in self.thresholds.filter(id__startswith=path.get_id())},
 			})
 
 		if path.check('active_transcription_token', blank=False) and self.project is not None and self.type == 'worker' and permission.check_user(self.user):
@@ -111,7 +111,7 @@ class Threshold(models.Model):
 	role = models.ForeignKey('tr.Role', related_name='thresholds')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	date_created = models.DateTimeField(auto_now_add=True)
 	is_active = models.BooleanField(default=True)
 	index = models.PositiveIntegerField(default=0)
