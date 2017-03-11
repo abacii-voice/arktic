@@ -3,6 +3,11 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
+
+# local
+from util import filterOrAllOnBlank
+
+# util
 import uuid
 
 ### User classes
@@ -67,7 +72,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 		if path.check('clients'):
 			data.update({
-				'clients': {str(client.id): client.user_data(path.down('clients'), permission) for client in self.clients.filter(id__startswith=path.get_id())},
+				'clients': {str(client.id): client.user_data(path.down('clients'), permission) for client in filterOrAllOnBlank(self.clients, id=path.get_id())},
 			})
 
 		return data
@@ -77,7 +82,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 		if path.check('roles'):
 			data.update({
-				'roles': {str(role.id): role.data(path.down('roles'), permission) for role in self.roles.filter(id__startswith=path.get_id(), client=client)}
+				'roles': {str(role.id): role.data(path.down('roles'), permission) for role in filterOrAllOnBlank(self.roles, id=path.get_id(), client=client)}
 			})
 
 		return data

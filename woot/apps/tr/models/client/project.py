@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from util import truncate
+from util import truncate, filterOrAllOnBlank
 import uuid
 
 ### Project model
@@ -68,12 +68,12 @@ class Project(models.Model):
 
 		if path.check('batches') and permission.is_admin:
 			data.update({
-				'batches': {str(batch.id): batch.data(path.down('batches'), permission) for batch in self.batches.filter(id__startswith=path.get_id())},
+				'batches': {str(batch.id): batch.data(path.down('batches'), permission) for batch in self.batches.filter(id__contains=path.get_id())},
 			})
 
 		if path.check('transcriptions', blank=False):
 			data.update({
-				'transcriptions': {str(transcription.id): transcription.data(path.down('transcriptions'), permission) for transcription in self.transcriptions.filter(id__startswith=path.get_id()).filter(**path.get_filter('transcriptions')).order_by('content')},
+				'transcriptions': {str(transcription.id): transcription.data(path.down('transcriptions'), permission) for transcription in filterOrAllOnBlank(self.transcriptions, id=path.get_id()).filter(**path.get_filter('transcriptions')).order_by('content')},
 			})
 
 		return data
@@ -186,7 +186,7 @@ class Batch(models.Model):
 
 		if path.check('uploads'):
 			data.update({
-				'uploads': {str(upload.id): upload.data(path.down('uploads'), permission) for upload in self.uploads.filter(id__startswith=path.get_id())},
+				'uploads': {str(upload.id): upload.data(path.down('uploads'), permission) for upload in filterOrAllOnBlank(self.uploads, id=path.get_id())},
 			})
 
 		return data
@@ -233,7 +233,7 @@ class Upload(models.Model):
 
 		if path.check('fragments'):
 			data.update({
-				'fragments': {str(fragment.id): fragment.data(path.down('fragments'), permission) for fragment in self.fragments.filter(id__startswith=path.get_id())},
+				'fragments': {str(fragment.id): fragment.data(path.down('fragments'), permission) for fragment in filterOrAllOnBlank(self.fragments, id=path.get_id())},
 			})
 
 		return data
