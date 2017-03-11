@@ -31,7 +31,6 @@ class Project(models.Model):
 
 		if path.is_blank:
 			data.update({
-				'production_client': self.production_client.id,
 				'name': self.name,
 				'description': self.description,
 				'is_transcription_complete': self.is_transcription_complete(),
@@ -41,6 +40,12 @@ class Project(models.Model):
 		if permission.is_productionadmin and permission.check_client(self.production_client):
 			data.update({
 				'contract_client': self.contract_client.id,
+			})
+
+		print(self.contract_client.id)
+		if permission.is_contractadmin and permission.check_client(self.contract_client):
+			data.update({
+				'production_client': self.production_client.id,
 			})
 
 		if permission.is_moderator or permission.is_productionadmin and permission.check_client(self.production_client):
