@@ -3,6 +3,9 @@ from django.db import models
 
 # local
 from apps.tr.models.client.project import Project
+from util import filterOrAllOnBlank
+
+# util
 import uuid
 
 ### Role classes
@@ -41,12 +44,12 @@ class Role(models.Model):
 
 		if path.check('stats') and (permission.is_moderator or permission.is_productionadmin or permission.check_user(self.user)):
 			data.update({
-				'stats': {str(stat.id): stat.data() for stat in self.stats.filter(id__startswith=path.get_id())},
+				'stats': {str(stat.id): stat.data() for stat in filterOrAllOnBlank(self.stats, id=path.get_id())},
 			})
 
 		if path.check('thresholds') and (permission.is_moderator or permission.is_productionadmin) and self.type == 'worker':
 			data.update({
-				'thresholds': {str(threshold.id): threshold.data() for threshold in self.thresholds.filter(id__startswith=path.get_id())},
+				'thresholds': {str(threshold.id): threshold.data() for threshold in filterOrAllOnBlank(self.thresholds, id=path.get_id())},
 			})
 
 		if path.check('active_transcription_token', blank=False) and self.project is not None and self.type == 'worker' and permission.check_user(self.user):
