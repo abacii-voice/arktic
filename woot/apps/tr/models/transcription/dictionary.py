@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.tr.idgen import idgen
+import uuid
 
 token_types = {
 	':': 'tag',
@@ -17,7 +17,7 @@ class Dictionary(models.Model):
 	grammar = models.ForeignKey('tr.Grammar', related_name='dictionaries')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
 	### Methods
 	# data
@@ -41,11 +41,11 @@ class Dictionary(models.Model):
 
 	def top_phrases(self, path, permission, fltr):
 		limit = 20
-		return {phrase.id: phrase.data(path, permission) for phrase in self.phrases.annotate(token_count=models.Count('tokens')).filter(**fltr)[0:limit]}
+		return {str(phrase.id): phrase.data(path, permission) for phrase in self.phrases.annotate(token_count=models.Count('tokens')).filter(**fltr)[0:limit]}
 
 	def top_tokens(self, path, permission, fltr):
 		limit = 100
-		return {token.id: token.data(path, permission) for token in self.tokens.filter(**fltr)[0:limit]}
+		return {str(token.id): token.data(path, permission) for token in self.tokens.filter(**fltr)[0:limit]}
 
 	def create_phrase(self, content=None, tokens=None):
 		if content is not None or tokens is not None:

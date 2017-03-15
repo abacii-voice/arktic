@@ -3,19 +3,21 @@ from django.db import models
 
 # local
 from apps.tr.models.client.project import Project
-from apps.tr.idgen import idgen
+from util import filterOrAllOnBlank
+
+# util
+import uuid
 
 ### Role classes
 class Role(models.Model):
 	### Connections
 	client = models.ForeignKey('tr.Client', related_name='roles')
 	project = models.ForeignKey('tr.Project', related_name='assigned', null=True)
-	supervisor = models.ForeignKey('tr.Role', related_name='subordinates', null=True)
 	user = models.ForeignKey('users.User', related_name='roles')
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	type = models.CharField(max_length=255)
 	display = models.CharField(max_length=255)
 	status = models.CharField(max_length=255, default='pending') # shows the stage of becoming a full user.
@@ -35,11 +37,6 @@ class Role(models.Model):
 			'status': self.status,
 		}
 
-		if self.supervisor is not None and (permission.is_moderator or permission.is_productionadmin or permission.check_user(self.user)):
-			data.update({
-				'supervisor': self.supervisor.id,
-			})
-
 		if (permission.is_moderator or permission.is_productionadmin or permission.check_user(self.user)) and (self.type == 'worker' or self.type == 'moderator'):
 			data.update({
 				'project': self.auto_project_assign().id,
@@ -47,20 +44,20 @@ class Role(models.Model):
 
 		if path.check('stats') and (permission.is_moderator or permission.is_productionadmin or permission.check_user(self.user)):
 			data.update({
-				'stats': {stat.id: stat.data() for stat in self.stats.filter(id__startswith=path.get_id())},
+				'stats': {str(stat.id): stat.data() for stat in filterOrAllOnBlank(self.stats, id=path.get_id())},
 			})
 
 		if path.check('thresholds') and (permission.is_moderator or permission.is_productionadmin) and self.type == 'worker':
 			data.update({
-				'thresholds': {threshold.id: threshold.data() for threshold in self.thresholds.filter(id__startswith=path.get_id())},
+				'thresholds': {str(threshold.id): threshold.data() for threshold in filterOrAllOnBlank(self.thresholds, id=path.get_id())},
 			})
 
-		if self.project is not None and self.type == 'worker' and permission.check_user(self.user):
+		if path.check('active_transcription_token', blank=False) and self.project is not None and self.type == 'worker' and permission.check_user(self.user):
 			data.update({
 				'active_transcription_token': self.active_transcription_token(force=path.check('active_transcription_token', blank=False)).data(path.down('active_transcription_token'), permission),
 			})
 
-		if self.project is not None and self.type == 'moderator' and permission.check_user(self.user):
+		if path.check('active_moderation_token', blank=False) and self.project is not None and self.type == 'moderator' and permission.check_user(self.user):
 			data.update({
 				'active_moderation_token': self.active_moderation_token(force=path.check('active_moderation_token', blank=False)).data(path.down('active_moderation_token'), permission),
 			})
@@ -117,7 +114,7 @@ class Threshold(models.Model):
 	role = models.ForeignKey('tr.Role', related_name='thresholds')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	date_created = models.DateTimeField(auto_now_add=True)
 	is_active = models.BooleanField(default=True)
 	index = models.PositiveIntegerField(default=0)

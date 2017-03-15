@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.tr.idgen import idgen
+import uuid
 
 ### Stat models
 class Stat(models.Model):
@@ -17,7 +17,7 @@ class StatInstance(models.Model):
 	role = models.ForeignKey('tr.Role', related_name='stats')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	value = models.FloatField(default=0.0)
 	date_created = models.DateTimeField(auto_now_add=True)
 
