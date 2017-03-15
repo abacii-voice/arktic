@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.tr.idgen import idgen
+import uuid
 
 ### Action
 class Action(models.Model):
@@ -12,7 +12,7 @@ class Action(models.Model):
 	session = models.ForeignKey('users.Session', related_name='actions') # used to uniquely identify the action
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	context = models.CharField(max_length=255)
 	session_index = models.PositiveIntegerField(default=0)
 	date_created = models.DateTimeField(auto_now_add=True)

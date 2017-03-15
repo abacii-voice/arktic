@@ -1,54 +1,34 @@
 var AccountApplication = function (id, args) {
-	return Promise.all([
-		// base
-		UI.createComponent('{id}-base'.format({id: id}), {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '100%',
-				},
+	return UI.createComponent('{id}-base'.format({id: id}), {
+		name: 'base',
+		template: UI.template('div', 'ie'),
+		appearance: {
+			style: {
+				'height': '100%',
 			},
-		}),
+		},
+		children: [
+			// control interface
+			AccountInterfaces.controlInterface('controlInterface'),
 
-		// control interface
-		AccountInterfaces.controlInterface('controlInterface'),
+			// transcription interface
+			AccountInterfaces.transcriptionInterface('transcriptionInterface'),
 
-		// transcription interface
-		AccountInterfaces.transcriptionInterface('transcriptionInterface'),
+			// project complete interface
+			AccountInterfaces.projectCompleteInterface('projectCompleteInterface'),
 
-		// project complete interface
-		AccountInterfaces.projectCompleteInterface('projectCompleteInterface'),
+			// shortcuts interface
+			AccountInterfaces.shortcutInterface('shortcutInterface'),
 
-		// shortcuts interface
-		AccountInterfaces.shortcutInterface('shortcutInterface'),
-
-		// project interface
-		AccountInterfaces.projectInterface('projectInterface'),
-
-	]).then(function (components) {
-		// unpack components
-		var [
-			base,
-			controlInterface,
-			transcriptionInterface,
-			projectCompleteInterface,
-			shortcutInterface,
-			projectInterface,
-		] = components;
+			// project interface
+			AccountInterfaces.projectInterface('projectInterface'),
+		],
+	}).then(function (base) {
 
 		// complete promises
 		return Promise.all([
 
 		]).then(function () {
-			// base children
-			return base.setChildren([
-				controlInterface,
-				transcriptionInterface,
-				projectCompleteInterface,
-				shortcutInterface,
-				projectInterface,
-			]);
-		}).then(function () {
 			return base;
 		});
 	});

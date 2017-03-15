@@ -659,9 +659,11 @@ AccountInterfaces.projectInterface = function () {
 		var focusSidebar = base.cc.focusSidebar;
 		var relfileDisplayContainer = base.cc.uploadPanel.cc.uploadCheck.cc.relfileDisplayContainer;
 		var rdTitle = relfileDisplayContainer.cc.relfileDisplay.cc.title;
+		var rdEntries = relfileDisplayContainer.cc.relfileDisplay.cc.entries;
 		var rdDuplicates = relfileDisplayContainer.cc.relfileDisplay.cc.duplicates;
 		var audioDisplayContainer = base.cc.uploadPanel.cc.uploadCheck.cc.audioDisplayContainer;
 		var adTitle = audioDisplayContainer.cc.audioDisplay.cc.title;
+		var adEntries = audioDisplayContainer.cc.audioDisplay.cc.entries;
 		var adNoCaptionList = audioDisplayContainer.cc.audioDisplay.cc.noCaptionList;
 		var uploadController = base.cc.uploadController;
 
@@ -938,6 +940,9 @@ AccountInterfaces.projectInterface = function () {
 			'border-color': Color.grey.light,
 			'cursor': 'pointer',
 		})
+
+		// focusSidebar.cc.main.cc.uploadButton.cc.dropzone external function
+		focusSidebar.cc.main.cc.uploadButton.cc.dropzone.external = uploadController.upload.accept;
 
 		// relfile duplicates
 		rdDuplicates.data.load.source = function (path, options) {
@@ -1359,32 +1364,6 @@ AccountInterfaces.projectInterface = function () {
 				},
 			}),
 
-			// 3.5
-			focusSidebar.cc.main.cc.uploadButton.cc.dropzone.setBindings({
-				'drop': function (_this, event) {
-					event.preventDefault();
-					event.stopPropagation();
-					var length = event.originalEvent.dataTransfer.items.length;
-					for (var i = 0; i < length; i++) {
-						var item = event.originalEvent.dataTransfer.items[i];
-						var entry = item.webkitGetAsEntry();
-						if (entry.isFile) {
-							console.log(entry, item.getAsFile());
-						} else if (entry.isDirectory) {
-							console.log(entry);
-						}
-					}
-				},
-				'dragover': function (_this, event) {
-					event.preventDefault();
-					event.stopPropagation();
-				},
-				'dragleave': function (_this, event) {
-					event.preventDefault();
-					event.stopPropagation();
-				},
-			}),
-
 			// 4. TRANSCRIPTION PANEL
 			base.cc.transcriptionPanel.setState({
 				defaultState: {
@@ -1470,7 +1449,7 @@ AccountInterfaces.projectInterface = function () {
 										if (numberOfEntries) {
 											return Promise.all([
 												rdTitle.setAppearance({html: 'Relfile'}),
-												uploadPanelUploadCheckRelfileDisplayEntries.setAppearance({html: '{entries} entries'.format({entries: numberOfEntries})}),
+												rdEntries.setAppearance({html: '{entries} entries'.format({entries: numberOfEntries})}),
 											]).then(function () {
 												var numberOfDuplicates = Object.keys(uploadController.upload.buffer.relfile.entries).filter(function (key) {
 													return uploadController.upload.buffer.relfile.entries[key].isDuplicate;
@@ -1500,7 +1479,7 @@ AccountInterfaces.projectInterface = function () {
 										if (numberOfEntries) {
 											return Promise.all([
 												adTitle.setAppearance({html: 'Audio'}),
-												uploadPanelUploadCheckAudioDisplayEntries.setAppearance({html: '{entries} entries'.format({entries: numberOfEntries})}),
+												adEntries.setAppearance({html: '{entries} entries'.format({entries: numberOfEntries})}),
 											]).then(function () {
 												var numberOfNoCaption = Object.keys(uploadController.upload.buffer.audio).filter(function (key) {
 													return !(key in uploadController.upload.buffer.relfile.entries);

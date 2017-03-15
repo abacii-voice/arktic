@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.tr.idgen import idgen
+import uuid
 
 ### Flag classes
 class Flag(models.Model):
@@ -11,7 +11,7 @@ class Flag(models.Model):
 	client = models.ForeignKey('tr.Client', related_name='flags')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	name = models.CharField(max_length=255)
 
 	### Methods
@@ -38,7 +38,7 @@ class FlagInstance(models.Model):
 	role = models.ForeignKey('tr.Role', related_name='flags')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
 	### Methods
 	# data
@@ -61,7 +61,7 @@ class FlagShortcut(models.Model):
 	role = models.ForeignKey('tr.Role', related_name='flag_shortcuts')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	date_created = models.DateTimeField(auto_now_add=True)
 	is_active = models.BooleanField(default=True)
 	combo = models.CharField(max_length=255)
