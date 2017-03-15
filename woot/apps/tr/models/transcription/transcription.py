@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.tr.idgen import idgen
+import uuid
 from datetime import datetime
 
 ### Transcription classes
@@ -19,7 +19,7 @@ class TranscriptionToken(models.Model):
 	role = models.ForeignKey('tr.Role', related_name='transcription_tokens')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	date_created = models.DateTimeField(auto_now_add=True)
 	transcription_limit = models.PositiveIntegerField(default=5)
 	is_active = models.BooleanField(default=True)
@@ -34,6 +34,11 @@ class TranscriptionToken(models.Model):
 					transcription.is_available = False
 					transcription.save()
 
+			# change projects if no transcriptions have been added
+			if self.fragments.count() == 0:
+				self.project = self.project.production_client.oldest_active_project()
+				self.get_transcriptions()
+
 	def update(self):
 		if self.fragments.filter(is_reconciled=True) == self.transcription_limit:
 			self.is_active = False
@@ -43,13 +48,15 @@ class TranscriptionToken(models.Model):
 		data = {}
 		if permission.check_user(self.role.user):
 			data.update({
+				'id': str(self.id),
 				'date_created': str(self.date_created),
-				'transcriptions': {transcription.id: transcription.data(path, permission) for transcription in self.transcriptions.filter(**path.get_filter('transcriptions'))},
+				'transcriptions': {str(transcription.id): transcription.data(path, permission) for transcription in self.transcriptions.filter(**path.get_filter('transcriptions'))},
+				'remaining': self.project.transcriptions.filter(is_available=True).count(),
 			})
 
 			if path.check('fragments'):
 				data.update({
-					'fragments': {fragment.id: fragment.data(path.down('fragments'), permission) for fragment in self.fragments.filter(**path.get_filter('fragments'))},
+					'fragments': {str(fragment.id): fragment.data(path.down('fragments'), permission) for fragment in self.fragments.filter(**path.get_filter('fragments'))},
 				})
 
 		return data
@@ -67,7 +74,7 @@ class Transcription(models.Model):
 
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
 	# unique identifier
 	filename = models.CharField(max_length=255)
@@ -102,12 +109,12 @@ class Transcription(models.Model):
 
 		if path.check('fragments') and (permission.is_moderator or permission.is_productionadmin):
 			data.update({
-				'fragments': {fragment.id: fragment.data(path.down('fragments'), permission) for fragment in self.fragments.filter(**path.get_filter('fragments'))},
+				'fragments': {str(fragment.id): fragment.data(path.down('fragments'), permission) for fragment in self.fragments.filter(**path.get_filter('fragments'))},
 			})
 
 		if path.check('instances') and (permission.is_moderator or permission.is_productionadmin):
 			data.update({
-				'instances': {instance.id: instance.data(path.down('instances'), permission) for instance in self.instances.filter(**path.get_filter('instances'))},
+				'instances': {str(instance.id): instance.data(path.down('instances'), permission) for instance in self.instances.filter(**path.get_filter('instances'))},
 			})
 
 		return data
@@ -120,7 +127,7 @@ class TranscriptionFragment(models.Model):
 	session = models.ForeignKey('users.Session', related_name='transcription_fragments')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	index = models.PositiveIntegerField(default=0)
 	date_created = models.DateTimeField(auto_now_add=True)
 	date_reconciled = models.DateTimeField(auto_now_add=True)
@@ -180,7 +187,7 @@ class TranscriptionInstance(models.Model):
 	phrase = models.OneToOneField('tr.PhraseInstance', related_name='transcription')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	key = models.CharField(max_length=8)
 	date_created = models.DateTimeField(auto_now_add=True)
 
@@ -198,7 +205,7 @@ class TranscriptionInstance(models.Model):
 
 		if path.check('flags') and (permission.is_moderator or permission.is_productionadmin):
 			data.update({
-				'flags': {flag.id: flag.data(path.down('flags'), permission) for flag in self.flags.filter(**path.get_filter('flags'))},
+				'flags': {str(flag.id): flag.data(path.down('flags'), permission) for flag in self.flags.filter(**path.get_filter('flags'))},
 			})
 
 		return data

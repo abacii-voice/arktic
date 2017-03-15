@@ -1,67 +1,63 @@
 var AccountInterfaces = (AccountInterfaces || {});
-AccountInterfaces.shortcutInterface = function (id, args) {
+AccountInterfaces.shortcutInterface = function (name) {
 
 	var autocompleteWidth = '300px';
-	return Promise.all([
-		// base
-		UI.createComponent('shortcut-base', {
-			template: UI.template('div', 'ie abs'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'left': '60px',
-					'width': 'calc(100% - 60px)',
-				},
-				classes: ['centred-vertically'],
+	return UI.createComponent('shortcut-base', {
+		name: name,
+		template: UI.template('div', 'ie abs'),
+		appearance: {
+			style: {
+				'height': '100%',
+				'left': '60px',
+				'width': 'calc(100% - 60px)',
 			},
-		}),
-
-		// main panel
-		UI.createComponent('sb-1-main-panel', {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'left': '0px',
-					'width': 'calc(100% - {width})'.format({width: autocompleteWidth}),
-					'float': 'left',
+			classes: ['centred-vertically'],
+		},
+		children: [
+			// main panel
+			UI.createComponent('sb-1-main-panel', {
+				name: 'main',
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'left': '0px',
+						'width': 'calc(100% - {width})'.format({width: autocompleteWidth}),
+						'float': 'left',
+					},
 				},
-			},
-		}),
+			}),
 
-		// autocomplete panel
-		UI.createComponent('sb-2-autocomplete-panel', {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': autocompleteWidth,
-					'float': 'left',
+			// autocomplete panel
+			UI.createComponent('sb-2-autocomplete-panel', {
+				name: 'autocompletePanel',
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': '100%',
+						'width': autocompleteWidth,
+						'float': 'left',
+					},
+					classes: ['centred-vertically'],
 				},
-				classes: ['centred-vertically'],
-			},
-		}),
+				children: [
+					// autocomplete
+					Components.searchableList('sb-2-ap-1-autocomplete', {
+						name: 'autocomplete',
+						appearance: {
+							style: {
+								'height': '100%',
+								'width': '100%',
+							},
+							classes: ['ie','abs'],
+						},
+					}),
+				],
+			}),
+		],
+	}).then(function (base) {
 
-		// autocomplete
-		Components.searchableList('sb-2-ap-1-autocomplete', {
-			appearance: {
-				style: {
-					'height': '100%',
-					'width': '100%',
-				},
-				classes: ['ie','abs'],
-			},
-		}),
-
-	]).then(function (components) {
-		var [
-			base,
-
-			mainPanel,
-
-			autocompletePanel,
-			autocomplete,
-		] = components;
+		var autocomplete = base.cc.autocompletePanel.cc.autocomplete;
 
 		// autocomplete
 		autocomplete.targets = [
@@ -169,100 +165,96 @@ AccountInterfaces.shortcutInterface = function (id, args) {
 		autocomplete.unit = function (datum, query, index) {
 			query = (query || '');
 			var base = autocomplete.data.idgen(index);
-			return Promise.all([
-				// base component
-				UI.createComponent(base, {
-					template: UI.template('div', 'ie button base'),
-					appearance: {
-						classes: [datum.rule],
-						style: {
-							'height': 'auto',
-						},
-					}
-				}),
-
-				// main container
-				UI.createComponent('{base}-main-container'.format({base: base}), {
-					template: UI.template('div', 'ie'),
-					appearance: {
-						style: {
-							'left': '0px',
-							'padding-top': '11px',
-							'padding-bottom': '5px',
-							'width': 'calc(100% - 15px)'
-						},
+			return UI.createComponent(base, {
+				name: 'unit{index}'.format({index: index}),
+				template: UI.template('div', 'ie button base'),
+				appearance: {
+					classes: [datum.rule],
+					style: {
+						'height': 'auto',
 					},
-				}),
-
-				// main wrapper
-				UI.createComponent('{base}-main-wrapper'.format({base: base}), {
-					template: UI.template('div', 'ie'),
-					appearance: {
-						style: {
-							'left': '0px',
-							'display': 'inline-block',
+				},
+				children: [
+					// main container
+					UI.createComponent('{base}-main-container'.format({base: base}), {
+						name: 'container',
+						template: UI.template('div', 'ie'),
+						appearance: {
+							style: {
+								'left': '0px',
+								'padding-top': '11px',
+								'padding-bottom': '5px',
+								'width': 'calc(100% - 15px)'
+							},
 						},
-					},
-				}),
-
-				// main
-				UI.createComponent('{base}-main-head'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'color': Color.grey.normal,
-							'display': 'inline-block',
-							'position': 'absolute',
+						children: [
+							// main wrapper
+							UI.createComponent('{base}-main-wrapper'.format({base: base}), {
+								name: 'wrapper',
+								template: UI.template('div', 'ie'),
+								appearance: {
+									style: {
+										'left': '0px',
+										'display': 'inline-block',
+									},
+								},
+								children: [
+									// main
+									UI.createComponent('{base}-main-head'.format({base: base}), {
+										name: 'head',
+										template: UI.template('span', 'ie'),
+										appearance: {
+											style: {
+												'color': Color.grey.normal,
+												'display': 'inline-block',
+												'position': 'absolute',
+											},
+											html: datum.main.substring(0, query.length),
+										},
+									}),
+									UI.createComponent('{base}-main-tail'.format({base: base}), {
+										name: 'tail',
+										template: UI.template('span', 'ie'),
+										appearance: {
+											style: {
+												'display': 'inline-block',
+												'max-width': '100%',
+											},
+											html: datum.main,
+										},
+									}),
+								],
+							}),
+							UI.createComponent('{base}-main-shortcut'.format({base: base}), {
+								name: 'shortcut',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									style: {
+										'display': 'inline-block',
+										'left': '8px',
+										'opacity': '0.6',
+										'top': '-4px',
+									},
+									html: (datum.shortcut || ''),
+								},
+							}),
+						],
+					}),
+					// index
+					UI.createComponent('{base}-index'.format({base: base}), {
+						name: 'index',
+						template: UI.template('div', 'ie abs'),
+						appearance: {
+							style: {
+								'width': '10px',
+								'right': '5px',
+								'top': '11px',
+							},
+							html: index,
 						},
-						html: datum.main.substring(0, query.length),
-					},
-				}),
-				UI.createComponent('{base}-main-tail'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-							'max-width': '100%',
-						},
-						html: datum.main,
-					},
-				}),
-				UI.createComponent('{base}-main-shortcut'.format({base: base}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						style: {
-							'display': 'inline-block',
-							'left': '8px',
-							'opacity': '0.6',
-							'top': '-4px',
-						},
-						html: (datum.shortcut || ''),
-					},
-				}),
-
-				// index
-				UI.createComponent('{base}-index'.format({base: base}), {
-					template: UI.template('div', 'ie abs'),
-					appearance: {
-						style: {
-							'width': '10px',
-							'right': '5px',
-							'top': '11px',
-						},
-						html: index,
-					},
-				}),
-
-			]).then(function (unitComponents) {
-				var [
-					unitBase,
-					unitMainContainer,
-					unitMainWrapper,
-					unitMainHead,
-					unitMainTail,
-					unitMainShortcut,
-					unitIndex,
-				] = unitComponents;
+					}),
+				],
+			}).then(function (unitBase) {
 
 				unitBase.activate = function () {
 					return unitBase.setAppearance({classes: {add: ['active']}});
@@ -290,33 +282,21 @@ AccountInterfaces.shortcutInterface = function (id, args) {
 				unitBase.updateDatum = function (ndatum) {
 					return unitBase.setAppearance({classes: {add: ndatum.rule, remove: (unitBase.datum || datum).rule}}).then(function () {
 						unitBase.datum = ndatum;
-						return unitMainShortcut.setAppearance({html: (ndatum.shortcut || '')});
+						return unitBase.cc.container.cc.shortcut.setAppearance({html: (ndatum.shortcut || '')});
 					});
 				}
 				unitBase.updateQuery = function (query) {
 					unitBase.query = query;
 					return Promise.all([
-						unitMainHead.setAppearance({html: unitBase.datum.main.substring(0, query.length)}),
-						unitMainTail.setAppearance({html: unitBase.datum.main}),
+						unitBase.cc.container.cc.wrapper.cc.head.setAppearance({html: unitBase.datum.main.substring(0, query.length)}),
+						unitBase.cc.container.cc.wrapper.cc.tail.setAppearance({html: unitBase.datum.main}),
 					]);
 				}
 
 				// complete promises.
 				return Promise.all([
-					unitMainWrapper.setChildren([
-						unitMainHead,
-						unitMainTail,
-					]),
-					unitMainContainer.setChildren([
-						unitMainWrapper,
-						unitMainShortcut,
-					]),
+
 				]).then(function () {
-					return unitBase.setChildren([
-						unitMainContainer,
-						unitIndex,
-					]);
-				}).then(function () {
 					return unitBase;
 				});
 			});
@@ -347,12 +327,12 @@ AccountInterfaces.shortcutInterface = function (id, args) {
 				classes: ['hidden'],
 			}),
 			base.setState({
-				defaultState: {preFn: UI.functions.hide},
+				defaultState: {preFn: UI.functions.hide()},
 				states: {
 					'role-state': 'default',
 					'control-state': 'default',
 					'settings-state': 'default',
-					'shortcut-state': {
+					'-settings-state-shortcuts': {
 						preFn: function () {
 							// KEYBINDINGS
 							Mousetrap.bind('up', function (event) {
@@ -386,53 +366,48 @@ AccountInterfaces.shortcutInterface = function (id, args) {
 							});
 							return Util.ep();
 						},
-						fn: UI.functions.show,
+						fn: UI.functions.show(),
 					},
 				},
 			}),
-
-			// autocomplete panel
-			autocompletePanel.setChildren([
-				autocomplete,
-			]),
 
 			// autocomplete
-			autocomplete.components.filterButton.setState({
+			autocomplete.cc.searchFilterBar.cc.filterButton.setState({
 				stateMap: {
-					'shortcut-state': 'shortcut-state-filter',
-					'shortcut-state-filter': 'shortcut-state',
+					'-settings-state-shortcuts': '-settings-state-shortcuts-filter',
+					'-settings-state-shortcuts-filter': '-settings-state-shortcuts',
 				},
 			}),
-			autocomplete.list.setState({
+			autocomplete.cc.list.setState({
 				states: {
-					'shortcut-state': {
+					'-settings-state-shortcuts': {
 						classes: {remove: 'hidden'},
 					},
-					'shortcut-state-filter': {
+					'-settings-state-shortcuts-filter': {
 						classes: {add: 'hidden'},
 					},
 				},
 			}),
-			autocomplete.components.filter.setState({
+			autocomplete.cc.filter.setState({
 				states: {
-					'shortcut-state': {
+					'-settings-state-shortcuts': {
 						classes: {add: 'hidden'},
 					},
-					'shortcut-state-filter': {
+					'-settings-state-shortcuts-filter': {
 						classes: {remove: 'hidden'},
 					},
 				},
 			}),
 			autocomplete.setTitle(),
 			autocomplete.setSearch({mode: 'on', limit: 10, autocomplete: true}),
-			autocomplete.components.search.setAppearance({
+			autocomplete.search.setAppearance({
 				style: {
 					'border': '0px solid #fff',
 					'border-bottom': '1px solid #888',
 					'border-radius': '0px',
 				},
 			}),
-			autocomplete.components.searchFilterBar.setAppearance({
+			autocomplete.cc.searchFilterBar.setAppearance({
 				style: {
 					'display': 'block',
 				},
@@ -440,7 +415,7 @@ AccountInterfaces.shortcutInterface = function (id, args) {
 			autocomplete.unitStyle.apply(),
 			autocomplete.setState({
 				states: {
-					'shortcut-state': {
+					'-settings-state-shortcuts': {
 						preFn: function (_this) {
 							return _this.control.setup.main();
 						},
@@ -454,11 +429,6 @@ AccountInterfaces.shortcutInterface = function (id, args) {
 			}),
 
 		]).then(function () {
-			return base.setChildren([
-				mainPanel,
-				autocompletePanel,
-			]);
-		}).then(function () {
 			return base;
 		});
 	});

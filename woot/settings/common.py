@@ -28,6 +28,7 @@ TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 ALLOWED_HOSTS = (
 	'localhost',
 	'192.168.16.25',
+	'nicholaspiano.pythonanywhere.com',
 )
 ########## END ALLOWED HOSTS CONFIGURATION
 
@@ -49,13 +50,6 @@ SITE_NAME = basename(dirname(DJANGO_ROOT))
 # name in our dotted import paths:
 path.append(DJANGO_ROOT)
 
-def get_access():
-	path = os.path.join(CODE_ROOT, '.access/{}.json'.format(SITE_NAME))
-	data = {}
-	with open(path) as access:
-		data = json.load(access)
-
-	return data
 ########## END PATH CONFIGURATION
 
 
@@ -127,9 +121,6 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
 	'django.contrib.staticfiles.finders.FileSystemFinder',
 	'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-
-	# Compressor
-	'compressor.finders.CompressorFinder',
 )
 ########## END STATIC FILE CONFIGURATION
 
@@ -180,9 +171,6 @@ TEMPLATES = [
 MIDDLEWARE_CLASSES = (
 	# Use GZip compression to reduce bandwidth.
 	'django.middleware.gzip.GZipMiddleware',
-
-	# Django debug toolbar
-	'debug_toolbar.middleware.DebugToolbarMiddleware',
 
 	# Default Django middleware.
 	'django.middleware.common.CommonMiddleware',
@@ -250,9 +238,6 @@ DATABASES = {}
 THIRD_PARTY_APPS = (
 	# Asynchronous task scheduling
 	# 'djcelery',
-
-	# Static compression
-	'compressor',
 )
 
 LOCAL_APPS = (
@@ -325,10 +310,3 @@ LOGGING = {
 # # rabbitmq: https://www.rabbitmq.com/man/rabbitmqctl.1.man.html
 # # celery: https://zapier.com/blog/async-celery-example-why-and-how/
 # ########## END CELERY CONFIGURATION
-#
-#
-# ########## COMPRESSOR CONFIGURATION
-# # usage: http://django-compressor.readthedocs.io/en/latest/usage/
-# COMPRESS_ENABLED = True
-
-########## END COMPRESSOR CONFIGURATION

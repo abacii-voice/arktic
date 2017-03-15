@@ -3,6 +3,7 @@
 
 # local
 from apps.tr.models.client.client import Client
+from util import filterOrAllOnBlank
 
 # util
 import collections
@@ -34,7 +35,7 @@ class Permission():
 		self.is_basic = self.role is None
 
 	def check_client(self, client):
-		return self.role is not None and (self.role.client.id == client if isinstance(client, str) else self.role.client == client)
+		return self.role is not None and (self.role.client == client or str(self.role.client.id) == str(client))
 
 	def check_user(self, user):
 		return self.user == user
@@ -125,7 +126,7 @@ def access(original_path, permission, fltr={}):
 
 	if path.check('clients'):
 		data.update({
-			'clients': {client.id: client.data(path.down('clients'), permission) for client in Client.objects.filter(id__startswith=path.get_id()) if client.users.filter(id=permission.user.id).exists()},
+			'clients': {str(client.id): client.data(path.down('clients'), permission) for client in filterOrAllOnBlank(Client.objects, id=path.get_id()) if client.users.filter(id=permission.user.id).exists()},
 		})
 
 	if path.check('user'):
@@ -149,7 +150,7 @@ def process_request(request):
 	# 2. get user and role_type
 	user = request.user
 	role_id = data['permission']
-	role = user.roles.get(id=role_id) if user.roles.filter(id=role_id).exists() else None
+	role = user.roles.get(id=role_id) if role_id and user.roles.filter(id=role_id).exists() else None
 
 	# 3. get permission
 	permission = Permission(user, role=role)

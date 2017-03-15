@@ -1,6 +1,7 @@
 # django
 from django.core.management.base import BaseCommand, CommandError
 from django.core.files import File
+from django.conf import settings
 
 # local
 from apps.tr.models.client.client import Client
@@ -23,10 +24,6 @@ class Command(BaseCommand):
 		production_client, production_client_created = Client.objects.get_or_create(name='TestProductionClient', is_production=True)
 		contract_client, contract_client_created = Client.objects.get_or_create(name='TestContractClient', is_production=False)
 
-		# flags
-		production_client.flags.create(name='unsure')
-		production_client.flags.create(name='no-speech')
-
 		# create user
 		user, user_created = User.objects.get_or_create(email='n@a.com', first_name='Nicholas', last_name='Piano')
 		user.set_password('mach')
@@ -35,7 +32,7 @@ class Command(BaseCommand):
 		production_admin_role = production_client.add_admin(user)
 		contract_admin_role = contract_client.add_admin(user)
 		moderator_role = production_client.add_moderator(user)
-		worker_role = production_client.add_worker(user, moderator_role)
+		worker_role = production_client.add_worker(user)
 
 		# save
 		user.save()
@@ -45,7 +42,7 @@ class Command(BaseCommand):
 		user2.set_password('mach')
 
 		# create roles
-		worker_role2 = production_client.add_worker(user2, moderator_role)
+		worker_role2 = production_client.add_worker(user2)
 
 		# save
 		user2.save()
@@ -53,6 +50,7 @@ class Command(BaseCommand):
 		### UPLOADS AND TRANSCRIPTIONS
 
 		# basic upload
+		production_client.contract_clients.add(contract_client)
 		project = production_client.production_projects.create(name='TestProject', contract_client=contract_client)
 		grammar = contract_client.grammars.create(name='TestGrammar')
 		batch = project.batches.create(name='TestBatch')
@@ -75,8 +73,13 @@ class Command(BaseCommand):
 		# create shortcuts
 		test_tag.shortcuts.create(role=worker_role, combo='ctrl+b')
 
+		# flags
+		production_client.flags.create(name='unsure')
+		test_flag = production_client.flags.create(name='no-speech')
+		test_flag.shortcuts.create(role=worker_role, combo='ctrl+n')
+
 		# fragment list
-		base = '/Users/nicholaspiano/code/abacii-voice/arktic/test/'
+		base = join(settings.SITE_ROOT, 'test/')
 		fragment_list = [f for f in os.listdir(join(base, 'selectedAudioFiles')) if ('.DS' not in f and not isdir(join(base, 'selectedAudioFiles', f)))]
 		relfile_data = {}
 		with open(join(base, 'relfile.csv'), 'r') as open_relfile:

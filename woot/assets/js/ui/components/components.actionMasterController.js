@@ -2,16 +2,10 @@
 var Components = (Components || {});
 
 // action master controller
-Components.actionMasterController = function (context) {
+Components.actionMasterController = function (name) {
 
 	// components
-	return Promise.all([
-		UI.createComponent('', {}),
-	]).then(function (components) {
-		// unpack components
-		var [
-			base,
-		] = components;
+	return UI.createComponent('', {name: name}).then(function (base) {
 
 		// The idea here is that the master controller should point at the list of transcriptions and act on it.
 		// The caption and the audio field should only operate on one transcription at a time,
@@ -29,7 +23,7 @@ Components.actionMasterController = function (context) {
 			action.index = base.buffer.length;
 			action.time = timestamp.toString();
 			action.millis = timestamp.getMilliseconds().toString();
-			action.context = context;
+			action.context = name;
 			base.buffer.push(action);
 		}
 		base.action = {
@@ -56,7 +50,7 @@ Components.actionMasterController = function (context) {
 		return Promise.all([
 
 		]).then(function () {
-			return base
+			return base;
 		});
 	});
 }

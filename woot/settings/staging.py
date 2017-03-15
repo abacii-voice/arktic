@@ -10,9 +10,6 @@ from os import environ
 ########## DEBUG CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = True
-
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
-TEMPLATE_DEBUG = DEBUG
 ########## END DEBUG CONFIGURATION
 
 
@@ -32,21 +29,16 @@ SECRET_KEY = 'x08ig!20zeo%q46l6dnc8eqzb5g+h&(t4o18e#!yex&g&7sn=n'
 ########## END SECRET CONFIGURATION
 
 
-########## TOOLBAR CONFIGURATION
-# See: https://github.com/django-debug-toolbar/django-debug-toolbar#installation
-INSTALLED_APPS += (
-	'debug_toolbar',
-)
-
-# See: https://github.com/django-debug-toolbar/django-debug-toolbar#installation
-INTERNAL_IPS = ('127.0.0.1',)
-
-# See: https://github.com/django-debug-toolbar/django-debug-toolbar#installation
-MIDDLEWARE_CLASSES += (
-	'debug_toolbar.middleware.DebugToolbarMiddleware',
-)
-
-DEBUG_TOOLBAR_CONFIG = {
-
+########## DATABASE CONFIGURATION
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
+DATABASES = {
+	'default': {
+		'ENGINE': 'django.db.backends.postgresql_psycopg2',
+		'NAME': 'arktic_db',
+		'HOST': 'NicholasPiano-358.postgres.pythonanywhere-services.com',
+		'USER': 'super',
+		'PASSWORD': 'uqnhs77f',
+		'PORT': '10358',
+	}
 }
-########## END TOOLBAR CONFIGURATION
+########## END DATABASE CONFIGURATION
