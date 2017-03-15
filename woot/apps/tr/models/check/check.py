@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.tr.idgen import idgen
+import uuid
 
 ### Correction classes
 class QualityCheck(models.Model):
@@ -11,7 +11,7 @@ class QualityCheck(models.Model):
 	client = models.ForeignKey('tr.Client', related_name='checks')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	name = models.CharField(max_length=255)
 	is_automatic = models.BooleanField(default=True)
 
@@ -32,7 +32,7 @@ class QualityCheckInstance(models.Model):
 	transcription = models.ForeignKey('tr.TranscriptionInstance', related_name='checks')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	is_successful = models.BooleanField(default=True)
 	date_created = models.DateTimeField(auto_now_add=True)
 

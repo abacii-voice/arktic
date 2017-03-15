@@ -38,10 +38,10 @@ UI.createApp('hook', [
 				state: {
 					states: [
 						'initial-state': {
-							preFn: UI.functions.show,
+							preFn: UI.functions.show(),
 						},
 						'confirmed-state': {
-							fn: UI.functions.hide,
+							fn: UI.functions.hide(),
 						},
 					],
 				},

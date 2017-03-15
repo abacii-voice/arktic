@@ -7,7 +7,7 @@ var UI = {
 
 	// changeState
 	changeState: function (stateName, trigger) {
-		if (!stateName.startsWith('-')) { // local states begin with '-'
+		if (!stateName.startsWith('-')) {
 			UI.globalState = stateName;
 		}
 		return Promise.all(UI.states.filter(function (state) {
@@ -242,45 +242,57 @@ var UI = {
 					return removeClasses.indexOf(cls) === -1;
 				});
 
-				_this.style = (appearance.style || _this.style);
+				_this.style = (_this.style || {});
+				appearance.style = (appearance.style || {});
+				Object.keys(appearance.style).forEach(function (key) {
+					_this.style[key] = appearance.style[key];
+				});
 
 				if (_this.isRendered) {
 					// model
 					var model = _this.model();
-					return model.animate(appearance.style, 300).promise().then(function () {
+					model.animate(appearance.style, 300);
 
-						// html - this will erase children of the current model
-						if (appearance.html !== undefined) {
-							model.html(_this.html);
+					// set colors
+					var colors = ['color', 'background-color', 'border-color'];
+					colors.forEach(function (color) {
+						if (color in appearance.style) {
+							let dict = {};
+							dict[color] = appearance.style[color];
+							model.css(dict);
 						}
-
-						// properties
-						if (appearance.properties) {
-							Object.keys(_this.properties).forEach(function (property) {
-								model.attr(property, _this.properties[property]);
-							});
-						}
-
-						// classes
-						if (appearance.classes) {
-							return Promise.all([
-								Promise.all(removeClasses.map(function (cls) {
-									return new Promise(function(resolve, reject) {
-										model.removeClass(cls);
-										resolve();
-									});
-								})),
-								Promise.all(addClasses.map(function (cls) {
-									return new Promise(function(resolve, reject) {
-										model.addClass(cls);
-										resolve();
-									});
-								})),
-							]);
-						}
-					}).then(function () {
-						return Util.ep(appearance);
 					});
+
+					// html - this will erase children of the current model
+					if (appearance.html !== undefined) {
+						model.html(_this.html);
+					}
+
+					// properties
+					if (appearance.properties) {
+						Object.keys(_this.properties).forEach(function (property) {
+							model.attr(property, _this.properties[property]);
+						});
+					}
+
+					// classes
+					if (appearance.classes) {
+						return Promise.all([
+							Promise.all(removeClasses.map(function (cls) {
+								return new Promise(function(resolve, reject) {
+									model.removeClass(cls);
+									resolve();
+								});
+							})),
+							Promise.all(addClasses.map(function (cls) {
+								return new Promise(function(resolve, reject) {
+									model.addClass(cls);
+									resolve();
+								});
+							})),
+						]);
+					}
+					return Util.ep(appearance);
 				} else {
 					return Util.ep(appearance);
 				}
@@ -330,7 +342,8 @@ var UI = {
 			}
 		}
 		this.triggerState = function () {
-			return UI.changeState(this.mapState(UI.globalState), this.id);
+			this.state = this.mapState(this.state || UI.globalState);
+			return UI.changeState(this.state, this.id);
 		}
 
 		// DOM
@@ -358,27 +371,24 @@ var UI = {
 		}
 		this.addChild = function (child) {
 			var _this = this;
-			return new Promise(function(resolve, reject) {
-				var index = child.index;
-				child.index = (child.index !== undefined ? child.index : _this.children.length);
-				if (child.name) {
-					_this.components[child.name] = child;
-				}
-				child.isAddedToParent = true;
-				// if (child.id.contains('tb-1-mp-3-caption-') && !child.id.contains('head') && !child.id.contains('tail') && !child.id.contains('space')) {
-				// 	console.log(child.id, child.index, index, _this.children.length);
-				// }
-				_this.children.splice(child.index, 0, child);
-				resolve(child);
-			});
+			var index = child.index;
+			child.index = (child.index !== undefined ? child.index : _this.children.length);
+			if (child.name) {
+				_this.cc = _this.cc || {};
+				_this.cc[child.name] = child;
+			}
+			child.isAddedToParent = true;
+			_this.children.splice(child.index, 0, child);
+			return Util.ep(child);
 		}
 		this.removeChild = function (id) {
 			var _this = this;
 			return UI.getComponent(id).then(function (child) {
-				return new Promise(function(resolve, reject) {
-					_this.children.splice(child.index, 1);
-					resolve(id);
-				})
+				_this.children.splice(child.index, 1);
+				if (_this.cc && id in _this.cc) {
+					delete _this.cc[id];
+				}
+				return Util.ep(id);
 			}).then(UI.removeComponent).then(function () {
 				// renumber children
 				return _this.setChildIndexes();
@@ -458,7 +468,7 @@ var UI = {
 			}
 		}
 		this.update = function (args) {
-			args = args !== undefined ? args : {};
+			args = args || {};
 			var _this = this;
 			return Promise.all([
 				// id, root, after, template
@@ -482,10 +492,8 @@ var UI = {
 		}
 		this.removeModel = function () {
 			var _this = this;
-			return new Promise(function(resolve, reject) {
-				_this.model().remove();
-				resolve();
-			});
+			_this.model().remove();
+			return Util.ep();
 		}
 		this.model = function (single) {
 			if (single) {
@@ -538,6 +546,7 @@ var UI = {
 		}
 		this.changeState = function (state) {
 			var _this = this;
+			_this.state = state.name;
 
 			// run fn
 			setTimeout(function () {
@@ -554,10 +563,21 @@ var UI = {
 				});
 			});
 		}
+		this.ccTree = function () {
+			var _this = this;
+			var tree = {cc_name: _this.name};
+			if (_this.cc) {
+				Object.keys(_this.cc).forEach(function (key) {
+					tree[_this.cc[key].id] = _this.cc[key].cc ? _this.cc[key].ccTree() : _this.cc[key].id;
+				});
+			}
+			return tree;
+		}
 
 		// initialise
 		this.id = id;
 		this.isRendered = false; // establish whether or not the component has been rendered to the DOM.
+		this.state = undefined;
 	},
 
 	// createComponent
@@ -598,6 +618,7 @@ var UI = {
 	app: function (root, children) {
 		var id = 'app';
 		var args = {
+			name: 'app',
 			root: root,
 			template: UI.template('div'),
 			appearance: {
@@ -676,19 +697,24 @@ var UI = {
 
 	// FUNCTIONS
 	functions: {
-		show: function (_this) {
-			return _this.setAppearance({classes: {remove: ['hidden']}}).then(function () {
-				return _this.setAppearance({style: {opacity: 1}});
-			});
+		show: function (style) {
+			style = (style || {});
+			style['opacity'] = '1.0';
+			return function (_this) {
+				return _this.setAppearance({classes: {remove: ['hidden']}}).then(function () {
+					return _this.setAppearance({style: style});
+				});
+			}
 		},
-		hide: function (_this) {
-			return _this.setAppearance({style: {opacity: 0}}).then(function () {
-				return _this.setAppearance({classes: {add: ['hidden']}});
-			});
-		},
-		triggerState: function (_this) {
-			_this.triggerState();
-		},
+		hide: function (style) {
+			style = (style || {});
+			style['opacity'] = '0.0';
+			return function (_this) {
+				return _this.setAppearance({style: style}).then(function () {
+					return _this.setAppearance({classes: {add: ['hidden']}});
+				});
+			}
+		}
 	},
 }
 
@@ -829,6 +855,7 @@ var Active = {
 			for (i=0; i<context_path.length; i++) {
 				if (i+1 === context_path.length) {
 					sub[context_path[i]] = value;
+					break;
 				} else {
 					if (sub[context_path[i]] === undefined) {
 						sub[context_path[i]] = {};

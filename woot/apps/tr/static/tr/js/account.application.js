@@ -1,58 +1,34 @@
 var AccountApplication = function (id, args) {
-	return Promise.all([
-		// base
-		UI.createComponent('{id}-base'.format({id: id}), {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '100%',
-				},
+	return UI.createComponent('{id}-base'.format({id: id}), {
+		name: 'base',
+		template: UI.template('div', 'ie'),
+		appearance: {
+			style: {
+				'height': '100%',
 			},
-		}),
+		},
+		children: [
+			// control interface
+			AccountInterfaces.controlInterface('controlInterface'),
 
-		// control interface
-		AccountInterfaces.controlInterface('control-interface', {
-			interface: args.interface,
-		}),
+			// transcription interface
+			AccountInterfaces.transcriptionInterface('transcriptionInterface'),
 
-		// transcription interface
-		AccountInterfaces.transcriptionInterface('transcription-interface', {
-			interface: args.interface,
-		}),
+			// project complete interface
+			AccountInterfaces.projectCompleteInterface('projectCompleteInterface'),
 
-		// project complete interface
-		AccountInterfaces.projectCompleteInterface('project-complete-interface', {
-			interface: args.interface,
-		}),
+			// shortcuts interface
+			AccountInterfaces.shortcutInterface('shortcutInterface'),
 
-		// shortcuts interface
-		AccountInterfaces.shortcutInterface(),
-
-	]).then(function (components) {
-		// unpack components
-		var [
-			base,
-			controlInterface,
-			transcriptionInterface,
-			projectCompleteInterface,
-			shortcutInterface,
-		] = components;
-
-		// ASSOCIATE
-		// key bindings and other
+			// project interface
+			AccountInterfaces.projectInterface('projectInterface'),
+		],
+	}).then(function (base) {
 
 		// complete promises
 		return Promise.all([
 
 		]).then(function () {
-			// base children
-			return base.setChildren([
-				controlInterface,
-				transcriptionInterface,
-				projectCompleteInterface,
-				shortcutInterface,
-			]);
-		}).then(function () {
 			return base;
 		});
 	});
