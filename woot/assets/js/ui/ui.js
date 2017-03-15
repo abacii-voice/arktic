@@ -251,48 +251,48 @@ var UI = {
 				if (_this.isRendered) {
 					// model
 					var model = _this.model();
-					return model.animate(appearance.style, 300).promise().then(function () {
+					model.animate(appearance.style, 300);
 
-						// set colors
-						if ('color' in appearance.style || 'background-color' in appearance.style) {
-							model.css({
-								'color': appearance.style['color'],
-								'background-color': appearance.style['background-color'],
-							});
+					// set colors
+					var colors = ['color', 'background-color', 'border-color'];
+					colors.forEach(function (color) {
+						if (color in appearance.style) {
+							let dict = {};
+							dict[color] = appearance.style[color];
+							model.css(dict);
 						}
-
-						// html - this will erase children of the current model
-						if (appearance.html !== undefined) {
-							model.html(_this.html);
-						}
-
-						// properties
-						if (appearance.properties) {
-							Object.keys(_this.properties).forEach(function (property) {
-								model.attr(property, _this.properties[property]);
-							});
-						}
-
-						// classes
-						if (appearance.classes) {
-							return Promise.all([
-								Promise.all(removeClasses.map(function (cls) {
-									return new Promise(function(resolve, reject) {
-										model.removeClass(cls);
-										resolve();
-									});
-								})),
-								Promise.all(addClasses.map(function (cls) {
-									return new Promise(function(resolve, reject) {
-										model.addClass(cls);
-										resolve();
-									});
-								})),
-							]);
-						}
-					}).then(function () {
-						return Util.ep(appearance);
 					});
+
+					// html - this will erase children of the current model
+					if (appearance.html !== undefined) {
+						model.html(_this.html);
+					}
+
+					// properties
+					if (appearance.properties) {
+						Object.keys(_this.properties).forEach(function (property) {
+							model.attr(property, _this.properties[property]);
+						});
+					}
+
+					// classes
+					if (appearance.classes) {
+						return Promise.all([
+							Promise.all(removeClasses.map(function (cls) {
+								return new Promise(function(resolve, reject) {
+									model.removeClass(cls);
+									resolve();
+								});
+							})),
+							Promise.all(addClasses.map(function (cls) {
+								return new Promise(function(resolve, reject) {
+									model.addClass(cls);
+									resolve();
+								});
+							})),
+						]);
+					}
+					return Util.ep(appearance);
 				} else {
 					return Util.ep(appearance);
 				}
@@ -566,9 +566,11 @@ var UI = {
 		this.ccTree = function () {
 			var _this = this;
 			var tree = {cc_name: _this.name};
-			Object.keys(_this.cc).forEach(function (key) {
-				tree[_this.cc[key].id] = _this.cc[key].cc ? _this.cc[key].ccTree() : _this.cc[key].id;
-			});
+			if (_this.cc) {
+				Object.keys(_this.cc).forEach(function (key) {
+					tree[_this.cc[key].id] = _this.cc[key].cc ? _this.cc[key].ccTree() : _this.cc[key].id;
+				});
+			}
 			return tree;
 		}
 
@@ -616,6 +618,7 @@ var UI = {
 	app: function (root, children) {
 		var id = 'app';
 		var args = {
+			name: 'app',
 			root: root,
 			template: UI.template('div'),
 			appearance: {
