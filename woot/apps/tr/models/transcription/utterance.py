@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.tr.idgen import idgen
+import uuid
 
 # util
 import os
@@ -26,7 +26,7 @@ class Utterance(models.Model):
 
 	### Properties
 	# https://docs.djangoproject.com/en/1.9/ref/models/fields/#uuidfield
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	file = models.FileField(upload_to=rename_audio_file)
 
 	### Methods

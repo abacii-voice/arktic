@@ -28,6 +28,7 @@ TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 ALLOWED_HOSTS = (
 	'localhost',
 	'192.168.16.25',
+	'nicholaspiano.pythonanywhere.com',
 )
 ########## END ALLOWED HOSTS CONFIGURATION
 
@@ -49,13 +50,6 @@ SITE_NAME = basename(dirname(DJANGO_ROOT))
 # name in our dotted import paths:
 path.append(DJANGO_ROOT)
 
-def get_access():
-	path = os.path.join(CODE_ROOT, '.access/{}.json'.format(SITE_NAME))
-	data = {}
-	with open(path) as access:
-		data = json.load(access)
-
-	return data
 ########## END PATH CONFIGURATION
 
 
@@ -177,7 +171,7 @@ TEMPLATES = [
 MIDDLEWARE_CLASSES = (
 	# Use GZip compression to reduce bandwidth.
 	'django.middleware.gzip.GZipMiddleware',
-	
+
 	# Default Django middleware.
 	'django.middleware.common.CommonMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',
