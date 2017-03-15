@@ -284,7 +284,7 @@ AccountInterfaces.controlInterface = function (name) {
 				},
 				children: [
 					// main wrapper
-					UI.createComponent('{base}-main-wrapper'.format({base: base}), {
+					UI.createComponent('{base}-main-wrapper'.format({base: baseId}), {
 						name: 'mainWrapper',
 						template: UI.template('div', 'ie centred-vertically'),
 						appearance: {
@@ -294,7 +294,7 @@ AccountInterfaces.controlInterface = function (name) {
 						},
 						children: [
 							// main
-							UI.createComponent('{base}-mw-head'.format({base: base}), {
+							UI.createComponent('{base}-mw-head'.format({base: baseId}), {
 								name: 'head',
 								template: UI.template('span', 'ie'),
 								appearance: {
@@ -306,7 +306,7 @@ AccountInterfaces.controlInterface = function (name) {
 									html: datum.main.substring(0, query.length),
 								},
 							}),
-							UI.createComponent('{base}-mw-tail'.format({base: base}), {
+							UI.createComponent('{base}-mw-tail'.format({base: baseId}), {
 								name: 'tail',
 								template: UI.template('span', 'ie'),
 								appearance: {

@@ -2,7 +2,7 @@
 from django.db import models
 
 # local
-from apps.tr.idgen import idgen
+import uuid
 
 ### Token classes
 class Token(models.Model):
@@ -11,7 +11,7 @@ class Token(models.Model):
 	dictionary = models.ForeignKey('tr.Dictionary', related_name='tokens')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	type = models.CharField(max_length=255, default='')
 	content = models.CharField(max_length=255, default='')
 
@@ -38,7 +38,7 @@ class TokenInstance(models.Model):
 	phrase = models.ForeignKey('tr.Phrase', related_name='tokens')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	index = models.IntegerField(default=0)
 
 	### Methods
@@ -63,7 +63,7 @@ class TokenShortcut(models.Model):
 	role = models.ForeignKey('tr.Role', related_name='token_shortcuts')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	date_created = models.DateTimeField(auto_now_add=True)
 	is_active = models.BooleanField(default=True)
 	combo = models.CharField(max_length=255)

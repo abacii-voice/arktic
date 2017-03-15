@@ -1,1 +1,4 @@
 -r development.txt
+
+# Postgres
+psycopg2

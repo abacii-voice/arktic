@@ -100,7 +100,8 @@ AccountComponents.uploadController = function () {
 					// reset errors
 				},
 			},
-			accept: function (file) {
+			addFile: function (file) {
+				// can be csv, wav, zip, or other
 				// sort by file type
 				if (file.type === 'audio/wav') {
 					// 1. add to buffer.audio
@@ -143,8 +144,36 @@ AccountComponents.uploadController = function () {
 					zipReader.readAsBinaryString(file);
 				}
 			},
-			preUpload: function () {
-				// send list of files and hash
+			addDirectory: function (directory, name) {
+				var directoryReader = directory.createReader();
+				var readerFunction = function (entries) {
+					var i, length = entries.length;
+					for (i=0; i<length; i++) {
+						let entry = entries[i];
+						if (entry.isFile) {
+							entry.file(function (file) {
+								if (file.name.substring(0, 1) !== '.') {
+									base.upload.addFile(file);
+								}
+							});
+						} else if (entry.isDirectory) {
+							base.upload.addDirectory(entry);
+						}
+					}
+				}
+				return new Promise(function(resolve, reject) {
+					directoryReader.readEntries(readerFunction)
+					resolve();
+				});
+			},
+			accept: function (list) {
+				return Promise.all(list.map(function (entry) {
+					if (entry.isFile) {
+						return base.upload.addFile(entry.file);
+					} else {
+						return base.upload.addDirectory(entry.directory, entry.name);
+					}
+				}));
 			},
 			start: function () {
 
@@ -158,3 +187,29 @@ AccountComponents.uploadController = function () {
 		});
 	});
 }
+
+// Dropzone.prototype._addFilesFromDirectory = function(directory, path) {
+// 	var dirReader, entriesReader,
+// 		_this = this;
+// 	dirReader = directory.createReader();
+// 	entriesReader = function(entries) {
+// 		var entry, _i, _len;
+// 		for (_i = 0, _len = entries.length; _i < _len; _i++) {
+// 			entry = entries[_i];
+// 			if (entry.isFile) {
+// 				entry.file(function(file) {
+// 					if (_this.options.ignoreHiddenFiles && file.name.substring(0, 1) === '.') {
+// 						return;
+// 					}
+// 					file.fullPath = "" + path + "/" + file.name;
+// 					return _this.addFile(file);
+// 				});
+// 			} else if (entry.isDirectory) {
+// 				_this._addFilesFromDirectory(entry, "" + path + "/" + entry.name);
+// 			}
+// 		}
+// 	};
+// 	return dirReader.readEntries(entriesReader, function(error) {
+// 		return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log(error) : void 0 : void 0;
+// 	});
+// };

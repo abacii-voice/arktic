@@ -3,7 +3,12 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
-from apps.users.idgen import idgen
+
+# local
+from util import filterOrAllOnBlank
+
+# util
+import uuid
 
 ### User classes
 class UserManager(BaseUserManager):
@@ -22,7 +27,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 	### Properties
 	# identification
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	email = models.EmailField(max_length=255, unique=True)
 	first_name = models.CharField(max_length=255)
 	last_name = models.CharField(max_length=255)
@@ -67,7 +72,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 		if path.check('clients'):
 			data.update({
-				'clients': {client.id: client.user_data(path.down('clients'), permission) for client in self.clients.filter(id__startswith=path.get_id())},
+				'clients': {str(client.id): client.user_data(path.down('clients'), permission) for client in filterOrAllOnBlank(self.clients, id=path.get_id())},
 			})
 
 		return data
@@ -77,7 +82,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 		if path.check('roles'):
 			data.update({
-				'roles': {role.id: role.data(path.down('roles'), permission) for role in self.roles.filter(id__startswith=path.get_id(), client=client)}
+				'roles': {str(role.id): role.data(path.down('roles'), permission) for role in filterOrAllOnBlank(self.roles, id=path.get_id(), client=client)}
 			})
 
 		return data
@@ -130,7 +135,7 @@ class Session(models.Model):
 	user = models.ForeignKey('users.User', related_name='sessions')
 
 	### Properties
-	id = models.CharField(primary_key=True, default=idgen, editable=False, max_length=32)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	is_active = models.BooleanField(default=True)
 	date_created = models.DateTimeField(auto_now_add=True)
 	type = models.CharField(max_length=255)
