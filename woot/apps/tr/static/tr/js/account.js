@@ -47,16 +47,16 @@ UI.app('hook', [
 				// role
 				Context.get('user.clients.{client}.roles'.format({client: clientId})).then(function (roles) {
 					var roleId = Object.keys(roles).filter(function (key) {
-						return roles[key].type === 'worker';
+						return roles[key].type === 'admin';
 					})[0];
 					return Promise.all([
 						// active
 						Active.set('role', roleId),
 
 						// project
-						Context.get('user.clients.{client}.roles.{role}.project'.format({client: clientId, role: roleId})).then(function (project) {
-							return Active.set('project', project);
-						}),
+						// Context.get('user.clients.{client}.roles.{role}.project'.format({client: clientId, role: roleId})).then(function (project) {
+						// 	return Active.set('project', project);
+						// }),
 					]);
 				}),
 			]);
@@ -64,9 +64,9 @@ UI.app('hook', [
 	]).then(function () {
 		// return UI.changeState('client-state');
 		// return UI.changeState('control-state');
-		return UI.changeState('transcription-state');
+		// return UI.changeState('transcription-state');
 		// return UI.changeState('shortcut-state');
-		// return UI.changeState('project-state');
+		return UI.changeState('project-state');
 	});
 }).catch(function (error) {
 	console.log(error);

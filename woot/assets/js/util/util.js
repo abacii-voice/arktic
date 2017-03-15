@@ -22,7 +22,11 @@ var Util = {
 		properties: function (properties) {
 			if (properties !== undefined) {
 				var strings = Object.keys(properties).map(function (property) {
-					return '{property}="{value}" '.format({property: property, value: properties[property]})
+					if (typeof(properties[property]) === 'boolean' && properties[property]) {
+						return '{property} '.format({property: property});
+					} else {
+						return '{property}="{value}" '.format({property: property, value: properties[property]});
+					}
 				});
 				return strings.join('');
 			} else {
