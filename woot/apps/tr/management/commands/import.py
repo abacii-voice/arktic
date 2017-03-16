@@ -1,13 +1,17 @@
 # django
+from django.db import transaction
+from django.core.files import File
 from django.core.management.base import BaseCommand, CommandError
 
 # local
 from apps.tr.access import access, Permission
-from apps.tr.models import Client, Project
+from apps.tr.models import Client, Project, Utterance
+from util import isValidUUID
 
 # util
 import os
-from os.path import join, exists, isdir, basename
+import sys
+from os.path import join, exists, isdir, basename, split
 import json
 from terminaltables import AsciiTable
 import argparse
@@ -22,14 +26,12 @@ class Command(BaseCommand):
 		'IMPORT: imports audio files and relfiles from a specified path.',
 		'',
 		'1. To import; client, project, and batch ids must be provided, along with a name.',
-		'   Omitting these will display a list of current items under the top level category.',
+		'   If the name is omitted, the name of the folder will be used.',
 		'',
 		'2. The path will first be checked for duplicates, missing captions, and other errors.',
 		'   Import can be cancelled at this point.',
 		'',
 		'3. Choose to continue to import the selected files.',
-		'',
-		'4. Possible arguments are: PATH, CLIENT, PROJECT, BATCH and NAME.',
 		'',
 		'A header line is expected in every relfile.'
 	])
@@ -53,7 +55,7 @@ class Command(BaseCommand):
 			action='store',
 			dest='client',
 			default='',
-			help='Client id',
+			help='Client id or name of new contract client',
 		)
 
 		# Project
@@ -61,7 +63,15 @@ class Command(BaseCommand):
 			action='store',
 			dest='project',
 			default='',
-			help='Project id',
+			help='Project id or name of new project',
+		)
+
+		# Grammar
+		parser.add_argument('--grammar',
+			action='store',
+			dest='grammar',
+			default='',
+			help='Grammar id or name of new grammar',
 		)
 
 		# Batch
@@ -69,7 +79,7 @@ class Command(BaseCommand):
 			action='store',
 			dest='batch',
 			default='',
-			help='Batch id',
+			help='Batch id or name of new batch',
 		)
 
 		# Name
@@ -77,15 +87,63 @@ class Command(BaseCommand):
 			action='store',
 			dest='name',
 			default='',
-			help='Name the upload',
+			help='Name of the upload (Name of folder if omitted)',
 		)
+
+		# Production Client
+		parser.add_argument('--production-client',
+			action='store',
+			dest='production_client',
+			default='Abacii',
+			help='Client id or name of the production client',
+		)
+
+	def route_input(self, data_type, manager, value, kwargs={}):
+		obj = None
+		created = False
+		if value:
+			if isValidUUID(value) and manager.filter(id=value).exists():
+				obj = manager.get(id=value)
+			elif manager.filter(name=value).exists():
+				obj = manager.get(name=value)
+			else:
+				continue_creating = input('Creating {} {}, continue (y/n)? '.format(data_type, value))
+				if continue_creating == 'y':
+					kwargs['name'] = value
+					obj = manager.create(**kwargs)
+					created = True
+				else:
+					self.stdout.write('Cancelled import.')
+					sys.exit(0)
+		else:
+			self.stdout.write('Please enter a valid {} name or id.'.format(data_type))
+			sys.exit(0)
+
+		return obj, created
 
 	def handle(self, *args, **options):
 
 		# args
 		path = options['path']
+		client_id_or_name = options['client']
+		project_id_or_name = options['project']
+		grammar_id_or_name = options['grammar']
+		batch_id_or_name = options['batch']
+		name = options['name']
+		production_client_id_or_name = options['production_client']
 
 		if path and exists(path) and isdir(path):
+			# variables
+			production_client, production_client_created = self.route_input('production client', Client.objects, production_client_id_or_name, {'is_production': True})
+			client, client_created = self.route_input('client', Client.objects, client_id_or_name, {'is_production': False})
+			production_client.contract_clients.add(client)
+			project, project_created = self.route_input('project', client.contract_projects, project_id_or_name, {'description': '', 'production_client': production_client})
+			grammar, grammar_created = self.route_input('grammar', client.grammars, grammar_id_or_name)
+			dictionary, dictionary_created = grammar.dictionaries.get_or_create(project=project)
+			batch, batch_created = self.route_input('batch', project.batches, batch_id_or_name, {'description': ''})
+			upload_name = name if name else split(path)[1] # uses name of folder if blank
+			upload, upload_created = self.route_input('upload', batch.uploads, upload_name)
+
 			# 1. using path specified, walk directory and get relfile(s) and audio files
 			all_files = []
 			for directory, subs, files in os.walk(path):
@@ -99,6 +157,7 @@ class Command(BaseCommand):
 					lines = open_relfile.readlines()
 					for line in lines[1:]: # omit header
 						filename, caption = tuple(line.strip().split(','))
+						filename = basename(filename)
 						if filename in registry and filename not in relfile_duplicates:
 							relfile_duplicates.append(filename)
 						else:
@@ -117,6 +176,7 @@ class Command(BaseCommand):
 						audio_duplicates.append(filename)
 					else:
 						audio_registry[filename] = registry[filename]
+						audio_registry[filename]['path'] = audio
 				else:
 					no_caption.append(filename)
 
@@ -131,7 +191,7 @@ class Command(BaseCommand):
 				# c. Audio files with no corresponding relfile lines
 				# d. Relfile lines with no corresponding audio file
 
-			table_data = [['Relfile Duplicates', 'No Caption', 'Audio Duplicates', 'No Audio']]
+			table_data = [['Relfile Duplicates', 'No Relfile Entry', 'Audio Duplicates', 'No Audio']]
 			for i in range(max([len(relfile_duplicates), len(no_caption), len(audio_duplicates), len(no_audio)])):
 				table_data.append([
 					relfile_duplicates[i] if i < len(relfile_duplicates) else '',
@@ -155,14 +215,20 @@ class Command(BaseCommand):
 
 			# 6. If continue, import the files.
 			if continue_upload == 'y':
+				with transaction.atomic():
+					length = len(audio_registry.keys())
+					for i, (filename, data) in enumerate(audio_registry.items()):
+						self.stdout.write('\rImporting {}/{}: {} => {}'.format(i+1, length, filename, data['caption']), ending='\033[K' if i < length - 1 else '\033[K\n')
+						fragment = upload.fragments.create(filename=data['path'])
+						phrase, phrase_created = dictionary.create_phrase(content=data['caption'])
+						transcription = batch.transcriptions.create(project=project, grammar=grammar, filename=fragment.filename, content=phrase)
 
-				# get or create client
-				# get or create project
-				# get or create batch
-				# create upload
+						with open(data['path'], 'rb') as audio_origin:
+							utterance = Utterance.objects.create(transcription=transcription, file=File(audio_origin), original_filename=data['path'])
 
-				self.stdout.write('Uploading...')
+
+
 			else:
-				self.stdout.write('Cancelled upload.')
+				self.stdout.write('Cancelled import.')
 		else:
 			self.stdout.write('Please enter a valid PATH to search.\n - Must be a directory.\n - Must exist.')
