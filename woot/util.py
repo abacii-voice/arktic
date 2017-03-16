@@ -1,4 +1,6 @@
 
+from uuid import UUID
+
 def truncate(f, n):
 	'''Truncates/pads a float f to n decimal places without rounding'''
 	s = '{}'.format(f)
@@ -12,3 +14,11 @@ def filterOrAllOnBlank(manager, **kwargs):
 		del kwargs['id']
 
 	return manager.filter(**kwargs)
+
+def isValidUUID(uuid_string):
+	try:
+		val = UUID(uuid_string, version=4)
+	except ValueError:
+		return False
+
+	return val.hex == uuid_string

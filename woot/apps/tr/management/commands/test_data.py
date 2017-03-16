@@ -99,4 +99,4 @@ class Command(BaseCommand):
 			# 3. create utterance
 			with open(os.path.join(base, 'selectedAudioFiles', file_name), 'rb') as destination:
 				# create new utterance using open file
-				utterance = Utterance.objects.create(transcription=transcription, file=File(destination))
+				utterance = Utterance.objects.create(transcription=transcription, file=File(destination), original_filename=file_name)
