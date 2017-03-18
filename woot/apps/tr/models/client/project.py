@@ -204,6 +204,7 @@ class Upload(models.Model):
 	### Properties
 	date_created = models.DateTimeField(auto_now_add=True)
 	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	name = models.CharField(max_length=255, default='')
 	archive_name = models.CharField(max_length=255, default='')
 	is_complete = models.BooleanField(default=False)
 
@@ -224,6 +225,7 @@ class Upload(models.Model):
 		if path.is_blank:
 			data.update({
 				'date_created': str(self.date_created),
+				'name': self.name,
 				'archive_name': self.archive_name,
 				'total_fragments': str(total_fragments),
 				'completed_fragments': str(completed_fragments),
@@ -262,3 +264,7 @@ class Fragment(models.Model):
 		}
 
 		return data
+
+	def reconcile(self):
+		self.is_reconciled = True
+		self.save()
