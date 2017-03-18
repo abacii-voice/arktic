@@ -12,3 +12,6 @@ celery
 django-celery
 redis
 python-memcached
+
+# Display
+terminaltables

@@ -37,6 +37,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 	activation_email_sent = models.BooleanField(default=False)
 	activation_key = models.CharField(max_length=20) # use utils to generate unique key
 
+	# enabled status on system: is deleted?
+	is_enabled = models.BooleanField(default=True)
+
 	# settings
 	billing_date = models.DateTimeField(auto_now_add=True) # this is an instance of datetime.datetime
 
@@ -60,6 +63,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 				'email': self.email,
 				'first_name': self.first_name,
 				'last_name': self.last_name,
+				'is_active': self.is_active,
 				'is_activated': self.is_activated,
 				'billing_date': str(self.billing_date),
 				'active_session': self.sessions.get(is_active=True).data() if self.sessions.filter(is_active=True) else 'none',
@@ -120,6 +124,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 			return True
 		else:
 			return False # change to False when testing is done
+
+	def disable(self):
+		self.is_enabled = False
+		self.save()
+
+	def enable(self):
+		self.is_enabled = True
+		self.save()
 
 	def active_session(self):
 		return self.sessions.get(is_active=True) if self.sessions.filter(is_active=True) else None
