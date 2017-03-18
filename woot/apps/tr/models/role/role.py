@@ -73,9 +73,18 @@ class Role(models.Model):
 	# project
 	def auto_project_assign(self):
 		if self.project is None and (self.type == 'worker' or self.type == 'moderator'):
-			self.project = Project.objects.earliest()
+			self.project = client.projects.earliest()
 
 		return self.project
+
+	def assign_project(self, project):
+		if self.project is None and (self.type == 'worker' or self.type == 'moderator'):
+			self.project = project
+			self.save()
+
+	def total_transcriptions(self, project=None):
+		project_name = project.name if project is not None else ''
+		return sum([token.transcriptions.count() for token in self.transcription_tokens.filter(project__name__contains=project_name)])
 
 	# threshold
 	def add_threshold(self, project):

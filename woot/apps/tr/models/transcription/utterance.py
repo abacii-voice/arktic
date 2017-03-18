@@ -28,6 +28,7 @@ class Utterance(models.Model):
 	# https://docs.djangoproject.com/en/1.9/ref/models/fields/#uuidfield
 	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	file = models.FileField(upload_to=rename_audio_file)
+	original_filename = models.CharField(max_length=255)
 
 	### Methods
 	def process(self):
