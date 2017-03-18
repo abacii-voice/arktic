@@ -30,6 +30,7 @@ ALLOWED_HOSTS = (
 	'192.168.16.25',
 	'www.arkticvoice.com',
 	'arkticvoice.com',
+	'staging.arkticvoice.com',
 )
 ########## END ALLOWED HOSTS CONFIGURATION
 
