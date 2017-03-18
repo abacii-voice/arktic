@@ -17,9 +17,6 @@ from terminaltables import AsciiTable
 import argparse
 from argparse import RawTextHelpFormatter
 
-### Command: create default user
-# class CustomCommand(BaseCommand):
-
 class Command(BaseCommand):
 
 	help = '\n'.join([
@@ -108,7 +105,7 @@ class Command(BaseCommand):
 				obj = manager.get(name=value)
 			else:
 				continue_creating = input('Creating {} {}, continue (y/n)? '.format(data_type, value))
-				if continue_creating == 'y':
+				if continue_creating in ['', 'y']:
 					kwargs['name'] = value
 					obj = manager.create(**kwargs)
 					created = True
@@ -214,7 +211,7 @@ class Command(BaseCommand):
 				continue_upload = input('Continue (y/n)? ')
 
 			# 6. If continue, import the files.
-			if continue_upload == 'y':
+			if continue_upload in ['', 'y']:
 				with transaction.atomic():
 					length = len(audio_registry.keys())
 					for i, (filename, data) in enumerate(audio_registry.items()):
@@ -225,8 +222,6 @@ class Command(BaseCommand):
 
 						with open(data['path'], 'rb') as audio_origin:
 							utterance = Utterance.objects.create(transcription=transcription, file=File(audio_origin), original_filename=data['path'])
-
-
 
 			else:
 				self.stdout.write('Cancelled import.')
