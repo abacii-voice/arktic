@@ -86,6 +86,7 @@ class Transcription(models.Model):
 	requests = models.PositiveIntegerField(default=0)
 	request_allowance = models.PositiveIntegerField(default=1)
 	date_last_requested = models.DateTimeField(auto_now=True)
+	has_been_exported = models.BooleanField(default=False)
 
 	### Methods
 	# data
@@ -118,6 +119,9 @@ class Transcription(models.Model):
 			})
 
 		return data
+
+	def export(self):
+		return ','.join([self.filename, self.instances.latest().phrase.render(), self.instances.latest().token.role.user.email])
 
 class TranscriptionFragment(models.Model):
 
@@ -179,6 +183,9 @@ class TranscriptionFragment(models.Model):
 			self.save()
 
 class TranscriptionInstance(models.Model):
+
+	class Meta():
+		get_latest_by = 'date_created'
 
 	### Connections
 	parent = models.ForeignKey('tr.Transcription', related_name='instances')

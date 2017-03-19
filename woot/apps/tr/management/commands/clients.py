@@ -25,7 +25,6 @@ class Command(BaseCommand):
 		return parser
 
 	def add_arguments(self, parser):
-		cmd = self
 
 		# add global client filter
 		parser.add_argument('--client',

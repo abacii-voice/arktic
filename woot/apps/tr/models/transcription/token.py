@@ -4,6 +4,13 @@ from django.db import models
 # local
 import uuid
 
+# templates
+templates = {
+	'tag': '[{}]',
+	'word': '',
+	'flag': '\{}',
+}
+
 ### Token classes
 class Token(models.Model):
 
@@ -31,6 +38,9 @@ class Token(models.Model):
 
 		return data
 
+	def render(self):
+		return templates[self.type].format(self.content)
+
 class TokenInstance(models.Model):
 
 	### Connections
@@ -51,6 +61,9 @@ class TokenInstance(models.Model):
 		})
 
 		return data
+
+	def render(self):
+		return self.parent.render()
 
 class TokenShortcut(models.Model):
 	'''

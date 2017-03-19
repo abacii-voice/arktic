@@ -31,6 +31,9 @@ class Phrase(models.Model):
 
 		return data
 
+	def render(self):
+		return ' '.join([ti.render() for ti in self.token_instances.order_by('index')])
+
 class PhraseInstance(models.Model):
 	### Connections
 	parent = models.ForeignKey('tr.Phrase', related_name='instances')
@@ -51,6 +54,9 @@ class PhraseInstance(models.Model):
 		}
 
 		return data
+
+	def render(self):
+		return self.parent.render()
 
 class PhraseSubscription(models.Model):
 	'''
