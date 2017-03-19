@@ -8,7 +8,7 @@ import uuid
 templates = {
 	'tag': '[{}]',
 	'word': '{}',
-	'flag': '\{}',
+	'flag': '[{}]',
 }
 
 ### Token classes

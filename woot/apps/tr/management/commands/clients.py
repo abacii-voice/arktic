@@ -66,7 +66,7 @@ class Command(BaseCommand):
 
 		# display projects
 		self.stdout.write('\nProjects: \n')
-		project_data = [['Client', 'ID', 'Name', '# Batches', '# Total', '# Remaining', '%', '# Workers assigned']]
+		project_data = [['Client', 'ID', 'Name', '# Batches', '# Total', '# Remaining', '%', '# Workers assigned', 'Worker emails']]
 		for client in client_set:
 			for i, project in enumerate(client.contract_projects.order_by('-date_created')):
 				project_data.append([
@@ -78,6 +78,7 @@ class Command(BaseCommand):
 					project.transcriptions_remaining(),
 					project.completion_percentage(),
 					project.assigned.count(),
+					', '.join([r.user.email for r in project.assigned.all()]),
 				])
 
 		project_table = AsciiTable(project_data)
