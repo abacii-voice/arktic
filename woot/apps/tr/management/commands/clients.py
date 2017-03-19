@@ -30,36 +30,56 @@ class Command(BaseCommand):
 		# add global client filter
 		parser.add_argument('--client',
 			action='store',
-			dest='client_id_or_name',
+			dest='client',
 			default='',
 			help='Client name or id.',
-		)
-
-		# subparser
-		class SubParser(CommandParser):
-			def __init__(self, **kwargs):
-				super(SubParser, self).__init__(cmd, **kwargs)
-
-		subparsers = parser.add_subparsers(title='commands', parser_class=SubParser, dest='command')
-
-		# add
-		add_parser = subparsers.add_parser('add')
-		add_parser.add_argument('--name',
-			action='store',
-			dest='client_name',
-			default='',
-			help='Client name to add.',
 		)
 
 	def handle(self, *args, **options):
 
 		# vars
-		production_client = Client.objects.get(name='Abacii')
+		client_id_or_name = options['client']
+		client = None
+		if client_id_or_name:
+			if isValidUUID(client_id_or_name) and Client.objects.filter(is_production=False, id=client_id_or_name).exists():
+				client = Client.objects.get(id=client_id_or_name)
+			elif Client.objects.filter(is_production=False, name=client_id_or_name).exists():
+				client = Client.objects.get(name=client_id_or_name)
+			else:
+				self.stdout.write('No such contract client.')
+				sys.exit(0)
 
-		if options['command'] == 'add':
-			client_name = options['client_name']
-			if client_name and not Client.objects.filter(name=client_name).exists():
-				client = Client.objects.create()
+		# display clients
+		self.stdout.write('Clients: \n')
+		client_set = [client] if client is not None else Client.objects.filter(is_production=False)
 
-		else:
-			# just list the clients, maybe with a filter
+		client_data = [['ID', 'Name', '# Active projects', '# Remaining']]
+		for client in client_set:
+			client_data.append([
+				client.id,
+				client.name,
+				client.contract_projects.filter(production_client__name='Abacii', is_active=True).count(),
+				sum([project.transcriptions_remaining() for project in client.contract_projects.filter(production_client__name='Abacii', is_active=True)]),
+			])
+
+		client_table = AsciiTable(client_data)
+		self.stdout.write(client_table.table)
+
+		# display projects
+		self.stdout.write('\nProjects: \n')
+		project_data = [['Client', 'ID', 'Name', '# Batches', '# Total', '# Remaining', '%', '# Workers assigned']]
+		for client in client_set:
+			for i, project in enumerate(client.contract_projects.order_by('-date_created')):
+				project_data.append([
+					client.name if i==0 else '',
+					project.id,
+					project.name,
+					project.batches.count(),
+					project.transcriptions.count(),
+					project.transcriptions_remaining(),
+					project.completion_percentage(),
+					project.assigned.count(),
+				])
+
+		project_table = AsciiTable(project_data)
+		self.stdout.write(project_table.table)
