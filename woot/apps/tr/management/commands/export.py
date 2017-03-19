@@ -91,7 +91,7 @@ class Command(BaseCommand):
 		if batch is not None:
 			batch_name = batch.name
 			project_name = project.name if project is not None else batch.project.name
-			client = client if client is not None else project.contract_client
+			client = client if client is not None else batch.project.contract_client
 
 		client_set = [client] if client is not None else Client.objects.filter(is_production=False)
 		self.stdout.write('\nBatches: \n')
@@ -114,7 +114,7 @@ class Command(BaseCommand):
 		self.stdout.write(batch_table.table)
 
 		# prompt for export
-		if batch is not None:
+		if batch_id_or_name:
 			self.stdout.write('\nThis batch has: \n')
 			self.stdout.write('[y or blank] {} completed transcriptions that have not been exported.'.format(batch.transcriptions_not_exported()))
 			self.stdout.write('[force] {} completed transcriptions in total.'.format(batch.transcriptions_completed()))
@@ -122,7 +122,7 @@ class Command(BaseCommand):
 			choice = input('Do you want to continue with the export (y/n/force)? ')
 			if choice in ['y', '', 'force']:
 				force = choice == 'force'
-				filename, number_of_transcriptions = batch.export(force)
+				filename, number_of_transcriptions = batch.export(force=force)
 				self.stdout.write('Exported {} transcriptions to {}'.format(number_of_transcriptions, filename))
 				sys.exit(0)
 

@@ -32,7 +32,7 @@ class Phrase(models.Model):
 		return data
 
 	def render(self):
-		return ' '.join([ti.render() for ti in self.token_instances.order_by('index')])
+		return ' '.join([ti.render() for ti in self.tokens.order_by('index')])
 
 class PhraseInstance(models.Model):
 	### Connections

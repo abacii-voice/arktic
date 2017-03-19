@@ -7,7 +7,7 @@ import uuid
 # templates
 templates = {
 	'tag': '[{}]',
-	'word': '',
+	'word': '{}',
 	'flag': '\{}',
 }
 
