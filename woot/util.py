@@ -21,4 +21,4 @@ def isValidUUID(uuid_string):
 	except ValueError:
 		return False
 
-	return val.hex == uuid_string
+	return str(val) == uuid_string

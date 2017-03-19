@@ -1,7 +1,10 @@
 # django
 from django.db import models
+from django.core.files import File, ContentFile
 
 # local
+from io import StringIO
+from datetime import datetime
 from util import truncate, filterOrAllOnBlank
 import uuid
 
@@ -191,6 +194,44 @@ class Batch(models.Model):
 
 		return data
 
+	# stats
+	def is_transcription_complete(self):
+		self.is_active = self.transcriptions.filter(is_active=True).count() == 0
+		self.save()
+		return self.is_active
+
+	def is_moderation_complete(self):
+		return self.moderations.filter(is_active=True).count() == 0
+
+	def transcriptions_remaining(self):
+		return self.transcriptions.filter(is_active=True).count()
+
+	def transcriptions_completed(self):
+		return self.transcriptions.filter(is_active=False).count()
+
+	def moderations_remaining(self):
+		return self.moderations.filter(is_active=True).count()
+
+	def completion_percentage(self):
+		return truncate(((self.transcriptions.count() + self.moderations.count()) - (self.transcriptions_remaining() + self.moderations_remaining())) / (self.transcriptions.count() + self.moderations.count()) * 100.0, 2)
+
+	def redundancy_percentage(self):
+		return self.moderations.count() / self.transcriptions.count()
+
+	def transcriptions_not_exported(self):
+		return self.transcriptions.filter(has_been_exported=False, is_active=False).count()
+
+	# export
+	def export(self, force):
+		kwargs = {'is_active': False, 'has_been_exported': False}
+		if force:
+			kwargs = {'is_active': False}
+		transcriptions = [t.export() for t in self.transcriptions.filter(**kwargs)]
+		buffer = '\n'.join(transcriptions)
+		export = self.exports.create(is_forced=force, file=ContentFile(buffer))
+
+		return export.file.url, len(transcriptions)
+
 class Upload(models.Model):
 	'''
 
@@ -243,7 +284,7 @@ class Upload(models.Model):
 class Fragment(models.Model):
 	'''
 
-	Represents and unuploaded file. Fragments are reconciled upon upload.
+	Represents an unuploaded file. Fragments are reconciled upon upload.
 
 	'''
 
@@ -268,3 +309,36 @@ class Fragment(models.Model):
 	def reconcile(self):
 		self.is_reconciled = True
 		self.save()
+
+
+def export_filename(instance):
+	date = datetime.now()
+	date_string = '{}-{}-{}-{}-{}'.format(date.year, date.month, date.day, date.hour, date.minute)
+	file_name = '{}_p-{}_b-{}_d-{}_uuid-{}.csv'.format(instance.batch.project.contract_client.name.lower(), instance.batch.project.name.lower(), instance.batch.name.lower(), date_string, instance.id)
+	return join('export', file_name)
+
+class Export(models.Model):
+	'''
+
+	Represents an export.
+
+	'''
+
+	### Connections
+	batch = models.ForeignKey('tr.Batch', related_name='exports')
+
+	### Properties
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	date_created = models.DateTimeField(auto_now_add=True)
+	file = models.FileField(upload_to=export_filename)
+	is_forced = models.BooleanField(default=False)
+
+	### Methods
+	# data
+	def data(self, path, permission):
+		data = {
+			'filename': self.file.name,
+			'is_forced': self.is_forced,
+		}
+
+		return data
