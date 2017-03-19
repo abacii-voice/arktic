@@ -22,7 +22,7 @@ class Command(BaseCommand):
 		production_client, production_client_created = Client.objects.get_or_create(name='Abacii', is_production=True)
 
 		# create user
-		user, user_created = User.objects.get_or_create(email='nicholas.d.piano@gmail.com', first_name='Nicholas', last_name='Piano')
+		user, user_created = User.objects.get_or_create(email='n@a.com', first_name='Nicholas', last_name='Piano')
 		user.set_password('mach')
 
 		# create roles
