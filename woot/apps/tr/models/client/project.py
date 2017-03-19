@@ -1,6 +1,7 @@
 # django
 from django.db import models
-from django.core.files import File, ContentFile
+from django.core.files import File
+from django.core.files.base import ContentFile
 
 # local
 from io import StringIO
