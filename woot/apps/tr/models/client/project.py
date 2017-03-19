@@ -19,7 +19,7 @@ class Project(models.Model):
 	date_created = models.DateTimeField(auto_now_add=True)
 	description = models.TextField(default='')
 	combined_priority_index = models.PositiveIntegerField(default=0)
-	is_active = models.BooleanField(default=False)
+	is_active = models.BooleanField(default=True)
 
 	class Meta():
 		get_latest_by = 'date_created'
@@ -56,9 +56,9 @@ class Project(models.Model):
 				'redundancy_percentage': self.redundancy_percentage(),
 			})
 
-		if path.check('assigned_users') and hasattr(self, 'assigned_users') and permission.is_productionadmin and permission.check_client(self.production_client):
+		if path.check('assigned') and hasattr(self, 'assigned') and permission.is_productionadmin and permission.check_client(self.production_client):
 			data.update({
-				'assigned_users': [user.id for user in self.assigned_users.all()],
+				'assigned': [role.id for role in self.assigned.all()],
 			})
 
 		if path.check('dictionary') and hasattr(self, 'dictionary') and permission.check_client(path.get_key('client')):
