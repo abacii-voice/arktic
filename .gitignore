@@ -66,5 +66,6 @@ target/
 *.sqlite3
 node_modules/
 woot/static/
+woot/media/
 tmp/
 *.wav

@@ -33,7 +33,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 	last_name = models.CharField(max_length=255)
 
 	# activation
-	is_activated = models.BooleanField(default=False)
+	is_activated = models.BooleanField(default=True)
 	activation_email_sent = models.BooleanField(default=False)
 	activation_key = models.CharField(max_length=20) # use utils to generate unique key
 

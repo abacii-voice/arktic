@@ -113,7 +113,7 @@ class LoginView(View):
 
 		if form.is_valid():
 			user = authenticate(email=request.POST['email'], password=request.POST['password'])
-			if user is not None and user.is_activated and user.is_enabled:
+			if user is not None and user.is_activated:
 				login(request, user)
 				return HttpResponseRedirect('/account/')
 			else:
