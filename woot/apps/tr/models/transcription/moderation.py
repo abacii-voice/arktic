@@ -50,6 +50,7 @@ class Moderation(models.Model):
 
 	### Connections
 	project = models.ForeignKey('tr.Project', related_name='moderations')
+	batch = models.ForeignKey('tr.Batch', related_name='moderations')
 	transcription = models.ForeignKey('tr.TranscriptionInstance', related_name='moderations')
 
 	### Properties
