@@ -8,6 +8,7 @@ from io import StringIO
 from datetime import datetime
 from util import truncate, filterOrAllOnBlank
 import uuid
+from os.path import join
 
 ### Project model
 class Project(models.Model):
@@ -223,13 +224,14 @@ class Batch(models.Model):
 		return self.transcriptions.filter(has_been_exported=False, is_active=False).count()
 
 	# export
-	def export(self, force):
+	def export(self, force=False):
 		kwargs = {'is_active': False, 'has_been_exported': False}
 		if force:
 			kwargs = {'is_active': False}
 		transcriptions = [t.export() for t in self.transcriptions.filter(**kwargs)]
 		buffer = '\n'.join(transcriptions)
-		export = self.exports.create(is_forced=force, file=ContentFile(buffer))
+		export = self.exports.create(is_forced=force)
+		export.save_file(ContentFile(buffer))
 
 		return export.file.url, len(transcriptions)
 
@@ -312,7 +314,7 @@ class Fragment(models.Model):
 		self.save()
 
 
-def export_filename(instance):
+def export_filename(instance, blank):
 	date = datetime.now()
 	date_string = '{}-{}-{}-{}-{}'.format(date.year, date.month, date.day, date.hour, date.minute)
 	file_name = '{}_p-{}_b-{}_d-{}_uuid-{}.csv'.format(instance.batch.project.contract_client.name.lower(), instance.batch.project.name.lower(), instance.batch.name.lower(), date_string, instance.id)
@@ -343,3 +345,6 @@ class Export(models.Model):
 		}
 
 		return data
+
+	def save_file(self, file):
+		self.file.save(export_filename, file)

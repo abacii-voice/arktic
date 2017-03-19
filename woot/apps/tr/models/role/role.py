@@ -39,7 +39,7 @@ class Role(models.Model):
 
 		if (permission.is_moderator or permission.is_productionadmin or permission.check_user(self.user)) and (self.type == 'worker' or self.type == 'moderator'):
 			data.update({
-				'project': self.auto_project_assign().id,
+				'project': self.project.id if self.project is not None else '',
 			})
 
 		if path.check('stats') and (permission.is_moderator or permission.is_productionadmin or permission.check_user(self.user)):
