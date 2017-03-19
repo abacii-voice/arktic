@@ -22,7 +22,8 @@
 		<link rel='stylesheet' href='{% static "css/ui.css" %}'>
 		<link rel='stylesheet' href='{% static "css/elements.css" %}'>
 
-		{% block css %}{% endblock %}
+		<style type='text/css'>{% block css %}{% endblock %}</style>
+
 	</head>
 	<body {{ body_attr|safe }}>
 		<!--[if lt IE 8]>
@@ -31,26 +32,6 @@
 
 		{% block content %}{% endblock %}
 
-		<!-- NAVBAR -->
-		{% block nav %}
-		<nav class='navbar'>
-			<div class='navbar-left'>
-				<div class='nav-link header'>
-					{% block nav_home_redirect %}
-						<a href='/'>Arktic</a>
-					{% endblock %}
-				</div>
-
-				{% block nav_left %}
-				{% endblock %}
-			</div>
-			<div class='navbar-right'>
-				{% block nav_right %}
-				{% endblock %}
-			</div>
-		</nav>
-		{% endblock %}
-		<!-- END NAVBAR -->
 		<!-- Core JavaScript ================================================== -->
 		<!-- Placed at the end of the document so the pages load faster -->
 
