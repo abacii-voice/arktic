@@ -80,7 +80,7 @@ class Command(BaseCommand):
 			help='User worker flag',
 		)
 
-		# delete
+		# disable
 		disable_parser = subparsers.add_parser('disable')
 		disable_parser.add_argument('--user',
 			action='store',
