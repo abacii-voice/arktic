@@ -20,7 +20,9 @@ class Token(models.Model):
 	### Properties
 	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	type = models.CharField(max_length=255, default='')
+	is_enabled = models.BooleanField(default=True)
 	content = models.CharField(max_length=255, default='')
+	description = models.CharField(max_length=255, default='')
 
 	### Methods
 	# data
@@ -28,6 +30,7 @@ class Token(models.Model):
 		data = {
 			'type': self.type,
 			'content': self.content,
+			'description': self.description,
 		}
 
 		if permission.is_worker and permission.check_client(self.dictionary.project.production_client):

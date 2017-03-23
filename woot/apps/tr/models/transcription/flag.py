@@ -13,6 +13,7 @@ class Flag(models.Model):
 	### Properties
 	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	name = models.CharField(max_length=255)
+	description = models.CharField(max_length=255)
 
 	### Methods
 	# data
@@ -20,6 +21,7 @@ class Flag(models.Model):
 		data = {
 			'client': self.client.id,
 			'name': self.name,
+			'description': self.description,
 		}
 
 		if permission.is_worker and permission.check_client(self.client):
@@ -29,6 +31,9 @@ class Flag(models.Model):
 				})
 
 		return data
+
+	def render(self):
+		'[{}]'.format(self.name)
 
 class FlagInstance(models.Model):
 
@@ -49,6 +54,9 @@ class FlagInstance(models.Model):
 		})
 
 		return data
+
+	def render(self):
+		return self.parent.render()
 
 class FlagShortcut(models.Model):
 	'''
