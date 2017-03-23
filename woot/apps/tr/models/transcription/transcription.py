@@ -123,7 +123,11 @@ class Transcription(models.Model):
 	def export(self):
 		self.has_been_exported = True
 		self.save()
-		return ','.join([self.filename, self.instances.latest().phrase.render(), self.instances.latest().token.role.user.email])
+		latest = self.instances.latest()
+		rendered_phrase = latest.phrase.render()
+		rendered_flags = ' '.join([flag.render() for flag in latest.flags.all()])
+		worker_email = latest.token.role.user.email
+		return '{filename}, {phrase} {flags}, {worker}'.format(filename=self.filename, phrase=rendered_phrase, flags=rendered_flags, worker=worker_email)
 
 class TranscriptionFragment(models.Model):
 

@@ -247,7 +247,7 @@ class Command(BaseCommand):
 						sys.exit(0)
 
 					# get contract project
-					if isValidUUID(project_id_or_name) and client.projects.filter(id=project_id_or_name).exists():
+					if isValidUUID(project_id_or_name) and client.contract_projects.filter(id=project_id_or_name).exists():
 						project = client.contract_projects.get(id=project_id_or_name)
 					elif client.contract_projects.filter(name=project_id_or_name).exists():
 						project = client.contract_projects.get(name=project_id_or_name)

@@ -573,6 +573,10 @@ var UI = {
 			}
 			return tree;
 		}
+		this.get = function (path) {
+			// gets a child recursively by specifying a dotted string
+			
+		}
 
 		// initialise
 		this.id = id;
