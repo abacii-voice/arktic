@@ -269,9 +269,7 @@ Components.searchableList = function (id, args) {
 									if (index < base.data.storage.virtual.rendered.length) {
 										// element already exists. Update using info in datum.
 										// NO RETURN: releases promise immediately. No need to wait for order if one exists.
-										UI.getComponent(base.data.storage.virtual.rendered[index]).then(function (existingListItem) {
-											return existingListItem.updateMetadata(datum, base.data.query.toLowerCase());
-										}).then(function () {
+										base.cc.list.cc.wrapper.children[index].updateMetadata(datum, base.data.query.toLowerCase()).then(function () {
 											if (base.currentIndex === undefined) {
 												return base.control.setActive.main({index: 0});
 											} else {
@@ -296,10 +294,8 @@ Components.searchableList = function (id, args) {
 								}
 							})).then(function () {
 								// hide anything that does not contain something to display
-								return Promise.all(base.data.storage.virtual.rendered.slice(virtualList.length).map(function (listItemId) {
-									return UI.getComponent(listItemId).then(function (listItem) {
-										return listItem.hide();
-									});
+								return Promise.all(base.cc.list.cc.wrapper.children.slice(virtualList.length).map(function (listItem) {
+									return listItem.hide();
 								}));
 							})
 						}).then(function () {
@@ -535,16 +531,14 @@ Components.searchableList = function (id, args) {
 				},
 				set: function () {
 					return base.control.deactivate().then(function () {
-						return UI.getComponent(base.data.storage.virtual.rendered[base.currentIndex]).then(function (activeListItem) {
-							base.active = activeListItem;
-							if (base.active) {
-								return base.active.activate().then(function () {
-									return base.data.display.render.setMetadata();
-								});
-							} else {
-								return Util.ep();
-							}
-						})
+						base.active = base.cc.list.cc.wrapper.children[base.currentIndex];
+						if (base.active) {
+							return base.active.activate().then(function () {
+								return base.data.display.render.setMetadata();
+							});
+						} else {
+							return Util.ep();
+						}
 					});
 				},
 			},

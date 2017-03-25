@@ -31,161 +31,31 @@ var UI = {
 	// component
 	component: function (id) {
 		// identity
+		this.setName = function (name) {
+			var currentName = this.name;
+			this.name = (name || currentName);
+			return Util.ep(this.name);
+		}
 		this.setId = function (id) {
 			var currentId = this.id;
 			id = id !== undefined ? id : currentId;
-
-			if (id !== currentId) {
-				var _this = this;
-				// 1. remove the component while keeping a solid var present
-				// 2. change the id of the var and change the model attr.
-				// 3. Add the var.
-
-				return UI.remove(_this).then(function (component) {
-					return new Promise(function(resolve, reject) {
-						if (component.isRendered) {
-							component.model().attr('id', id);
-						}
-						component.id = id;
-						resolve(component);
-					});
-				}).then(UI.add);
-			} else {
-				return this.id;
-			}
-		}
-		this.setName = function (name) {
-			var currentName = this.name;
-			name = (name || currentName);
-
-			if (name !== currentName) {
-				var _this = this;
-				_this.name = name;
-				return _this.parent().then(function (parent) {
-					if (parent) {
-						parent.components[_this.name] = _this;
-						delete parent.components[currentName];
-					}
-					return Util.ep();
-				});
-			}
+			return Util.ep(id);
 		}
 		this.setAfter = function (after) {
 			var currentAfter = this.after;
 			after = after !== undefined ? after : currentAfter;
-
-			if (after !== currentAfter) {
-				var _this = this;
-				_this.after = after;
-				// 1. Parent stays the same.
-				// 2. Or does it...
-				// 3. No other element has to change.
-
-				if (_this.isRendered) {
-					return (after !== '' ? function () {
-						return UI.getComponent(_this.after).then(function (before) {
-							return _this.setRoot(before.root).then(function (child) {
-								return new Promise(function(resolve, reject) {
-									_this.model().insertAfter(before.model());
-									resolve();
-								});
-							});
-						});
-					} : function () {
-						return _this.parent().then(function (parent) {
-							return new Promise(function(resolve, reject) {
-								_this.model().insertBefore(parent.model().children().first());
-								resolve();
-							});
-						});
-					})().then(function () {
-						return _this.parent().then(function (parent) {
-							return parent.setChildIndexes();
-						})
-					});
-				} else {
-					return Util.ep(_this.after);
-				}
-			} else {
-				return Util.ep(this.after);
-			}
+			return Util.ep();
 		}
 		this.setRoot = function (root) {
 			var _this = this;
 			var currentRoot = (_this.root || 'hook');
-			newRoot = (root || currentRoot);
-
-			if (newRoot !== currentRoot) {
-				_this.root = newRoot;
-				// 1. get the current parent.
-				// 2.	remove the child from the current parent.
-				// 3. append to new parent model.
-				// 4. change the root value.
-				// 5. get the new parent.
-				// 6. add the child to new parent.
-				if (_this.isAddedToParent) {
-					return _this.parent().then(function (parent) {
-						return parent.removeChild(_this.id);
-					}).then(function () {
-						return new Promise(function(resolve, reject) {
-							_this.root = newRoot;
-							if (_this.isRendered) {
-								_this.model().appendTo('#{id}'.format({id: newRoot}));
-							}
-							resolve(newRoot);
-						});
-					}).then(UI.getComponent).then(function (newParent) {
-						return newParent.addChild(_this);
-					});
-				} else {
-					return Util.ep();
-				}
-			} else {
-				_this.root = newRoot;
-				return new Promise(function(resolve, reject) {
-					resolve(_this.root);
-				});
-			}
+			_this.root = (root || currentRoot);
+			return Util.ep(_this.root)
 		}
 		this.setTemplate = function (template) {
 			var currentTemplate = this.template !== undefined ? this.template : UI.templates.div;
 			this.template = template !== undefined ? template : currentTemplate;
-
-			if (this.template !== currentTemplate) {
-				var _this = this;
-				// 1. render empty template element to the DOM.
-				// 2. Append all children to the new empty element
-				// 3. Remove the old element.
-
-				return _this.renderTemplate().then(function (renderedTemplate) {
-					return new Promise(function(resolve, reject) {
-						if (_this.isRendered) {
-							var model = _this.model();
-							model.after(renderedTemplate);
-							model.attr('id', 'REMOVE-{id}'.format({id: _this.id}));
-						}
-						resolve();
-					});
-				}).then(function () {
-					if (_this.isRendered) {
-						return Promise.all(_this.children.map(function (child) {
-							return new Promise(function(resolve, reject) {
-								child.model().appendTo('#{id}'.format({id: _this.id}));
-								resolve();
-							});
-						}));
-					}
-				}).then(function () {
-					if (_this.isRendered) {
-						return new Promise(function(resolve, reject) {
-							$('#REMOVE-{id}'.format({id: _this.id})).remove();
-							resolve();
-						});
-					}
-				});
-			} else {
-				return this.template;
-			}
+			return Util.ep(this.template);
 		}
 		this.renderTemplate = function () {
 			var _this = this;
@@ -381,15 +251,10 @@ var UI = {
 			_this.children.splice(child.index, 0, child);
 			return Util.ep(child);
 		}
-		this.removeChild = function (id) {
+		this.removeChild = function (child) {
 			var _this = this;
-			return UI.getComponent(id).then(function (child) {
-				_this.children.splice(child.index, 1);
-				if (_this.cc && id in _this.cc) {
-					delete _this.cc[id];
-				}
-				return Util.ep(id);
-			}).then(UI.removeComponent).then(function () {
+			_this.children.splice(child.index, 1);
+			return UI.removeComponent(child).then(function () {
 				// renumber children
 				return _this.setChildIndexes();
 			});
@@ -398,7 +263,7 @@ var UI = {
 			var _this = this;
 			return Promise.ordered(_this.children.map(function (child) {
 				return function () {
-					return _this.removeChild(child.id);
+					return _this.removeChild(child);
 				}
 			}));
 		}
@@ -507,7 +372,7 @@ var UI = {
 		}
 		this.render = function () {
 			var _this = this;
-			var root = $('#{id}'.format({id: _this.root}));
+			var root = $('#{root}'.format({root: _this.root}));
 			return _this.renderTemplate().then(function (renderedTemplate) {
 				return new Promise(function(resolve, reject) {
 					if (root.children().length !== 0) {
@@ -533,7 +398,7 @@ var UI = {
 					return first.index - second.index;
 				}).map(function (child) {
 					return function () {
-						child.root = _this.id;
+						child.root = _this.id; // CHANGE TO NAME
 						return child.render();
 					}
 				}));
@@ -563,25 +428,26 @@ var UI = {
 				});
 			});
 		}
-		this.ccTree = function () {
-			var _this = this;
-			var tree = {cc_name: _this.name};
-			if (_this.cc) {
-				Object.keys(_this.cc).forEach(function (key) {
-					tree[_this.cc[key].id] = _this.cc[key].cc ? _this.cc[key].ccTree() : _this.cc[key].id;
-				});
-			}
-			return tree;
-		}
-		this.get = function (path) {
+		this.get = function (path, index) {
 			// gets a child recursively by specifying a dotted string
-			
+			index = (index || 0); // might be the beginning of the chain
+			if (index === 0) {
+				path = path.split('.');
+			}
+
+			var children = (this.children || []).filter(function (child) {
+				return child.name === path[index];
+			});
+
+			if (children.length) {
+				return children[0].get(path, index+1);
+			} else {
+				return this;
+			}
 		}
 
 		// initialise
 		this.id = id;
-		this.isRendered = false; // establish whether or not the component has been rendered to the DOM.
-		this.state = undefined;
 	},
 
 	// createComponent
@@ -595,26 +461,15 @@ var UI = {
 	createComponent: function (id, args) {
 		return new Promise(function(resolve, reject) {
 			resolve(new UI.component(id));
-		}).then(UI.add).then(function (component) {
+		}).then(function (component) {
 			return component.update(args);
 		});
 	},
 
 	// removeComponent
-	remove: function (component) {
-		return new Promise(function(resolve, reject) {
-			delete UI.components[component.id];
-			resolve(component);
-		});
-	},
-
-	removeComponent: function (id) {
-		return UI.getComponent(id).then(function (component) {
-			return component.removeChildren().then(function () {
-				return component.removeModel();
-			}).then(function () {
-				return UI.remove(component);
-			});
+	removeComponent: function (component) {
+		return component.removeChildren().then(function () {
+			return component.removeModel();
 		});
 	},
 
