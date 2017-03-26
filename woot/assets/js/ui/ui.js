@@ -373,6 +373,9 @@ var UI = {
 		this.render = function () {
 			var _this = this;
 			var root = $('#{root}'.format({root: _this.root}));
+
+			// SET STYLES HERE
+
 			return _this.renderTemplate().then(function (renderedTemplate) {
 				return new Promise(function(resolve, reject) {
 					if (root.children().length !== 0) {
