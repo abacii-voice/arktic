@@ -75,7 +75,7 @@ def submit_actions(request):
 
 			if action_created:
 				date = '{} {}'.format(active_action['time'], int(active_action['millis']) * 1000)
-				action.date_created = datetime.strptime(date, '%a %b %d %Y %H:%M:%S %Z%z (GMT) %f') # damn, girl, you ugly
+				action.date_created = datetime.strptime(date, '%a %b %d %Y %H:%M:%S %Z%z (%Z) %f') # damn, girl, you ugly
 				action.metadata = json.dumps(metadata)
 				action.save()
 
