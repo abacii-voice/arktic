@@ -144,3 +144,15 @@ Bindings left:
 5. selection (merge phrases)
 6. alt + left, alt + right (focus end next previous)
 7. alt + backspace (remove phrase)
+
+NEW IDEA:
+
+1. Replace all string.filter with `${}` format
+2. Encompass every arg that isn't children into the 'ui' arg.
+3. Remove names and ids. Id will be derived from name and parent id at render.
+4. New ui.styles arg: tree of styles that are applied to child objects and resolved before render.
+5. Child objects now fetched with .get(path) format. Path is dotted names. Not cc or cctree.
+6. Replace all open promises with Util.ep format.
+7. Creating standard searchable list unit that can be modified using properties before render.
+8. Searchable list needs list, autocomplete, and dropdown modes.
+9. Properties such as bindings can be set that will later be done at render.

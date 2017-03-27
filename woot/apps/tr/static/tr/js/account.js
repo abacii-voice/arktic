@@ -1,39 +1,6 @@
-UI.app('hook', [
-	AccountApplication('account-application', {
-		interface: {
-			size: 50,
-			margin: 10,
-			corner: 5,
-		},
-	}),
-]).then (function (app) {
-	// styles
-	jss.set('.ie.button', {
-		'padding-top': '1.0em',
-		'width': '100%',
-		'height': '50px',
-		'-webkit-box-shadow': 'none',
-		'box-shadow': 'none',
-		'text-shadow': 'none',
-		'color': Color.grey.normal,
-	});
-	jss.set('.ie.button:hover', {
-		'color': Color.grey.light,
-	});
-	jss.set('.ie.border', {
-		'border': '1px solid {color}'.format({color: Color.grey.normal}),
-	});
-	jss.set('.ie.border-radius', {
-		'border-radius': '4px',
-	});
-
+UI.app('hook', [AccountApplication()]).then (function (app) {
 	// render
 	return app.render();
-}).then(function () {
-	return Promise.all([
-		Context.get('clients'),
-		Context.get('user'),
-	]);
 }).then(function () {
 	return Promise.all([
 		// client
