@@ -156,3 +156,70 @@ NEW IDEA:
 7. Creating standard searchable list unit that can be modified using properties before render.
 8. Searchable list needs list, autocomplete, and dropdown modes.
 9. Properties such as bindings can be set that will later be done at render.
+
+2017/03/27:
+
+For the new idea, I am working top down, writing as though the structure beneath already exists. I want to represent it the way that makes the most sense to me and have the machinery represent that. Anything that doesn't make sense on a machinery level can be changed.
+
+For single components, there is a design philosophy:
+	1. Clearly divide the ideas of defined-time and render-time
+		a. Name, appearance, bindings, states, template, after, and children can be known at define-time
+		b. Id, root, model, element, style tree, and all applied bindings and appearance can only be known at render-time, since most of it depends on knowing the root.
+	2. Allow the use of secondary constructors for things like units:
+
+		listUnitEntity = function () {
+			var _entity = this;
+			_entity.create = function (datum, query, index) {
+				return UI.createComponent(`${index}`, {
+					ui: _entity.ui,
+					children: [
+						UI.createComponent('some-wrapper-child', {
+							ui: {},
+							children: _entity.children,
+						}),
+					],
+				}).then(function (base) {
+					for (methodName in _entity.methods) {
+						base[methodName] = _entity.methods[methodName].bind(base);
+					}
+				}).then(function () {
+					return base;
+				})
+			}
+			_entity.ui = {
+				bindings: {},
+				appearance: {},
+				styles: {},
+				states: {},
+			}
+			_entity.children = [];
+			_entity.methods = {
+				activate: function (_this) {
+
+				},
+				deactivate: function (_this) {
+
+				},
+			}
+		}
+
+		// setup list unit entity to create units
+		list.unit = listUnitEntity()
+
+		// modify unit properties
+		list.unit.ui.bindings = {
+
+		}
+		list.unit.children = [
+			UI.createComponent('some-child'),
+		]
+		list.unit.methods.add = function (_this) {
+			return _this.addChild();
+		}
+
+		// actually create an individual unit
+		list.unit.create(datum, query, index).then(function (unit) {
+			return unit.activate();
+		})
+
+		This is all theoretical. I would need to test this. 
