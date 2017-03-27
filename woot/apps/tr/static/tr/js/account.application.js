@@ -1,35 +1,27 @@
-var AccountApplication = function (id, args) {
-	return UI.createComponent('{id}-base'.format({id: id}), {
-		name: 'base',
-		template: UI.template('div', 'ie'),
-		appearance: {
-			style: {
-				'height': '100%',
+var AccountApplication = function () {
+	return UI.createComponent('account-application', {
+		ui: {
+			template: UI.template('div', 'ie'),
+			appearance: {
+				style: {
+					'height': '100%',
+				},
+			},
+			styles: {
+				'.border': {
+					'border': `1px solid ${AccountConstants.color.grey.normal}`,
+				},
+				'.border-radius': {
+					'border-radius': `${AccountConstants.ui.dimensions.corner}`,
+				},
 			},
 		},
 		children: [
-			// control interface
-			AccountInterfaces.controlInterface('controlInterface'),
-
-			// transcription interface
-			AccountInterfaces.transcriptionInterface('transcriptionInterface'),
-
-			// project complete interface
-			AccountInterfaces.projectCompleteInterface('projectCompleteInterface'),
-
-			// shortcuts interface
-			AccountInterfaces.shortcutInterface('shortcutInterface'),
-
-			// project interface
-			AccountInterfaces.projectInterface('projectInterface'),
+			AccountInterfaces.controlInterface(),
+			AccountInterfaces.transcriptionInterface(),
+			AccountInterfaces.projectCompleteInterface(),
+			AccountInterfaces.shortcutInterface(),
+			AccountInterfaces.projectInterface(),
 		],
-	}).then(function (base) {
-
-		// complete promises
-		return Promise.all([
-
-		]).then(function () {
-			return base;
-		});
 	});
 }

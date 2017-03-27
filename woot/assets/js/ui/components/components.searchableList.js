@@ -825,3 +825,8 @@ Components.searchableList = function (id, args) {
 		});
 	});
 }
+
+// searchable list unit
+Components.searchableListUnit = function (id, args) {
+
+}
