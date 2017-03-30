@@ -33,7 +33,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 	last_name = models.CharField(max_length=255)
 
 	# activation
-	is_activated = models.BooleanField(default=True)
+	is_activated = models.BooleanField(default=False)
 	activation_email_sent = models.BooleanField(default=False)
 	activation_key = models.CharField(max_length=20) # use utils to generate unique key
 
@@ -114,7 +114,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 		self.save()
 
 	def verify(self, activation_key):
+		print(activation_key)
 		if self.activation_key == activation_key and not self.is_activated:
+			print('here')
 			# reset activation
 			self.is_activated = True
 			self.activation_key = ''
@@ -123,7 +125,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 			# return to confirm
 			return True
 		else:
-			return False # change to False when testing is done
+			return True # change to False when testing is done
 
 	def disable(self):
 		self.is_enabled = False
