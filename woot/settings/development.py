@@ -43,6 +43,13 @@ SECRET_KEY = 'x08ig!20zeo%q46l6dnc8eqzb5g+h&(t4o18e#!yex&g&7sn=n'
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+# arkticvoice.noreply@gmail.com
+# uqnhs77f
+# smtp.gmail.com
+# 587 (TLS)
+# 465 (SSL)
+# django.core.mail.backends.smtp.EmailBackend
+
 ########## DATABASE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {

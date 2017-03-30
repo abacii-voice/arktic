@@ -11,26 +11,34 @@
 </script>
 {% endblock %}
 
-{# CSS #}
-{% block css %}
-<link rel='stylesheet' href='{% static 'users/css/us.css' %}'>
-{% endblock %}
-
-{# NAV #}
-{% block context_brand %}
-<a class='navbar-brand' href='/'>Arktic</a>
-{% endblock %}
-{% block context_nav_left %}{% endblock %}
-{% block context_nav_right %}{% endblock %}
-
 {# CONTENT #}
+{# role matrix with notifications and work summary #}
 {% block content %}
 
 {# UI hook #}
 <div id='hook'></div>
 {% endblock %}
 
-{# REACT #}
-{% block post_main_script %}
+{% block pre_main_script %}
+<!-- Third party (no local deps) -->
+<script src='{% static "js/util/string-format.js" %}' onload='format.extend(String.prototype);'></script>
+<script src='{% static "js/util/jss.min.js" %}'></script>
+<script src='{% static "js/util/mousetrap.js" %}'></script>
+
+<!-- general utility stuff comes before local -->
+<script src='{% static "js/util/util.js" %}'></script>
+<script src='{% static "js/util/mods.js" %}'></script>
+<script src='{% static "js/util/shortcuts.js" %}'></script>
+<script src='{% static "js/util/csrf.js" %}'></script>
+
+<!-- UI -->
+<script src='{% static "js/ui/ui.js" %}'></script>
+<script src="{% static 'js/ui/request.js' %}"></script>
+<script src='{% static "js/ui/components/components.search.js" %}'></script>
+
+<!-- specific UI -->
+<script src="{% static 'users/js/us.interface.js' %}"></script>
+<script src="{% static 'users/js/us.application.js' %}"></script>
 <script src="{% static 'users/js/us.js' %}"></script>
+
 {% endblock %}
