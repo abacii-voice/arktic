@@ -34,15 +34,7 @@ AccountInterfaces.controlInterface = function () {
 					},
 				},
 				children: [
-					Components.searchableList('list', {
-						ui: {
-							appearance: {
-								style: {
-									'top': '2px',
-								},
-							},
-						},
-					}),
+					Components.searchableList('list'),
 				],
 			}),
 			Components.sidebar('role-sidebar', {
@@ -88,9 +80,8 @@ AccountInterfaces.controlInterface = function () {
 				children: [
 					Components.searchableList('list', {
 						children: [
-							UI.createComponent('transcription-button', {
+							Components.button('transcription-button', {
 								ui: {
-									template: UI.template('div', 'ie button'),
 									appearance: {
 										html: 'Transcription',
 									},
@@ -99,9 +90,8 @@ AccountInterfaces.controlInterface = function () {
 									},
 								},
 							}),
-							UI.createComponent('settings-button', {
+							Components.button('settings-button', {
 								ui: {
-									template: UI.template('div', 'ie button'),
 									appearance: {
 										html: 'Settings',
 									},
@@ -110,17 +100,15 @@ AccountInterfaces.controlInterface = function () {
 									},
 								},
 							}),
-							UI.createComponent('moderation-button', {
+							Components.button('moderation-button', {
 								ui: {
-									template: UI.template('div', 'ie button'),
 									appearance: {
 										html: 'Moderation',
 									},
 								},
 							}),
-							UI.createComponent('project-button', {
+							Components.button('project-button', {
 								ui: {
-									template: UI.template('div', 'ie button'),
 									appearance: {
 										html: 'Projects',
 									},
@@ -154,9 +142,8 @@ AccountInterfaces.controlInterface = function () {
 				children: [
 					Components.searchableList('list', {
 						children: [
-							UI.createComponent('shortcuts-button', {
+							Components.button('shortcuts-button', {
 								ui: {
-									template: UI.template('div', 'ie button'),
 									appearance: {
 										html: 'Shortcuts',
 									},
@@ -169,7 +156,7 @@ AccountInterfaces.controlInterface = function () {
 					}),
 				],
 			}),
-			Components.actionMasterController(),
+			Components.actionMasterController('amc'),
 		],
 	}).then(function (base) {
 
@@ -182,6 +169,20 @@ AccountInterfaces.controlInterface = function () {
 
 		// action master controller
 		amc.action.period = 20000;
+		amc.state = {
+			defaultState: {
+				fn: function (_this) {
+					_this.action.start();
+					return Util.ep();
+				}
+			},
+			states: {
+				'client-state': 'default',
+				'role-state': 'default',
+				'control-state': 'default',
+				'transcription-state': 'default',
+			},
+		}
 
 		// CLIENT SIDEBAR
 		clientList.autocomplete = false;
@@ -210,11 +211,20 @@ AccountInterfaces.controlInterface = function () {
 		clientList.sort = Util.sort.alpha('main');
 		clientList.unit.ui.state.stateMap = 'role-state';
 		clientList.unit.bindings = {
-			'click': function (_this) {
-				amc.addAction({type: 'click.clientlist', metadata: {client: _this.datum.id}});
-				Active.set('client', _this.datum.id).then(function () {
-					return _this.triggerState();
+			'click': function (_unit) {
+				amc.addAction({type: 'click.clientlist', metadata: {client: _unit.datum.id}});
+				Active.set('client', _unit.datum.id).then(function () {
+					return _unit.triggerState();
 				});
+			},
+		}
+		clientList.state = {
+			states: {
+				'client-state': {
+					preFn: function (_this) {
+						return _this.control.setup.main();
+					},
+				},
 			},
 		}
 
@@ -347,10 +357,10 @@ AccountInterfaces.controlInterface = function () {
 		roleList.sort = Util.sort.alpha('main');
 		roleList.unit.ui.state.stateMap = 'control-state';
 		roleList.unit.bindings = {
-			'click': function (_this) {
-				amc.addAction({type: 'click.rolelist', metadata: {role: _this.datum.id}});
-				Active.set('client', _this.datum.id).then(function () {
-					return _this.triggerState();
+			'click': function (_unit) {
+				amc.addAction({type: 'click.rolelist', metadata: {role: _unit.data.id}});
+				Active.set('client', _unit.data.id).then(function () {
+					return _unit.triggerState();
 				});
 			},
 		}
@@ -382,55 +392,12 @@ AccountInterfaces.controlInterface = function () {
 		}
 
 		// SETTINGS SIDEBAR
-		
+
 
 		// complete promises
 		return Promise.all([
 
-			// action master controller
-			amc.setState({
-				defaultState: {
-					fn: function (_this) {
-						_this.action.start();
-						return Util.ep();
-					}
-				},
-				states: {
-					'client-state': 'default',
-					'role-state': 'default',
-					'control-state': 'default',
-					'transcription-state': 'default',
-				},
-			}),
-
 			// CLIENT SIDEBAR
-			clientList.unitStyle.apply(),
-			clientList.search.setAppearance({
-				style: {
-					'left': '0px',
-					'width': '100%',
-					'height': '30px',
-					'padding-top': '8px',
-				},
-			}),
-			clientList.cc.title.setAppearance({
-				style: {
-					'width': '100%',
-					'height': '32px',
-					'font-size': '18px',
-					'padding-top': '10px',
-					'padding-left': '10px',
-				},
-			}),
-			clientList.setState({
-				states: {
-					'client-state': {
-						preFn: function (_this) {
-							return _this.control.setup.main();
-						},
-					},
-				},
-			}),
 			clientList.setTitle({text: 'Clients', center: false}),
 			clientList.setSearch({mode: 'off', placeholder: 'Search clients...'}),
 
