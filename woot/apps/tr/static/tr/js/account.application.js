@@ -19,7 +19,6 @@ var AccountApplication = function () {
 		children: [
 			AccountInterfaces.controlInterface(),
 			AccountInterfaces.transcriptionInterface(),
-			AccountInterfaces.projectCompleteInterface(),
 			AccountInterfaces.shortcutInterface(),
 			AccountInterfaces.projectInterface(),
 		],
