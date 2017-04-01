@@ -29,6 +29,10 @@ var _ = {
 		},
 	},
 
+	json: function (object) {
+		return JSON.stringify(objects);
+	}
+
 	// generate random string
 	name: function () {
 		var i;
@@ -54,6 +58,23 @@ var _ = {
 
 	// sort
 	sort: {
+		usageAlpha: function (a, b) {
+			// sort by usage
+			if (a.usage && b.usage) {
+				if (a.usage > b.usage) {
+					return 1;
+				} else if (a.usage < b.usage) {
+					return -1;
+				}
+			}
+
+			// then alphabetically
+			if (a.main.toLowerCase() > b.main.toLowerCase()) {
+				return 1;
+			} else {
+				return -1;
+			}
+		},
 		alpha: function (key) {
 			return function (a, b) {
 				if (key) {

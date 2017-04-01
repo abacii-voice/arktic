@@ -63,13 +63,10 @@ AccountInterfaces.controlInterface = function () {
 								text: 'Clients',
 								center: false,
 							},
-							search: {
-								show: false,
-							},
+							search: false,
 							mode: 'list', // 3 modes: list, autocomplete, and dropdown
-							targets: [
-								{
-									name: 'clients',
+							targets: {
+								clients: {
 									path: function () {
 										return _.ep('clients');
 									},
@@ -88,8 +85,7 @@ AccountInterfaces.controlInterface = function () {
 										return {};
 									},
 								},
-							],
-							sort: _.sort.alpha('main'),
+							},
 							unit: {
 								ui: {
 									state: {
@@ -137,13 +133,10 @@ AccountInterfaces.controlInterface = function () {
 								text: 'Roles',
 								center: false,
 							},
-							search: {
-								show: false,
-							},
+							search: false,
 							mode: 'list',
-							targets: [
-								{
-									name: 'roles',
+							targets: {
+								roles: {
 									path: function () {
 										return Active.get('client').then(function (clientId) {
 											return _.ep(`user.clients.${clientId}.roles`);
@@ -164,8 +157,7 @@ AccountInterfaces.controlInterface = function () {
 										return {};
 									},
 								},
-							],
-							sort: _.sort.alpha('main'),
+							},
 							unit: {
 								ui: {
 									state: {
@@ -213,9 +205,7 @@ AccountInterfaces.controlInterface = function () {
 								text: 'Menu',
 								center: false,
 							},
-							search: {
-								show: false,
-							},
+							search: false,
 							mode: 'list',
 						},
 						ui: {
@@ -307,9 +297,7 @@ AccountInterfaces.controlInterface = function () {
 								text: 'Settings',
 								center: false,
 							},
-							search: {
-								show: false,
-							},
+							search: false,
 							mode: 'list',
 						},
 						children: [

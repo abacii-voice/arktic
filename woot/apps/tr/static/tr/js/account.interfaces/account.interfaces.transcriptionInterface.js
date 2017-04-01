@@ -1,124 +1,59 @@
-var AccountInterfaces = (AccountInterfaces || {});
-AccountInterfaces.transcriptionInterface = function (id, args) {
+// LIST OF CHANGES
+// ##### version 1:
+// 1. New component glyph
+// 2. Autocomplete targets changed to object
+// 3. Make mousetrap fundamental to changing states. Anything can register a shortcut anywhere.
+// 4. Action controller should be more pervasive, more tightly integrated.
+// 5.
 
-	var autocompleteWidth = '300px';
-	return UI.createComponent('transcription-base', {
-		name: 'transcriptionInterface',
-		template: UI.template('div', 'ie abs'),
-		appearance: {
-			style: {
-				'height': '100%',
-				'left': '60px',
-				'width': 'calc(100% - 60px)',
-			},
-			classes: ['centred-vertically'],
-		},
+var AccountInterfaces = (AccountInterfaces || {});
+AccountInterfaces.transcriptionInterface = function () {
+	return UI.createComponent('transcriptionInterface', {
+		template: 'div.ie.abs',
 		children: [
-			// main panel
-			UI.createComponent('tb-main-panel', {
-				name: 'mainPanel',
-				template: UI.template('div', 'ie'),
-				appearance: {
-					style: {
-						'height': '100%',
-						'left': '0px',
-						'width': 'calc(100% - {width})'.format({width: autocompleteWidth}),
-						'float': 'left',
-					},
+			UI.createComponent('main', {
+				ui: {
+					template: 'div.ie',
 				},
 				children: [
-					// counter
-					AccountComponents.counter('tb-mp-counter', {
-						name: 'counter',
-						appearance: {
-							style: {
-								'margin-top': '10px',
-								'height': '80px',
-								'width': '555px',
+					AccountComponents.counter('counter'),
+					AccountComponents.audio('audio'),
+					AccountComponents.captionField('caption', {
+						ui: {
+							state: {
+								states: [
+									UI.state('transcription', {
+										fn: function (_this) {
+											return _this.control.setup();
+										},
+									}),
+								],
 							},
 						},
 					}),
-
-					// audio
-					AccountComponents.audio('tb-mp-audio', {
-						name: 'audio',
-						appearance: {
-							style: {
-								'margin-top': '10px',
-								'height': '60px',
-								'width': '555px',
-							},
-						},
-					}),
-
-					// caption
-					AccountComponents.captionField('tb-mp-caption', {
-						name: 'caption',
-						appearance: {
-							style: {
-								'margin-top': '10px',
-								'height': '200px',
-								'width': '555px',
-								'border': '1px solid #888',
-								'padding': '10px',
-							},
-							classes: ['border-radius'],
-						},
-					}),
-
-					// button panel
-					UI.createComponent('tb-1-mp-4-button-panel', {
-						name: 'buttonPanel',
-						appearance: {
-							style: {
-								'margin-top': '10px',
-								'height': '40px',
-								'width': '555px',
-								'float': 'left',
-							},
+					UI.createComponent('buttons', {
+						ui: {
+							template: 'div.ie',
 						},
 						children: [
-							// flag field
-							AccountComponents.flagField('tb-mp-bp-flag-field', {name: 'flagField'}),
-
-							// previous button
-							UI.createComponent('tb-mp-bp-previous-button', {
-								name: 'previousButton',
-								template: UI.template('div', 'ie button border border-radius'),
-								appearance: {
-									style: {
-										'margin-left': '10px',
-										'height': '100%',
-										'width': '40px',
-										'float': 'left',
-										'padding-top': '10px',
-									},
-								},
+							AccountComponents.flagField('flags'),
+							Components.button('previous', {
 								children: [
-									UI.createComponent('tb-mp-bp-pb-glyph', {
-										name: 'glyph',
-										template: UI.template('span', 'glyphicon glyphicon-chevron-up'),
+									Components.glyph('glyph', {
+										options: {
+											set: 'glyphicon',
+											content: 'glyphicon-chevron-up',
+										},
 									}),
 								],
 							}),
-
-							// next/confirm button
-							UI.createComponent('tb-mp-bp-next-confirm-button', {
-								name: 'nextConfirmButton',
-								template: UI.template('div', 'ie button border border-radius'),
-								appearance: {
-									style: {
-										'margin-left': '10px',
-										'height': '100%',
-										'width': '40px',
-										'float': 'left',
-										'padding-top': '10px',
-									},
-								},
+							Components.button('confirm', {
 								children: [
-									UI.createComponent('tb-mp-bp-cb-glyph', {
-										name: 'glyph',
-										template: UI.template('span', 'glyphicon glyphicon-ok'),
+									Components.glyph('glyph', {
+										options: {
+											set: 'glyphicon',
+											content: 'glyphicon-ok',
+										},
 									}),
 								],
 							}),
@@ -126,64 +61,255 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					}),
 				],
 			}),
-
-			// autocomplete panel
-			UI.createComponent('tb-autocomplete-panel', {
-				name: 'autocompletePanel',
-				template: UI.template('div', 'ie'),
-				appearance: {
-					style: {
-						'height': '100%',
-						'width': autocompleteWidth,
-						'float': 'left',
-					},
-					classes: ['centred-vertically'],
+			UI.createComponent('autocomplete', {
+				ui: {
+					template: 'div.ie',
 				},
 				children: [
-					// autocomplete
-					Components.searchableList('tb-ap-autocomplete', {
-						name: 'autocomplete',
-						appearance: {
-							style: {
-								'height': '100%',
-								'width': '100%',
+					Components.searchableList('list', {
+						options: {
+							title: false,
+							search: {
+								placeholder: 'Search...',
 							},
-							classes: ['ie','abs'],
+							mode: 'autocomplete',
+							targets: {
+								word: {
+									path: function () {
+										return Active.get({client: 'client', project: 'project'}).then(function (result) {
+											return `clients.${result.client}.projects.${result.project}.dictionary.tokens`;
+										});
+									},
+									process: function (data) {
+										return new Promise(function(resolve, reject) {
+											var results = Object.keys(data).filter(function (key) {
+												return data[key].type === 'word';
+											}).map(function (key) {
+												var word = data[key];
+												return {
+													id: key,
+													main: word.content,
+													rule: 'word',
+												}
+											});
+											resolve(results);
+										});
+									},
+									filter: {
+										default: true,
+										char: '/',
+										key: 'forwardslash',
+										input: 'Words',
+										display: 'Word',
+										rule: 'word',
+										blurb: 'Filter single words',
+										limit: 10,
+										request: function (query) {
+											return {tokens: {'content__startswith': query, 'type': 'word'}};
+										},
+									},
+								},
+								tag: {
+									path: function () {
+										return Active.get({client: 'client', project: 'project'}).then(function (result) {
+											return `clients.${result.client}.projects.${result.project}.dictionary.tokens`;
+										});
+									},
+									process: function (data) {
+										return new Promise(function(resolve, reject) {
+											var results = Object.keys(data).filter(function (key) {
+												return data[key].type === 'tag';
+											}).map(function (key) {
+												var tag = data[key];
+												var tag_data = {
+													id: key,
+													main: tag.content,
+													rule: 'tag',
+												}
+
+												if (tag.shortcut) {
+													if (tag.shortcut.is_active) {
+														tag_data.shortcut = tag.shortcut.combo;
+														Mousetrap.unbind(tag.shortcut.combo);
+														Mousetrap.bind(tag.shortcut.combo, function (event) {
+															event.preventDefault();
+															Promise.all([
+																autocomplete.behaviours.shortcut(key),
+															]);
+														});
+													}
+												}
+
+												return tag_data;
+											});
+											resolve(results);
+										});
+									},
+									filter: {
+										default: true,
+										char: ':',
+										key: 'colon',
+										input: 'Tags',
+										display: 'Tag',
+										rule: 'tag',
+										blurb: 'Filter semantic tags',
+										limit: 10,
+										autocompleteOverride: true,
+										preventIncomplete: true,
+										request: function (query) {
+											return {tokens: {'content__startswith': query, 'type': 'tag'}};
+										},
+									},
+								},
+								phrase: {
+									path: function () {
+										return Active.get({client: 'client', project: 'project'}).then(function (result) {
+											return `clients.${result.client}.projects.${result.project}.dictionary.phrases`;
+										});
+									},
+									process: function (data) {
+										return new Promise(function(resolve, reject) {
+											var results = Object.keys(data).map(function (key) {
+												var phrase = data[key];
+
+												var sortedTokens = Object.keys(phrase.token_instances).sort(function (a,b) {
+													return phrase.token_instances[a].index > phrase.token_instances[b].index ? 1 : -1;
+												}).map(function (key) {
+													return phrase.token_instances[key];
+												}).filter(function (token) {
+													return token.type !== 'tag'; // do not include tags
+												});
+
+												return sortedTokens.map(function (token) {
+													return token.content;
+												}).join(' ');
+
+												return {
+													id: key,
+													main: main.trim(),
+													rule: 'phrase',
+													tokens: sortedTokens,
+												}
+											});
+											resolve(results);
+										});
+									},
+									filter: {
+										default: true,
+										char: '.',
+										key: 'dot',
+										input: 'Phrases',
+										display: 'Phrase',
+										rule: 'phrase',
+										blurb: 'Filter phrases',
+										limit: 10,
+										request: function (query) {
+											return {phrases: {'content__startswith': query, 'token_count__gt': '1'}};
+										},
+									},
+								},
+								flag: {
+									path: function () {
+										return Active.get('client').then(function (client) {
+											return `clients.${client}.flags`;
+										});
+									},
+									process: function (data) {
+										var results = Object.keys(data).map(function (key) {
+											var flag = data[key];
+											var flag_data = {
+												id: key,
+												main: flag.name,
+												rule: 'flag',
+											}
+
+											if (flag.shortcut) {
+												if (flag.shortcut.is_active) {
+													flag_data.shortcut = flag.shortcut.combo;
+													Mousetrap.unbind(flag.shortcut.combo);
+													Mousetrap.bind(flag.shortcut.combo, function (event) {
+														event.preventDefault();
+														Promise.all([
+															flags.behaviours.shortcut(flag.name),
+														]);
+													});
+												}
+											}
+
+											return flag_data;
+										});
+										return _.ep(results);
+									},
+									filter: {
+										default: false,
+										char: '>',
+										key: 'right carrot',
+										input: 'Flags',
+										display: 'Flag',
+										rule: 'flag',
+										blurb: 'Filter transcription flags',
+										limit: 10,
+										autocompleteOverride: true,
+										preventIncomplete: true,
+										request: function () {
+											return {};
+										},
+										activate: function (_this) {
+											return _this.get('search').focus();
+										},
+									},
+								},
+							},
 						},
 					}),
-
-					// autocomplete controls
-					// AccountComponents.autocompleteControls('tb-2-ap-2-autocomplete-controls', {}),
 				],
+			}),
+			UI.createComponent('complete', {
+				// Project has been completed. Please return to you homes.
 			}),
 
 			// Non interface elements
-			// transcription master controller
-			AccountComponents.transcriptionMasterController(),
-			Components.actionMasterController('transcriptionActions'),
+			AccountComponents.transcriptionMasterController('tmc', {
+				ui: {
+					state: {
+						states: [
+							UI.state('control', {
+								fn: function (_this) {
+									_this.revision.stop();
+									return _.ep();
+								},
+							}),
+							UI.state('transcription', {
+								fn: function (_this) {
+									_this.revision.start();
+									return _.ep();
+								},
+							}),
+						],
+					},
+				},
+				options: {
+
+				},
+				data: {
+					update: 4,
+				},
+			}),
 		],
 	}).then(function (base) {
 
-		var counter = base.cc.mainPanel.cc.counter;
-		var audio = base.cc.mainPanel.cc.audio;
-		var caption = base.cc.mainPanel.cc.caption;
-		var flags = base.cc.mainPanel.cc.buttonPanel.cc.flagField;
-		var amc = base.cc.transcriptionActions;
-		var tmc = base.cc.transcriptionMasterController;
-		var autocomplete = base.cc.autocompletePanel.cc.autocomplete;
+		var counter = base.get('main.counter');
+		var audio = base.get('main.audio');
+		var caption = base.get('main.caption');;
+		var flags = base.get('main.buttons.flags');
+		var tmc = base.get('tmc');
+		var autocomplete = base.get('autocomplete.list');
 
 		// Transcription Master Controller
-		tmc.data.updateThreshold = 4;
+		// MOVE TO MAIN CLASS
 		tmc.path = function () {
-			return Promise.all([
-				Active.get('client'),
-				Active.get('role'),
-			]).then(function (results) {
-				// unpack variable
-				var [client_id, role_id] = results;
-
-				// return path
-				return 'user.clients.{client_id}.roles.{role_id}.active_transcription_token'.format({client_id: client_id, role_id: role_id});
+			return Active.get({client: 'client', role: 'role'}).then(function (result) {
+				return `user.clients.${result.client}.roles.${result.role}.active_transcription_token`;
 			});
 		}
 		tmc.process = function (result) {
@@ -213,10 +339,12 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				return Util.ep(Object.keys(fragments).length !== 0);
 			});
 		}
+
+		// THIS CAN STAY HERE
 		tmc.pre.interface = function () {
 			var _this = tmc;
 			return _this.data.current().then(function (current) {
-				current.is_available = false;
+				current.isAvailable = false;
 
 				return Promise.all([
 					audio.display(current),
@@ -253,13 +381,13 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			});
 		}
 		tmc.save = function () {
+			var _this = tmc;
 			var tokens = caption.export();
 			var flagList = flags.export();
-			var _this = tmc;
 			return _this.data.current().then(function (current) {
 				current.revisions = (current.revisions || []);
 				var revisionAlreadyExists = current.revisions.filter(function (revision) {
-					return JSON.stringify(revision.tokens) === JSON.stringify(tokens) && revision.isComplete === current.isComplete;
+					return _.json(revision.tokens) === _.json(tokens) && revision.isComplete === current.isComplete;
 				}).length > 0;
 				if (!revisionAlreadyExists && (!(tokens[0].complete === '') || flagList.length)) {
 					current.revisions.push({
@@ -267,7 +395,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						tokens: tokens,
 						isComplete: (current.isComplete || false),
 						content: current.complete,
-						key: Util.makeid(),
+						key: _.name(),
 						flags: flagList,
 					});
 					current.latestRevision = tokens;
@@ -287,414 +415,16 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		}
 
 		// Autocomplete
-		autocomplete.targets = [
-			{name: 'word',
-				path: function () {
-					return Promise.all([
-						Active.get('client'),
-						Active.get('project'),
-					]).then(function (results) {
-						return 'clients.{client_id}.projects.{project_id}.dictionary.tokens'.format({client_id: results[0], project_id: results[1]});
-					});
-				},
-				process: function (data) {
-					return new Promise(function(resolve, reject) {
-						var results = Object.keys(data).filter(function (key) {
-							return data[key].type === 'word';
-						}).map(function (key) {
-							var word = data[key];
-							return {
-								id: key,
-								main: word.content,
-								rule: 'word',
-							}
-						});
-						resolve(results);
-					});
-				},
-				filter: {
-					default: true,
-					char: '/',
-					key: 'forwardslash',
-					input: 'Words',
-					display: 'Word',
-					rule: 'word',
-					blurb: 'Filter single words',
-					limit: 10,
-					request: function (query) {
-						return {tokens: {'content__startswith': query, 'type': 'word'}};
-					},
-				},
-			},
-			{name: 'tag',
-				path: function () {
-					return Promise.all([
-						Active.get('client'),
-						Active.get('project'),
-					]).then(function (results) {
-						return 'clients.{client_id}.projects.{project_id}.dictionary.tokens'.format({client_id: results[0], project_id: results[1]});
-					});
-				},
-				process: function (data) {
-					return new Promise(function(resolve, reject) {
-						var results = Object.keys(data).filter(function (key) {
-							return data[key].type === 'tag';
-						}).map(function (key) {
-							var tag = data[key];
-							var tag_data = {
-								id: key,
-								main: tag.content,
-								rule: 'tag',
-							}
+		autocomplete.options.targets.flag.filter.confirm = function () {
 
-							if (tag.shortcut) {
-								if (tag.shortcut.is_active) {
-									tag_data.shortcut = tag.shortcut.combo;
-									Mousetrap.unbind(tag.shortcut.combo);
-									Mousetrap.bind(tag.shortcut.combo, function (event) {
-										event.preventDefault();
-										amc.addAction({type: 'key.shortcut.{combo}'.format({combo: tag.shortcut.combo})});
-										Promise.all([
-											autocomplete.behaviours.shortcut(key),
-										]);
-									});
-								}
-							}
-
-							return tag_data;
-						});
-						resolve(results);
-					});
-				},
-				setStyle: function () {
-					return new Promise(function(resolve, reject) {
-						jss.set('#{id} .tag'.format({id: autocomplete.id}), {
-							'background-color': Color.green.lightest,
-						});
-						jss.set('#{id} .tag.active'.format({id: autocomplete.id}), {
-							'background-color': Color.green.light,
-						});
-						resolve();
-					});
-				},
-				filter: {
-					default: true,
-					char: ':',
-					key: 'colon',
-					input: 'Tags',
-					display: 'Tag',
-					rule: 'tag',
-					blurb: 'Filter semantic tags',
-					limit: 10,
-					autocompleteOverride: true,
-					preventIncomplete: true,
-					request: function (query) {
-						var dict = {};
-						dict['tokens'] = {'content__startswith': query, 'type': 'tag'};
-						return dict;
-					},
-				},
-			},
-			{name: 'phrase',
-				path: function () {
-					return Promise.all([
-						Active.get('client'),
-						Active.get('project'),
-					]).then(function (results) {
-						return 'clients.{client_id}.projects.{project_id}.dictionary.phrases'.format({client_id: results[0], project_id: results[1]});
-					});
-				},
-				process: function (data) {
-					return new Promise(function(resolve, reject) {
-						var results = Object.keys(data).map(function (key) {
-							var phrase = data[key];
-
-							var sortedTokens = Object.keys(phrase.token_instances).sort(function (a,b) {
-								return phrase.token_instances[a].index > phrase.token_instances[b].index ? 1 : -1;
-							}).map(function (key) {
-								return phrase.token_instances[key];
-							}).filter(function (token) {
-								return token.type !== 'tag'; // do not include tags
-							});
-
-							var main = sortedTokens.reduce(function (whole, part) {
-								return '{} {}'.format(whole, part.content);
-							}, ''); // set initial value to be empty string
-
-							return {
-								id: key,
-								main: main.trim(),
-								rule: 'phrase',
-								tokens: sortedTokens,
-							}
-						});
-						resolve(results);
-					});
-				},
-				setStyle: function () {
-					return new Promise(function(resolve, reject) {
-						jss.set('#{id} .phrase'.format({id: autocomplete.id}), {
-							'background-color': Color.purple.uberlight,
-						});
-						jss.set('#{id} .phrase.active'.format({id: autocomplete.id}), {
-							'background-color': Color.purple.lightest,
-						});
-						resolve();
-					});
-				},
-				filter: {
-					default: true,
-					char: '.',
-					key: 'dot',
-					input: 'Phrases',
-					display: 'Phrase',
-					rule: 'phrase',
-					blurb: 'Filter phrases',
-					limit: 10,
-					request: function (query) {
-						var dict = {};
-						dict['phrases'] = {'content__startswith': query, 'token_count__gt': '1'};
-						return dict;
-					},
-				},
-			},
-			{name: 'flag',
-				path: function () {
-					return Active.get('client').then(function (client) {
-						return 'clients.{client_id}.flags'.format({client_id: client});
-					});
-				},
-				process: function (data) {
-					var results = Object.keys(data).map(function (key) {
-						var flag = data[key];
-						var flag_data = {
-							id: key,
-							main: flag.name,
-							rule: 'flag',
-						}
-
-						if (flag.shortcut) {
-							if (flag.shortcut.is_active) {
-								flag_data.shortcut = flag.shortcut.combo;
-								Mousetrap.unbind(flag.shortcut.combo);
-								Mousetrap.bind(flag.shortcut.combo, function (event) {
-									event.preventDefault();
-									amc.addAction({type: 'key.shortcut.{combo}'.format({combo: flag.shortcut.combo})});
-									Promise.all([
-										flags.behaviours.shortcut(flag.name),
-									]);
-								});
-							}
-						}
-
-						return flag_data;
-					});
-					return Util.ep(results);
-				},
-				setStyle: function () {
-					return new Promise(function(resolve, reject) {
-						jss.set('#{id} .flag'.format({id: autocomplete.id}), {
-							'background-color': Color.red.light,
-						});
-						jss.set('#{id} .flag.active'.format({id: autocomplete.id}), {
-							'background-color': Color.red.normal,
-						});
-						resolve();
-					});
-				},
-				filter: {
-					default: false,
-					char: '>',
-					key: 'right carrot',
-					input: 'Flags',
-					display: 'Flag',
-					rule: 'flag',
-					blurb: 'Filter transcription flags',
-					limit: 10,
-					autocompleteOverride: true,
-					preventIncomplete: true,
-					request: function () {
-						return {};
-					},
-					activate: function () {
-						return autocomplete.search.cc.head.model().focus();
-					},
-					confirm: function () {
-						return flags.data.add(autocomplete.data.storage.virtual.list[autocomplete.currentIndex].main);
-					},
-				},
-			}
-		]
-		autocomplete.unitStyle.base = function () {
-			return new Promise(function(resolve, reject) {
-				// base class
-				jss.set('#{id} .base'.format({id: autocomplete.id}), {
-					'min-height': '30px',
-					'width': '100%',
-					'padding': '0px',
-					'padding-left': '10px',
-					'text-align': 'left',
-					'border-bottom': '1px solid #ccc',
-				});
-				resolve();
-			});
 		}
-		autocomplete.sort = function (d1, d2) {
-			// sort by usage
-			if (d1.usage && d2.usage) {
-				if (d1.usage > d2.usage) {
-					return 1;
-				} else if (d1.usage < d2.usage) {
-					return -1;
-				}
-			}
+		autocomplete.options.sort = _.sort.usageAlpha();
 
-			// then alphabetically
-			if (d1.main.toLowerCase() > d2.main.toLowerCase()) {
-				return 1;
-			} else {
-				return -1;
-			}
-		}
-		autocomplete.unit = function (datum, query, index) {
-			query = (query || '');
-			var base = autocomplete.data.idgen(index);
-			return UI.createComponent(base, {
-				name: 'unit{index}'.format({index: index}),
-				template: UI.template('div', 'ie button base'),
-				appearance: {
-					classes: [datum.rule],
-					style: {
-						'height': 'auto',
-					},
-				},
-				children: [
-					// main container
-					UI.createComponent('{base}-main-container'.format({base: base}), {
-						name: 'container',
-						template: UI.template('div', 'ie'),
-						appearance: {
-							style: {
-								'left': '0px',
-								'padding-top': '11px',
-								'padding-bottom': '5px',
-								'width': 'calc(100% - 15px)'
-							},
-						},
-						children: [
-							// main wrapper
-							UI.createComponent('{base}-main-wrapper'.format({base: base}), {
-								name: 'wrapper',
-								template: UI.template('div', 'ie'),
-								appearance: {
-									style: {
-										'left': '0px',
-										'display': 'inline-block',
-									},
-								},
-								children: [
-									// main
-									UI.createComponent('{base}-main-head'.format({base: base}), {
-										name: 'head',
-										template: UI.template('span', 'ie'),
-										appearance: {
-											style: {
-												'color': Color.grey.normal,
-												'display': 'inline-block',
-												'position': 'absolute',
-											},
-											html: datum.main.substring(0, query.length),
-										},
-									}),
-									UI.createComponent('{base}-main-tail'.format({base: base}), {
-										name: 'tail',
-										template: UI.template('span', 'ie'),
-										appearance: {
-											style: {
-												'display': 'inline-block',
-												'max-width': '100%',
-											},
-											html: datum.main,
-										},
-									}),
-								],
-							}),
-							UI.createComponent('{base}-main-shortcut'.format({base: base}), {
-								name: 'shortcut',
-								template: UI.template('span', 'ie'),
-								appearance: {
-									style: {
-										'display': 'inline-block',
-										'left': '8px',
-										'opacity': '0.6',
-										'top': '-4px',
-									},
-									html: (datum.shortcut || ''),
-								},
-							}),
-						],
-					}),
-					// index
-					UI.createComponent('{base}-index'.format({base: base}), {
-						name: 'index',
-						template: UI.template('div', 'ie abs'),
-						appearance: {
-							style: {
-								'width': '10px',
-								'right': '5px',
-								'top': '11px',
-							},
-							html: index,
-						},
-					}),
-				],
-			}).then(function (unitBase) {
 
-				unitBase.activate = function () {
-					return unitBase.setAppearance({classes: {add: ['active']}});
-				}
-				unitBase.deactivate = function () {
-					return unitBase.setAppearance({classes: {remove: ['active']}});
-				}
-				unitBase.show = function () {
-					unitBase.isHidden = false;
-					return unitBase.setAppearance({classes: {remove: 'hidden'}});
-				}
-				unitBase.hide = function () {
-					unitBase.isHidden = true;
-					return unitBase.setAppearance({classes: {add: 'hidden'}});
-				}
-				unitBase.updateMetadata = function (ndatum, query) {
-					// console.log(ndatum, query);
-					// if there are changes, do stuff.
-					return unitBase.updateDatum(ndatum).then(function () {
-						return unitBase.updateQuery(query);
-					}).then(function () {
-						return (unitBase.isHidden ? unitBase.show : Util.ep)();
-					});
-				}
-				unitBase.updateDatum = function (ndatum) {
-					return unitBase.setAppearance({classes: {add: ndatum.rule, remove: (unitBase.datum || datum).rule}}).then(function () {
-						unitBase.datum = ndatum;
-						return unitBase.cc.container.cc.shortcut.setAppearance({html: (ndatum.shortcut || '')});
-					});
-				}
-				unitBase.updateQuery = function (query) {
-					unitBase.query = query;
-					return Promise.all([
-						unitBase.cc.container.cc.wrapper.cc.head.setAppearance({html: unitBase.datum.main.substring(0, query.length)}),
-						unitBase.cc.container.cc.wrapper.cc.tail.setAppearance({html: unitBase.datum.main}),
-					]);
-				}
 
-				// complete promises.
-				return Promise.all([
 
-				]).then(function () {
-					return unitBase;
-				});
-			});
-		}
+
+		// BELOW HERE
 		autocomplete.search.setMetadata = function (metadata) {
 			var _this = autocomplete.search;
 			metadata = (metadata || {});
@@ -1419,9 +1149,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		return Promise.all([
 
 			// base
-			base.setAppearance({
-				classes: ['hidden'],
-			}),
 			base.setState({
 				defaultState: {preFn: UI.functions.hide()},
 				states: {
@@ -1596,59 +1323,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					'-transcription-project-complete-state': 'default',
 				},
 			}),
-
-			// transcription master controller
-			tmc.setState({
-				states: {
-					'control-state': {
-						fn: function (_this) {
-							_this.revision.stop();
-							return Util.ep();
-						}
-					},
-					'transcription-state': {
-						fn: function (_this) {
-							_this.revision.start();
-							return _this.data.update();
-						}
-					},
-				},
-			}),
-
-			// action master controller
-			amc.setState({
-				states: {
-					'control-state': {
-						fn: function (_this) {
-							_this.action.stop();
-							return Util.ep();
-						}
-					},
-					'transcription-state': {
-						fn: function (_this) {
-							_this.action.start();
-							return Util.ep();
-						}
-					},
-				},
-			}),
-
-			// button panel
-
-			// main panel
-
-			// caption
-			caption.setState({
-				states: {
-					'transcription-state': {
-						fn: function (_this) {
-							return _this.control.setup();
-						},
-					},
-				},
-			}),
-
-			// autocomplete panel
 
 			// autocomplete
 			autocomplete.cc.searchFilterBar.cc.filterButton.setState({
