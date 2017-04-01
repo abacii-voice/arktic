@@ -830,3 +830,103 @@ Components.searchableList = function (id, args) {
 Components.searchableListUnit = function (id, args) {
 
 }
+
+// MOVE TO SEARCHABLE LIST UNIT
+function (datum, query, index) {
+	query = (query || '');
+	return UI.createComponent(`${index}`, {
+		ui: {
+			template: UI.template('div', 'ie button'),
+			appearance: {
+				classes: [datum.rule],
+			},
+			state: {
+				stateMap: 'role-state',
+			},
+		},
+
+		children: [
+			// main wrapper
+			UI.createComponent('{base}-main-wrapper'.format({base: baseId}), {
+				name: 'mainWrapper',
+				template: UI.template('div', 'ie centred-vertically'),
+				appearance: {
+					style: {
+						'display': 'inline-block',
+					},
+				},
+				children: [
+					// main
+					UI.createComponent('{base}-mw-head'.format({base: baseId}), {
+						name: 'head',
+						template: UI.template('span', 'ie'),
+						appearance: {
+							style: {
+								'color': Color.grey.normal,
+								'display': 'inline-block',
+								'position': 'absolute',
+							},
+							html: datum.main.substring(0, query.length),
+						},
+					}),
+					UI.createComponent('{base}-mw-tail'.format({base: baseId}), {
+						name: 'tail',
+						template: UI.template('span', 'ie'),
+						appearance: {
+							style: {
+								'display': 'inline-block',
+							},
+							html: datum.main,
+						},
+					}),
+				],
+			}),
+		],
+	}).then(function (unitBase) {
+
+		unitBase.activate = function () {
+			return unitBase.setAppearance({classes: {add: ['active']}});
+		}
+		unitBase.deactivate = function () {
+			return unitBase.setAppearance({classes: {remove: ['active']}});
+		}
+		unitBase.hide = function () {
+			unitBase.isHidden = true;
+			return unitBase.setAppearance({classes: {add: 'hidden'}});
+		}
+		unitBase.show = function () {
+			unitBase.isHidden = false;
+			return unitBase.setAppearance({classes: {remove: 'hidden'}});
+		}
+		unitBase.updateMetadata = function (ndatum, query) {
+			// if there are changes, do stuff.
+			return ((!unitBase.datum || ndatum.id !== unitBase.datum.id) ? unitBase.updateDatum : Util.ep)(ndatum).then(function () {
+				return (query !== unitBase.query ? unitBase.updateQuery : Util.ep)(query);
+			}).then(function () {
+				return (unitBase.isHidden ? unitBase.show : Util.ep)();
+			});
+		}
+		unitBase.updateDatum = function (ndatum) {
+			return unitBase.setAppearance({classes: {add: ndatum.rule, remove: (unitBase.datum || datum).rule}}).then(function () {
+				unitBase.datum = ndatum;
+				return Util.ep();
+			});
+		}
+		unitBase.updateQuery = function (query) {
+			unitBase.query = query;
+			return Promise.all([
+				unitBase.cc.mainWrapper.cc.head.setAppearance({html: (unitBase.datum || datum).main.substring(0, query.length)}),
+				unitBase.cc.mainWrapper.cc.tail.setAppearance({html: (unitBase.datum || datum).main}),
+			]);
+		}
+
+		// complete promises.
+		return Promise.all([
+			unitBase.setBindings({
+
+			}),
+		]).then(function () {
+			return unitBase;
+		});
+	});
+}
