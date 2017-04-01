@@ -1,13 +1,32 @@
+// LIST OF CHANGES
+
+// ##### version 1:
+// 1. component, state names camelCase
+// 2. 3 top level args: options, ui, children
+// 3. Move away from functions to nested arguments
+// 4. new ui.styles arg for child styles and classes
+// 5. Util -> _
+// 6. Active.get, Active.set, Context.get, and Context.set should take an object and single value
+
+// Active.get('path');
+// Active.get({output1: 'path1', output2: 'path2'}).then(function (results) {
+// 	results.output1;
+// 	results.output2;
+// });
+// Active.set('path', value);
+// Active.set({'path1': value1, 'path2', value2});
+
+// 7. 3 modes for searchable list: list, autocomplete, and dropdown
+// 8. Change stateMap to state.map
+// 9. Change default state to states.modes
+// 10. Change template to css path format: UI.template('div', 'ie') -> 'div.ie'
+// 11.
+
 var AccountInterfaces = (AccountInterfaces || {});
 AccountInterfaces.controlInterface = function () {
 	return UI.createComponent('controlInterface', {
 		ui: {
-			template: UI.template('div', 'ie abstract'),
-			appearance: {
-				style: {
-					'height': '100%',
-				},
-			},
+			template: 'div.ie.abstract',
 			styles: {
 				// list units
 				// list searches
@@ -70,7 +89,7 @@ AccountInterfaces.controlInterface = function () {
 							unit: {
 								ui: {
 									state: {
-										map: 'role-state',
+										map: 'roleState',
 									},
 								},
 							},
@@ -78,7 +97,7 @@ AccountInterfaces.controlInterface = function () {
 						ui: {
 							state: {
 								states: [
-									UI.state('client-state', {
+									UI.state('clientState', {
 										preFn: function (_this) {
 											return _this.control.setup.main();
 										}
@@ -196,7 +215,7 @@ AccountInterfaces.controlInterface = function () {
 							mode: 'list',
 						},
 						ui: {
-							states: {
+							state: {
 								states: [
 									UI.state('controlState', {
 										preFn: function (_this) {
@@ -206,7 +225,7 @@ AccountInterfaces.controlInterface = function () {
 												return Promise.all([
 													_this.get('transcriptionButton').show(role.type === 'worker'),
 													_this.get('moderationButton').show(role.type === 'moderator'),
-													_this.get('projectButton').show(_.accept(role.type, ['moderator', 'admin'], ['worker'])),
+													_this.get('projectButton').show(_.accept(role.type, ['moderator', 'admin'])),
 												]);
 											})
 										},

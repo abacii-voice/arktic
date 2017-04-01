@@ -1,7 +1,15 @@
-UI.app('hook', [AccountApplication()]).then (function (app) {
-	// render
-	return app.render();
-}).then(function () {
+// LIST OF CHANGES
+
+// ##### version 1:
+// 1. App takes a single argument after the html element,
+// 		which should be an application, but could easily be an explicit component tree. Can be callable or called.
+// 2. Remove render step, which should be implicit in the app function
+// 3.
+
+UI.app('hook', AccountApplication).then(function (application) {
+
+	// By this point, the rendering has taken place, but no state has been called.
+	return application.initialise();
 	return Promise.all([
 		// client
 		Context.get('clients').then(function (clients) {

@@ -1,18 +1,19 @@
+// LIST OF CHANGES
+
+// ##### version 1
+// 1. Add color and ui measurements to _ variable
+// 2.
+
 var AccountApplication = function () {
-	return UI.createComponent('account-application', {
+	return UI.createComponent('accountApplication', {
 		ui: {
-			template: UI.template('div', 'ie'),
-			appearance: {
-				style: {
-					'height': '100%',
-				},
-			},
+			template: 'div.ie',
 			styles: {
 				'.border': {
-					'border': `1px solid ${AccountConstants.color.grey.normal}`,
+					'border': `1px solid ${_.color.grey.normal}`,
 				},
 				'.border-radius': {
-					'border-radius': `${AccountConstants.ui.dimensions.corner}`,
+					'border-radius': `${_.ui.dimensions.corner}`,
 				},
 			},
 		},

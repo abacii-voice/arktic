@@ -1,71 +1,69 @@
+// LIST OF CHANGES
+
+// ##### version 1
+// 1. Change formatting functions to be more consistent
+// 2. Change 'makeid' to 'name'
+// 3. Move 'basename' and 'dirname' to 'paths'
+// 4. Move color and ui to this file
+
 var _ = {
 
 	// String formatting
 	format: {
 		style: function (style) {
-			if (style !== undefined) {
-				var strings = Object.keys(style).map(function (value) {
-					return '{key}: {value}; '.format({key: value, value: style[value]})
-				});
-				return strings.join('');
-			} else {
-				return '';
-			}
+			style = (style || {});
+			return Object.keys(style).map(function (key) {
+				return `${key}: ${style[key]};`;
+			}).join(' ');
 		},
 		classes: function (classes) {
-			if (classes !== undefined) {
-				return classes.join(' ').trim();
-			} else {
-				return '';
-			}
+			classes = (classes || []);
+			return classes.join(' ');
 		},
 		properties: function (properties) {
-			if (properties !== undefined) {
-				var strings = Object.keys(properties).map(function (property) {
-					if (typeof(properties[property]) === 'boolean' && properties[property]) {
-						return '{property} '.format({property: property});
-					} else {
-						return '{property}="{value}" '.format({property: property, value: properties[property]});
-					}
-				});
-				return strings.join('');
-			} else {
-				return '';
-			}
+			properties = (properties || {});
+			return Object.keys(properties).map(function (property) {
+				let value = properties[property];
+				return `${property}` + _.isBoolean(value) && value ? '' : `=${value}`;
+			}).join(' ');
 		},
 	},
 
 	// generate random string
-	makeid: function () {
-		var text = "";
-		var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	name: function () {
+		var i;
+		var text = '';
+		var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
-		for( var i=0; i < 8; i++ )
+		for(i=0, i<8; i++) {
 			text += possible.charAt(Math.floor(Math.random() * possible.length));
+		}
 
 		return text;
 	},
 
-	// filenames
-	basename: function (path) {
-		return path.replace(/.*\//, '');
-	},
-	dirname: function (path) {
-		return path.match(/.*\//);
-	},
+	// paths
+	path: {
+		basename: function (path) {
+			return path.replace(/.*\//, '');
+		},
+		dirname: function (path) {
+			return path.match(/.*\//);
+		},
+	}
 
 	// sort
 	sort: {
 		alpha: function (key) {
-			return function (a,b) {
-				if (key !== undefined) {
+			return function (a, b) {
+				if (key) {
 					a = a[key];
 					b = b[key];
 				}
 
-				if (a>b) {
+				if (a > b) {
 					return 1;
-				} else if (a<b) {
+				} else if (a < b) {
 					return -1;
 				} else {
 					return 0;
@@ -80,15 +78,16 @@ var _ = {
 			return before + (after - before) * atPoint;
 		},
 		interpolateArray: function (data, fitCount) {
+			var i;
 			var newData = new Array();
 			var springFactor = new Number((data.length - 1) / (fitCount - 1));
 			newData[0] = data[0]; // for new allocation
-			for ( var i = 1; i < fitCount - 1; i++) {
+			for (i = 1; i < fitCount - 1; i++) {
 				var tmp = i * springFactor;
 				var before = new Number(Math.floor(tmp)).toFixed();
 				var after = new Number(Math.ceil(tmp)).toFixed();
 				var atPoint = tmp - before;
-				newData[i] = Util.arrays.linearInterpolate(data[before], data[after], atPoint);
+				newData[i] = _.arrays.linearInterpolate(data[before], data[after], atPoint);
 			}
 			newData[fitCount - 1] = data[data.length - 1]; // for new allocation
 			return newData;
@@ -102,7 +101,7 @@ var _ = {
 				return Math.abs(value);
 			});
 
-			var arrayMax = Util.arrays.getMaxOfArray(abs);
+			var arrayMax = _.arrays.getMaxOfArray(abs);
 
 			var normalised = abs.map(function (value) {
 				return max * Math.sqrt(value / arrayMax);
@@ -129,7 +128,55 @@ var _ = {
 	},
 
 	// accept
-	accept: function (value, accept, reject) {
-		return accept.indexOf(value) !== -1 && reject.indexOf(value) === -1;
+	accept: function (value, accept) {
+		return accept.indexOf(value) !== -1;
 	}
+
+	// colors
+	color: {
+		grey: {
+			normal: '#868686',
+			uberlight: '#E2E2E2',
+			lightest: '#D2D2D2',
+			light: '#A8A8A8',
+			dark: '#636363',
+			darkest: '#3A3B3A',
+		},
+		red: {
+			normal: '#F5B1AF',
+			lightest: '#FFEFEE',
+			light: '#FFD7D6',
+			dark: '#CF7876',
+			darkest: '#AA4845',
+		},
+		yellow: {
+			normal: '#F5EAAF',
+			lightest: '#FFFCEE',
+			light: '#FFF8D6',
+			dark: '#CFC076',
+			darkest: '#AA9A45',
+		},
+		purple: {
+			normal: '#897EA9',
+			uberlight: '#ECEAF2',
+			lightest: '#DCD8E6',
+			light: '#B2ABC8',
+			dark: '#65588F',
+			darkest: '#473775',
+		},
+		green: {
+			normal: '#8AC18D',
+			lightest: '#DEEEDF',
+			light: '#B6D9B8',
+			dark: '#5CA361',
+			darkest: '#36863B',
+		},
+	},
+
+	// measurements
+	ui: {
+		dimensions: {
+			corner: '5px',
+		},
+	},
 }
