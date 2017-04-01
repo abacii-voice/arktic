@@ -1,5 +1,4 @@
 // LIST OF CHANGES
-
 // ##### version 1:
 // 1. component, state names camelCase
 // 2. 3 top level args: options, ui, children
@@ -7,7 +6,7 @@
 // 4. new ui.styles arg for child styles and classes
 // 5. Util -> _
 // 6. Active.get, Active.set, Context.get, and Context.set should take an object and single value
-
+//
 // Active.get('path');
 // Active.get({output1: 'path1', output2: 'path2'}).then(function (results) {
 // 	results.output1;
@@ -15,12 +14,17 @@
 // });
 // Active.set('path', value);
 // Active.set({'path1': value1, 'path2', value2});
-
+//
 // 7. 3 modes for searchable list: list, autocomplete, and dropdown
 // 8. Change stateMap to state.map
-// 9. Change default state to states.modes
+// 9. Change default state to state.modes.default
 // 10. Change template to css path format: UI.template('div', 'ie') -> 'div.ie'
-// 11.
+// 11. Add .get method to component
+// 12. remove 'State' from state names
+// 13. Perhaps add type variable to component for searchableList, etc.
+// 14. implied 'show' method on component
+// 15. other top level args could be 'data', 'control', 'behaviours'.
+// 16. Consider doing sidebar states with state.modes
 
 var AccountInterfaces = (AccountInterfaces || {});
 AccountInterfaces.controlInterface = function () {
@@ -47,9 +51,9 @@ AccountInterfaces.controlInterface = function () {
 						},
 					},
 					state: {
-						primary: 'clientState',
-						secondary: 'roleState',
-						deactivate: 'controlState',
+						primary: 'client',
+						secondary: 'role',
+						deactivate: 'control',
 					},
 				},
 				children: [
@@ -89,7 +93,7 @@ AccountInterfaces.controlInterface = function () {
 							unit: {
 								ui: {
 									state: {
-										map: 'roleState',
+										map: 'role',
 									},
 								},
 							},
@@ -97,7 +101,7 @@ AccountInterfaces.controlInterface = function () {
 						ui: {
 							state: {
 								states: [
-									UI.state('clientState', {
+									UI.state('client', {
 										preFn: function (_this) {
 											return _this.control.setup.main();
 										}
@@ -121,9 +125,9 @@ AccountInterfaces.controlInterface = function () {
 						},
 					},
 					state: {
-						primary: 'roleState',
-						secondary: 'controlState',
-						deactivate: ['clientState', 'transcriptionState', 'settingsState', 'projectState'],
+						primary: 'role',
+						secondary: 'control',
+						deactivate: ['client', 'transcription', 'settings', 'project'],
 					},
 				},
 				children: [
@@ -165,7 +169,7 @@ AccountInterfaces.controlInterface = function () {
 							unit: {
 								ui: {
 									state: {
-										map: 'control-state',
+										map: 'control',
 									},
 								},
 							},
@@ -173,7 +177,7 @@ AccountInterfaces.controlInterface = function () {
 						ui: {
 							state: {
 								states: [
-									UI.state('role-state', {
+									UI.state('role', {
 										preFn: function (_this) {
 											return _this.control.setup.main();
 										}
@@ -197,9 +201,9 @@ AccountInterfaces.controlInterface = function () {
 						},
 					},
 					state: {
-						primary: 'controlState',
-						secondary: ['transcriptionState', 'settingsState', 'projectState', 'projectState.project'],
-						deactivate: ['clientState', 'roleState', 'settingsState.shortcuts', 'projectState.focus'],
+						primary: 'control',
+						secondary: ['transcription', 'settings', 'project', 'project.project'],
+						deactivate: ['client', 'role', 'settings.shortcuts', 'project.focus'],
 					},
 				},
 				children: [
@@ -217,7 +221,7 @@ AccountInterfaces.controlInterface = function () {
 						ui: {
 							state: {
 								states: [
-									UI.state('controlState', {
+									UI.state('control', {
 										preFn: function (_this) {
 											return Active.get({client: 'client', role: 'role'}).then(function (results) {
 												return Context.get(`user.clients.${results.client}.roles.${results.role}`);
@@ -240,7 +244,7 @@ AccountInterfaces.controlInterface = function () {
 								},
 								ui: {
 									state: {
-										map: 'transcription-state',
+										map: 'transcription',
 									},
 								}.
 							}),
@@ -250,7 +254,7 @@ AccountInterfaces.controlInterface = function () {
 								},
 								ui: {
 									state: {
-										map: 'settings-state',
+										map: 'settings',
 									},
 								},
 							}),
@@ -260,7 +264,7 @@ AccountInterfaces.controlInterface = function () {
 								},
 								ui: {
 									state: {
-										map: 'settings-state',
+										map: 'moderation',
 									},
 								},
 							}),
@@ -270,7 +274,7 @@ AccountInterfaces.controlInterface = function () {
 								},
 								ui: {
 									state: {
-										map: 'settings-state',
+										map: 'project',
 									},
 								},
 							}),
@@ -291,9 +295,9 @@ AccountInterfaces.controlInterface = function () {
 						},
 					},
 					state: {
-						primary: 'settingsState',
-						secondary: ['shortcutState'],
-						deactivate: ['controlState'],
+						primary: 'settings',
+						secondary: ['shortcut'],
+						deactivate: ['control'],
 					},
 				},
 				children: [
@@ -315,7 +319,7 @@ AccountInterfaces.controlInterface = function () {
 								},
 								ui: {
 									state: {
-										map: 'shortcutState',
+										map: 'shortcut',
 									},
 								},
 							}),
