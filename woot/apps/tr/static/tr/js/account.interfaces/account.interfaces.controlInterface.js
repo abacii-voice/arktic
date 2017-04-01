@@ -48,7 +48,7 @@ AccountInterfaces.controlInterface = function () {
 								{
 									name: 'clients',
 									path: function () {
-										return Util.ep('clients');
+										return _.ep('clients');
 									},
 									process: function (data) {
 										var results = Object.keys(data).map(function (key) {
@@ -59,14 +59,14 @@ AccountInterfaces.controlInterface = function () {
 												rule: 'clients',
 											}
 										});
-										return Util.ep(results);
+										return _.ep(results);
 									},
 									filterRequest: function () {
 										return {};
 									},
 								},
 							],
-							sort: Util.sort.alpha('main'),
+							sort: _.sort.alpha('main'),
 							unit: {
 								ui: {
 									state: {
@@ -123,7 +123,7 @@ AccountInterfaces.controlInterface = function () {
 									name: 'roles',
 									path: function () {
 										return Active.get('client').then(function (clientId) {
-											return Util.ep(`user.clients.${clientId}.roles`);
+											return _.ep(`user.clients.${clientId}.roles`);
 										});
 									},
 									process: function (data) {
@@ -135,14 +135,14 @@ AccountInterfaces.controlInterface = function () {
 												rule: 'roles',
 											}
 										});
-										return Util.ep(results);
+										return _.ep(results);
 									},
 									filterRequest: function () {
 										return {};
 									},
 								},
 							],
-							sort: Util.sort.alpha('main'),
+							sort: _.sort.alpha('main'),
 							unit: {
 								ui: {
 									state: {
@@ -194,6 +194,25 @@ AccountInterfaces.controlInterface = function () {
 								show: false,
 							},
 							mode: 'list',
+						},
+						ui: {
+							states: {
+								states: [
+									UI.state('controlState', {
+										preFn: function (_this) {
+											return Active.get({client: 'client', role: 'role'}).then(function (results) {
+												return Context.get(`user.clients.${results.client}.roles.${results.role}`);
+											}).then(function (role) {
+												return Promise.all([
+													_this.get('transcriptionButton').show(role.type === 'worker'),
+													_this.get('moderationButton').show(role.type === 'moderator'),
+													_this.get('projectButton').show(_.accept(role.type, ['moderator', 'admin'], ['worker'])),
+												]);
+											})
+										},
+									}),
+								],
+							},
 						},
 						children: [
 							Components.button('transcriptionButton', {
@@ -286,74 +305,5 @@ AccountInterfaces.controlInterface = function () {
 				],
 			}),
 		],
-	}).then(function (base) {
-
-		// unpack components
-		var controlList = base.get('controlSidebar.list');
-		var settingsList = base.get('settingsSidebar.list');
-
-		// CONTROL SIDEBAR
-		controlList.state = {
-			states: [
-				UI.state('controlState', {
-					preFn: function (_this) {
-						return Active.get({client: 'client', role: 'role'}).then(function (results) {
-							return Context.get(`user.clients.${results.client}.roles.${results.role}`);
-						}).then(function (role) {
-							if (role.type === 'worker') {
-								
-							} else if (role.type === 'moderator') {
-
-							} else if (role.type === 'admin') {
-
-							}
-						})
-					},
-				}),
-			],
-		}
-
-		// CONTROL SIDEBAR
-		controlList.setState({
-			states: {
-				'control-state': {
-					preFn: function (_this) {
-						return Promise.all([
-							Active.get('client'),
-							Active.get('role'),
-						]).then(function (results) {
-							var [clientId, roleId] = results;
-							return Context.get('user.clients.{client_id}.roles.{role_id}'.format({client_id: clientId, role_id: roleId}));
-						}).then(function (role) {
-							if (role.type === 'worker') {
-								// worker
-								return Promise.all([
-									controlList.cc.list.cc.wrapper.cc.transcriptionButton.setAppearance({classes: {remove: 'hidden'}}),
-									controlList.cc.list.cc.wrapper.cc.moderationButton.setAppearance({classes: {add: 'hidden'}}),
-									controlList.cc.list.cc.wrapper.cc.projectButton.setAppearance({classes: {add: 'hidden'}}),
-								]);
-							} else if (role.type === 'moderator') {
-								// moderator
-								return Promise.all([
-									controlList.cc.list.cc.wrapper.cc.transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
-									controlList.cc.list.cc.wrapper.cc.moderationButton.setAppearance({classes: {remove: 'hidden'}}),
-									controlList.cc.list.cc.wrapper.cc.projectButton.setAppearance({classes: {add: 'hidden'}}),
-								]);
-							} else if (role.type === 'admin') {
-								// admin
-								return Promise.all([
-									controlList.cc.list.cc.wrapper.cc.transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
-									controlList.cc.list.cc.wrapper.cc.moderationButton.setAppearance({classes: {add: 'hidden'}}),
-									controlList.cc.list.cc.wrapper.cc.projectButton.setAppearance({classes: {remove: 'hidden'}}),
-								]);
-							}
-						});
-					},
-				},
-			},
-		}),
-
-		// complete promises
-		return base;
 	});
 }

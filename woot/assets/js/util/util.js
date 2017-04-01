@@ -1,4 +1,4 @@
-var Util = {
+var _ = {
 
 	// String formatting
 	format: {
@@ -127,4 +127,9 @@ var Util = {
 		}
 		return true;
 	},
+
+	// accept
+	accept: function (value, accept, reject) {
+		return accept.indexOf(value) !== -1 && reject.indexOf(value) === -1;
+	}
 }
