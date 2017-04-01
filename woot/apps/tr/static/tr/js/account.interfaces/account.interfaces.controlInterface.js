@@ -1,6 +1,6 @@
 var AccountInterfaces = (AccountInterfaces || {});
 AccountInterfaces.controlInterface = function () {
-	return UI.createComponent('control-interface', {
+	return UI.createComponent('controlInterface', {
 		ui: {
 			template: UI.template('div', 'ie abstract'),
 			appearance: {
@@ -15,7 +15,7 @@ AccountInterfaces.controlInterface = function () {
 			},
 		},
 		children: [
-			Components.sidebar('clients', {
+			Components.sidebar('clientSidebar', {
 				options: {
 					position: {
 						main: {
@@ -28,9 +28,9 @@ AccountInterfaces.controlInterface = function () {
 						},
 					},
 					state: {
-						primary: 'client-state',
-						secondary: 'role-state',
-						deactivate: 'control-state',
+						primary: 'clientState',
+						secondary: 'roleState',
+						deactivate: 'controlState',
 					},
 				},
 				children: [
@@ -89,7 +89,7 @@ AccountInterfaces.controlInterface = function () {
 					}),
 				],
 			}),
-			Components.sidebar('roles', {
+			Components.sidebar('roleSidebar', {
 				options: {
 					position: {
 						main: {
@@ -102,9 +102,9 @@ AccountInterfaces.controlInterface = function () {
 						},
 					},
 					state: {
-						primary: 'role-state',
-						secondary: 'control-state',
-						deactivate: ['client-state', 'transcription-state', 'settings-state', 'project-state'],
+						primary: 'roleState',
+						secondary: 'controlState',
+						deactivate: ['clientState', 'transcriptionState', 'settingsState', 'projectState'],
 					},
 				},
 				children: [
@@ -165,7 +165,7 @@ AccountInterfaces.controlInterface = function () {
 					}),
 				],
 			}),
-			Components.sidebar('controls', {
+			Components.sidebar('controlSidebar', {
 				options: {
 					position: {
 						main: {
@@ -178,9 +178,9 @@ AccountInterfaces.controlInterface = function () {
 						},
 					},
 					state: {
-						primary: 'control-state',
-						secondary: ['transcription-state', 'settings-state', 'project-state', 'project-state.project'],
-						deactivate: ['client-state', 'role-state', 'settings-state.shortcuts', 'project-state.focus'],
+						primary: 'controlState',
+						secondary: ['transcriptionState', 'settingsState', 'projectState', 'projectState.project'],
+						deactivate: ['clientState', 'roleState', 'settingsState.shortcuts', 'projectState.focus'],
 					},
 				},
 				children: [
@@ -196,7 +196,7 @@ AccountInterfaces.controlInterface = function () {
 							mode: 'list',
 						},
 						children: [
-							Components.button('transcription', {
+							Components.button('transcriptionButton', {
 								options: {
 									label: 'Transcription',
 								},
@@ -206,7 +206,7 @@ AccountInterfaces.controlInterface = function () {
 									},
 								}.
 							}),
-							Components.button('settings', {
+							Components.button('settingsButton', {
 								options: {
 									label: 'Settings',
 								},
@@ -216,7 +216,7 @@ AccountInterfaces.controlInterface = function () {
 									},
 								},
 							}),
-							Components.button('moderation', {
+							Components.button('moderationButton', {
 								options: {
 									label: 'Moderation',
 								},
@@ -226,7 +226,7 @@ AccountInterfaces.controlInterface = function () {
 									},
 								},
 							}),
-							Components.button('project', {
+							Components.button('projectButton', {
 								options: {
 									label: 'Projects',
 								},
@@ -240,7 +240,7 @@ AccountInterfaces.controlInterface = function () {
 					}),
 				],
 			}),
-			Components.sidebar('settings', {
+			Components.sidebar('settingsSidebar', {
 				ui: {
 					position: {
 						main: {
@@ -253,9 +253,9 @@ AccountInterfaces.controlInterface = function () {
 						},
 					},
 					state: {
-						primary: 'settings-state',
-						secondary: ['shortcut-state'],
-						deactivate: ['control-state'],
+						primary: 'settingsState',
+						secondary: ['shortcutState'],
+						deactivate: ['controlState'],
 					},
 				},
 				children: [
@@ -277,7 +277,7 @@ AccountInterfaces.controlInterface = function () {
 								},
 								ui: {
 									state: {
-										map: 'shortcut-state',
+										map: 'shortcutState',
 									},
 								},
 							}),
@@ -285,152 +285,75 @@ AccountInterfaces.controlInterface = function () {
 					}),
 				],
 			}),
-			Components.actionMasterController('amc', {
-				options: {
-					action: {
-						period: 20000,
-					}
-				},
-				ui: {
-					state: {
-						modes: {
-							default: {
-								fn: function (_this) {
-									_this.action.start();
-									return Util.ep();
-								}
-							}
-						},
-						states: [
-							UI.state('client-state', {
-								mode: 'default',
-							}),
-							UI.state('role-state', {
-								mode: 'default',
-							}),
-							UI.state('control-state', {
-								mode: 'default',
-							}),
-							UI.state('transcription-state', {
-								mode: 'default',
-							}),
-						],
-					},
-				},
-			}),
 		],
 	}).then(function (base) {
 
 		// unpack components
-		var amc = base.get('amc');
-		var clientList = base.get('clients.list');
-		var roleList = base.get('roles.list');
-		var controlList = base.get('controls.list');
-		var settingsList = base.get('settings.list');
+		var controlList = base.get('controlSidebar.list');
+		var settingsList = base.get('settingsSidebar.list');
 
-		// CLIENT SIDEBAR
-		clientList.unit.bindings = {
-			'click': function (_unit) {
-				amc.addAction({type: 'click.clientlist', metadata: {client: _unit.datum.id}});
-				Active.set('client', _unit.datum.id).then(function () {
-					return _unit.triggerState();
-				});
-			},
-		}
+		// CONTROL SIDEBAR
+		controlList.state = {
+			states: [
+				UI.state('controlState', {
+					preFn: function (_this) {
+						return Active.get({client: 'client', role: 'role'}).then(function (results) {
+							return Context.get(`user.clients.${results.client}.roles.${results.role}`);
+						}).then(function (role) {
+							if (role.type === 'worker') {
+								
+							} else if (role.type === 'moderator') {
 
-		// ROLE SIDEBAR
-		roleList.unit.bindings = {
-			'click': function (_unit) {
-				amc.addAction({type: 'click.rolelist', metadata: {role: _unit.data.id}});
-				Active.set('client', _unit.data.id).then(function () {
-					return _unit.triggerState();
-				});
-			},
+							} else if (role.type === 'admin') {
+
+							}
+						})
+					},
+				}),
+			],
 		}
 
 		// CONTROL SIDEBAR
-		controlList.get('transcription').bindings = {
-			'click': function (_this) {
-				amc.addAction({type: 'click.transcription'});
-				return _this.triggerState();
-			},
-		}
-		controlList.get('settings').bindings = {
-			'click': function (_this) {
-				amc.addAction({type: 'click.settings'});
-				return _this.triggerState();
-			},
-		}
-		controlList.get('moderation').bindings = {
-			'click': function (_this) {
-				amc.addAction({type: 'click.moderation'});
-				return _this.triggerState();
-			},
-		}
-		controlList.get('projects').bindings = {
-			'click': function (_this) {
-				amc.addAction({type: 'click.projects'});
-				return _this.triggerState();
-			},
-		}
-
-		// SETTINGS SIDEBAR
-		settingsList.get('shortcuts').bindings = {
-			'click': function (_this) {
-				amc.addAction({type: 'click.shortcuts-button'});
-				return _this.triggerState();
-			},
-		}
-
-		// complete promises
-		return Promise.all([
-
-			// CLIENT SIDEBAR
-
-			// ROLE SIDEBAR
-
-			// CONTROL SIDEBAR
-			controlList.setState({
-				states: {
-					'control-state': {
-						preFn: function (_this) {
-							return Promise.all([
-								Active.get('client'),
-								Active.get('role'),
-							]).then(function (results) {
-								var [clientId, roleId] = results;
-								return Context.get('user.clients.{client_id}.roles.{role_id}'.format({client_id: clientId, role_id: roleId}));
-							}).then(function (role) {
-								if (role.type === 'worker') {
-									// worker
-									return Promise.all([
-										controlList.cc.list.cc.wrapper.cc.transcriptionButton.setAppearance({classes: {remove: 'hidden'}}),
-										controlList.cc.list.cc.wrapper.cc.moderationButton.setAppearance({classes: {add: 'hidden'}}),
-										controlList.cc.list.cc.wrapper.cc.projectButton.setAppearance({classes: {add: 'hidden'}}),
-									]);
-								} else if (role.type === 'moderator') {
-									// moderator
-									return Promise.all([
-										controlList.cc.list.cc.wrapper.cc.transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
-										controlList.cc.list.cc.wrapper.cc.moderationButton.setAppearance({classes: {remove: 'hidden'}}),
-										controlList.cc.list.cc.wrapper.cc.projectButton.setAppearance({classes: {add: 'hidden'}}),
-									]);
-								} else if (role.type === 'admin') {
-									// admin
-									return Promise.all([
-										controlList.cc.list.cc.wrapper.cc.transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
-										controlList.cc.list.cc.wrapper.cc.moderationButton.setAppearance({classes: {add: 'hidden'}}),
-										controlList.cc.list.cc.wrapper.cc.projectButton.setAppearance({classes: {remove: 'hidden'}}),
-									]);
-								}
-							});
-						},
+		controlList.setState({
+			states: {
+				'control-state': {
+					preFn: function (_this) {
+						return Promise.all([
+							Active.get('client'),
+							Active.get('role'),
+						]).then(function (results) {
+							var [clientId, roleId] = results;
+							return Context.get('user.clients.{client_id}.roles.{role_id}'.format({client_id: clientId, role_id: roleId}));
+						}).then(function (role) {
+							if (role.type === 'worker') {
+								// worker
+								return Promise.all([
+									controlList.cc.list.cc.wrapper.cc.transcriptionButton.setAppearance({classes: {remove: 'hidden'}}),
+									controlList.cc.list.cc.wrapper.cc.moderationButton.setAppearance({classes: {add: 'hidden'}}),
+									controlList.cc.list.cc.wrapper.cc.projectButton.setAppearance({classes: {add: 'hidden'}}),
+								]);
+							} else if (role.type === 'moderator') {
+								// moderator
+								return Promise.all([
+									controlList.cc.list.cc.wrapper.cc.transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
+									controlList.cc.list.cc.wrapper.cc.moderationButton.setAppearance({classes: {remove: 'hidden'}}),
+									controlList.cc.list.cc.wrapper.cc.projectButton.setAppearance({classes: {add: 'hidden'}}),
+								]);
+							} else if (role.type === 'admin') {
+								// admin
+								return Promise.all([
+									controlList.cc.list.cc.wrapper.cc.transcriptionButton.setAppearance({classes: {add: 'hidden'}}),
+									controlList.cc.list.cc.wrapper.cc.moderationButton.setAppearance({classes: {add: 'hidden'}}),
+									controlList.cc.list.cc.wrapper.cc.projectButton.setAppearance({classes: {remove: 'hidden'}}),
+								]);
+							}
+						});
 					},
 				},
-			}),
+			},
+		}),
 
-		]).then(function () {
-			return base;
-		});
+		// complete promises
+		return base;
 	});
 }
