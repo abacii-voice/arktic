@@ -6,6 +6,12 @@
 // 4. Action controller should be more pervasive, more tightly integrated.
 // 5.
 
+// ACTIONS:
+// 1. Something is defined below for connections, but does not make any, so move it to the top.
+// 2. Move all setState, setBinding up out of promises.
+// 3. Redo component paths
+// 4.
+
 var AccountInterfaces = (AccountInterfaces || {});
 AccountInterfaces.transcriptionInterface = function () {
 	return UI.createComponent('transcriptionInterface', {
@@ -1375,7 +1381,6 @@ AccountInterfaces.transcriptionInterface = function () {
 					'display': 'block',
 				},
 			}),
-			autocomplete.unitStyle.apply(),
 			autocomplete.setState({
 				states: {
 					'transcription-state': {
