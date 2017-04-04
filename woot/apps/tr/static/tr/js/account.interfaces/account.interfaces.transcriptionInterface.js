@@ -10,7 +10,27 @@
 // 1. Something is defined below for connections, but does not make any, so move it to the top.
 // 2. Move all setState, setBinding up out of promises.
 // 3. Redo component paths
-// 4.
+// 4. Each component needs a consistent API (ways of getting and setting useful data about it)
+// 5. Do I need a way for parents to register children to hop over containers?
+
+// WHAT IS THIS FOR? CAN IT BE GENERALISED?
+// Need to search for a series of consistent external controls for common functions.
+// 1. caption.completionOverride
+// 2. caption.control.input
+// 3. audio.display
+// 4. flags.data.reset
+// 5. audio.controller
+// 6. autocomplete.currentIndex
+// 7. autocomplete.data.storage.virtual.list.length
+// 8. caption.active
+// 9. autocomplete.data.storage.virtual.rendered.length
+// 10. autocomplete.control
+// 11. unitBase.completeChanged
+// 12. unitBase.queryChanged
+// 13. unitBase.typeChanged
+// 14. autocomplete.data.storage.filters[autocomplete.data.filter] WTF
+// 15. metadata, query, complete, combined
+// 16.
 
 var AccountInterfaces = (AccountInterfaces || {});
 AccountInterfaces.transcriptionInterface = function () {
@@ -28,7 +48,7 @@ AccountInterfaces.transcriptionInterface = function () {
 						ui: {
 							state: {
 								states: [
-									UI.state('transcription', {
+									UI.createState('transcription', {
 										fn: function (_this) {
 											return _this.control.setup();
 										},
@@ -279,13 +299,13 @@ AccountInterfaces.transcriptionInterface = function () {
 				ui: {
 					state: {
 						states: [
-							UI.state('control', {
+							UI.createState('control', {
 								fn: function (_this) {
 									_this.revision.stop();
 									return _.ep();
 								},
 							}),
-							UI.state('transcription', {
+							UI.createState('transcription', {
 								fn: function (_this) {
 									_this.revision.start();
 									return _.ep();
@@ -306,7 +326,7 @@ AccountInterfaces.transcriptionInterface = function () {
 
 		var counter = base.get('main.counter');
 		var audio = base.get('main.audio');
-		var caption = base.get('main.caption');;
+		var caption = base.get('main.caption');
 		var flags = base.get('main.buttons.flags');
 		var tmc = base.get('tmc');
 		var autocomplete = base.get('autocomplete.list');
@@ -426,13 +446,9 @@ AccountInterfaces.transcriptionInterface = function () {
 		}
 		autocomplete.options.sort = _.sort.usageAlpha();
 
-
-
-
-
-		// BELOW HERE
-		autocomplete.search.setMetadata = function (metadata) {
-			var _this = autocomplete.search;
+		var search = autocomplete.get('search');
+		search.setMetadata = function (metadata) {
+			var _this = search;
 			metadata = (metadata || {});
 			_this.metadata = (_this.metadata || {});
 			_this.metadata.query = metadata.query !== undefined ? metadata.query : (_this.metadata.query || '');
@@ -456,8 +472,8 @@ AccountInterfaces.transcriptionInterface = function () {
 				}
 			});
 		}
-		autocomplete.search.complete = function () {
-			var _this = autocomplete.search;
+		search.complete = function () {
+			var _this = search;
 			_this.completeQuery = ((_this.metadata || {}).complete || '');
 			_this.isComplete = true;
 			return _this.cc.tail.setAppearance({html: _this.completeQuery}).then(function () {
@@ -470,12 +486,13 @@ AccountInterfaces.transcriptionInterface = function () {
 				}
 			});
 		}
-		autocomplete.search.behaviours.right = function () {
-			if ((autocomplete.search.isCaretInPosition('end') && !autocomplete.search.isComplete) || caption.completionOverride) {
+		search.behaviours.right = function () {
+			var _this = search;
+			if ((_this.isCaretInPosition('end') && !_this.isComplete) || caption.completionOverride) {
 				autocomplete.currentIndex = 0;
 				caption.completionOverride = false;
-				return autocomplete.search.complete().then(function () {
-					return autocomplete.search.input();
+				return _this.complete().then(function () {
+					return _this.input();
 				});
 			} else {
 				return Util.ep();
@@ -537,41 +554,9 @@ AccountInterfaces.transcriptionInterface = function () {
 			}
 			return tokens;
 		}
-		caption.styles = function () {
-			// word
-			jss.set('#{id} .word'.format({id: caption.id}), {
-				'color': Color.grey.normal,
-			});
-			jss.set('#{id} .word.active'.format({id: caption.id}), {
-				'color': Color.grey.light,
-			});
-
-			// tag
-			jss.set('#{id} .tag'.format({id: caption.id}), {
-				'color': Color.green.darkest,
-			});
-			jss.set('#{id} .tag.active'.format({id: caption.id}), {
-				'color': Color.green.dark,
-			});
-
-			return Util.ep();
-		}
 		caption.unit = function () {
 			var id = caption.data.idgen();
-			return Components.search(id, {
-				name: id,
-				// need custom appearance
-				appearance: {
-					style: {
-						'padding-left': '0px',
-						'padding-bottom': '8px',
-						'padding-top': '0px',
-						'height': 'auto',
-						'border': '0px',
-						'display': 'inline-block',
-					},
-				},
-			}).then(function (unitBase) {
+			return Components.search(id).then(function (unitBase) {
 
 				// caption unit display
 				unitBase.activate = function () {

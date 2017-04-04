@@ -17,10 +17,10 @@ var AccountApplication = function () {
 			},
 		},
 		children: [
-			AccountInterfaces.controlInterface(),
-			AccountInterfaces.transcriptionInterface(),
-			AccountInterfaces.shortcutInterface(),
-			AccountInterfaces.projectInterface(),
+			// AccountInterfaces.controlInterface(),
+			// AccountInterfaces.transcriptionInterface(),
+			// AccountInterfaces.shortcutInterface(),
+			// AccountInterfaces.projectInterface(),
 		],
 	}).then(function (base) {
 		base.initialise = function () {

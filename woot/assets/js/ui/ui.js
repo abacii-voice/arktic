@@ -1,5 +1,178 @@
 // UI: This is the UI definition. It is ignorant of the data passing through the app.
 var UI = {
+	app: function (root, application) {
+		// shortcut for create component, render, and action register
+	},
+	action: {
+		controller: function (args) {
+
+		},
+		register: function (name, args) {
+
+		},
+	},
+	state: {
+		path: undefined,
+		state: function (path) {
+
+		},
+		create: function (name, args) {
+
+		},
+		change: function (trigger, path) {
+
+		},
+		tree: function () {
+
+		},
+	},
+	component: {
+		_: {
+			template: function (string) {
+
+			},
+			format: {
+				style: function (style) {
+
+				},
+				classes: function (classes) {
+
+				},
+				properties: function (properties) {
+
+				},
+			},
+			path: function (name, parent) {
+
+			},
+		},
+		component: function (name) {
+			var _component = this;
+
+			// identity
+			_component.name = name;
+			_component.args = function (args) {
+				// handle behaviours, data, control, ui, options
+				_component.behaviours = (args.behaviours || {
+					click: function (_this) {
+						return _this.state.trigger();
+					},
+				});
+				_component.data = (args.data || {});
+				_component.control = (args.control || {});
+				_component.ui = (args.ui || {
+					template: 'div.ie',
+					appearance: {
+						style: {},
+						html: undefined,
+						classes: [],
+					},
+					styles: {},
+					bindings: {},
+					state: {},
+				});
+				_component.options = (args.options || {});
+				return _.ep();
+			}
+
+			// state
+			_component.state = {
+				tree: {},
+				get: function (path) {
+
+				},
+				add: function (states) {
+					// only handles top level
+
+				},
+				change: function (path) {
+
+				},
+				map: {
+					tree: undefined,
+					get: function (path) {
+
+					},
+				},
+				trigger: function () {
+
+				},
+			}
+
+			// DOM
+			_component.children = {
+				data: [],
+				add: function (children) {
+
+				},
+				remove: {
+					all: function () {
+
+					},
+					single: function (name) {
+
+					},
+				},
+				refresh: function () {
+
+				},
+			}
+			_component.element = function () {
+
+			}
+			_component.render = function () {
+
+			}
+			_component.get = function (path) {
+
+			}
+			_component.bind = function (bindings) {
+
+			}
+			_component.animate = function (appearance) {
+
+			}
+
+			// settings, mousetrap
+		},
+		create: function (name, args) {
+
+		},
+		tree: function () {
+
+		},
+		get: function (path) {
+
+		},
+	},
+	context: {
+		permission: function () {
+
+		},
+		set: function (paths) {
+
+		},
+		send: function (data) {
+
+		},
+		get: function (paths) {
+
+		},
+		load: function (paths) {
+
+		},
+	},
+	active: {
+		set: function (paths) {
+
+		},
+		get: function (paths) {
+
+		},
+	},
+}
+
+var UI = {
 	// GLOBAL STATE
 	// store current global state
 	// This is a path like 'client-state.reload' -> later, James.
@@ -10,7 +183,7 @@ var UI = {
 		if (!stateName.startsWith('-')) {
 			UI.globalState = stateName;
 		}
-		return Promise.all(UI.states.filter(function (state) {
+		return Promise.all(UI.createStates.filter(function (state) {
 			return state.name === stateName;
 		}).map(function (state) {
 			return state.change();
