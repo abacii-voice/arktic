@@ -2,48 +2,53 @@
 var UI = {
 	app: function (root, application) {
 		// shortcut for create component, render, and action register
+		return (application.then ? application : application()).then(function (app) {
+			app.name = 'app';
+			app.root = root;
+			return app.render() //.then(app.initialise);
+		});
 	},
 	action: {
 		controller: function (args) {
-
+			return _.ep();
 		},
 		register: function (name, args) {
-
+			return _.ep();
 		},
 	},
 	state: {
 		path: undefined,
 		state: function (path) {
-
+			return _.ep();
 		},
 		create: function (name, args) {
-
+			return _.ep();
 		},
 		change: function (trigger, path) {
-
+			return _.ep();
 		},
 		tree: function () {
-
+			return _.ep();
 		},
 	},
 	component: {
 		_: {
 			template: function (string) {
-
+				return _.ep();
 			},
 			format: {
 				style: function (style) {
-
+					return _.ep();
 				},
 				classes: function (classes) {
-
+					return _.ep();
 				},
 				properties: function (properties) {
-
+					return _.ep();
 				},
 			},
 			path: function (name, parent) {
-
+				return _.ep();
 			},
 		},
 		component: function (name) {
@@ -51,16 +56,16 @@ var UI = {
 
 			// identity
 			_component.name = name;
-			_component.args = function (args) {
+			_component.update = function (args) {
 				// handle behaviours, data, control, ui, options
-				_component.behaviours = (args.behaviours || {
+				_component.behaviours = (args.behaviours || _component.behaviours || {
 					click: function (_this) {
 						return _this.state.trigger();
 					},
 				});
-				_component.data = (args.data || {});
-				_component.control = (args.control || {});
-				_component.ui = (args.ui || {
+				_component.data = (args.data || _component.data || {});
+				_component.control = (args.control || _component.control || {});
+				_component.ui = (args.ui || _component.ui || {
 					template: 'div.ie',
 					appearance: {
 						style: {},
@@ -71,31 +76,31 @@ var UI = {
 					bindings: {},
 					state: {},
 				});
-				_component.options = (args.options || {});
-				return _.ep();
+				_component.options = (args.options || _component.options || {});
+				return _.ep(_component);
 			}
 
 			// state
 			_component.state = {
 				tree: {},
 				get: function (path) {
-
+					return _.ep();
 				},
 				add: function (states) {
 					// only handles top level
-
+					return _.ep();
 				},
 				change: function (path) {
-
+					return _.ep();
 				},
 				map: {
 					tree: undefined,
 					get: function (path) {
-
+						return _.ep();
 					},
 				},
 				trigger: function () {
-
+					return _.ep();
 				},
 			}
 
@@ -103,46 +108,44 @@ var UI = {
 			_component.children = {
 				data: [],
 				add: function (children) {
-
+					return _.ep();
 				},
 				remove: {
 					all: function () {
-
+						return _.ep();
 					},
 					single: function (name) {
-
+						return _.ep();
 					},
 				},
 				refresh: function () {
-
+					return _.ep();
 				},
 			}
 			_component.element = function () {
-
+				return _.ep();
 			}
 			_component.render = function () {
-
+				return _.ep();
 			}
 			_component.get = function (path) {
-
+				return _.ep();
 			}
 			_component.bind = function (bindings) {
-
+				return _.ep();
 			}
 			_component.animate = function (appearance) {
-
+				return _.ep();
 			}
-
-			// settings, mousetrap
 		},
 		create: function (name, args) {
-
+			return new UI.component.component(name).update(args);
 		},
 		tree: function () {
-
+			return _.ep();
 		},
 		get: function (path) {
-
+			return _.ep();
 		},
 	},
 	context: {
@@ -172,6 +175,7 @@ var UI = {
 	},
 }
 
+/*
 var UI = {
 	// GLOBAL STATE
 	// store current global state
@@ -943,3 +947,4 @@ var Permission = {
 		});
 	},
 }
+*/

@@ -31,7 +31,7 @@ var _ = {
 
 	json: function (object) {
 		return JSON.stringify(objects);
-	}
+	},
 
 	// generate random string
 	name: function () {
@@ -39,7 +39,7 @@ var _ = {
 		var text = '';
 		var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
-		for(i=0, i<8; i++) {
+		for (i=0; i<8; i++) {
 			text += possible.charAt(Math.floor(Math.random() * possible.length));
 		}
 
@@ -54,7 +54,7 @@ var _ = {
 		dirname: function (path) {
 			return path.match(/.*\//);
 		},
-	}
+	},
 
 	// sort
 	sort: {
@@ -151,7 +151,7 @@ var _ = {
 	// accept
 	accept: function (value, accept) {
 		return accept.indexOf(value) !== -1;
-	}
+	},
 
 	// colors
 	color: {
