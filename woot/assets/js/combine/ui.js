@@ -24,7 +24,7 @@ var UI = {
 			UI.globalState = stateName;
 			resolve();
 		}).then(function () {
-			return Promise.all(UI.states.map(function (state) {
+			return Promise.all(UI.createStates.map(function (state) {
 				return state.change();
 			}));
 		});

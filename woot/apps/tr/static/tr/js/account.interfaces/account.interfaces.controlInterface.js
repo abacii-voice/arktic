@@ -97,7 +97,7 @@ AccountInterfaces.controlInterface = function () {
 						ui: {
 							state: {
 								states: [
-									UI.state('client', {
+									UI.createState('client', {
 										preFn: function (_this) {
 											return _this.control.setup.main();
 										}
@@ -169,7 +169,7 @@ AccountInterfaces.controlInterface = function () {
 						ui: {
 							state: {
 								states: [
-									UI.state('role', {
+									UI.createState('role', {
 										preFn: function (_this) {
 											return _this.control.setup.main();
 										}
@@ -211,7 +211,7 @@ AccountInterfaces.controlInterface = function () {
 						ui: {
 							state: {
 								states: [
-									UI.state('control', {
+									UI.createState('control', {
 										preFn: function (_this) {
 											return Active.get({client: 'client', role: 'role'}).then(function (results) {
 												return Context.get(`user.clients.${results.client}.roles.${results.role}`);
