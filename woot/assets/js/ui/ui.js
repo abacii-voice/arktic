@@ -77,7 +77,7 @@ var UI = {
 					state: {},
 				});
 				_component.options = (args.options || _component.options || {});
-				return _.ep(_component);
+				return _component.isRendered ? _.ep(_component);
 			}
 
 			// state
