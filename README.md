@@ -40,12 +40,12 @@ Assigns a user to a specified project. The transcriptions that are available to 
 3. Clients
 ----------
 
-Can be used to views the list of clients and projects currently active.
+Can be used to views the list of clients and projects currently active. Add the argument --client to view a single client.
 
 4. Tags
 -------
 
-Can be used to add tags to a specific project dictionary
+Can be used to add tags to a specific project dictionary. 
 
 5. Flags
 --------
