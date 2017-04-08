@@ -53,9 +53,13 @@ Can be used to views the list of clients and projects currently active. Add the 
 4. Tags
 -------
 
-Can be used to add tags to a specific project dictionary. 
+Can be used to add tags to a specific project dictionary. They can listed, or filtered with the arguments --tag, --client, --project, or --enabled
+
+### add
+
+On top of the client and project, can also specify a --description.
 
 5. Flags
 --------
 
-Can add flags to a client or project
+Can add flags to a client. 
