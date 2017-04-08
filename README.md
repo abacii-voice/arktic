@@ -16,6 +16,8 @@ dm import --path --client --project --grammar --batch --name
 
 Names an upload from a specified path. Will be placed into the media folder under 'audio'. Used to create Transcription objects that will be immediately available on the system.
 
+If they do not currently exist; client, project, grammar, and batch will be created.
+
 2. Users
 --------
 
@@ -36,6 +38,12 @@ Disables a user and prevents them from logging in. It does not remove them from 
 dm users assign --user --client --project
 
 Assigns a user to a specified project. The transcriptions that are available to them will come from this project and will deactivate their account when the project is complete. Re-assign a user to reactivate them.
+
+### resend_verification_email
+
+dm users resend_verification_email --user
+
+Will resend the verification email with a different code. The verification page can only be loaded once per code.
 
 3. Clients
 ----------
