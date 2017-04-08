@@ -13,6 +13,8 @@ class Flag(models.Model):
 	### Properties
 	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	name = models.CharField(max_length=255)
+	description = models.TextField(default='')
+	is_enabled = models.BooleanField(default=True)
 
 	### Methods
 	# data
@@ -20,6 +22,8 @@ class Flag(models.Model):
 		data = {
 			'client': self.client.id,
 			'name': self.name,
+			'description': self.description,
+			'is_enabled': self.is_enabled,
 		}
 
 		if permission.is_worker and permission.check_client(self.client):
