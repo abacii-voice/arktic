@@ -4,7 +4,7 @@
 // 1. Add color and ui measurements to _ variable
 
 var AccountApplication = function () {
-	return UI.component.create('accountApplication', {
+	return UI.component.create('app', {
 		ui: {
 			template: 'div.ie',
 			styles: {
