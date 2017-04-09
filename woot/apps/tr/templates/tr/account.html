@@ -1,26 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{# LOAD JS #}
-{% block head-js %}
-{% endblock %}
-
-{# CSS #}
-{% block css %}
-<link rel='stylesheet' href='{% static 'tr/css/account-main.css' %}'>
-<link rel='stylesheet' href='{% static 'tr/css/account-ui.css' %}'>
-<link rel='stylesheet' href='{% static 'tr/css/account-elements.css' %}'>
-{% endblock %}
-
-{# CONTENT #}
-{# role matrix with notifications and work summary #}
-{% block content %}
-
-{# UI hook #}
-<div id='hook'></div>
-{% endblock %}
-
-{% block pre_main_script %}
+{% block js %}
 <!-- Third party (no local deps) -->
 <script src='{% static "js/util/dropzone.js" %}'></script>
 <script src='{% static "js/util/mousetrap.js" %}'></script> <!-- keyboard shortcuts -->

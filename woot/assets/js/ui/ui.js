@@ -1,13 +1,5 @@
 // UI: This is the UI definition. It is ignorant of the data passing through the app.
 var UI = {
-	app: function (root, application) {
-		// shortcut for create component, render, and action register
-		return (application.then ? application : application()).then(function (app) {
-			app.name = 'app';
-			app.root = root;
-			return app.render() //.then(app.initialise);
-		});
-	},
 	action: {
 		controller: function (args) {
 			return _.ep();
@@ -52,19 +44,36 @@ var UI = {
 			},
 		},
 		component: function (name) {
+
+			// 0. path
+			// 1. appearance
+			// 2. child classes
+			// 3. 
+
 			var _component = this;
 
 			// identity
 			_component.name = name;
+			_component.isInitialised = false;
+			_component.update = function (args) {
+
+				// defaults
+				if (!_component.isInitialised) {
+					_component.behaviours = {
+						click: function (_this) {
+							return _this.state.trigger();
+						},
+					}
+				}
+
+				// extend object
+				_component = _.extend(_component, args);
+
+				// render what has changed
+
+			}
 			_component.update = function (args) {
 				// handle behaviours, data, control, ui, options
-				_component.behaviours = (args.behaviours || _component.behaviours || {
-					click: function (_this) {
-						return _this.state.trigger();
-					},
-				});
-				_component.data = (args.data || _component.data || {});
-				_component.control = (args.control || _component.control || {});
 				_component.ui = (args.ui || _component.ui || {
 					template: 'div.ie',
 					appearance: {
@@ -173,6 +182,14 @@ var UI = {
 
 		},
 	},
+}
+
+var $ = function (path, args) {
+	// Takes several combintations of arguments
+	// 1. A single path -> gets a component
+	// 2. A name + args -> creates a component
+
+
 }
 
 /*
@@ -948,3 +965,213 @@ var Permission = {
 	},
 }
 */
+
+//
+// function extend () {
+// 	var options, name, src, copy, copyIsArray, clone,
+// 		target = arguments[0] || {},
+// 		i = 1,
+// 		length = arguments.length,
+// 		deep = false;
+//
+// 	// Handle a deep copy situation
+// 	if ( typeof target === "boolean" ) {
+// 		deep = target;
+// 		target = arguments[1] || {};
+// 		// skip the boolean and the target
+// 		i = 2;
+// 	}
+//
+// 	// Handle case when target is a string or something (possible in deep copy)
+// 	if ( typeof target !== "object" && !jQuery.isFunction(target) ) {
+// 		target = {};
+// 	}
+//
+// 	// extend jQuery itself if only one argument is passed
+// 	if ( length === i ) {
+// 		target = this;
+// 		--i;
+// 	}
+//
+// 	for ( ; i < length; i++ ) {
+// 		// Only deal with non-null/undefined values
+// 		if ( (options = arguments[ i ]) != null ) {
+// 			// Extend the base object
+// 			for ( name in options ) {
+// 				src = target[ name ];
+// 				copy = options[ name ];
+//
+// 				// Prevent never-ending loop
+// 				if ( target === copy ) {
+// 					continue;
+// 				}
+//
+// 				// Recurse if we're merging plain objects or arrays
+// 				if ( deep && copy && ( jQuery.isPlainObject(copy) || (copyIsArray = jQuery.isArray(copy)) ) ) {
+// 					if ( copyIsArray ) {
+// 						copyIsArray = false;
+// 						clone = src && jQuery.isArray(src) ? src : [];
+//
+// 					} else {
+// 						clone = src && jQuery.isPlainObject(src) ? src : {};
+// 					}
+//
+// 					// Never move original objects, clone them
+// 					target[ name ] = jQuery.extend( deep, clone, copy );
+//
+// 				// Don't bring in undefined values
+// 				} else if ( copy !== undefined ) {
+// 					target[ name ] = copy;
+// 				}
+// 			}
+// 		}
+// 	}
+//
+// 	// Return the modified object
+// 	return target;
+// }
+//
+// var animate = function( prop, speed, easing, callback ) {
+// 	var optall = jQuery.speed( speed, easing, callback );
+//
+// 	if ( jQuery.isEmptyObject( prop ) ) {
+// 		return this.each( optall.complete, [ false ] );
+// 	}
+//
+// 	// Do not change referenced properties as per-property easing will be lost
+// 	prop = jQuery.extend( {}, prop );
+//
+// 	function doAnimation() {
+// 		// XXX 'this' does not always have a nodeName when running the
+// 		// test suite
+//
+// 		if ( optall.queue === false ) {
+// 			jQuery._mark( this );
+// 		}
+//
+// 		var opt = jQuery.extend( {}, optall ),
+// 			isElement = this.nodeType === 1,
+// 			hidden = isElement && jQuery(this).is(":hidden"),
+// 			name, val, p, e, hooks, replace,
+// 			parts, start, end, unit,
+// 			method;
+//
+// 		// will store per property easing and be used to determine when an animation is complete
+// 		opt.animatedProperties = {};
+//
+// 		// first pass over propertys to expand / normalize
+// 		for ( p in prop ) {
+// 			name = jQuery.camelCase( p );
+// 			if ( p !== name ) {
+// 				prop[ name ] = prop[ p ];
+// 				delete prop[ p ];
+// 			}
+//
+// 			if ( ( hooks = jQuery.cssHooks[ name ] ) && "expand" in hooks ) {
+// 				replace = hooks.expand( prop[ name ] );
+// 				delete prop[ name ];
+//
+// 				// not quite $.extend, this wont overwrite keys already present.
+// 				// also - reusing 'p' from above because we have the correct "name"
+// 				for ( p in replace ) {
+// 					if ( ! ( p in prop ) ) {
+// 						prop[ p ] = replace[ p ];
+// 					}
+// 				}
+// 			}
+// 		}
+//
+// 		for ( name in prop ) {
+// 			val = prop[ name ];
+// 			// easing resolution: per property > opt.specialEasing > opt.easing > 'swing' (default)
+// 			if ( jQuery.isArray( val ) ) {
+// 				opt.animatedProperties[ name ] = val[ 1 ];
+// 				val = prop[ name ] = val[ 0 ];
+// 			} else {
+// 				opt.animatedProperties[ name ] = opt.specialEasing && opt.specialEasing[ name ] || opt.easing || 'swing';
+// 			}
+//
+// 			if ( val === "hide" && hidden || val === "show" && !hidden ) {
+// 				return opt.complete.call( this );
+// 			}
+//
+// 			if ( isElement && ( name === "height" || name === "width" ) ) {
+// 				// Make sure that nothing sneaks out
+// 				// Record all 3 overflow attributes because IE does not
+// 				// change the overflow attribute when overflowX and
+// 				// overflowY are set to the same value
+// 				opt.overflow = [ this.style.overflow, this.style.overflowX, this.style.overflowY ];
+//
+// 				// Set display property to inline-block for height/width
+// 				// animations on inline elements that are having width/height animated
+// 				if ( jQuery.css( this, "display" ) === "inline" &&
+// 						jQuery.css( this, "float" ) === "none" ) {
+//
+// 					// inline-level elements accept inline-block;
+// 					// block-level elements need to be inline with layout
+// 					if ( !jQuery.support.inlineBlockNeedsLayout || defaultDisplay( this.nodeName ) === "inline" ) {
+// 						this.style.display = "inline-block";
+//
+// 					} else {
+// 						this.style.zoom = 1;
+// 					}
+// 				}
+// 			}
+// 		}
+//
+// 		if ( opt.overflow != null ) {
+// 			this.style.overflow = "hidden";
+// 		}
+//
+// 		for ( p in prop ) {
+// 			e = new jQuery.fx( this, opt, p );
+// 			val = prop[ p ];
+//
+// 			if ( rfxtypes.test( val ) ) {
+//
+// 				// Tracks whether to show or hide based on private
+// 				// data attached to the element
+// 				method = jQuery._data( this, "toggle" + p ) || ( val === "toggle" ? hidden ? "show" : "hide" : 0 );
+// 				if ( method ) {
+// 					jQuery._data( this, "toggle" + p, method === "show" ? "hide" : "show" );
+// 					e[ method ]();
+// 				} else {
+// 					e[ val ]();
+// 				}
+//
+// 			} else {
+// 				parts = rfxnum.exec( val );
+// 				start = e.cur();
+//
+// 				if ( parts ) {
+// 					end = parseFloat( parts[2] );
+// 					unit = parts[3] || ( jQuery.cssNumber[ p ] ? "" : "px" );
+//
+// 					// We need to compute starting value
+// 					if ( unit !== "px" ) {
+// 						jQuery.style( this, p, (end || 1) + unit);
+// 						start = ( (end || 1) / e.cur() ) * start;
+// 						jQuery.style( this, p, start + unit);
+// 					}
+//
+// 					// If a +=/-= token was provided, we're doing a relative animation
+// 					if ( parts[1] ) {
+// 						end = ( (parts[ 1 ] === "-=" ? -1 : 1) * end ) + start;
+// 					}
+//
+// 					e.custom( start, end, unit );
+//
+// 				} else {
+// 					e.custom( start, val, "" );
+// 				}
+// 			}
+// 		}
+//
+// 		// For JS strict compliance
+// 		return true;
+// 	}
+//
+// 	return optall.queue === false ?
+// 		this.each( doAnimation ) :
+// 		this.queue( optall.queue, doAnimation );
+// }
