@@ -45,59 +45,91 @@ var UI = {
 		},
 		component: function (name) {
 
-			// 0. path
-			// 1. appearance
-			// 2. child classes
-			// 3. 
+			// done once (and affect DOM)
+			// 1. path
+			// 2. template
+
+			// can be changed, but do not affect DOM
+			// 1. behaviours
+			// 2. state
+			// 3. options
+			// 4. control
+			// 5. data
+
+			// can be changed, but must modify DOM
+			// 1. bindings
+			// 2. classes
+			// 3. appearance
+			// 4. children
+
+			// $('name', {
+			// 	ui: {
+			// 		template: 'div.ie',
+			// 		appearance: {
+			// 			style: {},
+			// 			classes: [],
+			// 			html: '',
+			// 			styles: {},
+			// 		},
+			// 		bindings: {
+			// 			'click': {
+			// 				state: function (_this, event) {
+			//
+			// 				},
+			// 			},
+			// 			':ctrl+space': function (_this, event) {
+			//
+			// 			},
+			// 		},
+			// 	},
+			// 	children: [
+			// 		$('child', {
+			//
+			// 		}),
+			// 	],
+			// });
 
 			var _component = this;
 
 			// identity
 			_component.name = name;
-			_component.isInitialised = false;
-			_component.update = function (args) {
-
-				// defaults
-				if (!_component.isInitialised) {
-					_component.behaviours = {
-						click: function (_this) {
-							return _this.state.trigger();
-						},
-					}
-				}
-
-				// extend object
-				_component = _.extend(_component, args);
-
-				// render what has changed
-
+			_component._is = {
+				rendered: false,
 			}
+
+			// dom and properties
+			_component.template = 'div.ie';
 			_component.update = function (args) {
-				// handle behaviours, data, control, ui, options
-				_component.ui = (args.ui || _component.ui || {
-					template: 'div.ie',
-					appearance: {
-						style: {},
-						html: undefined,
-						classes: [],
-					},
-					styles: {},
-					bindings: {},
-					state: {},
-				});
-				_component.options = (args.options || _component.options || {});
-				return _component.isRendered ? _.ep(_component);
+				args = _.m(args, {ui: {}});
+
+				// no processing
+				_component.options = _.m(_component.options, args.ui.options);
+				_component.data = _.m(_component.data, args.ui.data);
+				_component.control = _.m(_component.control, args.ui.control);
+
+				// need processing
+				return _.all(
+					// state
+					_component.state.set(args.ui.state),
+
+					// DOM
+					_component.bindings.set(args.ui.bindings),
+					_component.appearance.set(args.ui.appearance),
+
+					// children
+					_component.children.add(args.children),
+				);
 			}
 
 			// state
 			_component.state = {
-				tree: {},
+				_: {},
 				get: function (path) {
 					return _.ep();
 				},
 				add: function (states) {
 					// only handles top level
-					return _.ep();
+
 				},
 				change: function (path) {
 					return _.ep();
@@ -114,18 +146,63 @@ var UI = {
 			}
 
 			// DOM
+			_component.bindings = {
+				set: function (bindings) {
+					_component.bindings = _.m(_component.bindings, bindings);
+					if (bindings) {
+						_.items(bindings, function (event, fn) {
+							if (_component.is.rendered) {
+								let isWindowEvent = `on${event}` in window;
+								_component.bindings.on(isWindowEvent, event, fn);
+							}
+						});
+					}
+				},
+
+				/*
+
+				So the idea here, is that bindings will be added, but not to call a single function,
+				but a range of functions, each referencing the _component and the _event. If this is first
+				binding to be added, an event listener will be added to the _component.element. Attached event
+				listeners are added to the attached object.
+
+				*/
+				attached: {},
+				on: function (isWindowEvent, event, fn) {
+					if (event in _component.bindings.attached) {
+						_component.bindings.attached[event].push(fn);
+					} else {
+						_component.bindings.attached[event] = [fn];
+						if (isWindowEvent) {
+							_component.element().addEventListener(event, function (_event) {
+								_component.bindings.attached[event].forEach(function (_handler) {
+									_handler(_component, _event);
+								});
+							}, false);
+						} else {
+							// Mousetrap bindings must be kept track of centrally, independently of the component.
+							UI.mousetrap.register(event, function (_event) {
+								_component.bindings.attached[event].forEach(function (_handler) {
+									_handler(_component, _event);
+								});
+							});
+						}
+					}
+				},
+			}
+
+			_component.appearance = {
+				set: function (appearance) {
+
+				},
+			}
 			_component.children = {
 				data: [],
 				add: function (children) {
 					return _.ep();
 				},
-				remove: {
-					all: function () {
-						return _.ep();
-					},
-					single: function (name) {
-						return _.ep();
-					},
+				remove: function (name) {
+
 				},
 				refresh: function () {
 					return _.ep();
@@ -138,12 +215,6 @@ var UI = {
 				return _.ep();
 			}
 			_component.get = function (path) {
-				return _.ep();
-			}
-			_component.bind = function (bindings) {
-				return _.ep();
-			}
-			_component.animate = function (appearance) {
 				return _.ep();
 			}
 		},
@@ -182,6 +253,12 @@ var UI = {
 
 		},
 	},
+	mousetrap: {
+		attached: {},
+		register: function (event, handler) {
+
+		},
+	},
 }
 
 var $ = function (path, args) {
@@ -191,6 +268,12 @@ var $ = function (path, args) {
 
 
 }
+
+var $S = function (path, args) {
+
+}
+
+// BINDINGS? Should I have a binding object here as well? Build in state?
 
 /*
 var UI = {
