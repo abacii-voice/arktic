@@ -28,7 +28,6 @@ var _ = {
 			}).join(' ');
 		},
 	},
-
 	json: function (object) {
 		return JSON.stringify(objects);
 	},
@@ -133,15 +132,40 @@ var _ = {
 		},
 	},
 
-	// empty promise
+	// objects
+	m: function () {
+		var args = arguments;
+		// merge objects, order indicates precedence
+	},
+	items: function (object, callback) {
+		Object.keys(object).forEach(function (key) {
+			let value = object[key];
+			callback(key, value);
+		});
+	},
+	pair: function (object) {
+		var keys = Object.keys(object);
+		if (keys.length === 1) {
+			return [keys[0], object[keys[0]]];
+		}
+	},
+
+	// promises
 	ep: function (input) {
 		return new Promise(function(resolve, reject) {
 			resolve(input);
 		});
 	},
+	all: function () {
+		var args = arguments;
+		return Promise.all(args);
+	},
+	ordered: function () {
+		var args = arguments;
+	}
 
 	// objects
-	isEmptyObject: function (e) {
+	empty: function (e) {
 		for (var t in e) {
 			return false;
 		}
