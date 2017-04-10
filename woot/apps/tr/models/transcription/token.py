@@ -21,6 +21,7 @@ class Token(models.Model):
 	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	type = models.CharField(max_length=255, default='')
 	content = models.CharField(max_length=255, default='')
+	is_enabled = models.BooleanField(default=True)
 
 	### Methods
 	# data

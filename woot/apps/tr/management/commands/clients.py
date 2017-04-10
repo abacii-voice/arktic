@@ -16,7 +16,10 @@ from argparse import RawTextHelpFormatter
 class Command(BaseCommand):
 
 	help = '\n'.join([
+		'CLIENTS: List current clients and projects on the system',
 		'',
+		'Example commands: ',
+		'Export: dm clients --client=client_id_or_name',
 	])
 
 	def create_parser(self, *args, **kwargs):

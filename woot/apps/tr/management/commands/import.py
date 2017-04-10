@@ -30,7 +30,10 @@ class Command(BaseCommand):
 		'',
 		'3. Choose to continue to import the selected files.',
 		'',
-		'A header line is expected in every relfile.'
+		'A header line is expected in every relfile.',
+		'',
+		'Example command: ',
+		'dm import --path=/path/to/folder/ --client=Client1 --project=Project1 --grammar=Grammar1 --batch=Batch1 --name=Upload1',
 	])
 
 	def create_parser(self, *args, **kwargs):
