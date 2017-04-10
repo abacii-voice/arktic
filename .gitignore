@@ -69,3 +69,4 @@ woot/static/
 woot/media/
 tmp/
 *.wav
+migrations/
