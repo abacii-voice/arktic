@@ -15,7 +15,16 @@ from argparse import RawTextHelpFormatter
 class Command(BaseCommand):
 
 	help = '\n'.join([
+		'USERS: Add, list, reassign, or disable users.',
 		'',
+		'Example commands: ',
+		'Add: dm users add --first_name=FirstName --last_name=LastName --email=email@site.com --admin --moderator --worker',
+		'Add: dm users add --first_name=FirstName --last_name=LastName --email=email@site.com -a -m -w',
+		'List: dm users --user=UserId',
+		'List: dm users --is_enabled=False',
+		'Disable: dm users --user=EmailFragment --enable=False',
+		'Reassign: sm users assign --user=UserId --client=Client1 --project=Project1',
+		'Resend: dm users resend_verification_email --user=UserId',
 	])
 
 	def create_parser(self, *args, **kwargs):
@@ -32,6 +41,18 @@ class Command(BaseCommand):
 			dest='user',
 			default='',
 			help='Email or id of single user. (email fragment can be used)',
+		)
+		parser.add_argument('--enable',
+			action='store_true',
+			dest='enable',
+			default=True,
+			help='Enable or disable a user.',
+		)
+		parser.add_argument('--is_enabled',
+			action='store',
+			dest='is_enabled',
+			default='',
+			help='Filter list of users by enabled or disabled',
 		)
 
 		# subparser
@@ -80,15 +101,6 @@ class Command(BaseCommand):
 			help='User worker flag',
 		)
 
-		# disable
-		disable_parser = subparsers.add_parser('disable')
-		disable_parser.add_argument('--user',
-			action='store',
-			dest='user',
-			default='',
-			help='Email or id of single user. (email fragment can be used)',
-		)
-
 		# assign
 		assign_parser = subparsers.add_parser('assign')
 		assign_parser.add_argument('--user',
@@ -110,12 +122,25 @@ class Command(BaseCommand):
 			help='Project id or name. (name requires client)',
 		)
 
-	def display_users(self, user_filter=None):
+		# resend
+		resend_parser = subparsers.add_parser('resend_verification_email')
+		resend_parser.add_argument('--user',
+			action='store',
+			dest='user',
+			default='',
+			help='Email or id of single user. (email fragment can be used)',
+		)
+
+	def display_users(self, user_filter=None, filter_enabled=''):
 		user_email = user_filter.email if user_filter is not None else ''
 
 		# user list
 		user_list_data = [['Email', 'ID', 'Name', 'Activated?', 'Enabled?', 'Project', 'Total', 'Project total']]
-		for user in User.objects.filter(email__contains=user_email):
+		users = User.objects.filter(email__contains=user_email)
+		if filter_enabled:
+			filter_enabled = filter_enabled == 'True'
+			users = users.filter(is_enabled=filter_enabled)
+		for user in users:
 			role = None
 			project = None
 
@@ -182,32 +207,6 @@ class Command(BaseCommand):
 			if not user.roles.filter(client=client, type='worker').exists() and is_worker:
 				client.add_worker(user)
 
-			# display list of users
-			self.display_users()
-
-		elif options['command'] == 'disable':
-			# delete a user
-			user_email_or_id = options['user']
-
-			if isValidUUID(user_email_or_id) and User.objects.filter(id=user_email_or_id).exists():
-				user = User.objects.get(id=user_email_or_id)
-			elif User.objects.filter(email__contains=user_email_or_id).exists():
-				if User.objects.filter(email__contains=user_email_or_id).count() == 1:
-					user = User.objects.get(email__contains=user_email_or_id)
-				else:
-					self.stdout.write('Multiple users match this email address: ')
-					for user in User.objects.filter(email__contains=user_email_or_id):
-						self.stdout.write('<User> {} {}: {}'.format(user.first_name, user.last_name, user.email))
-
-					sys.exit(0)
-			else:
-				self.stdout.write('No such user exists.')
-				sys.exit(0)
-
-			# disable user
-			self.stdout.write('Disabling user {} {}: {}'.format(user.first_name, user.last_name, user.email))
-			user.disable()
-
 		elif options['command'] == 'assign':
 			# assign a user to a project
 			user_email_or_id = options['user']
@@ -264,9 +263,36 @@ class Command(BaseCommand):
 				self.stdout.write('No production client set up (import some data).')
 				sys.exit(0)
 
+		elif options['command'] == 'resend_verification_email':
+			user_email_or_id = options['user']
+
+			user = None
+			if user_email_or_id:
+				if isValidUUID(user_email_or_id) and User.objects.filter(id=user_email_or_id).exists():
+					user = User.objects.get(id=user_email_or_id)
+				elif User.objects.filter(email__contains=user_email_or_id).exists():
+					if User.objects.filter(email__contains=user_email_or_id).count() == 1:
+						user = User.objects.get(email__contains=user_email_or_id)
+					else:
+						self.stdout.write('Multiple users match this email address: ')
+						for user in User.objects.filter(email__contains=user_email_or_id):
+							self.stdout.write('<User> {} {}: {}'.format(user.first_name, user.last_name, user.email))
+							sys.exit(0)
+				else:
+					self.stdout.write('No such user exists.')
+					sys.exit(0)
+
+			if user is not None:
+				self.stdout.write('Resending verification email for user {} {}: {}. This will override previous emails.'.format(user.first_name, user.last_name, user.email))
+				user.send_verification_email()
+			else:
+				self.stdout.write('No user.')
+
 		else:
 			# list users and their attributes
 			user_email_or_id = options['user']
+			enable = options['enable']
+			filter_enabled = options['is_enabled']
 
 			# get user
 			user = None
@@ -285,5 +311,12 @@ class Command(BaseCommand):
 					self.stdout.write('No such user exists.')
 					sys.exit(0)
 
+			if user is not None:
+				if user.is_enabled != enable:
+					user.is_enabled = enable
+					user.save()
+					message = 'Enabling' if enable else 'Disabling'
+					self.stdout.write('{} user {} {}: {}'.format(message, user.first_name, user.last_name, user.email))
+
 			# display the users incorporating the filter
-			self.display_users(user_filter=user)
+			self.display_users(user_filter=user, filter_enabled=filter_enabled)

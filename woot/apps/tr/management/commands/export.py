@@ -18,7 +18,12 @@ from argparse import RawTextHelpFormatter
 class Command(BaseCommand):
 
 	help = '\n'.join([
+		'EXPORT: Write the results of transcription to a CSV file',
 		'',
+		'Example commands: ',
+		'Export: dm export --client=Client1 --project=Project1 --batch=Batch1',
+		'Export: dm export --batch=BatchId',
+		'List: dm export',
 	])
 
 	def create_parser(self, *args, **kwargs):
