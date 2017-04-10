@@ -147,6 +147,15 @@ var UI = {
 
 			// DOM
 			_component.bindings = {
+				/*
+
+				So the idea here, is that bindings will be added, but not to call a single function,
+				but a range of functions, each referencing the _component and the _event. If this is first
+				binding to be added, an event listener will be added to the _component.element. Attached event
+				listeners are added to the attached object.
+
+				*/
+
 				set: function (bindings) {
 					_component.bindings = _.m(_component.bindings, bindings);
 					if (bindings) {
@@ -158,15 +167,6 @@ var UI = {
 						});
 					}
 				},
-
-				/*
-
-				So the idea here, is that bindings will be added, but not to call a single function,
-				but a range of functions, each referencing the _component and the _event. If this is first
-				binding to be added, an event listener will be added to the _component.element. Attached event
-				listeners are added to the attached object.
-
-				*/
 				attached: {},
 				on: function (isWindowEvent, event, fn) {
 					if (event in _component.bindings.attached) {
@@ -192,8 +192,12 @@ var UI = {
 			}
 
 			_component.appearance = {
+				style: {},
+				classes: [],
+				html: undefined,
+				styles: {},
 				set: function (appearance) {
-
+					
 				},
 			}
 			_component.children = {
