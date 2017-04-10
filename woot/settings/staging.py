@@ -10,6 +10,7 @@ from os import environ
 ########## DEBUG CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = True
+SITE = 'http://staging.arkticvoice.com'
 ########## END DEBUG CONFIGURATION
 
 
