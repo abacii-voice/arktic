@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
+from django.conf import settings
 
 # local
 from util import filterOrAllOnBlank
@@ -97,6 +98,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 	# verify
 	def send_verification_email(self):
+
 		# 1. generate activation key
 		self.activation_key = get_random_string()
 
@@ -106,7 +108,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 			'Follow the link below to verify your email:', # text message
 			'no-reply@arktic.com', # from email: not sure yet
 			[self.email], # recipient list
-			html_message='Click <a href="http://localhost:8000/verify/{}/{}/">the link</a>'.format(self.id, self.activation_key) # html message: needs rendering and stuff
+			html_message='Click <a href="{}/verify/{}/{}/">the link</a>'.format(settings.SITE, self.id, self.activation_key) # html message: needs rendering and stuff
 		)
 
 		# 3. toggle activation_email_sent
