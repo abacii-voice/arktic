@@ -14,7 +14,13 @@ from argparse import RawTextHelpFormatter
 class Command(BaseCommand):
 
 	help = '\n'.join([
+		'TAGS: Add, list, or disable tags to be used with a project',
 		'',
+		'Example commands: ',
+		'List: dm tags --client=Client1 --project=Project1 --is_enabled=True',
+		'Add: dm tags add --client=Client1 --project=Project1 --name=TagName --description="tag description"',
+		'Disable: dm tags --tag=tag_id --enable=False',
+		'Disable: dm tags --client=Client1 --project=Project1 --tag=TagName --enable=False',
 	])
 
 	def create_parser(self, *args, **kwargs):
@@ -44,11 +50,17 @@ class Command(BaseCommand):
 			default='',
 			help='Name or id of project used to filter tags.',
 		)
-		parser.add_argument('--enabled',
+		parser.add_argument('--enable',
 			action='store_true',
-			dest='enabled',
+			dest='enable',
 			default=True,
 			help='Flag to enable or disable a tag.',
+		)
+		parser.add_argument('--is_enabled',
+			action='store',
+			dest='is_enabled',
+			default='',
+			help='Will filter list by enabled or disabled.',
 		)
 
 		# subparser
@@ -125,7 +137,8 @@ class Command(BaseCommand):
 			tag_id_or_name = options['tag_id_or_name']
 			client_id_or_name = options['client_id_or_name']
 			project_id_or_name = options['project_id_or_name']
-			is_enabled = options['enabled']
+			enable = options['enable']
+			filter_enabled = options['is_enabled']
 
 			# client
 			client = None
@@ -151,9 +164,10 @@ class Command(BaseCommand):
 				tag = tag_manager.get(content=tag_id_or_name, type='tag')
 
 			# enable or disable
-			if tag is not None and tag.is_enabled != is_enabled:
-				tag.is_enabled = is_enabled
-				message = 'Enabling' if is_enabled else 'Disabling'
+			if tag is not None and tag.is_enabled != enable:
+				tag.is_enabled = enable
+				tag.save()
+				message = 'Enabling' if enable else 'Disabling'
 				self.stdout.write('{} tag {} for {}:{}'.format(message, tag.content, tag.dictionary.project.contract_client.name, tag.dictionary.project.name))
 
 			# display
@@ -167,6 +181,9 @@ class Command(BaseCommand):
 					projects = [tag.dictionary.project] if tag is not None else projects # account for single tag
 					for j, project in enumerate(projects):
 						tags = [tag] if tag is not None else project.dictionary.tokens.filter(type='tag') # account for single tag
+						if filter_enabled and tag is None:
+							filter_enabled = filter_enabled == 'True'
+							tags = tags.filter(is_enabled=bool(filter_enabled))
 						for k, tag in enumerate(tags):
 							tag_list_data.append([
 								client.name if j==0 and k==0 else '',

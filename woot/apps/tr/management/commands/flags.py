@@ -14,7 +14,13 @@ from argparse import RawTextHelpFormatter
 class Command(BaseCommand):
 
 	help = '\n'.join([
+		'FLAGS: Add, list, or disable flags to be used with for a client',
 		'',
+		'Example commands: ',
+		'List: dm flags --client=Client1 --is_enabled=True',
+		'Add: dm flags add --client=Client1 --name=FlagName --description="flag description"',
+		'Disable: dm flags --flag=flag_id --enable=False',
+		'Disable: dm flags --client=Client1 --flag=FlagName --enable=False',
 	])
 
 	def create_parser(self, *args, **kwargs):
@@ -38,11 +44,17 @@ class Command(BaseCommand):
 			default='',
 			help='Name or id of client used to filter flags.',
 		)
-		parser.add_argument('--enabled',
+		parser.add_argument('--enable',
 			action='store_true',
-			dest='enabled',
+			dest='enable',
 			default=True,
-			help='Flag to enable or disable a flag.',
+			help='Enable or disable a flag.',
+		)
+		parser.add_argument('--is_enabled',
+			action='store',
+			dest='is_enabled',
+			default='',
+			help='Filter by enabled or disabled flags.',
 		)
 
 		# subparser
@@ -100,7 +112,8 @@ class Command(BaseCommand):
 		else:
 			flag_id_or_name = options['flag_id_or_name']
 			client_id_or_name = options['client_id_or_name']
-			is_enabled = options['enabled']
+			enable = options['enable']
+			filter_enabled = options['is_enabled']
 
 			# client
 			client = None
@@ -118,9 +131,10 @@ class Command(BaseCommand):
 				flag = flag_manager.get(name=flag_id_or_name)
 
 			# enable or disable
-			if flag is not None and flag.is_enabled != is_enabled:
-				flag.is_enabled = is_enabled
-				message = 'Enabling' if is_enabled else 'Disabling'
+			if flag is not None and flag.is_enabled != enable:
+				flag.is_enabled = enable
+				flag.save()
+				message = 'Enabling' if enable else 'Disabling'
 				self.stdout.write('{} flag {} for {}:{}'.format(message, flag.name, flag.client.name))
 
 			# display
@@ -130,6 +144,9 @@ class Command(BaseCommand):
 				clients = [flag.client] if flag is not None else clients
 				for i, client in enumerate(clients):
 					flags = [flag] if flag is not None else client.flags.all()
+					if filter_enabled and flag is None:
+						filter_enabled = filter_enabled == 'True'
+						flags = flags.filter(is_enabled=bool(filter_enabled))
 					for j, flag in enumerate(flags):
 						flag_list_data.append([
 							client.name if j==0 else '',
