@@ -17,6 +17,7 @@ from os import environ
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = True
 SITE = 'http://localhost:8000'
+SITE_TYPE = 'DEVELOPMENT'
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
 TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
