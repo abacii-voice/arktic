@@ -52,6 +52,5 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 465
 EMAIL_HOST_USER = 'arkticvoice.noreply@gmail.com'
 EMAIL_HOST_PASSWORD = 'uqnhs77f'
-EMAIL_USE_TLS = True
 SERVER_EMAIL = EMAIL_HOST_USER
 ########## END EMAIL SERVER CONFIGURATION
