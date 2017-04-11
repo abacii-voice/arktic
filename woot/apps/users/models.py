@@ -103,8 +103,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 		self.activation_key = get_random_string()
 
 		# 2. send email with key
+		debug_modifier = '' if settings.SITE_TYPE == 'PRODUCTION' else '[{}] '.format(settings.SITE_TYPE)
 		send_mail(
-			'Arktic account verification for {}'.format(self.email), # subject
+			'{}Arktic account verification for {}'.format(debug_modifier, self.email), # subject
 			'Follow the link below to verify your email:', # text message
 			'no-reply@arktic.com', # from email: not sure yet
 			[self.email], # recipient list
