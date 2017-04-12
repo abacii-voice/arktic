@@ -128,7 +128,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 			# return to confirm
 			return True
 		else:
-			return True # change to False when testing is done
+			return settings.DEBUG
 
 	def disable(self):
 		self.is_enabled = False
