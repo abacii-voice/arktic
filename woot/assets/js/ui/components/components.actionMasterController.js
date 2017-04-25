@@ -21,8 +21,7 @@ Components.actionMasterController = function (name) {
 		base.addAction = function (action) {
 			var timestamp = new Date();
 			action.index = base.buffer.length;
-			action.time = timestamp.toString();
-			action.millis = timestamp.getMilliseconds().toString();
+			action.time = timestamp.toJSON();
 			action.context = name;
 			base.buffer.push(action);
 		}

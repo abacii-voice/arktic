@@ -4,3 +4,4 @@ TODO: before the fall
 2. Shortcuts page
 3. Shortcuts interface
 4. Upload interface
+5. Email verification interface
