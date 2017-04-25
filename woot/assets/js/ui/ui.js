@@ -73,12 +73,31 @@ var UI = {
 			// 		},
 			// 		bindings: {
 			// 			'click': {
-			// 				state: function (_this, event) {
+			// 				state: (_this, event) => {
 			//
 			// 				},
 			// 			},
-			// 			':ctrl+space': function (_this, event) {
+			// 			'ctrl+space': (_this, event) => {
 			//
+			// 			},
+			// 		},
+			// 		state: {
+			// 			'.': {
+			// 				_: {
+			// 					before: (_this) => {
+			//
+			// 					},
+			// 					after: (_this) => {
+			//
+			// 					},
+			// 				},
+			// 				children: {
+			// 					'hello': {
+			// 						after: (_this) => {
+			//
+			// 						},
+			// 					},
+			// 				},
 			// 			},
 			// 		},
 			// 	},
@@ -89,46 +108,68 @@ var UI = {
 			// 	],
 			// });
 
-			var _component = this;
-
 			// identity
-			_component.name = name;
-			_component._is = {
+			this.name = name;
+			this.is = {
 				rendered: false,
 			}
 
 			// dom and properties
-			_component.template = 'div.ie';
-			_component.update = function (args) {
-				args = _.m(args, {ui: {}});
+			this.template = 'div.ie';
+			this.update = ({ui, children}) => {
+				ui = _.m(ui);
 
 				// no processing
-				_component.options = _.m(_component.options, args.ui.options);
-				_component.data = _.m(_component.data, args.ui.data);
-				_component.control = _.m(_component.control, args.ui.control);
+				this.options = _.m(this.options, ui.options);
+				this.data = _.m(this.data, ui.data);
+				this.control = _.m(this.control, ui.control);
 
 				// need processing
 				return _.all(
 					// state
-					_component.state.set(args.ui.state),
+					this.state.add(ui.state),
 
 					// DOM
-					_component.bindings.set(args.ui.bindings),
-					_component.appearance.set(args.ui.appearance),
+					this.bindings.add(ui.bindings),
+					this.appearance.add(ui.appearance),
 
 					// children
-					_component.children.add(args.children),
+					this.children.add(children),
 				);
 			}
 
 			// state
-			_component.state = {
+			this.state = {
 				_: {},
 				get: function (path) {
 					return _.ep();
 				},
-				add: function (states) {
-					// only handles top level
+				add: (state) => _.ordered(_.keys(state).map(function (name) {
+
+				})),
+
+				add: function (state) {
+					state: {
+						'.': {
+							_: {
+								before: (_this) => {
+
+								},
+								after: (_this) => {
+
+								},
+							},
+							children: {
+								'hello': {
+									after: (_this) => {
+
+									},
+								},
+							},
+						},
+					},
+
+					return _.keys(state);
 
 				},
 				change: function (path) {
@@ -146,7 +187,7 @@ var UI = {
 			}
 
 			// DOM
-			_component.bindings = {
+			this.bindings = {
 				/*
 
 				So the idea here, is that bindings will be added, but not to call a single function,
@@ -156,7 +197,7 @@ var UI = {
 
 				*/
 
-				set: function (bindings) {
+				add: function (bindings) {
 					_component.bindings = _.m(_component.bindings, bindings);
 					if (bindings) {
 						_.items(bindings, function (event, fn) {
@@ -191,16 +232,16 @@ var UI = {
 				},
 			}
 
-			_component.appearance = {
+			this.appearance = {
 				style: {},
 				classes: [],
 				html: undefined,
 				styles: {},
-				set: function (appearance) {
-					
+				add: function (appearance) {
+
 				},
 			}
-			_component.children = {
+			this.children = {
 				data: [],
 				add: function (children) {
 					return _.ep();
@@ -212,19 +253,20 @@ var UI = {
 					return _.ep();
 				},
 			}
-			_component.element = function () {
+			this.element = function () {
 				return _.ep();
 			}
-			_component.render = function () {
+			this.render = function () {
 				return _.ep();
 			}
-			_component.get = function (path) {
+			this.get = function (path) {
+				return _.ep();
+			}
+			this.animate = function () {
 				return _.ep();
 			}
 		},
-		create: function (name, args) {
-			return new UI.component.component(name).update(args);
-		},
+		create: (name, args) => new UI.component.component(name).update(args),
 		tree: function () {
 			return _.ep();
 		},

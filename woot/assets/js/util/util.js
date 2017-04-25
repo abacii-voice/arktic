@@ -10,29 +10,14 @@ var _ = {
 
 	// String formatting
 	format: {
-		style: function (style) {
-			style = (style || {});
-			return Object.keys(style).map(function (key) {
-				return `${key}: ${style[key]};`;
-			}).join(' ');
-		},
-		classes: function (classes) {
-			classes = (classes || []);
-			return classes.join(' ');
-		},
-		properties: function (properties) {
-			properties = (properties || {});
-			return Object.keys(properties).map(function (property) {
-				let value = properties[property];
-				return `${property}` + _.isBoolean(value) && value ? '' : `=${value}`;
-			}).join(' ');
-		},
+		style: (style={}) => _.keys(style).map(key => `${key}: ${style[key]};`).join(' '),
+		classes: classes => classes.join(' '),
+		properties: (properties={}) => _.keys(properties).map(key => `${property}` + _.isBoolean(properties[property]) && properties[property] ? '' : `=${properties[property]}`).join(' '),
 	},
-	json: function (object) {
-		return JSON.stringify(objects);
-	},
+	json: obj => JSON.stringify(obj),
 
 	// generate random string
+	name: () =>
 	name: function () {
 		var i;
 		var text = '';
@@ -47,12 +32,8 @@ var _ = {
 
 	// paths
 	path: {
-		basename: function (path) {
-			return path.replace(/.*\//, '');
-		},
-		dirname: function (path) {
-			return path.match(/.*\//);
-		},
+		basename: path => path.replace(/.*\//, ''),
+		dirname: path => path.match(/.*\//),
 	},
 
 	// sort
@@ -94,88 +75,89 @@ var _ = {
 
 	// arrays
 	arrays: {
-		linearInterpolate: function (before, after, atPoint) {
-			return before + (after - before) * atPoint;
-		},
-		interpolateArray: function (data, fitCount) {
-			var i;
-			var newData = new Array();
+		linearInterpolate: (before, after, atPoint) => before + (after - before) * atPoint,
+		interpolateArray: (data, fitCount) => {
+			var newData = [];
 			var springFactor = new Number((data.length - 1) / (fitCount - 1));
 			newData[0] = data[0]; // for new allocation
-			for (i = 1; i < fitCount - 1; i++) {
-				var tmp = i * springFactor;
-				var before = new Number(Math.floor(tmp)).toFixed();
-				var after = new Number(Math.ceil(tmp)).toFixed();
-				var atPoint = tmp - before;
+			for (let i=0; i<fitCount-1; i++) {
+				let tmp = i * springFactor;
+				let before = new Number(Math.floor(tmp)).toFixed();
+				let after = new Number(Math.ceil(tmp)).toFixed();
+				let atPoint = tmp - before;
 				newData[i] = _.arrays.linearInterpolate(data[before], data[after], atPoint);
 			}
-			newData[fitCount - 1] = data[data.length - 1]; // for new allocation
+			newData[fitCount-1] = data[data.length-1]; // for new allocation
 			return newData;
 		},
-		getMaxOfArray: function (numArray) {
-			return Math.max.apply(null, numArray);
-		},
-		getAbsNormalised: function (array, max) {
+		getMaxOfArray: numArray => Math.max.apply(null, numArray),
+		getAbsNormalised: (array, max) => {
 			// abs
-			var abs = array.map(function (value) {
-				return Math.abs(value);
-			});
+			var abs = [];
+			for (let i=0; i<array.length; i++) {
+				abs[i] = Math.abs(array[i]);
+			}
 
 			var arrayMax = _.arrays.getMaxOfArray(abs);
-
-			var normalised = abs.map(function (value) {
-				return max * Math.sqrt(value / arrayMax);
-				// return max * value / arrayMax;
-			});
+			var normalised = [];
+			for (let j=0; j<array.length; j++) {
+				normalised[j] = max * Math.sqrt(abs[j] / arrayMax);
+			}
 
 			return normalised;
 		},
 	},
-
-	// objects
-	m: function () {
-		var args = arguments;
-		// merge objects, order indicates precedence
-	},
-	items: function (object, callback) {
-		Object.keys(object).forEach(function (key) {
-			let value = object[key];
-			callback(key, value);
-		});
-	},
-	pair: function (object) {
-		var keys = Object.keys(object);
-		if (keys.length === 1) {
-			return [keys[0], object[keys[0]]];
+	isArray: array => Array.isArray(array),
+	range: (start, end, step=1) => {
+		var list = [];
+		while (start < end) {
+			list.push(start);
+			start += step;
 		}
+		return list;
 	},
-
-	// promises
-	ep: function (input) {
-		return new Promise(function(resolve, reject) {
-			resolve(input);
-		});
-	},
-	all: function () {
-		var args = arguments;
-		return Promise.all(args);
-	},
-	ordered: function () {
-		var args = arguments;
-	}
 
 	// objects
-	empty: function (e) {
-		for (var t in e) {
+	isObject: obj => obj === Object(obj) && obj.length === undefined, // make sure it is not an array
+	empty: obj => {
+		for (var key in obj) {
 			return false;
 		}
 		return true;
 	},
+	keys: obj => Object.keys(obj),
+	m: (obj, ...rest) => {
+		// merge objects, order indicates precedence
+		obj = (obj || {});
+
+		for (let i=0; i<rest.length; i++) {
+			if (_.isObject(rest[i])) {
+				for (let r in rest[i]) {
+					obj[r] = r in obj ? _.m(obj[r], rest[i][r]) : rest[i][r];
+				}
+			} else {
+				// if this happens, simply assign the value
+				return rest[i];
+			}
+		}
+
+		return obj;
+	},
+	items: (obj) => _.keys(obj).map(key => [key, obj[key]]),
+	pair: obj => {
+		var keys = _.keys(obj);
+		if (keys.length === 1) {
+			return [keys[0], obj[keys[0]]];
+		}
+	},
+
+	// promises
+	ep: input => new Promise((resolve, reject) => resolve(input)),
+	all: (...args) => Promise.all(args),
+	ordered: (first, ...rest) => rest.reduce((previous, current) => previous.then(current), first),
 
 	// accept
-	accept: function (value, accept) {
-		return accept.indexOf(value) !== -1;
-	},
+	accept: (value, accept) => accept.indexOf(value) !== -1,
 
 	// colors
 	color: {
