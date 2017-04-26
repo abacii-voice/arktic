@@ -21,11 +21,11 @@ class Command(BaseCommand):
 		### CLIENTS, USERS, ROLES
 
 		# create clients
-		production_client, production_client_created = Client.objects.get_or_create(name='TestProductionClient', is_production=True)
+		production_client, production_client_created = Client.objects.get_or_create(name='Abacii', is_production=True)
 		contract_client, contract_client_created = Client.objects.get_or_create(name='TestContractClient', is_production=False)
 
 		# create user
-		user, user_created = User.objects.get_or_create(email='n@a.com', first_name='Nicholas', last_name='Piano')
+		user, user_created = User.objects.get_or_create(email='n@a.com', first_name='Nicholas', last_name='Piano', is_activated=True)
 		user.set_password('mach')
 
 		# create roles
@@ -38,7 +38,7 @@ class Command(BaseCommand):
 		user.save()
 
 		# second user
-		user2, user2_created = User.objects.get_or_create(email='s@a.com', first_name='StJohn', last_name='Piano')
+		user2, user2_created = User.objects.get_or_create(email='s@a.com', first_name='StJohn', last_name='Piano', is_activated=True)
 		user2.set_password('mach')
 
 		# create roles

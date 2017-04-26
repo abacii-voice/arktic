@@ -4,6 +4,7 @@ from django.db import models
 # local
 import uuid
 from datetime import datetime
+from dateutil import parser
 
 ### Transcription classes
 class TranscriptionToken(models.Model):
@@ -167,7 +168,7 @@ class TranscriptionFragment(models.Model):
 		# filter by key to avoid creating another object when the same revision is sent again.
 		if self.transcriptions.filter(key=revision['key']).count() == 0:
 			# create components
-			date_created = datetime.strptime(revision['time'], '%a %b %d %Y %H:%M:%S %Z%z (GMT)')
+			date_created = parser.parse(revision['time'])
 			phrase, phrase_created = self.parent.project.dictionary.create_phrase(tokens=revision['tokens'])
 			phrase_instance = phrase.instances.create(role=self.token.role)
 

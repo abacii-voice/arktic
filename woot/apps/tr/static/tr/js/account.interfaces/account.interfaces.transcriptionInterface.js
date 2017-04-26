@@ -263,7 +263,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				}).length > 0;
 				if (!revisionAlreadyExists && (!(tokens[0].complete === '') || flagList.length)) {
 					current.revisions.push({
-						time: new Date().toString(),
+						time: new Date().toJSON(),
 						tokens: tokens,
 						isComplete: (current.isComplete || false),
 						content: current.complete,
@@ -1091,7 +1091,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						return Promise.all([
 							tmc.setComplete(),
 						]).then(function () {
-							return caption.active.blur();
+							return Promise.all([
+								caption.active.blur(),
+								autocomplete.control.setFilter(),
+							]);
 						}).then(function () {
 							return tmc.behaviours.down();
 						}).then(function () {
