@@ -5,7 +5,5 @@ TODO: before the fall
 3. Shortcuts interface
 4. Upload interface
 5. Email verification interface
-6. Reset autocomplete filter on enter
 7. Allow user to set whether filter is shown by default
-8. Filter panel
-9. 
+8. Change to tag class on shortcut
