@@ -1,7 +1,9 @@
-Backend overhaul:
+TODO: before the fall
 
-1. Separate user signup, login, etc. into User views.
-	a. Fix urls
-	b. Fix verification process
-
-2. Fix static files and global urls
+1. FAQ page
+2. Shortcuts page
+3. Shortcuts interface
+4. Upload interface
+5. Email verification interface
+7. Allow user to set whether filter is shown by default
+8. Change to tag class on shortcut
