@@ -1091,7 +1091,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						return Promise.all([
 							tmc.setComplete(),
 						]).then(function () {
-							return caption.active.blur();
+							return Promise.all([
+								caption.active.blur(),
+								autocomplete.control.setFilter(),
+							]);
 						}).then(function () {
 							return tmc.behaviours.down();
 						}).then(function () {

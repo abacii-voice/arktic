@@ -422,7 +422,7 @@ Components.searchableList = function (id, args) {
 												}
 											},
 										}).then(function () {
-											base.cc.filter.setChildren([filterUnit]);
+											base.cc.filter.cc.wrapper.setChildren([filterUnit]);
 										});
 									}).then(function () {
 										Mousetrap.bind(target.filter.char, function (event) {
@@ -597,109 +597,76 @@ Components.searchableList = function (id, args) {
 			},
 		}
 		base.defaultFilterUnit = function (id, filterArgs) {
-			return Promise.all([
-				// Base
-				UI.createComponent('{id}'.format({id: id}), {
-					template: UI.template('div', 'ie'),
-					appearance: {
-						style: {
-							'height': '60px',
-							'width': '100%',
-							'border-bottom': '1px solid #ccc',
+			return UI.createComponent('{id}'.format({id: id}), {
+				name: 'filter',
+				template: UI.template('div', 'ie'),
+				appearance: {
+					style: {
+						'height': '60px',
+						'width': '100%',
+						'border-bottom': '1px solid #ccc',
+					},
+				},
+				children: [
+					UI.createComponent('{id}-title-description-bar'.format({id: id}), {
+						name: 'titleDescriptionBar',
+						template: UI.template('div', 'ie'),
+						appearance: {
+							style: {
+								'float': 'left',
+								'height': '100%',
+								'width': 'calc(100% - 30px)',
+							},
 						},
-					},
-				}),
-
-				// Title description bar
-				UI.createComponent('{id}-title-description-bar'.format({id: id}), {
-					template: UI.template('div', 'ie'),
-					appearance: {
-						style: {
-							'float': 'left',
-							'height': '100%',
-							'width': 'calc(100% - 30px)',
+						children: [
+							UI.createComponent('{id}-title'.format({id: id}), {
+								name: 'title',
+								template: UI.template('div', 'ie'),
+								appearance: {
+									style: {
+										'float': 'left',
+										'width': '100%',
+									},
+									html: filterArgs.input,
+								},
+							}),
+							UI.createComponent('{id}-description'.format({id: id}), {
+								name: 'description',
+								template: UI.template('div', 'ie'),
+								appearance: {
+									style: {
+										'float': 'left',
+										'width': '100%',
+									},
+									html: filterArgs.blurb,
+								},
+							}),
+						],
+					}),
+					UI.createComponent('{id}-button'.format({id: id}), {
+						name: 'button',
+						template: UI.template('div', 'ie button border border-radius'),
+						appearance: {
+							style: {
+								'float': 'left',
+								'width': '28px',
+								'height': '28px',
+								'padding-top': '4px',
+								'top': '5px',
+								'right': '5px',
+							},
 						},
-					},
-				}),
-
-				// Title
-				UI.createComponent('{id}-title'.format({id: id}), {
-					template: UI.template('div', 'ie'),
-					appearance: {
-						style: {
-							'float': 'left',
-							'width': '100%',
-						},
-						html: filterArgs.input,
-					},
-				}),
-
-				// Description
-				UI.createComponent('{id}-description'.format({id: id}), {
-					template: UI.template('div', 'ie'),
-					appearance: {
-						style: {
-							'float': 'left',
-							'width': '100%',
-						},
-						html: filterArgs.blurb,
-					},
-				}),
-
-				// Button
-				UI.createComponent('{id}-button'.format({id: id}), {
-					template: UI.template('div', 'ie button border border-radius'),
-					appearance: {
-						style: {
-							'float': 'left',
-							'width': '28px',
-							'height': '28px',
-							'padding-top': '4px',
-							'top': '5px',
-							'right': '5px',
-						},
-					},
-				}),
-
-				// Button content
-				UI.createComponent('{id}-button-content'.format({id: id}), {
-					template: UI.template('span', 'ie'),
-					appearance: {
-						html: filterArgs.char,
-					},
-				}),
-
-			]).then(function (components) {
-				var [
-					base,
-					titleDescriptionBar,
-					title,
-					description,
-					button,
-					buttonContent,
-				] = components;
-
-				return Promise.all([
-
-					// title and description
-					titleDescriptionBar.setChildren([
-						title,
-						description,
-					]),
-
-					// button
-					button.setChildren([
-						buttonContent,
-					]),
-
-				]).then(function () {
-					return base.setChildren([
-						titleDescriptionBar,
-						button,
-					]);
-				}).then(function () {
-					return base;
-				});
+						children: [
+							UI.createComponent('{id}-button-content'.format({id: id}), {
+								name: 'content',
+								template: UI.template('span', 'ie'),
+								appearance: {
+									html: filterArgs.char,
+								},
+							}),
+						],
+					}),
+				],
 			});
 		}
 
