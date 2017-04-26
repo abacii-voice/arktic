@@ -2,7 +2,7 @@
 django>=1.10
 
 # Python base libraries commonly used
-arrow>=0.10.0
+python-dateutil
 
 # js
 django_compressor
