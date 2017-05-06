@@ -10,6 +10,11 @@ var AccountRequest = {
 				request.addEventListener('load', function (event) {
 					resolve(event.target.response);
 				}, false);
+				request.addEventListener('error', function (event) {
+					setTimeout(function () {
+						AccountRequest.load_audio(transcriptionId);
+					}, 1000);
+				}, false);
 				request.send(data);
 			});
 		});
@@ -22,7 +27,9 @@ var AccountRequest = {
 				url: '/command/submit_revisions/',
 				error: function (xhr, ajaxOptions, thrownError) {
 					if (xhr.status === 404 || xhr.status === 0) {
-						AccountRequest.submit_revisions(revisionData);
+						setTimeout(function () {
+							AccountRequest.submit_revisions(revisionData);
+						}, 1000);
 					}
 				},
 			}
