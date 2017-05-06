@@ -1,7 +1,7 @@
 var AccountInterfaces = (AccountInterfaces || {});
 AccountInterfaces.transcriptionInterface = function (id, args) {
 
-	var autocompleteWidth = '300px';
+	var autocompleteWidth = '350px';
 	return UI.createComponent('transcription-base', {
 		name: 'transcriptionInterface',
 		template: UI.template('div', 'ie abs'),
@@ -140,6 +140,18 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					classes: ['centred-vertically'],
 				},
 				children: [
+
+					UI.createComponent('hope', {
+						name: 'hope',
+						template: UI.template('div', 'ie'),
+						appearance: {
+							style: {
+								'height': '100%',
+								'width': '100%',
+							},
+						},
+					}),
+
 					// autocomplete
 					Components.searchableList('tb-ap-autocomplete', {
 						name: 'autocomplete',

@@ -152,7 +152,7 @@ Components.searchableList = function (id, args) {
 									var queryAtStart = base.data.query;
 									setTimeout(function () {
 										resolve(queryAtStart === base.data.query);
-									}, 1000);
+									}, 300);
 								}).then(function (timeout) {
 									if (timeout) {
 										return base.data.load.source((target.resolvedPath || target.path), {options: {filter: filterRequest}, force: true}).then(target.process).then(base.data.load.append).then(base.data.display.main);
