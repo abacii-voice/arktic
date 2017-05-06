@@ -7,3 +7,4 @@ TODO: before the fall
 5. Email verification interface
 7. Allow user to set whether filter is shown by default
 8. Change to tag class on shortcut
+9. Requests failing should be on a timer.
