@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset='utf-8'>
+		<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+		<title>Account</title>
+		<meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no'>
+
+		<!-- Bootstrap -->
+		<link rel='stylesheet' href='/static/css/bootstrap/3.3.6/bootstrap.css'>
+
+		<!-- Main and overrides -->
+		<link rel='stylesheet' href='/static/css/main.css'>
+		<link rel='stylesheet' href='/static/css/ui.css'>
+		<link rel='stylesheet' href='/static/css/elements.css'>
+
+		<link rel='stylesheet' href='/static/tr/css/account-main.css'>
+		<link rel='stylesheet' href='/static/tr/css/account-ui.css'>
+		<link rel='stylesheet' href='/static/tr/css/account-elements.css'>
+
+	</head>
+	<body>
+		<div id='hook'></div>
+
+		<!-- Core JavaScript ================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+
+		<!-- jQuery -->
+		<script src='/static/js/jquery/2.2.2/jquery.min.js'></script>
+
+		<!-- Third party (no local deps) -->
+		<script src='/static/js/util/dropzone.js'></script>
+		<script src='/static/js/util/string-format.js' onload='format.extend(String.prototype);'></script>
+		<script src='/static/js/util/mousetrap.js'></script> <!-- keyboard shortcuts -->
+		<script src='/static/js/util/jss.min.js'></script>
+		<script src='/static/js/util/jzip.js'></script>
+
+		<!-- general utility stuff comes before local -->
+		<script src='/static/js/util/util.js'></script>
+		<script src='/static/js/util/mods.js'></script>
+		<script src='/static/js/util/shortcuts.js'></script>
+		<script src='/static/js/util/csrf.js'></script>
+
+		<!-- UI -->
+		<script src='/static/js/ui/ui.js'></script>
+		<script src='/static/js/ui/color.js'></script>
+		<script src='/static/js/ui/shortcuts.js'></script>
+		<script src='/static/js/ui/request.js'></script>
+
+		<script src='/static/js/ui/components/components.contentPanel.js'></script>
+		<script src='/static/js/ui/components/components.dropzone.js'></script>
+		<script src='/static/js/ui/components/components.filterButton.js'></script>
+		<script src='/static/js/ui/components/components.search.js'></script>
+		<script src='/static/js/ui/components/components.searchableList.js'></script>
+		<script src='/static/js/ui/components/components.sidebar.js'></script>
+		<script src='/static/js/ui/components/components.actionMasterController.js'></script>
+
+		<!-- specific UI -->
+		<script src='/static/tr/js/account.action.js'></script>
+		<script src='/static/tr/js/account.request.js'></script>
+
+		<script src='/static/tr/js/account.components/account.components.audio.js'></script>
+		<script src='/static/tr/js/account.components/account.components.captionField.js'></script>
+		<script src='/static/tr/js/account.components/account.components.counter.js'></script>
+		<script src='/static/tr/js/account.components/account.components.roleDisplayButton.js'></script>
+		<script src='/static/tr/js/account.components/account.components.transcriptionMasterController.js'></script>
+		<script src='/static/tr/js/account.components/account.components.uploadController.js'></script>
+		<script src='/static/tr/js/account.components/account.components.autocompleteControls.js'></script>
+		<script src='/static/tr/js/account.components/account.components.flagField.js'></script>
+
+		<script src='/static/tr/js/account.interfaces/account.interfaces.controlInterface.js'></script>
+		<script src='/static/tr/js/account.interfaces/account.interfaces.adminDashboard.js'></script>
+		<script src='/static/tr/js/account.interfaces/account.interfaces.moderationInterface.js'></script>
+		<script src='/static/tr/js/account.interfaces/account.interfaces.moderatorDashboard.js'></script>
+		<script src='/static/tr/js/account.interfaces/account.interfaces.projectInterface.js'></script>
+		<script src='/static/tr/js/account.interfaces/account.interfaces.shortcutInterface.js'></script>
+		<script src='/static/tr/js/account.interfaces/account.interfaces.transcriptionInterface.js'></script>
+		<script src='/static/tr/js/account.interfaces/account.interfaces.projectCompleteInterface.js'></script>
+		<script src='/static/tr/js/account.interfaces/account.interfaces.userDashboard.js'></script>
+
+		<script src='/static/tr/js/account.application.js'></script>
+		<script src='/static/tr/js/account.js'></script>
+	</body>
+</html>
