@@ -1,6 +1,16 @@
 ARKTIC VOICE README
 ===================
 
+A note on commands:
+- Commands are run from the root directory of the project (the directory containing manage.py). Manage.py is simply a python
+	script that imports everything from the directory it is in dynamically.
+- the command "dm" is an alias of "python manage.py" that I have used from a long time. This can be set up in
+ 	a .bashrc or .profile file by doing:
+
+dm () {
+	python manage.py $@; # "$@" represents the list of args run with the command.
+}
+
 1. Import
 2. Users
 3. Clients
