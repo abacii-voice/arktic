@@ -291,14 +291,6 @@ var UI = {
 
 		},
 	},
-	active: {
-		set: function (paths) {
-
-		},
-		get: function (paths) {
-
-		},
-	},
 	mousetrap: {
 		attached: {},
 		register: function (event, handler) {
@@ -311,12 +303,16 @@ var $ = function (path, args) {
 	// Takes several combintations of arguments
 	// 1. A single path -> gets a component
 	// 2. A name + args -> creates a component
-
-
 }
 
-var $S = function (path, args) {
+var _ = function (args) {
+	// Data request from UI.context, or set using args
+	// 1. {key: value, key: value}
+	// 2. [key, key, key, key]
+}
 
+var $$ = function (path, args) {
+	// State change request or creation
 }
 
 // BINDINGS? Should I have a binding object here as well? Build in state?
