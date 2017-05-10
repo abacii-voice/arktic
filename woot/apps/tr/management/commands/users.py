@@ -100,6 +100,12 @@ class Command(BaseCommand):
 			default=True,
 			help='User worker flag',
 		)
+		add_parser.add_argument('--password',
+			action='store',
+			dest='password',
+			default='',
+			help='User password',
+		)
 
 		# assign
 		assign_parser = subparsers.add_parser('assign')
@@ -173,6 +179,7 @@ class Command(BaseCommand):
 			is_admin = options['is_admin']
 			is_moderator = options['is_moderator']
 			is_worker = options['is_worker']
+			password = options['password']
 
 			# client
 			if Client.objects.filter(name='Abacii').exists():
@@ -192,7 +199,11 @@ class Command(BaseCommand):
 				continue_creating_user = input('Creating user {}, continue (y/n)? '.format(user_email))
 				if continue_creating_user in ['', 'y']:
 					user = User.objects.create(email=user_email, first_name=user_first_name, last_name=user_last_name)
-					user.send_verification_email()
+					if password:
+						user.set_password(password)
+					else:
+						user.send_verification_email()
+
 				else:
 					self.stdout.write('Cancelling operation.')
 					sys.exit(0)
