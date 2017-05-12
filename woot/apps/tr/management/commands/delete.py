@@ -22,7 +22,7 @@ class Command(BaseCommand):
 	help = '\n'.join([
 		'DELETE: deletes a client, project, batch, or upload.',
 		'',
-		'Deletes the lowest level object it can find, in the order Client > Project > Batch > Upload'
+		'Deletes the lowest level object it can find, in the order Client > Project > Batch > Upload',
 		'Example commands: ',
 		'dm delete --client=Client1 --project=Project1 --Batch=Batch1',
 		'dm delete --project=123123123-2349823948-2348234n20342-234',
