@@ -1,6 +1,21 @@
 ARKTIC VOICE README
 ===================
 
+A note on commands:
+- Commands are run from the root directory of the project (the directory containing manage.py). Manage.py is simply a python
+	script that imports everything from the directory it is in dynamically.
+- the command "dm" is an alias of "python manage.py" that I have used from a long time. This can be set up in
+ 	a .bashrc or .profile file by doing:
+
+dm () {
+	python manage.py $@; # "$@" represents the list of args run with the command.
+}
+
+A note on pythonanywhere:
+- Two commands, "staging" and "production", put the environment in the mode for the respective site
+- Two other commands, "dms" and "dmp", are "python manage.py" using the settings file for the appropriate site. Where the
+command is "dm" below, use one of these.
+
 1. Import
 2. Users
 3. Clients
@@ -8,6 +23,7 @@ ARKTIC VOICE README
 5. Flags
 6. Transcription
 7. Export
+8. Worked example
 
 1. Import
 ---------
@@ -62,7 +78,7 @@ Can be used to views the list of clients and projects currently active. Add the 
 
 ### example commands
 
-Export: dm clients --client=client_id_or_name
+List: dm clients --client=client_id_or_name
 
 
 4. Tags
@@ -108,3 +124,40 @@ Once completed, transcriptions can be exported in csv files, identified by proje
 Export: dm export --client=Client1 --project=Project1 --batch=Batch1
 Export: dm export --batch=BatchId
 List: dm export
+
+
+8. Worked example
+-----------------
+
+This example follows a single project from beginning to end.
+
+1. Place a folder on the system anywhere, containing a relfile and corresponding audio files.
+
+/home/test/relfile.csv
+/home/test/audio/
+
+2. Activate the virtualenv and go to the root directory of the project (the directory containing manage.py)
+
+~$ staging
+
+3. Run the import command from the root directory
+
+~$ dms import --path=/home/test/ --client=TestClient --project=TestProject --grammar=TestGrammar --batch=Batch1 --name=Upload1
+
+4. Create a user
+
+~$ dms users add --first_name=FirstName --last_name=LastName --email=email@site.com
+
+5. Check email@site.com and signup with a password. Alternatively, include a password argument --password=Password.
+
+6. Do transcription. At any point, a new project can be uploaded using steps 1+3. A user can be reassigned using:
+
+~$ dm users assign --user=UserIdOrEmailFragment --client=TestClient --project=Whatever
+
+7. Check a user total by running:
+
+~$ dms users --user=UserIdOrEmailFragment
+
+8. Export a project at any time using:
+
+~$ dms export --batch=BatchId 

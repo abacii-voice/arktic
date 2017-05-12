@@ -1,7 +1,7 @@
 var AccountInterfaces = (AccountInterfaces || {});
 AccountInterfaces.transcriptionInterface = function (id, args) {
 
-	var autocompleteWidth = '300px';
+	var autocompleteWidth = '350px';
 	return UI.createComponent('transcription-base', {
 		name: 'transcriptionInterface',
 		template: UI.template('div', 'ie abs'),
@@ -140,6 +140,18 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					classes: ['centred-vertically'],
 				},
 				children: [
+
+					UI.createComponent('hope', {
+						name: 'hope',
+						template: UI.template('div', 'ie'),
+						appearance: {
+							style: {
+								'height': '100%',
+								'width': '100%',
+							},
+						},
+					}),
+
 					// autocomplete
 					Components.searchableList('tb-ap-autocomplete', {
 						name: 'autocomplete',
@@ -263,7 +275,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				}).length > 0;
 				if (!revisionAlreadyExists && (!(tokens[0].complete === '') || flagList.length)) {
 					current.revisions.push({
-						time: new Date().toString(),
+						time: new Date().toJSON(),
 						tokens: tokens,
 						isComplete: (current.isComplete || false),
 						content: current.complete,
@@ -1091,7 +1103,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						return Promise.all([
 							tmc.setComplete(),
 						]).then(function () {
-							return caption.active.blur();
+							return Promise.all([
+								caption.active.blur(),
+								autocomplete.control.setFilter(),
+							]);
 						}).then(function () {
 							return tmc.behaviours.down();
 						}).then(function () {

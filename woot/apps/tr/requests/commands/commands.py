@@ -11,6 +11,7 @@ from apps.tr.models.transcription import Transcription, TranscriptionFragment
 
 # util
 from datetime import datetime
+from dateutil import parser
 import json
 
 # load audio
@@ -63,8 +64,6 @@ def submit_actions(request):
 		active_actions = data['actions']
 		for active_action in active_actions:
 			# create action
-			# Thu Jan 19 2017 15:42:29 GMT+0000 (GMT) micro
-			# '%a %b %d %Y %H:%M:%S %Z%z (GMT) %f'
 			metadata = active_action['metadata'] if 'metadata' in active_action else ''
 			action, action_created = permission.role.actions.get_or_create(
 				context=active_action['context'],
@@ -74,8 +73,7 @@ def submit_actions(request):
 			)
 
 			if action_created:
-				date = '{} {}'.format(active_action['time'], int(active_action['millis']) * 1000)
-				action.date_created = datetime.strptime(date, '%a %b %d %Y %H:%M:%S %Z%z (%Z) %f') # damn, girl, you ugly
+				action.date_created = parser.parse(active_action['time'])
 				action.metadata = json.dumps(metadata)
 				action.save()
 

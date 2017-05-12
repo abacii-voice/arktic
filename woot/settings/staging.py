@@ -11,6 +11,7 @@ from os import environ
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = True
 SITE = 'http://staging.arkticvoice.com'
+SITE_TYPE = 'STAGING'
 ########## END DEBUG CONFIGURATION
 
 
@@ -43,3 +44,13 @@ DATABASES = {
 	}
 }
 ########## END DATABASE CONFIGURATION
+
+
+########## EMAIL SERVER CONFIGURATION
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'arkticvoice.noreply@gmail.com'
+EMAIL_HOST_PASSWORD = 'uqnhs77f'
+SERVER_EMAIL = EMAIL_HOST_USER
+########## END EMAIL SERVER CONFIGURATION

@@ -17,6 +17,7 @@ from os import environ
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = True
 SITE = 'http://localhost:8000'
+SITE_TYPE = 'DEVELOPMENT'
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
 TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
@@ -42,14 +43,18 @@ SECRET_KEY = 'x08ig!20zeo%q46l6dnc8eqzb5g+h&(t4o18e#!yex&g&7sn=n'
 ########## EMAIL DEBUG CONFIGURATION
 # Show emails in the console during developement.
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# arkticvoice.noreply@gmail.com
-# uqnhs77f
-# smtp.gmail.com
-# 587 (TLS)
-# 465 (SSL)
-# django.core.mail.backends.smtp.EmailBackend
+########## EMAIL SERVER CONFIGURATION
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'arkticvoice.noreply@gmail.com'
+EMAIL_HOST_PASSWORD = 'uqnhs77f'
+SERVER_EMAIL = EMAIL_HOST_USER
+
+########## END EMAIL SERVER CONFIGURATION
+
 
 ########## DATABASE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
