@@ -66,7 +66,7 @@ class Command(BaseCommand):
 			help='Upload id or name',
 		)
 
-	def get_object_or_none(manager, id_or_name):
+	def get_object_or_none(self, manager, id_or_name):
 		if isValidUUID(id_or_name) and manager.filter(id=id_or_name).exists():
 			return manager.get(id=id_or_name)
 		elif manager.filter(name=id_or_name).exists():
