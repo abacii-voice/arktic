@@ -19,7 +19,7 @@ class Command(BaseCommand):
 		'CLIENTS: List current clients and projects on the system',
 		'',
 		'Example commands: ',
-		'Export: dm clients --client=client_id_or_name',
+		'View: dm clients --client=client_id_or_name',
 	])
 
 	def create_parser(self, *args, **kwargs):

@@ -215,17 +215,19 @@ class Command(BaseCommand):
 
 			# 6. If continue, import the files.
 			if continue_upload in ['', 'y']:
-				with transaction.atomic():
-					length = len(audio_registry.keys())
-					for i, (filename, data) in enumerate(audio_registry.items()):
-						self.stdout.write('\rImporting {}/{}: {} => {}'.format(i+1, length, filename, data['caption']), ending='\033[K' if i < length - 1 else '\033[K\n')
-						fragment = upload.fragments.create(filename=data['path'])
-						phrase, phrase_created = dictionary.create_phrase(content=data['caption'])
-						transcription = batch.transcriptions.create(project=project, grammar=grammar, filename=fragment.filename, content=phrase)
+				length = len(audio_registry.keys())
+				if length:
+					with transaction.atomic():
+						for i, (filename, data) in enumerate(audio_registry.items()):
+							self.stdout.write('\rImporting {}/{}: {} => {}'.format(i+1, length, filename, data['caption']), ending='\033[K' if i < length - 1 else '\033[K\n')
+							fragment = upload.fragments.create(filename=data['path'])
+							phrase, phrase_created = dictionary.create_phrase(content=data['caption'])
+							transcription = batch.transcriptions.create(project=project, grammar=grammar, filename=fragment.filename, content=phrase)
 
-						with open(data['path'], 'rb') as audio_origin:
-							utterance = Utterance.objects.create(transcription=transcription, file=File(audio_origin), original_filename=data['path'])
-
+							with open(data['path'], 'rb') as audio_origin:
+								utterance = Utterance.objects.create(transcription=transcription, file=File(audio_origin), original_filename=data['path'])
+				else:
+					self.stdout.write('Cancelled import. Cannot import zero audio files.')
 			else:
 				self.stdout.write('Cancelled import.')
 		else:
