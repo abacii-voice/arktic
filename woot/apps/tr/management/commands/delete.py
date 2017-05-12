@@ -83,10 +83,10 @@ class Command(BaseCommand):
 		upload_id_or_name = options['upload']
 
 		# variables
-		client = get_object_or_none(Client.objects, client_id_or_name)
-		project = get_object_or_none(client.contract_projects if client is not None else Project.objects, project_id_or_name)
-		batch = get_object_or_none(project.batches if project is not None else Batch.objects)
-		upload = get_object_or_none(batch.uploads if batch is not None else Upload.objects)
+		client = self.get_object_or_none(Client.objects, client_id_or_name)
+		project = self.get_object_or_none(client.contract_projects if client is not None else Project.objects, project_id_or_name)
+		batch = self.get_object_or_none(project.batches if project is not None else Batch.objects)
+		upload = self.get_object_or_none(batch.uploads if batch is not None else Upload.objects)
 
 		if upload is not None and (batch is not None or (client is None and project is None and batch is None)):
 			self.stdout.write('Removing upload {} > {} > {} > {}: {}'.format(upload.batch.project.contract_client.name, upload.batch.project.name, upload.batch.name, upload.id, upload.name))
@@ -100,3 +100,5 @@ class Command(BaseCommand):
 		elif client is not None:
 			self.stdout.write('Removing client {}: {}'.format(client.id, client.name))
 			client.delete()
+		else:
+			self.stdout.write('Nothing to delete.')
