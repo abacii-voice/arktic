@@ -85,7 +85,7 @@ class Command(BaseCommand):
 		# variables
 		client = self.get_object_or_none(Client.objects, client_id_or_name)
 		project = self.get_object_or_none(client.contract_projects if client is not None else Project.objects, project_id_or_name)
-		batch = self.get_object_or_none(project.batches if project is not None else Batch.objects)
+		batch = self.get_object_or_none(project.batches if project is not None else Batch.objects, batch_id_or_name)
 		upload = self.get_object_or_none(batch.uploads if batch is not None else Upload.objects, upload_id_or_name)
 
 		if upload is not None and (batch is not None or (client is None and project is None and batch is None)):
