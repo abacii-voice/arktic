@@ -133,16 +133,6 @@ class Command(BaseCommand):
 		production_client_id_or_name = options['production_client']
 
 		if path and exists(path) and isdir(path):
-			# variables
-			production_client, production_client_created = self.route_input('production client', Client.objects, production_client_id_or_name, {'is_production': True})
-			client, client_created = self.route_input('client', Client.objects, client_id_or_name, {'is_production': False})
-			production_client.contract_clients.add(client)
-			project, project_created = self.route_input('project', client.contract_projects, project_id_or_name, {'description': '', 'production_client': production_client})
-			grammar, grammar_created = self.route_input('grammar', client.grammars, grammar_id_or_name)
-			dictionary, dictionary_created = grammar.dictionaries.get_or_create(project=project)
-			batch, batch_created = self.route_input('batch', project.batches, batch_id_or_name, {'description': ''})
-			upload_name = name if name else split(path)[1] # uses name of folder if blank
-			upload, upload_created = self.route_input('upload', batch.uploads, upload_name)
 
 			# 1. using path specified, walk directory and get relfile(s) and audio files
 			all_files = []
@@ -217,6 +207,18 @@ class Command(BaseCommand):
 			if continue_upload in ['', 'y']:
 				length = len(audio_registry.keys())
 				if length:
+					
+					# variables
+					production_client, production_client_created = self.route_input('production client', Client.objects, production_client_id_or_name, {'is_production': True})
+					client, client_created = self.route_input('client', Client.objects, client_id_or_name, {'is_production': False})
+					production_client.contract_clients.add(client)
+					project, project_created = self.route_input('project', client.contract_projects, project_id_or_name, {'description': '', 'production_client': production_client})
+					grammar, grammar_created = self.route_input('grammar', client.grammars, grammar_id_or_name)
+					dictionary, dictionary_created = grammar.dictionaries.get_or_create(project=project)
+					batch, batch_created = self.route_input('batch', project.batches, batch_id_or_name, {'description': ''})
+					upload_name = name if name else split(path)[1] # uses name of folder if blank
+					upload, upload_created = self.route_input('upload', batch.uploads, upload_name)
+
 					with transaction.atomic():
 						for i, (filename, data) in enumerate(audio_registry.items()):
 							self.stdout.write('\rImporting {}/{}: {} => {}'.format(i+1, length, filename, data['caption']), ending='\033[K' if i < length - 1 else '\033[K\n')
