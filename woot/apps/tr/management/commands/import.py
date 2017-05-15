@@ -143,17 +143,29 @@ class Command(BaseCommand):
 			registry = {}
 			relfile_duplicates = []
 			for relfile in filter(lambda f: '.csv' in f, all_files):
+				lines = []
 				with open(relfile) as open_relfile:
 					lines = open_relfile.readlines()
-					for line in lines[1:]: # omit header
-						filename, caption = tuple(line.strip().split(','))
-						filename = basename(filename)
-						if filename in registry and filename not in relfile_duplicates:
-							relfile_duplicates.append(filename)
-						else:
-							registry[filename] = {
-								'caption': caption,
-							}
+
+				# print first three lines
+				self.stdout.write('First three lines of {}'.format(relfile))
+				for line in lines[:3]:
+					self.stdout.write(line)
+				self.stdout.write('\n')
+
+				# choose separator
+				relfile_separator = input('\nEnter a relfile separator (default ",")? ')
+				relfile_separator = ',' if relfile_separator == '' else relfile_separator
+
+				for line in lines[1:]: # omit header
+					filename, caption = tuple(line.strip().split(relfile_separator))
+					filename = basename(filename)
+					if filename in registry and filename not in relfile_duplicates:
+						relfile_duplicates.append(filename)
+					else:
+						registry[filename] = {
+							'caption': caption,
+						}
 
 			# 3. For each entry, find the corresponding audio file
 			audio_registry = {}
@@ -207,7 +219,7 @@ class Command(BaseCommand):
 			if continue_upload in ['', 'y']:
 				length = len(audio_registry.keys())
 				if length:
-					
+
 					# variables
 					production_client, production_client_created = self.route_input('production client', Client.objects, production_client_id_or_name, {'is_production': True})
 					client, client_created = self.route_input('client', Client.objects, client_id_or_name, {'is_production': False})
