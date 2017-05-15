@@ -148,10 +148,10 @@ class Command(BaseCommand):
 					lines = open_relfile.readlines()
 
 				# print first three lines
+				self.stdout.write('\n')
 				self.stdout.write('First three lines of {}'.format(relfile))
 				for line in lines[:3]:
 					self.stdout.write(line)
-				self.stdout.write('\n')
 
 				# choose separator
 				relfile_separator = input('\nEnter a relfile separator (default ",")? ')
