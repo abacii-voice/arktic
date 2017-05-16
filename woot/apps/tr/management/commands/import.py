@@ -154,18 +154,19 @@ class Command(BaseCommand):
 					self.stdout.write(line)
 
 				# choose separator
-				relfile_separator = input('\nEnter a relfile separator (default ",")? ')
-				relfile_separator = ',' if relfile_separator == '' else relfile_separator
+				relfile_separator = input('\nEnter a relfile column separator (default "|")? ')
+				relfile_separator = '|' if relfile_separator == '' else relfile_separator
 
-				for line in lines[1:]: # omit header
+				for line in lines:
 					filename, caption = tuple(line.strip().split(relfile_separator))
 					filename = basename(filename)
-					if filename in registry and filename not in relfile_duplicates:
-						relfile_duplicates.append(filename)
-					else:
-						registry[filename] = {
-							'caption': caption,
-						}
+					if '.wav' in filename:
+						if filename in registry and filename not in relfile_duplicates:
+							relfile_duplicates.append(filename)
+						else:
+							registry[filename] = {
+								'caption': caption,
+							}
 
 			# 3. For each entry, find the corresponding audio file
 			audio_registry = {}
