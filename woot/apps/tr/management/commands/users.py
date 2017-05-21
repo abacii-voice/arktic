@@ -201,6 +201,8 @@ class Command(BaseCommand):
 					user = User.objects.create(email=user_email, first_name=user_first_name, last_name=user_last_name)
 					if password:
 						user.set_password(password)
+						user.is_activated = True
+						user.save()
 					else:
 						user.send_verification_email()
 
