@@ -134,4 +134,7 @@ class Client(models.Model):
 
 	# projects
 	def oldest_active_project(self):
-		return self.projects.filter(is_active=True).earliest()
+		if self.is_production:
+			return self.production_projects.filter(is_active=True).earliest()
+		else:
+			return self.contract_projects.filter(is_active=True).earliest()
