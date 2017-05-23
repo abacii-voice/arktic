@@ -141,17 +141,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				},
 				children: [
 
-					UI.createComponent('hope', {
-						name: 'hope',
-						template: UI.template('div', 'ie'),
-						appearance: {
-							style: {
-								'height': '100%',
-								'width': '100%',
-							},
-						},
-					}),
-
 					// autocomplete
 					Components.searchableList('tb-ap-autocomplete', {
 						name: 'autocomplete',
