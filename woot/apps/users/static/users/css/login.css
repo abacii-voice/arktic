@@ -11,30 +11,37 @@ Only need to customise elements on login page
 }
 
 #login-header {
-	color: #fff;
+	color: #ccc;
 	font-weight: normal;
+	text-align: center;
 }
 
 #login-email {
-	border-bottom-right-radius: 0px;
-	border-bottom-left-radius: 0px;
+	border-top-right-radius: 5px;
+	border-top-left-radius: 5px;
 	background-color: transparent;
-	border-color: #ccc;
-	color: #fff;
+	border: 1px solid #ccc;
+	color: #aaa;
+	width: 100%;
 }
 
 #login-password {
-	border-top-right-radius: 0px;
-	border-top-left-radius: 0px;
+	border-bottom-right-radius: 5px;
+	border-bottom-left-radius: 5px;
 	background-color: transparent;
-	border-top: transparent;
-	border-color: #ccc;
-	color: #fff;
+	border: 1px solid #ccc;
+	border-top: 0px solid #ccc;
+	color: #aaa;
+	width: 100%;
 }
 
 #login-submit {
+	position: relative;
 	top: 10px;
 	height: 40px;
-	padding-top: 4px;
-	color: #fff;
+	right: 0px;
+	margin: 0px;
+	clear: left;
+	border: 1px solid #ccc;
+	border-radius: 5px;
 }
