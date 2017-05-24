@@ -4,11 +4,11 @@ A note on commands:
 - Commands are run from the root directory of the project (the directory containing `manage.py`). Manage.py is simply a python
 	script that imports everything from the directory it is in dynamically.
 - the command `dm` is an alias of `python manage.py` that I have used from a long time. This can be set up in
- 	a `.bashrc` or `.profile` file by doing:
+	a `.bashrc` or `.profile` file by doing:
 
-    dm () {
-        python manage.py $@; # "$@" represents the list of args run with the command.
-    }
+`dm () {`
+`python manage.py $@; # "$@" represents the list of args run with the command.`
+`}`
 
 A note on pythonanywhere:
 - Two commands, `staging` and `production`, put the environment in the mode for the respective site.
@@ -40,22 +40,19 @@ Sends a verification email to a user with the specified email. They will be dire
 
 ## disable
 
-```dm users disable --user
-```
+`dm users disable --user`
 
 Disables a user and prevents them from logging in. It does not remove them from the system as this would compromise database integrity.
 
 ## assign
 
-```dm users assign --user --client --project
-```
+`dm users assign --user --client --project`
 
 Assigns a user to a specified project. The transcriptions that are available to them will come from this project and will deactivate their account when the project is complete. Re-assign a user to reactivate them.
 
 ## resend_verification_email
 
-```dm users resend_verification_email --user
-```
+`dm users resend_verification_email --user`
 
 Will resend the verification email with a different code. The verification page can only be loaded once per code.
 
