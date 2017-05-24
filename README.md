@@ -6,10 +6,9 @@ A note on commands:
 - the command `dm` is an alias of `python manage.py` that I have used from a long time. This can be set up in
  	a `.bashrc` or `.profile` file by doing:
 
-```dm () {
-	python manage.py $@; # "$@" represents the list of args run with the command.
-}
-```
+    dm () {
+        python manage.py $@; # "$@" represents the list of args run with the command.
+    }
 
 A note on pythonanywhere:
 - Two commands, `staging` and `production`, put the environment in the mode for the respective site.
@@ -25,8 +24,7 @@ A note on pythonanywhere:
 
 ### 1. Import
 
-```dm import --path --client --project --grammar --batch --name
-```
+`dm import --path --client --project --grammar --batch --name`
 
 Names an upload from a specified path. Will be placed into the media folder under `audio`. Used to create Transcription objects that will be immediately available on the system.
 
@@ -36,8 +34,7 @@ If they do not currently exist; client, project, grammar, and batch will be crea
 
 ## add
 
-```dm users add --first_name --last_name --email --password
-```
+`dm users add --first_name --last_name --email --password`
 
 Sends a verification email to a user with the specified email. They will be directed to a login page once they have been verified. If the password argument is added, the user is activated immediately and the activation email is not sent.
 
@@ -65,11 +62,17 @@ Will resend the verification email with a different code. The verification page 
 ## example commands
 
 Add: `dm users add --first_name=FirstName --last_name=LastName --email=email@site.com --admin --moderator --worker`
+
 Add: `dm users add --first_name=FirstName --last_name=LastName --email=email@site.com -a -m -w`
+
 List: `dm users --user=UserId`
+
 List: `dm users --is_enabled=False`
+
 Disable: `dm users --user=EmailFragment --enable=False`
+
 Reassign: `dm users assign --user=UserId --client=Client1 --project=Project1`
+
 Resend: `dm users resend_verification_email --user=UserId`
 
 ### 3. Clients
@@ -92,8 +95,11 @@ On top of the client and project, can also specify a `--description`.
 ## example commands
 
 List: `dm tags --client=Client1 --project=Project1 --is_enabled=True`
+
 Add: `dm tags add --client=Client1 --project=Project1 --name=TagName --description="tag description"`
+
 Disable: `dm tags --tag=tag_id --enable=False`
+
 Disable: `dm tags --client=Client1 --project=Project1 --tag=TagName --enable=False`
 
 ### 5. Flags
@@ -103,8 +109,11 @@ Can add flags to a client.
 ## example commands
 
 List: `dm flags --client=Client1 --is_enabled=True`
+
 Add: `dm flags add --client=Client1 --name=FlagName --description="flag description"`
+
 Disable: `dm flags --flag=flag_id --enable=False`
+
 Disable: `dm flags --client=Client1 --flag=FlagName --enable=False`
 
 ### 6. Transcription
@@ -118,7 +127,9 @@ Once completed, transcriptions can be exported in `.csv` files, identified by pr
 ## example commands
 
 Export: `dm export --client=Client1 --project=Project1 --batch=Batch1`
+
 Export: `dm export --batch=BatchId`
+
 List: `dm export`
 
 
@@ -128,9 +139,9 @@ This example follows a single project from beginning to end.
 
 1. Place a folder on the system anywhere, containing a relfile and corresponding audio files.
 
-```/home/test/relfile.csv
-/home/test/audio/
-```
+`/home/test/relfile.csv`
+
+`/home/test/audio/`
 
 2. Activate the virtualenv and go to the root directory of the project (the directory containing manage.py)
 
