@@ -1,0 +1,20 @@
+
+Testing pipeline from empty database to export
+
+List of steps:
+1. Import
+2. Create user
+3. Assign user to project
+4. Go to web page and transcribe audio file
+5. Export result
+
+First attempt:
+1. dm import --path=./test/batch_0_containing_1_items/ --client=TestClient --project=TestProject --grammar=TestGrammar --batch=0001 --upload=0001
+
+2. dm users add --email=n@a.com --first_name=Nicholas --last_name=Piano --password=mach
+
+3. dm users assign --project=fda8f8c9-fce3-496c-aa6f-33f8af26b301 --user=n
+
+4. Focussed caption box and pressed enter. Screen faded to Project Completion screen.
+
+5. dm export --batch=64ebe700-e6b1-4071-98b2-308869b84e93
