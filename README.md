@@ -6,9 +6,7 @@ A note on commands:
 - the command `dm` is an alias of `python manage.py` that I have used from a long time. This can be set up in
 	a `.bashrc` or `.profile` file by doing:
 
-`dm () {`
-`python manage.py $@; # "$@" represents the list of args run with the command.`
-`}`
+`dm () { python manage.py $@; # "$@" represents the list of args run with the command. }`
 
 A note on pythonanywhere:
 - Two commands, `staging` and `production`, put the environment in the mode for the respective site.
