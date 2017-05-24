@@ -1,20 +1,18 @@
-ARKTIC VOICE README
-===================
+#### ARKTIC VOICE README
 
 A note on commands:
-- Commands are run from the root directory of the project (the directory containing manage.py). Manage.py is simply a python
+- Commands are run from the root directory of the project (the directory containing `manage.py`). Manage.py is simply a python
 	script that imports everything from the directory it is in dynamically.
-- the command "dm" is an alias of "python manage.py" that I have used from a long time. This can be set up in
- 	a .bashrc or .profile file by doing:
+- the command `dm` is an alias of `python manage.py` that I have used from a long time. This can be set up in
+ 	a `.bashrc` or `.profile` file by doing:
 
-dm () {
+```dm () {
 	python manage.py $@; # "$@" represents the list of args run with the command.
 }
+```
 
 A note on pythonanywhere:
-- Two commands, "staging" and "production", put the environment in the mode for the respective site
-- Two other commands, "dms" and "dmp", are "python manage.py" using the settings file for the appropriate site. Where the
-command is "dm" below, use one of these.
+- Two commands, `staging` and `production`, put the environment in the mode for the respective site.
 
 1. Import
 2. Users
@@ -25,139 +23,137 @@ command is "dm" below, use one of these.
 7. Export
 8. Worked example
 
-1. Import
----------
+### 1. Import
 
-dm import --path --client --project --grammar --batch --name
+```dm import --path --client --project --grammar --batch --name
+```
 
-Names an upload from a specified path. Will be placed into the media folder under 'audio'. Used to create Transcription objects that will be immediately available on the system.
+Names an upload from a specified path. Will be placed into the media folder under `audio`. Used to create Transcription objects that will be immediately available on the system.
 
 If they do not currently exist; client, project, grammar, and batch will be created.
 
-2. Users
---------
+### 2. Users
 
-### add
+## add
 
-dm users add --first_name --last_name --email
+```dm users add --first_name --last_name --email --password
+```
 
-Sends a verification email to a user with the specified email. They will be directed to a login page once they have been verified.
+Sends a verification email to a user with the specified email. They will be directed to a login page once they have been verified. If the password argument is added, the user is activated immediately and the activation email is not sent.
 
-### disable
+## disable
 
-dm users disable --user
+```dm users disable --user
+```
 
 Disables a user and prevents them from logging in. It does not remove them from the system as this would compromise database integrity.
 
-### assign
+## assign
 
-dm users assign --user --client --project
+```dm users assign --user --client --project
+```
 
 Assigns a user to a specified project. The transcriptions that are available to them will come from this project and will deactivate their account when the project is complete. Re-assign a user to reactivate them.
 
-### resend_verification_email
+## resend_verification_email
 
-dm users resend_verification_email --user
+```dm users resend_verification_email --user
+```
 
 Will resend the verification email with a different code. The verification page can only be loaded once per code.
 
-### example commands
+## example commands
 
-Add: dm users add --first_name=FirstName --last_name=LastName --email=email@site.com --admin --moderator --worker
-Add: dm users add --first_name=FirstName --last_name=LastName --email=email@site.com -a -m -w
-List: dm users --user=UserId
-List: dm users --is_enabled=False
-Disable: dm users --user=EmailFragment --enable=False
-Reassign: dm users assign --user=UserId --client=Client1 --project=Project1
-Resend: dm users resend_verification_email --user=UserId
+Add: `dm users add --first_name=FirstName --last_name=LastName --email=email@site.com --admin --moderator --worker`
+Add: `dm users add --first_name=FirstName --last_name=LastName --email=email@site.com -a -m -w`
+List: `dm users --user=UserId`
+List: `dm users --is_enabled=False`
+Disable: `dm users --user=EmailFragment --enable=False`
+Reassign: `dm users assign --user=UserId --client=Client1 --project=Project1`
+Resend: `dm users resend_verification_email --user=UserId`
 
-3. Clients
-----------
+### 3. Clients
 
-Can be used to views the list of clients and projects currently active. Add the argument --client to view a single client.
+Can be used to views the list of clients and projects currently active. Add the argument `--client` to view a single client.
 
-### example commands
+## example commands
 
-List: dm clients --client=client_id_or_name
+List: `dm clients --client=client_id_or_name`
 
 
-4. Tags
--------
+### 4. Tags
 
-Can be used to add tags to a specific project dictionary. They can listed, or filtered with the arguments --tag, --client, --project, or --is_enabled
+Can be used to add tags to a specific project dictionary. They can listed, or filtered with the arguments `--tag`, `--client`, `--project`, or `--is_enabled`
 
-### add
+## add
 
-On top of the client and project, can also specify a --description.
+On top of the client and project, can also specify a `--description`.
 
-### example commands
+## example commands
 
-List: dm tags --client=Client1 --project=Project1 --is_enabled=True
-Add: dm tags add --client=Client1 --project=Project1 --name=TagName --description="tag description"
-Disable: dm tags --tag=tag_id --enable=False
-Disable: dm tags --client=Client1 --project=Project1 --tag=TagName --enable=False
+List: `dm tags --client=Client1 --project=Project1 --is_enabled=True`
+Add: `dm tags add --client=Client1 --project=Project1 --name=TagName --description="tag description"`
+Disable: `dm tags --tag=tag_id --enable=False`
+Disable: `dm tags --client=Client1 --project=Project1 --tag=TagName --enable=False`
 
-5. Flags
---------
+### 5. Flags
 
 Can add flags to a client.
 
-### example commands
+## example commands
 
-List: dm flags --client=Client1 --is_enabled=True
-Add: dm flags add --client=Client1 --name=FlagName --description="flag description"
-Disable: dm flags --flag=flag_id --enable=False
-Disable: dm flags --client=Client1 --flag=FlagName --enable=False
+List: `dm flags --client=Client1 --is_enabled=True`
+Add: `dm flags add --client=Client1 --name=FlagName --description="flag description"`
+Disable: `dm flags --flag=flag_id --enable=False`
+Disable: `dm flags --client=Client1 --flag=FlagName --enable=False`
 
-6. Transcription
-----------------
-
+### 6. Transcription
 
 
-7. Export
----------
 
-Once completed, transcriptions can be exported in csv files, identified by project, batch, and date.
+### 7. Export
 
-### example commands
+Once completed, transcriptions can be exported in `.csv` files, identified by project, batch, and date.
 
-Export: dm export --client=Client1 --project=Project1 --batch=Batch1
-Export: dm export --batch=BatchId
-List: dm export
+## example commands
+
+Export: `dm export --client=Client1 --project=Project1 --batch=Batch1`
+Export: `dm export --batch=BatchId`
+List: `dm export`
 
 
-8. Worked example
------------------
+### 8. Worked example
 
 This example follows a single project from beginning to end.
 
 1. Place a folder on the system anywhere, containing a relfile and corresponding audio files.
 
-/home/test/relfile.csv
+```/home/test/relfile.csv
 /home/test/audio/
+```
 
 2. Activate the virtualenv and go to the root directory of the project (the directory containing manage.py)
 
-~$ staging
+`~$ staging`
 
 3. Run the import command from the root directory
 
-~$ dms import --path=/home/test/ --client=TestClient --project=TestProject --grammar=TestGrammar --batch=Batch1 --name=Upload1
+`~$ dms import --path=/home/test/ --client=TestClient --project=TestProject --grammar=TestGrammar --batch=Batch1 --name=Upload1`
 
 4. Create a user
 
-~$ dms users add --first_name=FirstName --last_name=LastName --email=email@site.com
+`~$ dms users add --first_name=FirstName --last_name=LastName --email=email@site.com`
 
-5. Check email@site.com and signup with a password. Alternatively, include a password argument --password=Password.
+5. Check email@site.com and signup with a password. Alternatively, include a password argument `--password=Password`.
 
 6. Do transcription. At any point, a new project can be uploaded using steps 1+3. A user can be reassigned using:
 
-~$ dm users assign --user=UserIdOrEmailFragment --client=TestClient --project=Whatever
+`~$ dm users assign --user=UserIdOrEmailFragment --client=TestClient --project=Whatever`
 
 7. Check a user total by running:
 
-~$ dms users --user=UserIdOrEmailFragment
+`~$ dms users --user=UserIdOrEmailFragment`
 
 8. Export a project at any time using:
 
-~$ dms export --batch=BatchId 
+`~$ dms export --batch=BatchId`
