@@ -100,15 +100,15 @@ class Command(BaseCommand):
 
 		client_set = [client] if client is not None else Client.objects.filter(is_production=False)
 		self.stdout.write('\nBatches: \n')
-		batch_data = [['Client', 'Project', 'ID', 'Name', '# Total', '# Completed', '# Not exported', '%']]
+		batch_data = [['Client', 'Project', 'Name', 'ID', '# Total', '# Completed', '# Not exported', '%']]
 		for client in client_set:
 			for i, project in enumerate(client.contract_projects.filter(name__contains=project_name).order_by('-date_created')):
 				for j, batch in enumerate(project.batches.filter(name__contains=batch_name).order_by('-date_created')):
 					batch_data.append([
-						client.name if i==0 else '',
+						client.name if (i==0 and j==0) else '',
 						project.name if j==0 else '',
-						batch.id,
 						batch.name,
+						batch.id,
 						batch.transcriptions.count(),
 						batch.transcriptions_completed(),
 						batch.transcriptions_not_exported(),
@@ -128,7 +128,7 @@ class Command(BaseCommand):
 			if choice in ['y', '', 'force']:
 				force = choice == 'force'
 				filename, number_of_transcriptions = batch.export(force=force)
-				self.stdout.write('Exported {} transcriptions to {}'.format(number_of_transcriptions, filename))
+				self.stdout.write('Exported {} transcriptions to ./woot{}'.format(number_of_transcriptions, filename))
 				sys.exit(0)
 
 			else:

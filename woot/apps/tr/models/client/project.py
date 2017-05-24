@@ -112,7 +112,7 @@ class Project(models.Model):
 		if transcriptions.count() > 0:
 			return transcriptions[0]
 		else:
-			self.is_transcription_complete = True
+			self.is_active = False
 			self.save()
 			return None
 
