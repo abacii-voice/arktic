@@ -133,5 +133,14 @@ class Client(models.Model):
 		flag, flag_created = self.flags.get_or_create(project=project, name=name)
 
 	# projects
+	def has_active_projects(self):
+		if self.is_production:
+			return self.production_projects.filter(is_active=True).exists()
+		else:
+			return self.contract_projects.filter(is_active=True).exists()
+
 	def oldest_active_project(self):
-		return self.projects.filter(is_active=True).earliest()
+		if self.is_production:
+			return self.production_projects.filter(is_active=True).earliest()
+		else:
+			return self.contract_projects.filter(is_active=True).earliest()

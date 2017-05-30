@@ -128,7 +128,7 @@ class Command(BaseCommand):
 			if choice in ['y', '', 'force']:
 				force = choice == 'force'
 				filename, number_of_transcriptions = batch.export(force=force)
-				self.stdout.write('Exported {} transcriptions to {}'.format(number_of_transcriptions, filename))
+				self.stdout.write('Exported {} transcriptions to ./woot{}'.format(number_of_transcriptions, filename))
 				sys.exit(0)
 
 			else:

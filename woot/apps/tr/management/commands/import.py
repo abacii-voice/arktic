@@ -22,7 +22,7 @@ class Command(BaseCommand):
 	help = '\n'.join([
 		'IMPORT: imports audio files and relfiles from a specified path.',
 		'',
-		'1. To import; client, project, and batch ids must be provided, along with a name.',
+		'1. To import; client, project, and batch ids must be provided, along with a upload name.',
 		'   If the name is omitted, the name of the folder will be used.',
 		'',
 		'2. The path will first be checked for duplicates, missing captions, and other errors.',
@@ -33,7 +33,7 @@ class Command(BaseCommand):
 		'A header line is expected in every relfile.',
 		'',
 		'Example command: ',
-		'dm import --path=/path/to/folder/ --client=Client1 --project=Project1 --grammar=Grammar1 --batch=Batch1 --name=Upload1',
+		'dm import --path=/path/to/folder/ --client=Client1 --project=Project1 --grammar=Grammar1 --batch=Batch1 --upload=Upload1',
 	])
 
 	def create_parser(self, *args, **kwargs):
@@ -83,7 +83,7 @@ class Command(BaseCommand):
 		)
 
 		# Name
-		parser.add_argument('--name',
+		parser.add_argument('--upload',
 			action='store',
 			dest='name',
 			default='',
@@ -158,14 +158,15 @@ class Command(BaseCommand):
 				relfile_separator = '|' if relfile_separator == '' else relfile_separator
 
 				for line in lines:
-					filename, caption = tuple(line.strip().split(relfile_separator))
-					filename = basename(filename)
+					original_filename, caption = tuple(line.strip().split(relfile_separator))
+					filename = basename(original_filename)
 					if '.wav' in filename:
 						if filename in registry and filename not in relfile_duplicates:
 							relfile_duplicates.append(filename)
 						else:
 							registry[filename] = {
 								'caption': caption,
+								'original': original_filename,
 							}
 
 			# 3. For each entry, find the corresponding audio file
@@ -237,7 +238,7 @@ class Command(BaseCommand):
 							self.stdout.write('\rImporting {}/{}: {} => {}'.format(i+1, length, filename, data['caption']), ending='\033[K' if i < length - 1 else '\033[K\n')
 							fragment = upload.fragments.create(filename=data['path'])
 							phrase, phrase_created = dictionary.create_phrase(content=data['caption'])
-							transcription = batch.transcriptions.create(project=project, grammar=grammar, filename=fragment.filename, content=phrase)
+							transcription = batch.transcriptions.create(project=project, grammar=grammar, filename=data['original'], content=phrase)
 
 							with open(data['path'], 'rb') as audio_origin:
 								utterance = Utterance.objects.create(transcription=transcription, file=File(audio_origin), original_filename=data['path'])

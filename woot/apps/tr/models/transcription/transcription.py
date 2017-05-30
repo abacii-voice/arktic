@@ -36,7 +36,7 @@ class TranscriptionToken(models.Model):
 					transcription.save()
 
 			# change projects if no transcriptions have been added
-			if self.fragments.count() == 0:
+			if self.fragments.count() == 0 and self.project.production_client.has_active_projects():
 				self.project = self.project.production_client.oldest_active_project()
 				self.get_transcriptions()
 

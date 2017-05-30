@@ -250,24 +250,27 @@ class Command(BaseCommand):
 					role = user.roles.get(client=production_client, type='worker')
 
 					# get contract client
-					if isValidUUID(client_id_or_name) and Client.objects.filter(id=client_id_or_name).exists():
-						client = Client.objects.get(id=client_id_or_name)
-					elif Client.objects.filter(name=client_id_or_name):
-						client = Client.objects.get(name=client_id_or_name)
-					else:
-						self.stdout.write('No such client.')
-						sys.exit(0)
+					client = None
+					if client_id_or_name:
+						if isValidUUID(client_id_or_name) and Client.objects.filter(id=client_id_or_name).exists():
+							client = Client.objects.get(id=client_id_or_name)
+						elif Client.objects.filter(name=client_id_or_name):
+							client = Client.objects.get(name=client_id_or_name)
+						else:
+							self.stdout.write('No such client.')
+							sys.exit(0)
 
 					# get contract project
-					if isValidUUID(project_id_or_name) and client.projects.filter(id=project_id_or_name).exists():
-						project = client.contract_projects.get(id=project_id_or_name)
-					elif client.contract_projects.filter(name=project_id_or_name).exists():
-						project = client.contract_projects.get(name=project_id_or_name)
+					project_manager = Project.objects if client is None else client.contract_projects
+					if isValidUUID(project_id_or_name) and project_manager.filter(id=project_id_or_name).exists():
+						project = project_manager.get(id=project_id_or_name)
+					elif project_manager.filter(name=project_id_or_name).exists():
+						project = project_manager.get(name=project_id_or_name)
 					else:
 						self.stdout.write('No such project.')
 						sys.exit(0)
 
-					self.stdout.write('Assigning <User> {} {}: {} to project {}:{}'.format(user.first_name, user.last_name, user.email, client.name, project.name))
+					self.stdout.write('Assigning <User> {} {}: {} to project {}:{}'.format(user.first_name, user.last_name, user.email, project.contract_client.name, project.name))
 					role.assign_project(project)
 				else:
 					self.stdout.write('<User> {} {}: {} has no worker role with Abacii.'.format(user.first_name, user.last_name, user.email))
