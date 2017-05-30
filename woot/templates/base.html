@@ -22,7 +22,7 @@
 		<link rel='stylesheet' href='{% static "css/ui.css" %}'>
 		<link rel='stylesheet' href='{% static "css/elements.css" %}'>
 
-		<style type='text/css'>{% block css %}{% endblock %}</style>
+		{% block css %}{% endblock %}
 
 	</head>
 	<body {{ body_attr|safe }}>

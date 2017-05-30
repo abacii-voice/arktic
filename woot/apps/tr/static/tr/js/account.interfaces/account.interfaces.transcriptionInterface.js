@@ -380,8 +380,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				},
 				filter: {
 					default: true,
-					char: ':',
-					key: 'colon',
+					char: ',',
+					key: 'comma',
 					input: 'Tags',
 					display: 'Tag',
 					rule: 'tag',
@@ -525,6 +525,16 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					},
 				},
 			}
+			// {name: 'rules',
+			// 	path: function () {
+			//
+			// 	},
+			// },
+			// {name: 'commands',
+			// 	path: function () {
+			//
+			// 	},
+			// }
 		]
 		autocomplete.unitStyle.base = function () {
 			return new Promise(function(resolve, reject) {
