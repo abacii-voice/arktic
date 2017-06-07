@@ -44,8 +44,11 @@ AccountComponents.transcriptionMasterController = function () {
 					if (remaining === 0) {
 						// this should force a load. If the result is negative, this should be displayed clearly in the interface
 						return _this.data.loadFromTranscriptionToken().then(function (transcriptionsAvailable) {
-							if (transcriptionsAvailable) {
-								return _this.pre.main();
+							if (transcriptionsAvailable || (Object.keys(_this.data.buffer).length === 1 && _this.active === 0)) {
+								return Promise.all([
+									_this.pre.main(),
+									_this.enterActiveState(),
+								]);
 							} else {
 								return _this.enterCompletionState();
 							}
@@ -147,8 +150,15 @@ AccountComponents.transcriptionMasterController = function () {
 		base.next = function () {
 			return base.setActive({increment: 1});
 		}
+		base.enterActiveState = function () {
+			if (!base.is_active) {
+				base.is_active = true;
+				return UI.changeState('-transcription-project-active-state', base.id);
+			}
+		}
 		base.enterCompletionState = function () {
 			// set project as completed
+			base.is_active = false;
 			return UI.changeState('-transcription-project-complete-state', base.id);
 		}
 		base.revision = {
