@@ -1439,7 +1439,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			base.setState({
 				defaultState: {preFn: UI.functions.hide()},
 				states: {
-					'transcription-state': {
+					'-transcription-project-active-state': {
 						preFn: function () {
 							// KEYBINDINGS
 							Mousetrap.bind('up', function (event) {
@@ -1607,6 +1607,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					'client-state': 'default',
 					'role-state': 'default',
 					'control-state': 'default',
+					'transcription-state': 'default',
 					'-transcription-project-complete-state': 'default',
 				},
 			}),
@@ -1616,6 +1617,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				states: {
 					'control-state': {
 						fn: function (_this) {
+							_this.is_active = false;
 							_this.revision.stop();
 							return Util.ep();
 						}
