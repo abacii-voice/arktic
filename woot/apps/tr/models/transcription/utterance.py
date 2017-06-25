@@ -6,13 +6,13 @@ import uuid
 
 # util
 import os
-from os.path import basename, join
+from os.path import basename, join, splitext
 
 ### Create your models here.
 def rename_audio_file(instance, file_name):
 	base = basename(file_name)
-	root, ext = base.split('.')
-	new_file_name = '{}_p-{}_f-{}-uuid-{}.{}'.format(instance.transcription.project.contract_client.name, instance.transcription.project.name, root, instance.id, ext)
+	root, ext = splitext(base)
+	new_file_name = '{}_p-{}_f-{}-uuid-{}{}'.format(instance.transcription.project.contract_client.name, instance.transcription.project.name, root, instance.id, ext)
 	return join('audio', new_file_name)
 
 class Utterance(models.Model):
