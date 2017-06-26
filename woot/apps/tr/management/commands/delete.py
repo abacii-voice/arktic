@@ -70,7 +70,7 @@ class Command(BaseCommand):
 		if isValidUUID(id_or_name) and manager.filter(id=id_or_name).exists():
 			return manager.get(id=id_or_name)
 		elif manager.filter(name=id_or_name).exists():
-			return manager.filter(name=id_or_name)
+			return manager.get(name=id_or_name)
 		else:
 			return None
 
