@@ -85,6 +85,11 @@ class Project(models.Model):
 
 	def contract_client_data(self, path, permission):
 		data = {}
+		if (permission.is_productionadmin or permission.is_worker) and permission.check_client(self.production_client):
+			data.update({
+				'transcriptions_completed': self.transcriptions_completed(),
+			})
+
 		if permission.is_productionadmin and permission.check_client(self.production_client):
 			data.update({
 				'name': self.name,

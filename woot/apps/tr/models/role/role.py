@@ -68,6 +68,11 @@ class Role(models.Model):
 				'daily_count': self.active_day().count,
 			})
 
+		if self.type == 'worker':
+			data.update({
+				'project_transcriptions': self.total_transcriptions(project=self.project),
+			})
+
 		return data
 
 	# project
