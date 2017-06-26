@@ -27,7 +27,7 @@ This simply contains a link to login and an admin-signup.
 '''
 
 urlpatterns += [
-	url(r'^$', HomeView.as_view()),
+	url(r'^$', RedirectView.as_view(url='/account')),
 ]
 
 '''

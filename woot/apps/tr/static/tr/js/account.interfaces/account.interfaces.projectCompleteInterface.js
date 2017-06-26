@@ -32,7 +32,29 @@ AccountInterfaces.projectCompleteInterface = function () {
 					style: {
 
 					},
-					html: 'This project has been completed. Please review your billing for this period and keep an eye out for any updates.',
+					html: 'This project has been completed. Thank you. You completed N transcriptions.',
+				},
+			}),
+
+			// return button
+			UI.createComponent('pci-return-button', {
+				name: 'returnButton',
+				template: UI.template('div', 'ie button border border-radius'),
+				appearance: {
+					style: {
+						'height': '40px',
+						'width': '250px',
+						'padding-top': '10px',
+					},
+					html: 'Return to transcription',
+				},
+				state: {
+					stateMap: '-transcription-project-active-state',
+				},
+				bindings: {
+					'click': function (_this) {
+						return _this.triggerState();
+					}
 				},
 			}),
 		],
@@ -48,6 +70,7 @@ AccountInterfaces.projectCompleteInterface = function () {
 					'role-state': 'default',
 					'control-state': 'default',
 					'transcription-state': 'default',
+					'-transcription-project-active-state': 'default',
 				},
 			}),
 		]).then(function () {
