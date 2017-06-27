@@ -163,8 +163,8 @@ class Command(BaseCommand):
 				'Yes' if user.is_activated else 'No',
 				'Yes' if user.is_enabled else 'No',
 				'{}: {}'.format(project.contract_client.name, project.name) if project is not None else 'Not assigned',
-				role.total_transcriptions(),
-				role.total_transcriptions(project=project),
+				role.total_transcriptions() if role is not None else '0',
+				role.total_transcriptions(project=project) if role is not None else '0',
 			])
 
 		user_table = AsciiTable(user_list_data)
