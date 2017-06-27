@@ -12,7 +12,7 @@ import uuid
 class Role(models.Model):
 	### Connections
 	client = models.ForeignKey('tr.Client', related_name='roles')
-	project = models.ForeignKey('tr.Project', related_name='assigned', null=True)
+	project = models.ForeignKey('tr.Project', related_name='assigned', null=True, on_delete=models.SET_NULL)
 	user = models.ForeignKey('users.User', related_name='roles')
 
 	### Properties
