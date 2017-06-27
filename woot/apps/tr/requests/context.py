@@ -16,4 +16,4 @@ def context(request, path):
 	if verified:
 		fltr = data['filter'] if 'filter' in data else {}
 		data = access(path, permission, fltr=fltr)
-		return JsonResponse(data)
+		return JsonResponse(data, safe=False)

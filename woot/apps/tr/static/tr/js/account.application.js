@@ -31,8 +31,10 @@ var AccountApplication = function (id, args) {
 				states: {
 					'-transcription-project-complete-state': {
 						preFn: function (_this) {
-							if (!base.cc.transcriptionInterface.cc.transcriptionMasterController.buffer) {
+							if (!base.cc.transcriptionInterface.cc.mainPanel.cc.counter.count) {
 								return _this.setAppearance({classes: {add: ['hidden']}});
+							} else {
+								return Util.ep();
 							}
 						}
 					},
@@ -47,7 +49,8 @@ var AccountApplication = function (id, args) {
 								Active.get('role'),
 							]).then(function (results) {
 								var [client_id, role_id] = results;
-								return Context.get(`user.clients.${client_id}.roles.${role_id}.project_transcriptions`).then(function (project_transcriptions) {
+								return Context.get(`user.clients.${client_id}.roles.${role_id}.project_transcriptions`, {force: true}).then(function (project_transcriptions) {
+									project_transcriptions = (base.cc.transcriptionInterface.cc.mainPanel.cc.counter.count || project_transcriptions);
 									return _this.setAppearance({html: `This project has been completed. Thank you. You completed ${project_transcriptions} transcription${project_transcriptions==1 ? '' : 's'}.`});
 								});
 							});

@@ -55,11 +55,15 @@ AccountComponents.transcriptionMasterController = function () {
 						})
 					} else if (remaining < _this.data.updateThreshold) {
 						return Promise.all([
+							_this.enterActiveState(),
 							_this.data.loadFromTranscriptionToken(),
 							_this.pre.main(),
 						]);
 					} else {
-						return _this.pre.main();
+						return Promise.all([
+							_this.enterActiveState(),
+							_this.pre.main(),
+						]);
 					}
 				});
 			},
@@ -139,8 +143,10 @@ AccountComponents.transcriptionMasterController = function () {
 		}
 		base.setPending = function () {
 			return base.data.current().then(function (current) {
-				current.isPending = true;
-				current.isComplete = false;
+				if (current) {
+					current.isPending = true;
+					current.isComplete = false;
+				}
 				return Util.ep();
 			});
 		}
