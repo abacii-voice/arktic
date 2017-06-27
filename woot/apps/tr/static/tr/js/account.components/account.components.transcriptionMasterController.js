@@ -165,7 +165,7 @@ AccountComponents.transcriptionMasterController = function () {
 		base.enterCompletionState = function () {
 			// set project as completed
 			base.is_active = false;
-			return UI.changeState('-transcription-project-complete-state', base.id);
+			return UI.changeState('-transcription-project-complete-button-state', base.id);
 		}
 		base.revision = {
 			period: 5000,
