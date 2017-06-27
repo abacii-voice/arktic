@@ -280,8 +280,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			return Promise.all([
 				counter.active.setComplete(),
 				tmc.data.current().then(function (current) {
-					current.isPending = false;
-					current.isComplete = true;
+					if (current) {
+						current.isPending = false;
+						current.isComplete = true;
+					}
 					return Util.ep();
 				}),
 			]);
@@ -1242,6 +1244,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				_this.serverRemaining = tmc.data.totalRemaining;
 			}
 			_this.remaining = _this.serverRemaining + _this.offset + tmc.data.tokenSize;
+			_this.remaining = _this.remaining < 0 ? 0 : _this.remaining; // cannot be less than zero
 
 			var _this = counter;
 			return Promise.all([
@@ -1600,6 +1603,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 									autocomplete.focus(),
 								]);
 							});
+							tmc.active = tmc.active > 0 ? tmc.active-1 : tmc.active;
 							return Util.ep();
 						},
 						fn: UI.functions.show(),
