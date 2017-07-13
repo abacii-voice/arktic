@@ -245,7 +245,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 				// boundary conditions
 				_this.active = _this.active < 0 ? 0 : _this.active; // cannot be less than zero
-				_this.active = _this.active >= Object.keys(_this.data.buffer).length ? Object.keys(_this.data.buffer).length : _this.active; // cannot be past end
+				_this.active = _this.active >= Object.keys(_this.data.buffer).length ? Object.keys(_this.data.buffer).length-1 : _this.active; // cannot be past end
 				_this.active = (previousIndex > _this.active && previousIndex % _this.data.releaseThreshold === 0) ? previousIndex : _this.active; // cannot move back before threshold
 
 				return _this.data.update().then(function () {
@@ -1442,7 +1442,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			base.setState({
 				defaultState: {preFn: UI.functions.hide()},
 				states: {
-					'-transcription-project-active-state': {
+					'transcription-state': {
 						preFn: function () {
 							// KEYBINDINGS
 							Mousetrap.bind('up', function (event) {
@@ -1611,8 +1611,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					'client-state': 'default',
 					'role-state': 'default',
 					'control-state': 'default',
-					'transcription-state': 'default',
-					'-transcription-project-complete-state': 'default',
+					// 'transcription-state': 'default',
+					// '-transcription-project-complete-state': 'default',
 				},
 			}),
 

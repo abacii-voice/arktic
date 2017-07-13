@@ -50,7 +50,8 @@ AccountComponents.transcriptionMasterController = function () {
 									_this.enterActiveState(),
 								]);
 							} else {
-								return _this.enterCompletionState();
+								return _this.enterActiveState();
+								// return _this.enterCompletionState();
 							}
 						})
 					} else if (remaining < _this.data.updateThreshold) {
