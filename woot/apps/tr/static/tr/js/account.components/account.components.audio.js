@@ -188,7 +188,7 @@ AccountComponents.audio = function (id, args) {
 		}
 		base.display = function (current) {
 			var _this = base;
-			_this.controller.rawData = current.data;
+			_this.controller.rawData = current.data.slice(); // need to copy it now, I guess.
 			return base.audioTrackCanvas.start().then(function () {
 				return _this.load();
 			}).then(function () {
