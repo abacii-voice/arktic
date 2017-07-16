@@ -126,16 +126,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					}),
 
 					// project completion bar
-					AccountComponents.projectCompletionBar('tb-mp-completion', {
-						name: 'completion',
-						appearance: {
-							style: {
-								'margin-top': '10px',
-								'height': '80px',
-								'width': '555px',
-							},
-						},
-					}),
+					AccountComponents.projectCompletionBar('tb-mp-completion'),
 				],
 			}),
 
@@ -184,6 +175,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		var amc = base.cc.transcriptionActions;
 		var tmc = base.cc.transcriptionMasterController;
 		var autocomplete = base.cc.autocompletePanel.cc.autocomplete;
+		var completion = base.cc.mainPanel.cc.completion;
 
 		// Transcription Master Controller
 		tmc.data.updateThreshold = 4;
@@ -1459,6 +1451,19 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			});
 		}
 
+		// completion
+		completion.update = function () {
+			return Promise.all([
+				Active.get('client'),
+				Active.get('role'),
+			]).then(function (results) {
+				var [clientId, roleId] = results;
+				return Context.get(`user.clients.${clientId}.roles.${roleId}.project_transcriptions`, {force: true});
+			}).then(function (projectTotal) {
+				return completion.cc.number.setAppearance({html: `${projectTotal} transcriptions`});
+			});
+		}
+
 		// connect
 		return Promise.all([
 
@@ -1801,6 +1806,21 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					}).then(function () {
 						return caption.focus();
 					});
+				},
+			}),
+
+			// completion
+			completion.setState({
+				defaultState: {preFn: UI.functions.hide()},
+				states: {
+					'transcription-state': 'default',
+					'-transcription-project-active-state': 'default',
+					'-transcription-project-complete-state': {
+						preFn: function (_this) {
+							return _this.update();
+						},
+						fn: UI.functions.show(),
+					},
 				},
 			}),
 

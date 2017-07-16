@@ -59,10 +59,9 @@ AccountComponents.transcriptionMasterController = function () {
 									_this.enterActiveState(),
 								]);
 							} else {
-								return Promise.all([
-									_this.pre.main(),
-									_this.enterCompletionState(),
-								]);
+								return _this.data.loadProjectTotal().then(function () {
+									return _this.enterCompletionState();
+								});
 							}
 						});
 					} else if (countAvailable < _this.data.updateThreshold) {
@@ -86,6 +85,15 @@ AccountComponents.transcriptionMasterController = function () {
 					return Context.get(tokenPath, {force: true, overwrite: true});
 				}).then(_this.process).then(function (transcriptionsAvailable) {
 					return Util.ep(transcriptionsAvailable);
+				});
+			},
+			loadProjectTotal: function () {
+				return Promise.all([
+					Active.get('client'),
+					Active.get('role'),
+				]).then(function (results) {
+					var [clientId, roleId] = results;
+					return Context.get(`user.clients.${clientId}.roles.${roleId}.project_transcriptions`, {force: true});
 				});
 			},
 		}
@@ -170,9 +178,7 @@ AccountComponents.transcriptionMasterController = function () {
 		base.enterCompletionState = function () {
 			// set project as completed
 			base.is_active = false;
-			// return UI.changeState('-transcription-project-complete-button-state', base.id);
-			console.log('complete');
-			return Util.ep();
+			return UI.changeState('-transcription-project-complete-state', base.id);
 		}
 		base.revision = {
 			period: 5000,
