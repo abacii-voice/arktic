@@ -124,6 +124,18 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							}),
 						],
 					}),
+
+					// project completion bar
+					AccountComponents.projectCompletionBar('tb-mp-completion', {
+						name: 'completion',
+						appearance: {
+							style: {
+								'margin-top': '10px',
+								'height': '80px',
+								'width': '555px',
+							},
+						},
+					}),
 				],
 			}),
 
@@ -191,7 +203,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			var _this = tmc;
 			var fragments = result.fragments;
 			_this.data.totalRemaining = result.remaining;
-			_this.data.tokenSize = Object.keys(fragments).length;
+			_this.data.tokenSize = (Object.keys(fragments).length || _this.data.tokenSize);
 			return Promise.all(Object.keys(fragments).sort(function (a,b) {
 				return fragments[a].index > fragments[b].index ? 1 : -1;
 			}).map(function (key) {
@@ -218,7 +230,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			var _this = tmc;
 			return _this.data.current().then(function (current) {
 				current.is_available = false;
-
+				if (!current.isPending && !current.isComplete) {
+					current.isPending = true;
+				}
 				return Promise.all([
 					audio.display(current),
 					caption.control.input.newCaption(current),
@@ -283,6 +297,18 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					if (current) {
 						current.isPending = false;
 						current.isComplete = true;
+					}
+					return Util.ep();
+				}),
+			]);
+		}
+		tmc.setPending = function () {
+			return Promise.all([
+				counter.active.setPending(),
+				tmc.data.current().then(function (current) {
+					if (current) {
+						current.isPending = true;
+						current.isComplete = false;
 					}
 					return Util.ep();
 				}),
@@ -954,21 +980,23 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					amc.addAction({type: 'caption.input'});
 					if (unitBase.isFocused) {
 						return Promise.all([
-							unitBase.getContent().then(function (unitContent) {
-								// temporarily update metadata to prepare for completion, even though this might be overwritten by the subsequent search.setContent.
-								return unitBase.updateUnitMetadata({query: unitContent, complete: unitBase.metadata.complete}).then(function () {
-									return unitBase.phrase.updateQueryFromActive().then(function (updatedQuery) {
-										autocomplete.target = unitBase.phrase.id;
-										return autocomplete.search.setContent({query: updatedQuery, trigger: true});
-									});
-								});
-							}),
-							counter.active.setPending(),
+							unitBase.update(),
 							tmc.setPending(),
 						]);
 					} else {
 						return Util.ep();
 					}
+				}
+				unitBase.update = function () {
+					return unitBase.getContent().then(function (unitContent) {
+						// temporarily update metadata to prepare for completion, even though this might be overwritten by the subsequent search.setContent.
+						return unitBase.updateUnitMetadata({query: unitContent, complete: unitBase.metadata.complete}).then(function () {
+							return unitBase.phrase.updateQueryFromActive().then(function (updatedQuery) {
+								autocomplete.target = unitBase.phrase.id;
+								return autocomplete.search.setContent({query: updatedQuery, trigger: true});
+							});
+						});
+					});
 				}
 				unitBase.focus = function (position) {
 					amc.addAction({type: 'caption.focus'});
@@ -979,7 +1007,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						return caption.control.setActive({unit: unitBase}).then(function () {
 							return unitBase.setCaretPosition(position);
 						}).then(function () {
-							return unitBase.input();
+							return unitBase.update();
 						});
 					} else {
 						return Util.ep();
@@ -1312,7 +1340,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 				// methods
 				unitBase.isComplete = false;
-				unitBase.isPending = false;
 				unitBase.activate = function () {
 					return unitBase.setAppearance({classes: {add: 'active'}});
 				}

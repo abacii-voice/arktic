@@ -136,7 +136,7 @@ AccountComponents.counter = function (id, args) {
 
 			if (base.currentIndex !== previousIndex) {
 				return base.clearAllIfReset(previousIndex).then(function () {
-					return base.deactivate()
+					return base.deactivate();
 				}).then(function () {
 					base.active = base.cc.counterWrapper.children[base.currentIndex];
 					return base.active.activate();
