@@ -53,16 +53,15 @@ AccountComponents.transcriptionMasterController = function () {
 					if (countAvailable === 0) {
 						// this should force a load. If the result is negative, this should be displayed clearly in the interface
 						return _this.data.loadFromTranscriptionToken().then(function (transcriptionsAvailable) {
-							if (countPending || transcriptionsAvailable || (Object.keys(_this.data.buffer).length === 1 && _this.active === 0)) {
-								return Promise.all([
-									_this.pre.main(),
-									_this.enterActiveState(),
-								]);
-							} else {
-								return _this.data.loadProjectTotal().then(function () {
-									return _this.enterCompletionState();
-								});
-							}
+							return _this.pre.main().then(function () {
+								if (countPending || transcriptionsAvailable || (Object.keys(_this.data.buffer).length === 1 && _this.active === 0)) {
+									return _this.enterActiveState();
+								} else {
+									return _this.data.loadProjectTotal().then(function () {
+										return _this.enterCompletionState();
+									});
+								}
+							});
 						});
 					} else if (countAvailable < _this.data.updateThreshold) {
 						return Promise.all([

@@ -175,7 +175,7 @@ AccountComponents.audio = function (id, args) {
 				_this.isPlaying = false;
 				_this.controller.source.stop();
 				_this.controller.source.disconnect();
-				base.audioTrackCanvas.isPlaying = false;
+				_this.audioTrackCanvas.isPlaying = false;
 			}
 			return Util.ep();
 		}
@@ -188,11 +188,12 @@ AccountComponents.audio = function (id, args) {
 		}
 		base.display = function (current) {
 			var _this = base;
+			_this.controller.isLoaded = false;
 			_this.controller.rawData = current.data.slice(); // need to copy it now, I guess.
-			return base.audioTrackCanvas.start().then(function () {
+			return _this.audioTrackCanvas.start().then(function () {
 				return _this.load();
 			}).then(function () {
-				return base.audioTrackCanvas.stop();
+				return _this.audioTrackCanvas.stop();
 			});
 		}
 

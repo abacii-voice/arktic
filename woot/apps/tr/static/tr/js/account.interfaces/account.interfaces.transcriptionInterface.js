@@ -236,8 +236,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		tmc.setActive = function (options) {
 			var _this = tmc;
 			options = (options || {});
-
-			audio.controller.isLoaded = false;
 			return Promise.all([
 				audio.stop(),
 				audio.audioTrackCanvas.removeCut(),
