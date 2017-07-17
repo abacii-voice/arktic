@@ -24,9 +24,17 @@ AccountComponents.transcriptionMasterController = function () {
 			buffer: {},
 			countRemaining: function () {
 				var _this = base;
-				return Util.ep(Object.keys(_this.data.buffer).filter(function (key) {
-					return _this.data.buffer[key].is_available;
-				}).length);
+				return Promise.all([
+					Util.ep(Object.keys(_this.data.buffer).filter(function (key) {
+						return _this.data.buffer[key].is_available;
+					}).length),
+					Util.ep(Object.keys(_this.data.buffer).filter(function (key) {
+						return _this.data.buffer[key].isPending;
+					}).length),
+					Util.ep(Object.keys(_this.data.buffer).filter(function (key) {
+						return _this.data.buffer[key].isComplete;
+					}).length),
+				]);
 			},
 			current: function () {
 				var _this = base;
@@ -41,19 +49,21 @@ AccountComponents.transcriptionMasterController = function () {
 				// 2. active_transcription_token is not "active". It should change each time it is requested, unless the page is reloaded.
 
 				return _this.data.countRemaining().then(function (remaining) {
-					if (remaining === 0) {
+					var [countAvailable, countPending, countComplete] = remaining;
+					if (countAvailable === 0) {
 						// this should force a load. If the result is negative, this should be displayed clearly in the interface
 						return _this.data.loadFromTranscriptionToken().then(function (transcriptionsAvailable) {
-							if (transcriptionsAvailable || (Object.keys(_this.data.buffer).length === 1 && _this.active === 0)) {
-								return Promise.all([
-									_this.pre.main(),
-									_this.enterActiveState(),
-								]);
-							} else {
-								return _this.enterCompletionState();
-							}
-						})
-					} else if (remaining < _this.data.updateThreshold) {
+							return _this.pre.main().then(function () {
+								if (countPending || transcriptionsAvailable || (Object.keys(_this.data.buffer).length === 1 && _this.active === 0)) {
+									return _this.enterActiveState();
+								} else {
+									return _this.data.loadProjectTotal().then(function () {
+										return _this.enterCompletionState();
+									});
+								}
+							});
+						});
+					} else if (countAvailable < _this.data.updateThreshold) {
 						return Promise.all([
 							_this.enterActiveState(),
 							_this.data.loadFromTranscriptionToken(),
@@ -74,6 +84,15 @@ AccountComponents.transcriptionMasterController = function () {
 					return Context.get(tokenPath, {force: true, overwrite: true});
 				}).then(_this.process).then(function (transcriptionsAvailable) {
 					return Util.ep(transcriptionsAvailable);
+				});
+			},
+			loadProjectTotal: function () {
+				return Promise.all([
+					Active.get('client'),
+					Active.get('role'),
+				]).then(function (results) {
+					var [clientId, roleId] = results;
+					return Context.get(`user.clients.${clientId}.roles.${roleId}.project_transcriptions`, {force: true});
 				});
 			},
 		}
@@ -134,13 +153,6 @@ AccountComponents.transcriptionMasterController = function () {
 				}));
 			},
 		}
-		base.setComplete = function () {
-			return base.data.current().then(function (current) {
-				current.isPending = false;
-				current.isComplete = true;
-				return Util.ep();
-			});
-		}
 		base.setPending = function () {
 			return base.data.current().then(function (current) {
 				if (current) {
@@ -165,7 +177,7 @@ AccountComponents.transcriptionMasterController = function () {
 		base.enterCompletionState = function () {
 			// set project as completed
 			base.is_active = false;
-			return UI.changeState('-transcription-project-complete-button-state', base.id);
+			return UI.changeState('-transcription-project-complete-state', base.id);
 		}
 		base.revision = {
 			period: 5000,

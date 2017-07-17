@@ -91,7 +91,7 @@ class Role(models.Model):
 		project_name = project.name if project is not None else ''
 		client_name = project.contract_client.name if project is not None else ''
 
-		return sum([token.transcriptions.count() for token in self.transcription_tokens.filter(project__contract_client__name__contains=client_name, project__name__contains=project_name)])
+		return sum([token.fragments.count() for token in self.transcription_tokens.filter(project__contract_client__name__contains=client_name, project__name__contains=project_name)])
 
 	# threshold
 	def add_threshold(self, project):
