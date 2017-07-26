@@ -9,6 +9,71 @@ AccountInterfaces.controlInterface = function (name) {
 			},
 		},
 		children: [
+			UI.createComponent('transcription-button', {
+				name: 'transcriptionButton',
+				template: UI.template('div', 'ie button border border-radius'),
+				appearance: {
+					style: {
+						'top': '10px',
+						'width': '80px',
+						'height': '80px',
+						'left': '10px',
+						'padding-top': '30px',
+					},
+				},
+				state: {
+					stateMap: 'transcription-state',
+				},
+				children: [
+					UI.createComponent('tb-glyph', {
+						name: 'glyph',
+						template: UI.template('span', 'glyphicon glyphicon-headphones'),
+					}),
+				],
+			}),
+
+			UI.createComponent('faq-button', {
+				name: 'faqButton',
+				template: UI.template('div', 'ie button border border-radius'),
+				appearance: {
+					style: {
+						'top': '20px',
+						'width': '80px',
+						'height': '40px',
+						'left': '10px',
+						'padding-top': '6px',
+						'font-size': '22px',
+					},
+					html: '?',
+				},
+				state: {
+					stateMap: 'faq-state',
+				},
+			}),
+
+			UI.createComponent('rules-button', {
+				name: 'rulesButton',
+				template: UI.template('div', 'ie button border border-radius'),
+				appearance: {
+					style: {
+						'top': '30px',
+						'width': '80px',
+						'height': '40px',
+						'left': '10px',
+						'padding-top': '10px',
+					},
+				},
+				state: {
+					stateMap: 'rule-state',
+				},
+				children: [
+					UI.createComponent('tb-glyph', {
+						name: 'glyph',
+						template: UI.template('span', 'glyphicon glyphicon-book'),
+					}),
+				],
+			}),
+
 			// clients
 			Components.sidebar('client-sidebar', {
 				name: 'clientSidebar',
@@ -70,6 +135,9 @@ AccountInterfaces.controlInterface = function (name) {
 			}),
 
 			// control
+
+			/*
+
 			Components.sidebar('control-sidebar', {
 				name: 'controlSidebar',
 				position: {
@@ -174,6 +242,8 @@ AccountInterfaces.controlInterface = function (name) {
 				],
 			}),
 
+			*/
+
 			// settings
 			Components.sidebar('settings-sidebar', {
 				name: 'settingsSidebar',
@@ -234,7 +304,7 @@ AccountInterfaces.controlInterface = function (name) {
 		var amc = base.cc.amc;
 		var clientList = base.cc.clientSidebar.cc.main.cc.clientList;
 		var roleList = base.cc.roleSidebar.cc.main.cc.roleList;
-		var controlList = base.cc.controlSidebar.cc.main.cc.controlList;
+		// var controlList = base.cc.controlSidebar.cc.main.cc.controlList;
 		var settingsList = base.cc.settingsSidebar.cc.main.cc.settingsList;
 
 		// action master controller
@@ -596,7 +666,27 @@ AccountInterfaces.controlInterface = function (name) {
 			roleList.setTitle({text: 'Roles', center: false}),
 			roleList.setSearch({mode: 'off', placeholder: 'Search roles...'}),
 
+			base.cc.transcriptionButton.setBindings({
+				'click': function (_this) {
+					return _this.triggerState();
+				},
+			}),
+
+			base.cc.faqButton.setBindings({
+				'click': function (_this) {
+					return _this.triggerState();
+				},
+			}),
+
+			base.cc.rulesButton.setBindings({
+				'click': function (_this) {
+					return _this.triggerState();
+				},
+			}),
+
 			// CONTROL SIDEBAR
+			/*
+
 			controlList.cc.list.cc.wrapper.cc.transcriptionButton.setBindings({
 				'click': function (_this) {
 					amc.addAction({type: 'click.transcription-button'});
@@ -667,6 +757,8 @@ AccountInterfaces.controlInterface = function (name) {
 					},
 				},
 			}),
+
+			*/
 
 			// SETTINGS SIDEBAR
 			settingsList.cc.list.cc.wrapper.cc.shortcutsButton.setBindings({

@@ -9,7 +9,7 @@ var AccountApplication = function (id, args) {
 		},
 		children: [
 			// control interface
-			// AccountInterfaces.controlInterface('controlInterface'),
+			AccountInterfaces.controlInterface('controlInterface'),
 
 			// transcription interface
 			AccountInterfaces.transcriptionInterface('transcriptionInterface'),

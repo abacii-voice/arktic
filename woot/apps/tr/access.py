@@ -130,15 +130,19 @@ def access(original_path, permission, fltr={}):
 			'clients': {str(client.id): client.data(path.down('clients'), permission) for client in filterOrAllOnBlank(Client.objects, id=path.get_id()) if client.users.filter(id=permission.user.id).exists()},
 		})
 
-		if path.down('clients').is_blank:
-			# insert faq
-			data['clients'].update(get_faq())
-
-			# insert rules
-
 	if path.check('user'):
 		data.update({
 			'user': permission.user.client_data(path.down('user'), permission),
+		})
+
+	if path.check('faq'):
+		data.update({
+			'faq': get_faq(),
+		})
+
+	if path.check('rules'):
+		data.update({
+			'rules': get_rules(),
 		})
 
 	# cut to size
