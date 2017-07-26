@@ -14,6 +14,10 @@ var AccountApplication = function (id, args) {
 			// transcription interface
 			AccountInterfaces.transcriptionInterface('transcriptionInterface'),
 
+			AccountInterfaces.faqInterface('faqInterface'),
+
+			AccountInterfaces.ruleInterface('ruleInterface'),
+
 			// shortcuts interface
 			AccountInterfaces.shortcutInterface('shortcutInterface'),
 

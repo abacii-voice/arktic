@@ -347,7 +347,7 @@ AccountInterfaces.controlInterface = function (name) {
 				name: 'unit{index}'.format({index: index}),
 				template: UI.template('div', 'ie button base'),
 				appearance: {
-					classes: [datum.rule],
+					classes: [datum.top],
 				},
 				state: {
 					stateMap: 'role-state',

@@ -1,6 +1,10 @@
-{
-	"faq": [
-		{"0": "hello"},
-		{"2": "hello"}
-	]
-}
+[
+	{
+		"title": "hello",
+		"body": "hello body"
+	},
+	{
+		"title": "goodbye",
+		"body": "goodbye body"
+	}
+]
