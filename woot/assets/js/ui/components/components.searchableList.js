@@ -359,7 +359,6 @@ Components.searchableList = function (id, args) {
 			// global control
 			setup: {
 				main: function () {
-					console.log(base.id);
 					return base.control.setup.resolvePaths().then(function () {
 						if (!base.data.isSetup) {
 							return Promise.all([

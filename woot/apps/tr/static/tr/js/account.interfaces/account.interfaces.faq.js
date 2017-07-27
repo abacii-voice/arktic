@@ -53,7 +53,14 @@ AccountInterfaces.faqInterface = function (id, args) {
 				},
 			},
 		]
-		autocomplete.sort = Util.sort.alpha('main');
+		autocomplete.sort = function (d1, d2) {
+			// by id
+			if (d1.id > d2.id) {
+				return 1;
+			} else {
+				return -1;
+			}
+		},
 		autocomplete.unitStyle.base = function () {
 			return new Promise(function(resolve, reject) {
 				// base class
@@ -115,7 +122,6 @@ AccountInterfaces.faqInterface = function (id, args) {
 												'display': 'inline-block',
 												'position': 'absolute',
 											},
-											html: `${index+1}. ${datum.main.substring(0, query.length)}`,
 										},
 									}),
 									UI.createComponent('{base}-main-tail'.format({base: base}), {
@@ -126,7 +132,7 @@ AccountInterfaces.faqInterface = function (id, args) {
 												'display': 'inline-block',
 												'max-width': '100%',
 											},
-											html: `${index+1}. ${datum.main}`,
+											html: `${datum.id+1}. ${datum.main}`,
 										},
 									}),
 								],
@@ -162,7 +168,6 @@ AccountInterfaces.faqInterface = function (id, args) {
 					return unitBase.setAppearance({classes: {add: 'hidden'}});
 				}
 				unitBase.updateMetadata = function (ndatum, query) {
-					// console.log(ndatum, query);
 					// if there are changes, do stuff.
 					return unitBase.updateDatum(ndatum).then(function () {
 						return unitBase.updateQuery(query);
@@ -179,8 +184,8 @@ AccountInterfaces.faqInterface = function (id, args) {
 				unitBase.updateQuery = function (query) {
 					unitBase.query = query;
 					return Promise.all([
-						unitBase.cc.container.cc.wrapper.cc.head.setAppearance({html: `${index+1}. ${datum.main.substring(0, query.length)}`}),
-						unitBase.cc.container.cc.wrapper.cc.tail.setAppearance({html: `${index+1}. ${datum.main}`}),
+						unitBase.cc.container.cc.wrapper.cc.tail.setAppearance({html: `${unitBase.datum.id+1}. ${unitBase.datum.main}`}),
+						unitBase.cc.body.setAppearance({html: unitBase.datum.body}),
 					]);
 				}
 
@@ -201,41 +206,28 @@ AccountInterfaces.faqInterface = function (id, args) {
 			// Here, the lack of matching query and the global autocomplete mode can be overridden by base.data.autocompleteOverride.
 			// For the null query, the override only diplays everything if the query is still null, then is more specific when something is typed.
 			if (datum && datum.main && datum.body) {
-				var conditions = [
-					(datum.rule === _this.data.filter || _this.data.filter === ''), // filter matches or no filter
-
+				return Util.ep((
 					(
-						// (
-						// 	// lower case query match anywhere in the body
-						// 	datum.body.toLowerCase().indexOf(_this.data.query.toLowerCase()) !== -1
-						// 	&&
-						// 	_this.data.query.toLowerCase() !== ''
-						// )
-						// ||
-						(
-							// lower case query match anywhere in the string
-							datum.main.toLowerCase().indexOf(_this.data.query.toLowerCase()) !== -1
-							&&
-							_this.data.query.toLowerCase() !== ''
-						)
-						||
-						(
-							// allow autocomplete mode to display everything
-							(_this.data.autocompleteOverride || !_this.autocomplete || false)
-							&&
-							_this.data.query === ''
-						)
-					),
-
-					// TODO: THESE CONDITIONS NEED TO BE OVERHAULED
-
-					(!_this.autocomplete || (_this.autocomplete && _this.data.query !== '') || (_this.data.autocompleteOverride || false)), // autocomplete mode or no query
-					datum.id in _this.data.storage.dataset, // datum is currently in dataset (prevent bleed over from change of dataset)
-				];
-
-				return Util.ep(conditions.reduce(function (a,b) {
-					return a && b;
-				}));
+						// lower case query match anywhere in the body
+						datum.body.toLowerCase().indexOf(_this.data.query.toLowerCase()) !== -1
+						&&
+						_this.data.query.toLowerCase() !== ''
+					)
+					||
+					(
+						// lower case query match anywhere in the title
+						datum.main.toLowerCase().indexOf(_this.data.query.toLowerCase()) !== -1
+						&&
+						_this.data.query.toLowerCase() !== ''
+					)
+					||
+					(
+						// allow autocomplete mode to display everything
+						(_this.data.autocompleteOverride || !_this.autocomplete || false)
+						&&
+						_this.data.query === ''
+					)
+				));
 			} else {
 				return Util.ep(false);
 			}
