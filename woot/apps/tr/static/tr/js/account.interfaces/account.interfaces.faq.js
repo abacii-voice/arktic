@@ -99,6 +99,7 @@ AccountInterfaces.faqInterface = function (id, args) {
 								template: UI.template('div', 'ie'),
 								appearance: {
 									style: {
+										'font-size': '20px',
 										'left': '0px',
 										'display': 'inline-block',
 									},
@@ -114,7 +115,7 @@ AccountInterfaces.faqInterface = function (id, args) {
 												'display': 'inline-block',
 												'position': 'absolute',
 											},
-											html: datum.main.substring(0, query.length),
+											html: `${index+1}. ${datum.main.substring(0, query.length)}`,
 										},
 									}),
 									UI.createComponent('{base}-main-tail'.format({base: base}), {
@@ -125,24 +126,22 @@ AccountInterfaces.faqInterface = function (id, args) {
 												'display': 'inline-block',
 												'max-width': '100%',
 											},
-											html: datum.main,
+											html: `${index+1}. ${datum.main}`,
 										},
 									}),
 								],
 							}),
 						],
 					}),
-					// index
-					UI.createComponent('{base}-index'.format({base: base}), {
-						name: 'index',
-						template: UI.template('div', 'ie abs'),
+					// body
+					UI.createComponent('{base}-body'.format({base: base}), {
+						name: 'body',
+						template: UI.template('div', 'ie'),
 						appearance: {
 							style: {
-								'width': '10px',
-								'right': '5px',
-								'top': '11px',
+								'margin-bottom': '10px',
 							},
-							html: index,
+							html: datum.body,
 						},
 					}),
 				],
@@ -180,8 +179,8 @@ AccountInterfaces.faqInterface = function (id, args) {
 				unitBase.updateQuery = function (query) {
 					unitBase.query = query;
 					return Promise.all([
-						unitBase.cc.container.cc.wrapper.cc.head.setAppearance({html: unitBase.datum.main.substring(0, query.length)}),
-						unitBase.cc.container.cc.wrapper.cc.tail.setAppearance({html: unitBase.datum.main}),
+						unitBase.cc.container.cc.wrapper.cc.head.setAppearance({html: `${index+1}. ${datum.main.substring(0, query.length)}`}),
+						unitBase.cc.container.cc.wrapper.cc.tail.setAppearance({html: `${index+1}. ${datum.main}`}),
 					]);
 				}
 
@@ -206,6 +205,13 @@ AccountInterfaces.faqInterface = function (id, args) {
 					(datum.rule === _this.data.filter || _this.data.filter === ''), // filter matches or no filter
 
 					(
+						// (
+						// 	// lower case query match anywhere in the body
+						// 	datum.body.toLowerCase().indexOf(_this.data.query.toLowerCase()) !== -1
+						// 	&&
+						// 	_this.data.query.toLowerCase() !== ''
+						// )
+						// ||
 						(
 							// lower case query match anywhere in the string
 							datum.main.toLowerCase().indexOf(_this.data.query.toLowerCase()) !== -1
