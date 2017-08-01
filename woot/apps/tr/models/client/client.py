@@ -41,6 +41,7 @@ class Client(models.Model):
 			})
 
 		if path.check('flags'):
+			print(self.name, self.flags.all())
 			data.update({
 				'flags': {str(flag.id): flag.data(path.down('flags'), permission) for flag in filterOrAllOnBlank(self.flags, id=path.get_id())},
 			})

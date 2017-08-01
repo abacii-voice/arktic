@@ -179,9 +179,9 @@ class TranscriptionFragment(models.Model):
 					transcription.flags.create(parent=self.parent.project.production_client.flags.get(name=flag_name), role=self.token.role)
 
 			# set properties
-			# self.is_reconciled = revision['isComplete']
-			# self.parent.is_available = not revision['isComplete']
-			# self.parent.is_active = not revision['isComplete']
+			self.is_reconciled = revision['isComplete']
+			self.parent.is_available = not revision['isComplete']
+			self.parent.is_active = not revision['isComplete']
 			self.parent.save()
 			self.save()
 

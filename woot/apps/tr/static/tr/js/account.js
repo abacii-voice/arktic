@@ -66,8 +66,8 @@ UI.app('hook', [
 	]).then(function () {
 		// return UI.changeState('client-state');
 		// return UI.changeState('control-state');
-		// return UI.changeState('transcription-state');
-		return UI.changeState('faq-state');
+		return UI.changeState('transcription-state');
+		// return UI.changeState('faq-state');
 		// return UI.changeState('project-state');
 	});
 }).catch(function (error) {

@@ -37,6 +37,11 @@ class Token(models.Model):
 					'shortcut': self.shortcuts.get(role=permission.role).data(path, permission),
 				})
 
+			elif self.shortcuts.filter(role__isnull=True).count():
+				data.update({
+					'shortcut': self.shortcuts.get(role__isnull=True).data(path, permission),
+				})
+
 		return data
 
 	def render(self):
@@ -72,9 +77,12 @@ class TokenShortcut(models.Model):
 
 	'''
 
+	class Meta:
+		get_latest_by='date_created'
+
 	### Connections
 	parent = models.ForeignKey('tr.Token', related_name='shortcuts')
-	role = models.ForeignKey('tr.Role', related_name='token_shortcuts')
+	role = models.ForeignKey('tr.Role', related_name='token_shortcuts', null=True)
 
 	### Properties
 	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

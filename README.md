@@ -85,13 +85,22 @@ Can be used to add tags to a specific project dictionary. They can listed, or fi
 
 ## add
 
-On top of the client and project, can also specify a `--description`.
+On top of the client and project, can also specify a `--description`. Can specify `--file` argument to import from a file with the following format:
+
+{
+	"tag_name": {
+		"description": "DESCRIPTION",
+		"shortcut": "shortcut"
+	}
+}
+
+Standard rules apply for JSON (no trailing commas. double quotes only). Same type of file can used for flags.
 
 ## example commands
 
 List: `dm tags --client=Client1 --project=Project1 --is_enabled=True`
 
-Add: `dm tags add --client=Client1 --project=Project1 --name=TagName --description="tag description"`
+Add: `dm tags add --client=Client1 --project=Project1 --name=TagName --description tag description`
 
 Disable: `dm tags --tag=tag_id --enable=False`
 
