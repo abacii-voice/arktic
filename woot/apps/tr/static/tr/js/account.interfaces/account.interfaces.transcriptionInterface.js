@@ -1643,6 +1643,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					'control-state': 'default',
 					'faq-state': 'default',
 					'rule-state': 'default',
+					'shortcut-state': 'default',
 					// '-transcription-project-complete-state': 'default',
 				},
 			}),

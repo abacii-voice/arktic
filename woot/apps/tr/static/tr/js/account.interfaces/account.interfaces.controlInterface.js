@@ -44,7 +44,7 @@ AccountInterfaces.controlInterface = function (name) {
 						'padding-top': '6px',
 						'font-size': '22px',
 					},
-					html: '?',
+					html: 'FAQ',
 				},
 				state: {
 					stateMap: 'faq-state',
@@ -67,9 +67,32 @@ AccountInterfaces.controlInterface = function (name) {
 					stateMap: 'rule-state',
 				},
 				children: [
-					UI.createComponent('tb-glyph', {
+					UI.createComponent('rb-glyph', {
 						name: 'glyph',
 						template: UI.template('span', 'glyphicon glyphicon-book'),
+					}),
+				],
+			}),
+
+			UI.createComponent('shortcut-button', {
+				name: 'shortcutButton',
+				template: UI.template('div', 'ie button border border-radius'),
+				appearance: {
+					style: {
+						'top': '40px',
+						'width': '80px',
+						'height': '40px',
+						'left': '10px',
+						'padding-top': '10px',
+					},
+				},
+				state: {
+					stateMap: 'shortcut-state',
+				},
+				children: [
+					UI.createComponent('sb-glyph', {
+						name: 'glyph',
+						template: UI.template('span', 'glyphicon glyphicon-th-list'),
 					}),
 				],
 			}),
@@ -684,6 +707,12 @@ AccountInterfaces.controlInterface = function (name) {
 				},
 			}),
 
+			base.cc.shortcutButton.setBindings({
+				'click': function (_this) {
+					return _this.triggerState();
+				},
+			}),
+
 			// CONTROL SIDEBAR
 			/*
 
@@ -761,12 +790,13 @@ AccountInterfaces.controlInterface = function (name) {
 			*/
 
 			// SETTINGS SIDEBAR
-			settingsList.cc.list.cc.wrapper.cc.shortcutsButton.setBindings({
-				'click': function (_this) {
-					amc.addAction({type: 'click.shortcuts-button'});
-					return _this.triggerState();
-				},
-			}),
+			// settingsList.cc.list.cc.wrapper.cc.shortcutsButton.setBindings({
+			// 	'click': function (_this) {
+			// 		amc.addAction({type: 'click.shortcuts-button'});
+			// 		return _this.triggerState();
+			// 	},
+			// }),
+			base.cc.settingsSidebar.setAppearance({style: {'display': 'none'}}),
 
 			settingsList.cc.title.setAppearance({
 				style: {

@@ -3,7 +3,7 @@
 
 # local
 from apps.tr.models.client.client import Client
-from apps.tr.external import get_faq, get_rules
+from apps.tr.external import get_faq, get_rules, get_shortcuts
 from util import filterOrAllOnBlank
 
 # util
@@ -143,6 +143,11 @@ def access(original_path, permission, fltr={}):
 	if path.check('rules'):
 		data.update({
 			'rules': get_rules(),
+		})
+
+	if path.check('shortcuts'):
+		data.update({
+			'shortcuts': get_shortcuts(),
 		})
 
 	# cut to size

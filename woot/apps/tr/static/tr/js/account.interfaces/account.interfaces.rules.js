@@ -3,7 +3,7 @@ AccountInterfaces.ruleInterface = function (id, args) {
 
 	var autocompleteWidth = '350px';
 	return UI.createComponent('rule-base', {
-		name: 'faqInterface',
+		name: 'rulesInterface',
 		template: UI.template('div', 'ie abs'),
 		appearance: {
 			style: {
@@ -32,6 +32,7 @@ AccountInterfaces.ruleInterface = function (id, args) {
 
 		// MODIFY UNIT TO PROPERLY DISPLAY TITLE AND BODY
 
+		autocomplete.cc.list.cc.wrapper.setAppearance({style: {'height': 'calc(100% - 100px)'}});
 		autocomplete.data.preventIncomplete = true;
 		autocomplete.targets = [
 			{name: 'rules',
@@ -260,6 +261,7 @@ AccountInterfaces.ruleInterface = function (id, args) {
 					'role-state': 'default',
 					'control-state': 'default',
 					'faq-state': 'default',
+					'shortcut-state': 'default',
 					'transcription-state': 'default',
 				},
 			}),
@@ -282,7 +284,7 @@ AccountInterfaces.ruleInterface = function (id, args) {
 			autocomplete.unitStyle.apply(),
 			autocomplete.setState({
 				states: {
-					'faq-state': {
+					'rule-state': {
 						preFn: function (_this) {
 							return _this.control.setup.main();
 						},

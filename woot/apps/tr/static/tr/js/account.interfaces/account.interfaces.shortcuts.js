@@ -1,9 +1,9 @@
 var AccountInterfaces = (AccountInterfaces || {});
-AccountInterfaces.faqInterface = function (id, args) {
+AccountInterfaces.shortcutInterface = function (id, args) {
 
 	var autocompleteWidth = '350px';
-	return UI.createComponent('faq-base', {
-		name: 'faqInterface',
+	return UI.createComponent('shortcut-base', {
+		name: 'shortcutInterface',
 		template: UI.template('div', 'ie abs'),
 		appearance: {
 			style: {
@@ -14,7 +14,7 @@ AccountInterfaces.faqInterface = function (id, args) {
 			classes: ['centred-vertically'],
 		},
 		children: [
-			Components.searchableList('faq-autocomplete', {
+			Components.searchableList('shortcut-autocomplete', {
 				name: 'autocomplete',
 				appearance: {
 					style: {
@@ -35,9 +35,9 @@ AccountInterfaces.faqInterface = function (id, args) {
 		autocomplete.cc.list.cc.wrapper.setAppearance({style: {'height': 'calc(100% - 100px)'}});
 		autocomplete.data.preventIncomplete = true;
 		autocomplete.targets = [
-			{name: 'faq',
+			{name: 'shortcuts',
 				path: function () {
-					return Util.ep('faq');
+					return Util.ep('shortcuts');
 				},
 				process: function (data) {
 					return new Promise(function(resolve, reject) {
@@ -133,7 +133,7 @@ AccountInterfaces.faqInterface = function (id, args) {
 												'display': 'inline-block',
 												'max-width': '100%',
 											},
-											html: `${datum.id+1}. ${datum.main}`,
+											html: `${index+1}. ${datum.main}`,
 										},
 									}),
 								],
@@ -177,7 +177,7 @@ AccountInterfaces.faqInterface = function (id, args) {
 					});
 				}
 				unitBase.updateDatum = function (ndatum) {
-					return unitBase.setAppearance({classes: {add: ndatum.rule, remove: (unitBase.datum || datum).rule}}).then(function () {
+					return unitBase.setAppearance({classes: {add: ndatum.shortcut, remove: (unitBase.datum || datum).shortcut}}).then(function () {
 						unitBase.datum = ndatum;
 						return Util.ep();
 					});
@@ -185,7 +185,7 @@ AccountInterfaces.faqInterface = function (id, args) {
 				unitBase.updateQuery = function (query) {
 					unitBase.query = query;
 					return Promise.all([
-						unitBase.cc.container.cc.wrapper.cc.tail.setAppearance({html: `${unitBase.datum.id+1}. ${unitBase.datum.main}`}),
+						unitBase.cc.container.cc.wrapper.cc.tail.setAppearance({html: `${index+1}. ${unitBase.datum.main}`}),
 						unitBase.cc.body.setAppearance({html: unitBase.datum.body}),
 					]);
 				}
@@ -254,20 +254,20 @@ AccountInterfaces.faqInterface = function (id, args) {
 			base.setState({
 				defaultState: {preFn: UI.functions.hide()},
 				states: {
-					'faq-state': {
+					'shortcut-state': {
 						fn: UI.functions.show(),
 					},
 					'client-state': 'default',
 					'role-state': 'default',
 					'control-state': 'default',
+					'faq-state': 'default',
 					'rule-state': 'default',
-					'shortcut-state': 'default',
 					'transcription-state': 'default',
 				},
 			}),
 
 			// autocomplete
-			autocomplete.setTitle({text: 'FAQ'}),
+			autocomplete.setTitle({text: 'Keyboard shortcuts'}),
 			autocomplete.setSearch({mode: 'on', autocomplete: false}),
 			autocomplete.search.setAppearance({
 				style: {
@@ -284,7 +284,7 @@ AccountInterfaces.faqInterface = function (id, args) {
 			autocomplete.unitStyle.apply(),
 			autocomplete.setState({
 				states: {
-					'faq-state': {
+					'shortcut-state': {
 						preFn: function (_this) {
 							return _this.control.setup.main();
 						},

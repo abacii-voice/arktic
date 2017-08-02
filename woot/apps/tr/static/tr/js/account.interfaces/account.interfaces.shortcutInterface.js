@@ -1,8 +1,8 @@
 var AccountInterfaces = (AccountInterfaces || {});
-AccountInterfaces.shortcutInterface = function (name) {
+AccountInterfaces.shortcutsInterface = function (name) {
 
 	var autocompleteWidth = '300px';
-	return UI.createComponent('shortcut-base', {
+	return UI.createComponent('shortcuts-base', {
 		name: name,
 		template: UI.template('div', 'ie abs'),
 		appearance: {
