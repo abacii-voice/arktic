@@ -196,8 +196,8 @@ List tags by running
 
 9. Check a user total by running:
 
-`~$ dms users --user=UserIdOrEmailFragment`
+`~$ dm users --user=UserIdOrEmailFragment`
 
 10. Export a project at any time using:
 
-`~$ dms export --batch=BatchId`
+`~$ dm export --batch=BatchId`
