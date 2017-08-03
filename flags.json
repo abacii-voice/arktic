@@ -1,0 +1,6 @@
+{
+	"unsure": {
+		"description": "Flag transcription for review due to uncertainty.",
+		"shortcut": "ctrl+u"
+	}
+}

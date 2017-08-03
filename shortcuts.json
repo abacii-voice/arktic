@@ -1,0 +1,70 @@
+[
+	{
+		"title": "up",
+		"body": "If the caption is not focussed, the up arrow will move to the previous transcription. If the caption or autocomplete is focussed, it will move between items in the list. Hold down the alt key to override this and move between transcriptions normally."
+	},
+	{
+		"title": "down",
+		"body": "The down key moves to the kext transcription, but does not mark the current one as complete. It has the opposite behavious from the up arrow."
+	},
+	{
+		"title": "left",
+		"body": "Left arrow moves between words in the caption or the autocomplete, but it can be modified by alt to move between whole words."
+	},
+	{
+		"title": "right",
+		"body": "Right arrow behaves oppositely to left arrow."
+	},
+	{
+		"title": "numbers",
+		"body": "Pressing a number key will select the corresponding item in the autocomplete and complete the word or phrase."
+	},
+	{
+		"title": "enter",
+		"body": "Enter will complete a phrase and set a transcription as complete, then move to the next transcription if pressed again."
+	},
+	{
+		"title": "backspace",
+		"body": "Backspace deletes characters as normal. "
+	},
+	{
+		"title": "down",
+		"body": "goodbye body"
+	},
+	{
+		"title": "down",
+		"body": "goodbye body"
+	},
+	{
+		"title": "down",
+		"body": "goodbye body"
+	},
+	{
+		"title": "down",
+		"body": "goodbye body"
+	},
+	{
+		"title": "down",
+		"body": "goodbye body"
+	},
+	{
+		"title": "down",
+		"body": "goodbye body"
+	},
+	{
+		"title": "down",
+		"body": "goodbye body"
+	},
+	{
+		"title": "down",
+		"body": "goodbye body"
+	},
+	{
+		"title": "down",
+		"body": "goodbye body"
+	},
+	{
+		"title": "down",
+		"body": "goodbye body"
+	}
+]

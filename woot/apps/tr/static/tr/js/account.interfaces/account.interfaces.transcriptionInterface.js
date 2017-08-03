@@ -8,8 +8,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		appearance: {
 			style: {
 				'height': '100%',
-				'left': '60px',
-				'width': 'calc(100% - 60px)',
+				'left': '100px',
+				'width': 'calc(100% - 100px)',
 			},
 			classes: ['centred-vertically'],
 		},
@@ -1641,7 +1641,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					'client-state': 'default',
 					'role-state': 'default',
 					'control-state': 'default',
-					// 'transcription-state': 'default',
+					'faq-state': 'default',
+					'rule-state': 'default',
+					'shortcut-state': 'default',
 					// '-transcription-project-complete-state': 'default',
 				},
 			}),

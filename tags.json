@@ -1,0 +1,6 @@
+{
+	"unintelligible": {
+		"description": "Speech cannot be parsed.",
+		"shortcut": "shift+ctrl+u"
+	}
+}

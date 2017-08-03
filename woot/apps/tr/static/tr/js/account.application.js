@@ -9,16 +9,21 @@ var AccountApplication = function (id, args) {
 		},
 		children: [
 			// control interface
-			// AccountInterfaces.controlInterface('controlInterface'),
+			AccountInterfaces.controlInterface('controlInterface'),
 
 			// transcription interface
 			AccountInterfaces.transcriptionInterface('transcriptionInterface'),
 
+			// menus
+			AccountInterfaces.faqInterface('faqInterface'),
+			AccountInterfaces.ruleInterface('ruleInterface'),
+			AccountInterfaces.shortcutInterface('shortcutsInterface'),
+
 			// shortcuts interface
-			AccountInterfaces.shortcutInterface('shortcutInterface'),
+			// AccountInterfaces.shortcutInterface('shortcutInterface'),
 
 			// project interface
-			AccountInterfaces.projectInterface('projectInterface'),
+			// AccountInterfaces.projectInterface('projectInterface'),
 		],
 	}).then(function (base) {
 
