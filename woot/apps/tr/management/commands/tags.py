@@ -53,7 +53,7 @@ class Command(BaseCommand):
 			help='Name or id of project used to filter tags.',
 		)
 		parser.add_argument('--enable',
-			action='store_true',
+			action='store',
 			dest='enable',
 			default=True,
 			help='Flag to enable or disable a tag.',
@@ -163,7 +163,7 @@ class Command(BaseCommand):
 			tag_id_or_name = options['tag_id_or_name']
 			client_id_or_name = options['client_id_or_name']
 			project_id_or_name = options['project_id_or_name']
-			enable = options['enable']
+			enable = options['enable'] or options['enable']=='True'
 			filter_enabled = options['is_enabled']
 
 			# client

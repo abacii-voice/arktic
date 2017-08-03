@@ -42,7 +42,7 @@ class Command(BaseCommand):
 			help='Name or id of a single flag.',
 		)
 		parser.add_argument('--enable',
-			action='store_true',
+			action='store',
 			dest='enable',
 			default=True,
 			help='Enable or disable a flag.',
@@ -136,7 +136,7 @@ class Command(BaseCommand):
 		else:
 			flag_id_or_name = options['flag_id_or_name']
 			client_id_or_name = 'Abacii'
-			enable = options['enable']
+			enable = options['enable'] or options['enable']=='True'
 			filter_enabled = options['is_enabled']
 
 			# client

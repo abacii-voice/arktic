@@ -153,7 +153,7 @@ This example follows a single project from beginning to end.
 
 3. Run the import command from the root directory
 
-`~$ dm import --path=/home/test/ --client=TestClient --project=TestProject --grammar=TestGrammar --batch=Batch1 --name=Upload1`
+`~$ dm import --path=/home/test/ --client=TestClient --project=TestProject --grammar=TestGrammar --batch=Batch1 --upload=Upload1`
 
 4. Create a user
 
