@@ -56,7 +56,7 @@ class PhraseInstance(models.Model):
 		return data
 
 	def render(self):
-		return self.parent.render()
+		return self.parent.render() + ' ' + ' '.join([flag.render() for flag in self.transcription.flags.all()])
 
 class PhraseSubscription(models.Model):
 	'''

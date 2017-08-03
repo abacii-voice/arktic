@@ -38,6 +38,9 @@ class Flag(models.Model):
 
 		return data
 
+	def render(self):
+		return '[{}]'.format(self.name)
+
 class FlagInstance(models.Model):
 
 	### Connections
@@ -57,6 +60,9 @@ class FlagInstance(models.Model):
 		})
 
 		return data
+
+	def render(self):
+		return self.parent.render()
 
 class FlagShortcut(models.Model):
 	'''
