@@ -85,13 +85,22 @@ Can be used to add tags to a specific project dictionary. They can listed, or fi
 
 ## add
 
-On top of the client and project, can also specify a `--description`.
+On top of the client and project, can also specify a `--description`. Can specify `--file` argument to import from a file with the following format:
+
+{
+	"tag_name": {
+		"description": "DESCRIPTION",
+		"shortcut": "shortcut"
+	}
+}
+
+Standard rules apply for JSON (no trailing commas. double quotes only). Same type of file can used for flags.
 
 ## example commands
 
 List: `dm tags --client=Client1 --project=Project1 --is_enabled=True`
 
-Add: `dm tags add --client=Client1 --project=Project1 --name=TagName --description="tag description"`
+Add: `dm tags add --client=Client1 --project=Project1 --name=TagName --description tag description`
 
 Disable: `dm tags --tag=tag_id --enable=False`
 
@@ -144,22 +153,51 @@ This example follows a single project from beginning to end.
 
 3. Run the import command from the root directory
 
-`~$ dms import --path=/home/test/ --client=TestClient --project=TestProject --grammar=TestGrammar --batch=Batch1 --name=Upload1`
+`~$ dm import --path=/home/test/ --client=TestClient --project=TestProject --grammar=TestGrammar --batch=Batch1 --name=Upload1`
 
 4. Create a user
 
-`~$ dms users add --first_name=FirstName --last_name=LastName --email=email@site.com`
+`~$ dm users add --first_name=FirstName --last_name=LastName --email=email@site.com --password=Password`
 
-5. Check email@site.com and signup with a password. Alternatively, include a password argument `--password=Password`.
+5. Create some tags in a file called tags.json in the root directory:
 
-6. Do transcription. At any point, a new project can be uploaded using steps 1+3. A user can be reassigned using:
+{
+	"unintelligible": {
+		"description": "Speech cannot be parsed.",
+		"shortcut": "shift+ctrl+u"
+	}
+}
+
+Remember to follow basic rules for json otherwise the file will not parse (No trailing commas in lists or objects, double quotes not single). Import tags using the following command:
+
+`~$ dm tags add --client=ClientNameOrID --project=ProjectNameOrID --file=/path/to/file.json`
+
+They can also be add individually
+
+`~$ dm tags add --client=ClientNameOrID --project=ProjectNameOrID --name=TagName --shortcut=TagShortcut`
+
+The shortcut string must follow the standard notation for keyboard shortcuts, e.g. ctrl+shift+u. To update a tag (or flag) run the command again. Tags can be disabled by running
+
+`~$ dm tags --TagID --enable=False`
+
+List tags by running
+
+`~$ dm tags (filter by enabled with --is_enabled)`
+
+6. Flags can be added in a similar way:
+
+`~$ dm flags add --file=/path/to/file.json`
+
+7. Create some rules and an FAQ. They are found in the rules.json and faq.json files in the root directory. More advances formatting will be added later.
+
+8. Do transcription. At any point, a new project can be uploaded using steps 1+3. A user can be reassigned using:
 
 `~$ dm users assign --user=UserIdOrEmailFragment --client=TestClient --project=Whatever`
 
-7. Check a user total by running:
+9. Check a user total by running:
 
 `~$ dms users --user=UserIdOrEmailFragment`
 
-8. Export a project at any time using:
+10. Export a project at any time using:
 
 `~$ dms export --batch=BatchId`

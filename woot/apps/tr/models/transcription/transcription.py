@@ -41,7 +41,7 @@ class TranscriptionToken(models.Model):
 				self.get_transcriptions()
 
 	def update(self):
-		if self.fragments.filter(is_reconciled=True) == self.transcription_limit:
+		if not self.fragments.filter(is_reconciled=False).exists():
 			self.is_active = False
 			self.save()
 

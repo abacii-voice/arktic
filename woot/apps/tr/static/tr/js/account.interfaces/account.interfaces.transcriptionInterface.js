@@ -8,8 +8,8 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		appearance: {
 			style: {
 				'height': '100%',
-				'left': '60px',
-				'width': 'calc(100% - 60px)',
+				'left': '100px',
+				'width': 'calc(100% - 100px)',
 			},
 			classes: ['centred-vertically'],
 		},
@@ -124,6 +124,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 							}),
 						],
 					}),
+
+					// project completion bar
+					AccountComponents.projectCompletionBar('tb-mp-completion'),
 				],
 			}),
 
@@ -172,6 +175,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		var amc = base.cc.transcriptionActions;
 		var tmc = base.cc.transcriptionMasterController;
 		var autocomplete = base.cc.autocompletePanel.cc.autocomplete;
+		var completion = base.cc.mainPanel.cc.completion;
 
 		// Transcription Master Controller
 		tmc.data.updateThreshold = 4;
@@ -191,7 +195,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			var _this = tmc;
 			var fragments = result.fragments;
 			_this.data.totalRemaining = result.remaining;
-			_this.data.tokenSize = Object.keys(fragments).length;
+			_this.data.tokenSize = (Object.keys(fragments).length || _this.data.tokenSize);
 			return Promise.all(Object.keys(fragments).sort(function (a,b) {
 				return fragments[a].index > fragments[b].index ? 1 : -1;
 			}).map(function (key) {
@@ -218,7 +222,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			var _this = tmc;
 			return _this.data.current().then(function (current) {
 				current.is_available = false;
-
+				if (!current.isPending && !current.isComplete) {
+					current.isPending = true;
+				}
 				return Promise.all([
 					audio.display(current),
 					caption.control.input.newCaption(current),
@@ -230,8 +236,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		tmc.setActive = function (options) {
 			var _this = tmc;
 			options = (options || {});
-
-			audio.controller.isLoaded = false;
 			return Promise.all([
 				audio.stop(),
 				audio.audioTrackCanvas.removeCut(),
@@ -245,7 +249,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 				// boundary conditions
 				_this.active = _this.active < 0 ? 0 : _this.active; // cannot be less than zero
-				_this.active = _this.active >= Object.keys(_this.data.buffer).length ? Object.keys(_this.data.buffer).length : _this.active; // cannot be past end
+				_this.active = _this.active >= Object.keys(_this.data.buffer).length ? Object.keys(_this.data.buffer).length-1 : _this.active; // cannot be past end
 				_this.active = (previousIndex > _this.active && previousIndex % _this.data.releaseThreshold === 0) ? previousIndex : _this.active; // cannot move back before threshold
 
 				return _this.data.update().then(function () {
@@ -283,6 +287,18 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					if (current) {
 						current.isPending = false;
 						current.isComplete = true;
+					}
+					return Util.ep();
+				}),
+			]);
+		}
+		tmc.setPending = function () {
+			return Promise.all([
+				counter.active.setPending(),
+				tmc.data.current().then(function (current) {
+					if (current) {
+						current.isPending = true;
+						current.isComplete = false;
 					}
 					return Util.ep();
 				}),
@@ -954,21 +970,23 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					amc.addAction({type: 'caption.input'});
 					if (unitBase.isFocused) {
 						return Promise.all([
-							unitBase.getContent().then(function (unitContent) {
-								// temporarily update metadata to prepare for completion, even though this might be overwritten by the subsequent search.setContent.
-								return unitBase.updateUnitMetadata({query: unitContent, complete: unitBase.metadata.complete}).then(function () {
-									return unitBase.phrase.updateQueryFromActive().then(function (updatedQuery) {
-										autocomplete.target = unitBase.phrase.id;
-										return autocomplete.search.setContent({query: updatedQuery, trigger: true});
-									});
-								});
-							}),
-							counter.active.setPending(),
+							unitBase.update(),
 							tmc.setPending(),
 						]);
 					} else {
 						return Util.ep();
 					}
+				}
+				unitBase.update = function () {
+					return unitBase.getContent().then(function (unitContent) {
+						// temporarily update metadata to prepare for completion, even though this might be overwritten by the subsequent search.setContent.
+						return unitBase.updateUnitMetadata({query: unitContent, complete: unitBase.metadata.complete}).then(function () {
+							return unitBase.phrase.updateQueryFromActive().then(function (updatedQuery) {
+								autocomplete.target = unitBase.phrase.id;
+								return autocomplete.search.setContent({query: updatedQuery, trigger: true});
+							});
+						});
+					});
 				}
 				unitBase.focus = function (position) {
 					amc.addAction({type: 'caption.focus'});
@@ -979,7 +997,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						return caption.control.setActive({unit: unitBase}).then(function () {
 							return unitBase.setCaretPosition(position);
 						}).then(function () {
-							return unitBase.input();
+							return unitBase.update();
 						});
 					} else {
 						return Util.ep();
@@ -1312,7 +1330,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 
 				// methods
 				unitBase.isComplete = false;
-				unitBase.isPending = false;
 				unitBase.activate = function () {
 					return unitBase.setAppearance({classes: {add: 'active'}});
 				}
@@ -1432,6 +1449,19 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			});
 		}
 
+		// completion
+		completion.update = function () {
+			return Promise.all([
+				Active.get('client'),
+				Active.get('role'),
+			]).then(function (results) {
+				var [clientId, roleId] = results;
+				return Context.get(`user.clients.${clientId}.roles.${roleId}.project_transcriptions`, {force: true});
+			}).then(function (projectTotal) {
+				return completion.cc.number.setAppearance({html: `${projectTotal} transcriptions`});
+			});
+		}
+
 		// connect
 		return Promise.all([
 
@@ -1442,7 +1472,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 			base.setState({
 				defaultState: {preFn: UI.functions.hide()},
 				states: {
-					'-transcription-project-active-state': {
+					'transcription-state': {
 						preFn: function () {
 							// KEYBINDINGS
 							Mousetrap.bind('up', function (event) {
@@ -1611,8 +1641,10 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					'client-state': 'default',
 					'role-state': 'default',
 					'control-state': 'default',
-					'transcription-state': 'default',
-					'-transcription-project-complete-state': 'default',
+					'faq-state': 'default',
+					'rule-state': 'default',
+					'shortcut-state': 'default',
+					// '-transcription-project-complete-state': 'default',
 				},
 			}),
 
@@ -1774,6 +1806,21 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 					}).then(function () {
 						return caption.focus();
 					});
+				},
+			}),
+
+			// completion
+			completion.setState({
+				defaultState: {preFn: UI.functions.hide()},
+				states: {
+					'transcription-state': 'default',
+					'-transcription-project-active-state': 'default',
+					'-transcription-project-complete-state': {
+						preFn: function (_this) {
+							return _this.update();
+						},
+						fn: UI.functions.show(),
+					},
 				},
 			}),
 

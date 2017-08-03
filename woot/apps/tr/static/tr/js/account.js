@@ -33,6 +33,8 @@ UI.app('hook', [
 	return Promise.all([
 		Context.get('clients'),
 		Context.get('user'),
+		Context.get('faq'),
+		Context.get('rules'),
 	]);
 }).then(function () {
 	return Promise.all([
@@ -65,7 +67,7 @@ UI.app('hook', [
 		// return UI.changeState('client-state');
 		// return UI.changeState('control-state');
 		return UI.changeState('transcription-state');
-		// return UI.changeState('shortcut-state');
+		// return UI.changeState('faq-state');
 		// return UI.changeState('project-state');
 	});
 }).catch(function (error) {

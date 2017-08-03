@@ -1,0 +1,40 @@
+
+Convert list from: Unit is the same for each type and can only be stylistically altered.
+To: Unit can be different for each and the appropriate type is used for displaying an item.
+
+I imagine this:
+Item
+
+Item
+
+Item
+
+To:
+ItemContainer
+	Type1
+	Type2
+ItemContainer
+	Type1
+	Type2
+
+Usage:
+1. Control interface
+	a. 31: client list
+	b. 61: role list
+	c. 91: control list
+	d. 196: settings list
+2. Project interface: various
+3. Biggest one is autocomplete on the transcription interface
+
+Requirements:
+1. Default unit definition, not style.
+2. Initial unit setup and unit container for adding items.
+3. Unit definition or style definition for each target if required.
+
+Everything that makes a reference to the unit will have to be modifed.
+1. autocomplete.unitStyle
+2. autocomplete.unit
+3. base.unitStyle
+4. base.data.display.render
+5. base.control.setup.renderUntilDefaultLimit
+6. 

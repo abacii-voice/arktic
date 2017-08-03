@@ -10,6 +10,7 @@ import sys
 from terminaltables import AsciiTable
 import argparse
 from argparse import RawTextHelpFormatter
+import json
 
 class Command(BaseCommand):
 
@@ -17,10 +18,12 @@ class Command(BaseCommand):
 		'FLAGS: Add, list, or disable flags to be used with for a client',
 		'',
 		'Example commands: ',
-		'List: dm flags --client=Client1 --is_enabled=True',
-		'Add: dm flags add --client=Client1 --name=FlagName --description="flag description"',
+		'List: dm flags --is_enabled=True',
+		'Add: dm flags add --name=FlagName --description="flag description"',
 		'Disable: dm flags --flag=flag_id --enable=False',
-		'Disable: dm flags --client=Client1 --flag=FlagName --enable=False',
+		'Disable: dm flags --flag=FlagName --enable=False',
+		'',
+		'For the description argument, do not use an equals sign or quotes. Dumb argparse code.',
 	])
 
 	def create_parser(self, *args, **kwargs):
@@ -37,12 +40,6 @@ class Command(BaseCommand):
 			dest='flag_id_or_name',
 			default='',
 			help='Name or id of a single flag.',
-		)
-		parser.add_argument('--client',
-			action='store',
-			dest='client_id_or_name',
-			default='',
-			help='Name or id of client used to filter flags.',
 		)
 		parser.add_argument('--enable',
 			action='store_true',
@@ -77,12 +74,20 @@ class Command(BaseCommand):
 			dest='description',
 			default='',
 			help='A short description.',
+			nargs='+',
+			type=str,
 		)
-		add_parser.add_argument('--client',
+		add_parser.add_argument('--shortcut',
 			action='store',
-			dest='client_id_or_name',
+			dest='shortcut',
 			default='',
-			help='Name or id of client.',
+			help='Keyboard shortcut text.',
+		)
+		add_parser.add_argument('--file',
+			action='store',
+			dest='file',
+			default='',
+			help='The file path of the flag input file.',
 		)
 
 	def handle(self, *args, **options):
@@ -90,37 +95,56 @@ class Command(BaseCommand):
 			# vars
 			flag_name = options['name']
 			flag_description = options['description']
-			client_id_or_name = options['client_id_or_name']
+			flag_shortcut = options['shortcut']
+			flag_file = options['file']
+			client_id_or_name = 'Abacii'
 
 			# client
 			client = None
-			if isValidUUID(client_id_or_name) and Client.objects.filter(id=client_id_or_name, is_production=False).exists():
+			if isValidUUID(client_id_or_name) and Client.objects.filter(id=client_id_or_name, is_production=True).exists():
 				client = Client.objects.get(id=client_id_or_name)
-			elif Client.objects.filter(name=client_id_or_name, is_production=False).exists():
-				client = Client.objects.get(name=client_id_or_name, is_production=False)
+			elif Client.objects.filter(name=client_id_or_name, is_production=True).exists():
+				client = Client.objects.get(name=client_id_or_name, is_production=True)
 			else:
 				self.stdout.write('No such client.')
 				sys.exit(0)
 
 			# create flag
-			flag, flag_created = client.flags.get_or_create(name=flag_name, description=flag_description)
-			if flag_created:
-				self.stdout.write('Creating flag [{}] for {}'.format(flag.name, client.name))
+			if flag_file:
+				with open(flag_file, 'r') as open_flag_file:
+					data = json.loads(open_flag_file.read())
+					for flag_name, details in data.items():
+						flag, flag_created = client.flags.get_or_create(name=flag_name)
+						flag.description = details['description']
+						flag.shortcuts.get_or_create(combo=details['shortcut'])
+						flag.save()
+						if flag_created:
+							self.stdout.write('Creating flag [{}] for {}'.format(flag.name, client.name))
+						else:
+							self.stdout.write('Flag [{}] already exists for {}'.format(flag.name, client.name))
+
 			else:
-				self.stdout.write('Flag [{}] already exists for {}:{}'.format(flag.name, client.name))
+				flag, flag_created = client.flags.get_or_create(name=flag_name, description=flag_description)
+				flag.description = flag_description
+				flag.shortcut = flag_shortcut
+				flag.save()
+				if flag_created:
+					self.stdout.write('Creating flag [{}] for {}'.format(flag.name, client.name))
+				else:
+					self.stdout.write('Flag [{}] already exists for {}'.format(flag.name, client.name))
 
 		else:
 			flag_id_or_name = options['flag_id_or_name']
-			client_id_or_name = options['client_id_or_name']
+			client_id_or_name = 'Abacii'
 			enable = options['enable']
 			filter_enabled = options['is_enabled']
 
 			# client
 			client = None
-			if isValidUUID(client_id_or_name) and Client.objects.filter(id=client_id_or_name, is_production=False).exists():
+			if isValidUUID(client_id_or_name) and Client.objects.filter(id=client_id_or_name, is_production=True).exists():
 				client = Client.objects.get(id=client_id_or_name)
-			elif Client.objects.filter(name=client_id_or_name, is_production=False).exists():
-				client = Client.objects.get(name=client_id_or_name, is_production=False)
+			elif Client.objects.filter(name=client_id_or_name, is_production=True).exists():
+				client = Client.objects.get(name=client_id_or_name, is_production=True)
 
 			# flag
 			flag = None
@@ -139,7 +163,7 @@ class Command(BaseCommand):
 
 			# display
 			if Client.objects.filter(is_production=False).exists():
-				flag_list_data = [['Client', 'ID', 'Name', 'Enabled?', 'Description']]
+				flag_list_data = [['Client', 'ID', 'Name', 'Enabled?', 'Description', 'Shortcut']]
 				clients = [client] if client is not None else Client.objects.filter(is_production=False) # account for single client
 				clients = [flag.client] if flag is not None else clients
 				for i, client in enumerate(clients):
@@ -154,6 +178,7 @@ class Command(BaseCommand):
 							flag.name,
 							flag.is_enabled,
 							flag.description,
+							flag.shortcuts.latest().combo,
 						])
 
 				flag_table = AsciiTable(flag_list_data)

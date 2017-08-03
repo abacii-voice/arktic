@@ -1,0 +1,4 @@
+
+1. Tag command
+	a. Add tags to project individually
+	b. Add tags to project via file

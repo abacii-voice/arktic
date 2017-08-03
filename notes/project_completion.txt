@@ -1,0 +1,7 @@
+
+When completing a project, or doing the last available transcription, this needs to happen:
+1. A button needs to appear or change to end the run.
+2. If a transcription is made incomplete, the button needs to disappear.
+3. Clicking the button reveals the total number of transcriptions done by the user.
+	a. How to find this?
+	b. The sum of all transcription tokens including the current one.

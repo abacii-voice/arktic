@@ -14,50 +14,22 @@ var AccountApplication = function (id, args) {
 			// transcription interface
 			AccountInterfaces.transcriptionInterface('transcriptionInterface'),
 
-			// project complete interface
-			AccountInterfaces.projectCompleteInterface('projectCompleteInterface'),
+			// menus
+			AccountInterfaces.faqInterface('faqInterface'),
+			AccountInterfaces.ruleInterface('ruleInterface'),
+			AccountInterfaces.shortcutInterface('shortcutsInterface'),
 
 			// shortcuts interface
-			AccountInterfaces.shortcutInterface('shortcutInterface'),
+			// AccountInterfaces.shortcutInterface('shortcutInterface'),
 
 			// project interface
-			AccountInterfaces.projectInterface('projectInterface'),
+			// AccountInterfaces.projectInterface('projectInterface'),
 		],
 	}).then(function (base) {
 
 		// complete promises
 		return Promise.all([
-			base.cc.projectCompleteInterface.cc.returnButton.setState({
-				states: {
-					'-transcription-project-complete-state': {
-						preFn: function (_this) {
-							if (!base.cc.transcriptionInterface.cc.mainPanel.cc.counter.count) {
-								return _this.setAppearance({classes: {add: ['hidden']}});
-							} else {
-								return Util.ep();
-							}
-						}
-					},
-				},
-			}),
-			base.cc.projectCompleteInterface.cc.spiel.setState({
-				states: {
-					'-transcription-project-complete-state': {
-						preFn: function (_this) {
-							return Promise.all([
-								Active.get('client'),
-								Active.get('role'),
-							]).then(function (results) {
-								var [client_id, role_id] = results;
-								return Context.get(`user.clients.${client_id}.roles.${role_id}.project_transcriptions`, {force: true}).then(function (project_transcriptions) {
-									project_transcriptions = (base.cc.transcriptionInterface.cc.mainPanel.cc.counter.count || project_transcriptions);
-									return _this.setAppearance({html: `This project has been completed. Thank you. You completed ${project_transcriptions} transcription${project_transcriptions==1 ? '' : 's'}.`});
-								});
-							});
-						}
-					},
-				},
-			}),
+
 		]).then(function () {
 			return base;
 		});
