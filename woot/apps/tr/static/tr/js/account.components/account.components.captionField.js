@@ -65,7 +65,7 @@ AccountComponents.captionField = function (id, args) {
 							_this.tokens = metadata.tokens;
 
 							var idMatches = (_this.id === metadata.target) || !_this.id;
-							if ((_this.completeChanged || _this.completionOverride || _this.spaceOverride || _this.backspaceOverride) && idMatches) {
+							if (idMatches) {
 								// render to tokens
 								return _this.render();
 							} else {
