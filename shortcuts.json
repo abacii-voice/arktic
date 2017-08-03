@@ -1,19 +1,11 @@
 [
 	{
-		"title": "up",
-		"body": "If the caption is not focussed, the up arrow will move to the previous transcription. If the caption or autocomplete is focussed, it will move between items in the list. Hold down the alt key to override this and move between transcriptions normally."
+		"title": "up and down",
+		"body": "If the caption is not focussed, the up and down arrows will move to the previous and next transcriptions respectively. If the caption or autocomplete is focussed, it will move between items in the list. Hold down the alt key to override this and move between transcriptions normally."
 	},
 	{
-		"title": "down",
-		"body": "The down key moves to the kext transcription, but does not mark the current one as complete. It has the opposite behavious from the up arrow."
-	},
-	{
-		"title": "left",
-		"body": "Left arrow moves between words in the caption or the autocomplete, but it can be modified by alt to move between whole words."
-	},
-	{
-		"title": "right",
-		"body": "Right arrow behaves oppositely to left arrow."
+		"title": "left and right",
+		"body": "Left and right arrows move between characters in the caption or the autocomplete, but it can be modified by alt to move between whole words."
 	},
 	{
 		"title": "numbers",
@@ -25,46 +17,18 @@
 	},
 	{
 		"title": "backspace",
-		"body": "Backspace deletes characters as normal. "
+		"body": "Backspace deletes characters as normal. Modify with alt to delete the entire current word. Modify with ctrl to delete the entire caption. Modify with alt+shift to delete the last flag. Modify with ctrl+shift to delete all flags."
 	},
 	{
-		"title": "down",
-		"body": "goodbye body"
+		"title": "space",
+		"body": "Space bar will type a space normally, but continue to autocomplete a matching phrase if it can. Hold ctrl to override this behaviour."
 	},
 	{
-		"title": "down",
-		"body": "goodbye body"
+		"title": "tab",
+		"body": "Tab will repeat the audio and focus the caption. Modify with alt to focus the autocomplete."
 	},
 	{
-		"title": "down",
-		"body": "goodbye body"
-	},
-	{
-		"title": "down",
-		"body": "goodbye body"
-	},
-	{
-		"title": "down",
-		"body": "goodbye body"
-	},
-	{
-		"title": "down",
-		"body": "goodbye body"
-	},
-	{
-		"title": "down",
-		"body": "goodbye body"
-	},
-	{
-		"title": "down",
-		"body": "goodbye body"
-	},
-	{
-		"title": "down",
-		"body": "goodbye body"
-	},
-	{
-		"title": "down",
-		"body": "goodbye body"
+		"title": "Audio player",
+		"body": "Click and drag on the audio player to select a portion to focus and replay."
 	}
 ]
