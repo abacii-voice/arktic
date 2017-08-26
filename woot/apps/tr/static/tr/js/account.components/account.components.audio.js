@@ -203,6 +203,8 @@ AccountComponents.audio = function (id, args) {
 		base.audioTrackCanvas.nowCursorPosition = 0;
 		base.audioTrackCanvas.time = 0;
 		base.audioTrackCanvas.cutStart = 0;
+		base.audioTrackCanvas.fps = 30;
+		base.audioTrackCanvas.previousDelta = 0;
 		base.audioTrackCanvas.start = function () {
 			var _this = base.audioTrackCanvas;
 			if (!_this.isRunning) {
@@ -231,9 +233,13 @@ AccountComponents.audio = function (id, args) {
 			}, 500);
 			return Util.ep();
 		}
-		base.audioTrackCanvas.draw = function () {
+		base.audioTrackCanvas.draw = function (timeInMsSinceLoad) {
 			var _this = base.audioTrackCanvas;
 			_this.animationReference = requestAnimationFrame(_this.draw);
+			var delta = timeInMsSinceLoad - _this.previousDelta;
+			if (_this.fps && delta < 1000 / _this.fps) {
+				return;
+			}
 
 			_this.canvas.height = parseInt(base.audioTrack.model().css('height'));
 			_this.canvas.width = parseInt(base.audioTrack.model().css('width'));
@@ -288,6 +294,7 @@ AccountComponents.audio = function (id, args) {
 			} else {
 				_this.nowCursorPosition = _this.cut ? _this.cutStart : 0;
 			}
+			_this.previousDelta = timeInMsSinceLoad;
 		}
 		base.audioTrackCanvas.getMousePosition = function (event) {
 			var _this = base.audioTrackCanvas;
