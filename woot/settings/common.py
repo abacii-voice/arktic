@@ -28,6 +28,7 @@ TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 ALLOWED_HOSTS = (
 	'localhost',
 	'192.168.16.25',
+	'192.168.16.19',
 	'www.arkticvoice.com',
 	'arkticvoice.com',
 	'staging.arkticvoice.com',
