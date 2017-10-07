@@ -10,9 +10,9 @@ AccountComponents.projectCompletionBar = function (id, args) {
 		name: 'completion',
 		appearance: {
 			style: {
-				'margin-top': '10px',
+				'margin-left': '10px',
 				'height': '40px',
-				'width': '555px',
+				'width': '455px',
 				'float': 'left',
 				'padding': '10px',
 				'font-size': '15px',

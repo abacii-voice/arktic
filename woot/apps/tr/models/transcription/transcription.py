@@ -124,7 +124,7 @@ class Transcription(models.Model):
 	def export(self):
 		self.has_been_exported = True
 		self.save()
-		return ','.join([self.filename, self.instances.latest().phrase.render(), self.instances.latest().token.role.user.email])
+		return ','.join([self.filename, self.instances.latest().phrase.render().strip(), self.instances.latest().token.role.user.email])
 
 class TranscriptionFragment(models.Model):
 

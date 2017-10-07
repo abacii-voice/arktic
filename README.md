@@ -172,7 +172,7 @@ Remember to follow basic rules for json otherwise the file will not parse (No tr
 
 `~$ dm tags add --client=ClientNameOrID --project=ProjectNameOrID --file=/path/to/file.json`
 
-They can also be add individually
+They can also be added individually
 
 `~$ dm tags add --client=ClientNameOrID --project=ProjectNameOrID --name=TagName --shortcut=TagShortcut`
 

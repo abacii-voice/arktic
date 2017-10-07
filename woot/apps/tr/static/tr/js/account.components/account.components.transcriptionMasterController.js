@@ -54,12 +54,10 @@ AccountComponents.transcriptionMasterController = function () {
 						// this should force a load. If the result is negative, this should be displayed clearly in the interface
 						return _this.data.loadFromTranscriptionToken().then(function (transcriptionsAvailable) {
 							return _this.pre.main().then(function () {
-								if (countPending || transcriptionsAvailable || (Object.keys(_this.data.buffer).length === 1 && _this.active === 0)) {
+								if (countPending || transcriptionsAvailable || (Object.keys(_this.data.buffer).length === 1 && _this.active === 0 && countComplete === 0)) {
 									return _this.enterActiveState();
 								} else {
-									return _this.data.loadProjectTotal().then(function () {
-										return _this.enterCompletionState();
-									});
+									return _this.enterCompletionState();
 								}
 							});
 						});
@@ -84,15 +82,6 @@ AccountComponents.transcriptionMasterController = function () {
 					return Context.get(tokenPath, {force: true, overwrite: true});
 				}).then(_this.process).then(function (transcriptionsAvailable) {
 					return Util.ep(transcriptionsAvailable);
-				});
-			},
-			loadProjectTotal: function () {
-				return Promise.all([
-					Active.get('client'),
-					Active.get('role'),
-				]).then(function (results) {
-					var [clientId, roleId] = results;
-					return Context.get(`user.clients.${clientId}.roles.${roleId}.project_transcriptions`, {force: true});
 				});
 			},
 		}

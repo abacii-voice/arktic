@@ -3,7 +3,7 @@ var AccountComponents = (AccountComponents || {});
 AccountComponents.flagField = function (id, args) {
 	return UI.createComponent(id, {
 		name: args.name,
-		template: UI.template('div', 'ie border border-radius'),
+		template: UI.template('div', 'ie border border-radius hidden'),
 		appearance: {
 			style: {
 				'height': '100%',

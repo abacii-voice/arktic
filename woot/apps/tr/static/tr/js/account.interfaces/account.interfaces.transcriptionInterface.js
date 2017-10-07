@@ -87,7 +87,6 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 								template: UI.template('div', 'ie button border border-radius'),
 								appearance: {
 									style: {
-										'margin-left': '10px',
 										'height': '100%',
 										'width': '40px',
 										'float': 'left',
@@ -122,11 +121,32 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 									}),
 								],
 							}),
+
+							// project completion bar
+							AccountComponents.projectCompletionBar('tb-mp-completion'),
+
+							// project completion button
+							// UI.createComponent('tb-mp-bp-next-confirm-button', {
+							// 	name: 'nextConfirmButton',
+							// 	template: UI.template('div', 'ie button border border-radius'),
+							// 	appearance: {
+							// 		style: {
+							// 			'margin-left': '10px',
+							// 			'height': '100%',
+							// 			'width': '40px',
+							// 			'float': 'left',
+							// 			'padding-top': '10px',
+							// 		},
+							// 	},
+							// 	children: [
+							// 		UI.createComponent('tb-mp-bp-cb-glyph', {
+							// 			name: 'glyph',
+							// 			template: UI.template('span', 'glyphicon glyphicon-ok'),
+							// 		}),
+							// 	],
+							// }),
 						],
 					}),
-
-					// project completion bar
-					AccountComponents.projectCompletionBar('tb-mp-completion'),
 				],
 			}),
 
@@ -175,7 +195,7 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		var amc = base.cc.transcriptionActions;
 		var tmc = base.cc.transcriptionMasterController;
 		var autocomplete = base.cc.autocompletePanel.cc.autocomplete;
-		var completion = base.cc.mainPanel.cc.completion;
+		var completion = base.cc.mainPanel.cc.buttonPanel.cc.completion;
 
 		// Transcription Master Controller
 		tmc.data.updateThreshold = 4;
@@ -221,16 +241,20 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		tmc.pre.interface = function () {
 			var _this = tmc;
 			return _this.data.current().then(function (current) {
-				current.is_available = false;
-				if (!current.isPending && !current.isComplete) {
-					current.isPending = true;
+				if (current !== undefined) {
+					current.is_available = false;
+					if (!current.isPending && !current.isComplete) {
+						current.isPending = true;
+					}
+					return Promise.all([
+						audio.display(current),
+						caption.control.input.newCaption(current),
+						counter.setActive(current),
+						flags.data.reset(current),
+					]);
+				} else {
+					return Util.ep();
 				}
-				return Promise.all([
-					audio.display(current),
-					caption.control.input.newCaption(current),
-					counter.setActive(current),
-					flags.data.reset(current),
-				]);
 			});
 		}
 		tmc.setActive = function (options) {
@@ -1251,24 +1275,37 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 		}
 
 		// Counter
+		counter.isActive = true;
 		counter.updateHeader = function () {
 			var _this = counter;
 
 			// update remaining
-			if (_this.serverRemaining !== tmc.data.totalRemaining) {
-				if (_this.offset !== 0) {
-					_this.offset = tmc.data.updateThreshold - 2;
+			if (_this.isActive) {
+				if (_this.serverRemaining !== tmc.data.totalRemaining) {
+					if (_this.offset !== 0) {
+						_this.offset = tmc.data.updateThreshold - 2;
+					}
+					_this.serverRemaining = tmc.data.totalRemaining;
 				}
-				_this.serverRemaining = tmc.data.totalRemaining;
-			}
-			_this.remaining = _this.serverRemaining + _this.offset + tmc.data.tokenSize;
-			_this.remaining = _this.remaining < 0 ? 0 : _this.remaining; // cannot be less than zero
 
-			var _this = counter;
-			return Promise.all([
-				_this.sessionValue.setAppearance({html: _this.count}),
-				_this.remainingValue.setAppearance({html: _this.remaining}),
-			]);
+				_this.remaining = _this.serverRemaining + _this.offset + tmc.data.tokenSize;
+				_this.remaining = _this.remaining < 0 ? 0 : _this.remaining; // cannot be less than zero
+
+				return Promise.all([
+					Active.get('client'),
+					Active.get('role'),
+				]).then(function (results) {
+					var [clientId, roleId] = results;
+					return Context.get(`user.clients.${clientId}.roles.${roleId}.project_transcriptions`);
+				}).then(function (projectTranscriptions) {
+					return Promise.all([
+						_this.sessionValue.setAppearance({html: _this.count + projectTranscriptions}),
+						_this.remainingValue.setAppearance({html: _this.remaining}),
+					]);
+				});
+			} else {
+				return Util.ep();
+			}
 		}
 		counter.unit = function () {
 			var unitId = '{counterId}_icon_{id}'.format({counterId: counter.id, id: Util.makeid()});
@@ -1456,9 +1493,9 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 				Active.get('role'),
 			]).then(function (results) {
 				var [clientId, roleId] = results;
-				return Context.get(`user.clients.${clientId}.roles.${roleId}.project_transcriptions`, {force: true});
+				return Context.get(`user.clients.${clientId}.roles.${roleId}.project_transcriptions`);
 			}).then(function (projectTotal) {
-				return completion.cc.number.setAppearance({html: `${projectTotal} transcriptions`});
+				return completion.cc.number.setAppearance({html: `${projectTotal + Object.keys(tmc.data.buffer).length} transcriptions`});
 			});
 		}
 
@@ -1771,7 +1808,13 @@ AccountInterfaces.transcriptionInterface = function (id, args) {
 						fn: function (_this) {
 							return _this.setup();
 						}
-					}
+					},
+					'-transcription-project-complete-state': {
+						fn: function (_this) {
+							_this.isActive = false;
+							return Util.ep();
+						},
+					},
 				},
 			}),
 
